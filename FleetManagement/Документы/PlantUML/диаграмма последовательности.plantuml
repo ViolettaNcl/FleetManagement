@@ -1,0 +1,93 @@
+@startuml
+actor User
+actor Admin
+participant System
+participant UserMenu
+participant AdminMenu
+participant DriverWindow
+participant TransportWindow
+participant RouteWindow
+participant Database
+
+== Регистрация и Авторизация ==
+User -> System : Ввод данных (Регистрация / Авторизация)
+System -> User : Проверка введенных данных
+System -> System : Проверка роли пользователя (админ или обычный)
+
+== Меню пользователя ==
+System -> User : Если пользователь — обычный
+User -> UserMenu : Открытие меню пользователя
+UserMenu -> User : Показать кнопки:
+UserMenu -> User : 1. Водители
+UserMenu -> User : 2. Транспорт
+UserMenu -> User : 3. Маршруты
+UserMenu -> User : 4. Выход
+
+== Пользователь выбирает "Водители" ==
+User -> DriverWindow : Нажатие на кнопку "Водители"
+DriverWindow -> User : Показать список водителей
+DriverWindow -> User : Просмотр информации о водителях
+User -> UserMenu : Выход из окна водителей
+
+== Пользователь выбирает "Транспорт" ==
+User -> TransportWindow : Нажатие на кнопку "Транспорт"
+TransportWindow -> User : Показать список транспорта
+TransportWindow -> User : Просмотр информации о транспорте
+User -> UserMenu : Выход из окна транспорта
+
+== Пользователь выбирает "Маршруты" ==
+User -> RouteWindow : Нажатие на кнопку "Маршруты"
+RouteWindow -> User : Показать список маршрутов
+RouteWindow -> User : Просмотр информации о маршрутах
+User -> UserMenu : Выход из окна маршрутов
+
+== Выход из аккаунта ==
+User -> System : Нажатие "Выход"
+System -> User : Завершение сессии
+
+== Меню администратора ==
+System -> Admin : Если пользователь — администратор
+Admin -> AdminMenu : Открытие меню администратора
+AdminMenu -> Admin : Показать кнопки:
+AdminMenu -> Admin : 1. Водители
+AdminMenu -> Admin : 2. Транспорт
+AdminMenu -> Admin : 3. Маршруты
+AdminMenu -> Admin : 4. Выход
+
+== Администратор выбирает "Водители" ==
+Admin -> DriverWindow : Нажатие на кнопку "Водители"
+DriverWindow -> Admin : Показать список водителей
+Admin -> DriverWindow : Добавить водителя
+Admin -> Database : Сохранить нового водителя в базе данных
+Admin -> DriverWindow : Редактировать водителя
+Admin -> Database : Обновить данные водителя в базе данных
+Admin -> DriverWindow : Удалить водителя
+Admin -> Database : Удалить водителя из базы данных
+Admin -> AdminMenu : Выход из окна водителей
+
+== Администратор выбирает "Транспорт" ==
+Admin -> TransportWindow : Нажатие на кнопку "Транспорт"
+TransportWindow -> Admin : Показать список транспорта
+Admin -> TransportWindow : Добавить транспорт
+Admin -> Database : Сохранить новый транспорт в базе данных
+Admin -> TransportWindow : Редактировать транспорт
+Admin -> Database : Обновить данные транспорта в базе данных
+Admin -> TransportWindow : Удалить транспорт
+Admin -> Database : Удалить транспорт из базы данных
+Admin -> AdminMenu : Выход из окна транспорта
+
+== Администратор выбирает "Маршруты" ==
+Admin -> RouteWindow : Нажатие на кнопку "Маршруты"
+RouteWindow -> Admin : Показать список маршрутов
+Admin -> RouteWindow : Добавить маршрут
+Admin -> Database : Сохранить новый маршрут в базе данных
+Admin -> RouteWindow : Редактировать маршрут
+Admin -> Database : Обновить данные маршрута в базе данных
+Admin -> RouteWindow : Удалить маршрут
+Admin -> Database : Удалить маршрут из базы данных
+Admin -> AdminMenu : Выход из окна маршрутов
+
+== Выход из аккаунта администратора ==
+Admin -> System : Нажатие "Выход"
+System -> Admin : Завершение сессии
+@enduml

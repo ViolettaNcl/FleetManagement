@@ -1,0 +1,90 @@
+﻿<Page
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:av="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    mc:Ignorable="av"
+    x:Class="Zachet.Views.PageVehicles"
+    Title="PageVehicles"
+    av:DesignWidth="967.75">
+
+    <Grid Background="#F0F0FF" HorizontalAlignment="Stretch" VerticalAlignment="Stretch">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="80"/>
+            <RowDefinition/>
+        </Grid.RowDefinitions>
+
+        <WrapPanel Orientation="Horizontal" HorizontalAlignment="Right" VerticalAlignment="Center" Margin="0,0,20,0">
+            <Button Click="RefreshVehiclesButton_Click" 
+                    Height="40" Width="120" 
+                    Background="#7B68EE" Foreground="White" 
+                    FontWeight="Bold" BorderBrush="#483D8B" BorderThickness="2" 
+                    Padding="10,5" Margin="0,0,10,0" Cursor="Hand" Content="Обновить"/>
+
+            <Button Click="AddVehicleButton_Click" 
+                    Height="40" Width="120" 
+                    Background="#6A0DAD" Foreground="White" 
+                    FontWeight="Bold" BorderBrush="#483D8B" BorderThickness="2" 
+                    Padding="10,5" Margin="0,0,10,0" Cursor="Hand" Content="Добавить транспорт"/>
+
+            <Button Click="MaintenanceButton_Click" 
+                    Height="40" Width="120" 
+                    Background="#32CD32" Foreground="White" 
+                    FontWeight="Bold" BorderBrush="#483D8B" BorderThickness="2" 
+                    Padding="10,5" Margin="0,0,10,0" Cursor="Hand" Content="Обслуживание"/>
+
+            <Button Click="BackButton_Click" 
+                    Height="40" Width="120" 
+                    Background="#FF6F61" Foreground="White" 
+                    FontWeight="Bold" BorderBrush="#483D8B" BorderThickness="2" 
+                    Padding="10,5" Margin="0,0,10,0" Cursor="Hand" Content="Назад"/>
+        </WrapPanel>
+
+        <StackPanel Orientation="Horizontal" HorizontalAlignment="Left" VerticalAlignment="Center" Margin="20,0,0,0">
+            <ComboBox x:Name="SortComboBox" Width="120" Height="25" Margin="0,0,5,0">
+                <ComboBoxItem Content="Пробег" />
+                <ComboBoxItem Content="Год выпуска" />
+            </ComboBox>
+            <Button Click="SortButton_Click" 
+                    Background="#4682B4" Foreground="White" 
+                    FontWeight="Bold" BorderBrush="#483D8B" BorderThickness="2" 
+                    Padding="5,2" Height="25" Width="92" Cursor="Hand" Content="Сортировать"/>
+        </StackPanel>
+
+        <DataGrid Grid.Row="1" 
+                  IsReadOnly="True" CanUserAddRows="False" CanUserDeleteRows="False" 
+                  x:Name="VehiclesGrid" AutoGenerateColumns="False" 
+                  Background="White" 
+                  AlternatingRowBackground="#EEEAF8" BorderBrush="#6A5ACD" BorderThickness="2" 
+                  Margin="20,10,20,20">
+            <DataGrid.Columns>
+                <DataGridTextColumn Header="Id" Binding="{Binding Id}" Width="*"/>
+                <DataGridTextColumn Header="Госномер" Binding="{Binding LicensePlate}" Width="*"/>
+                <DataGridTextColumn Header="Модель" Binding="{Binding Model}" Width="*"/>
+                <DataGridTextColumn Header="Производитель" Binding="{Binding Manufacturer}" Width="*"/>
+                <DataGridTextColumn Header="Год выпуска" Binding="{Binding YearOfManufacture}" Width="*"/>
+                <DataGridTextColumn Header="Пробег" Binding="{Binding Mileage}" Width="*"/>
+                <DataGridTextColumn Header="Статус" Binding="{Binding Status}" Width="*"/>
+                <DataGridTextColumn Header="Дата обслуживания" Binding="{Binding LastMaintenanceDate}" Width="*"/>
+                <DataGridTemplateColumn Header="Редактирование" Width="Auto">
+                    <DataGridTemplateColumn.CellTemplate>
+                        <DataTemplate>
+                            <Button Background="#9370DB" Foreground="White" 
+                                    BorderBrush="#483D8B" BorderThickness="2" 
+                                    Click="EditVehicleButton_Click" FontWeight="Bold" Padding="5,2" Cursor="Hand" Content="Редактировать"/>
+                        </DataTemplate>
+                    </DataGridTemplateColumn.CellTemplate>
+                </DataGridTemplateColumn>
+                <DataGridTemplateColumn Header="Удаление" Width="Auto">
+                    <DataGridTemplateColumn.CellTemplate>
+                        <DataTemplate>
+                            <Button Background="#BA55D3" Foreground="White" 
+                                    BorderBrush="#8A2BE2" BorderThickness="2" 
+                                    Click="DeleteVehicleButton_Click" FontWeight="Bold" Padding="5,2" Cursor="Hand" Content="Удалить"/>
+                        </DataTemplate>
+                    </DataGridTemplateColumn.CellTemplate>
+                </DataGridTemplateColumn>
+            </DataGrid.Columns>
+        </DataGrid>
+    </Grid>
+</Page>

@@ -1,0 +1,56 @@
+﻿<Page x:Class="Zachet.Views.PageAddRoute"
+      xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+      xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+      Title="Добавить маршрут"
+      Background="#F3F4F6">
+    <StackPanel Margin="20">
+
+        <TextBlock Text="Добавить маршрут" FontSize="24" FontWeight="Bold" Foreground="#6A0DAD" Margin="0,0,0,20" HorizontalAlignment="Center"/>
+
+        <TextBlock Text="Начальное местоположение:" Margin="0,10,0,5" FontWeight="Medium" Foreground="#6A0DAD"/>
+        <TextBox Name="StartLocationTextBox" Width="250" Height="30" Margin="0,0,0,15" Padding="5" Background="#EDEFF1" BorderBrush="#6A0DAD" BorderThickness="1"/>
+
+        <TextBlock Text="Конечное местоположение:" Margin="0,10,0,5" FontWeight="Medium" Foreground="#6A0DAD"/>
+        <TextBox Name="EndLocationTextBox" Width="250" Height="30" Margin="0,0,0,15" Padding="5" Background="#EDEFF1" BorderBrush="#6A0DAD" BorderThickness="1"/>
+
+        <TextBlock Text="Расстояние (км):" Margin="0,10,0,5" FontWeight="Medium" Foreground="#6A0DAD"/>
+        <TextBox Name="DistanceTextBox" Width="250" Height="30" Margin="0,0,0,15" Padding="5" Background="#EDEFF1" BorderBrush="#6A0DAD" BorderThickness="1"/>
+
+        <TextBlock Text="Дата начала:" Margin="0,10,0,5" FontWeight="Medium" Foreground="#6A0DAD"/>
+        <DatePicker Name="StartDatePicker" Margin="0,0,0,15" Background="#EDEFF1" BorderBrush="#6A0DAD" BorderThickness="1"/>
+
+        <TextBlock Text="Дата окончания:" Margin="0,10,0,5" FontWeight="Medium" Foreground="#6A0DAD"/>
+        <DatePicker Name="EndDatePicker" Margin="0,0,0,15" Background="#EDEFF1" BorderBrush="#6A0DAD" BorderThickness="1"/>
+
+        <TextBlock Text="Выберите водителя:" Margin="0,10,0,5" FontWeight="Medium" Foreground="#6A0DAD"/>
+        <ComboBox Name="DriverComboBox" Margin="0,0,0,15" DisplayMemberPath="FullName" Background="#EDEFF1" BorderBrush="#6A0DAD" BorderThickness="1"/>
+
+        <TextBlock Text="Выберите транспортное средство:" Margin="0,10,0,5" FontWeight="Medium" Foreground="#6A0DAD"/>
+        <ComboBox Name="VehicleComboBox" Margin="0,0,0,15" DisplayMemberPath="Model" Background="#EDEFF1" BorderBrush="#6A0DAD" BorderThickness="1"/>
+
+        <!-- Кнопки размещены выше и сделаны компактнее -->
+        <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" Margin="0,10,0,0">
+            <Button Click="SaveButton_Click" Content="Сохранить" Width="80" Height="30" Margin="0,0,10,0"
+                    Background="#6A0DAD" Foreground="White" FontWeight="Bold" BorderThickness="0" Cursor="Hand">
+                <Button.Template>
+                    <ControlTemplate TargetType="Button">
+                        <Border Background="{TemplateBinding Background}" CornerRadius="5">
+                            <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                        </Border>
+                    </ControlTemplate>
+                </Button.Template>
+            </Button>
+
+            <Button Click="CancelButton_Click" Content="Отменить" Width="80" Height="30"
+                    Background="#FF6F61" Foreground="White" FontWeight="Bold" BorderThickness="0" Cursor="Hand">
+                <Button.Template>
+                    <ControlTemplate TargetType="Button">
+                        <Border Background="{TemplateBinding Background}" CornerRadius="5">
+                            <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                        </Border>
+                    </ControlTemplate>
+                </Button.Template>
+            </Button>
+        </StackPanel>
+    </StackPanel>
+</Page>

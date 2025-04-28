@@ -1,0 +1,73 @@
+﻿<Page
+    x:Class="Zachet.Views.PageRoutesViewOnly"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:av="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    mc:Ignorable="av"
+    Title="PageRoutesViewOnly"
+    av:DesignWidth="967.75">
+
+    <Grid Background="#F0F0FF" HorizontalAlignment="Stretch" VerticalAlignment="Stretch">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="100"/>
+            <RowDefinition Height="*"/>
+        </Grid.RowDefinitions>
+
+        <TextBlock Text="Список маршрутов" 
+                   FontSize="24" FontWeight="Bold" Foreground="#6A0DAD" 
+                   HorizontalAlignment="Center" VerticalAlignment="Top" Margin="0,10,0,0"/>
+
+        <!-- Панель для фильтрации -->
+        <Grid HorizontalAlignment="Left" VerticalAlignment="Center" Margin="20,0,0,0">
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto"/>
+                <RowDefinition Height="Auto"/>
+            </Grid.RowDefinitions>
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="Auto"/>
+                <ColumnDefinition Width="Auto"/>
+                <ColumnDefinition Width="Auto"/>
+            </Grid.ColumnDefinitions>
+
+            <TextBlock Grid.Row="0" Grid.Column="0" Text="Начальная дата:" VerticalAlignment="Center" Width="100" Margin="0,0,5,5"/>
+            <DatePicker x:Name="StartDatePicker" Grid.Row="0" Grid.Column="1" Width="120" Height="25" VerticalAlignment="Center" Margin="0,0,5,5"/>
+            <Button Click="FilterRoutesButton_Click" Grid.Row="0" Grid.Column="2" Grid.RowSpan="2"
+                    Height="25" Width="80" 
+                    Background="#20B2AA" Foreground="White" 
+                    FontWeight="Bold" BorderBrush="#483D8B" BorderThickness="2" 
+                    Padding="5,2" Cursor="Hand" VerticalAlignment="Center" Content="Фильтр"/>
+
+            <TextBlock Grid.Row="1" Grid.Column="0" Text="Конечная дата:" VerticalAlignment="Center" Width="100" Margin="0,0,5,0"/>
+            <DatePicker x:Name="EndDatePicker" Grid.Row="1" Grid.Column="1" Width="120" Height="25" VerticalAlignment="Center" Margin="0,0,5,0"/>
+        </Grid>
+
+        <!-- Кнопка -->
+        <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" VerticalAlignment="Center" Margin="0,0,20,0">
+            <Button Click="BackButton_Click" 
+                    Height="40" Width="100" 
+                    Background="#FF6F61" Foreground="White" 
+                    FontWeight="Bold" BorderBrush="#483D8B" BorderThickness="2" 
+                    Padding="10,5" Margin="0,0,10,0" Cursor="Hand" Content="Назад"/>
+        </StackPanel>
+
+        <DataGrid Grid.Row="1" 
+                  IsReadOnly="True" CanUserAddRows="False" CanUserDeleteRows="False" 
+                  Name="RoutesGrid" AutoGenerateColumns="False" 
+                  Background="White" 
+                  AlternatingRowBackground="#EEEAF8" BorderBrush="#6A5ACD" BorderThickness="2"
+                  Margin="20,10,20,20" HorizontalAlignment="Stretch" VerticalAlignment="Stretch">
+            <DataGrid.Columns>
+                <DataGridTextColumn Header="Id" Binding="{Binding Id}" Width="*"/>
+                <DataGridTextColumn Header="Водитель" Binding="{Binding Drivers.FullName}" Width="*"/>
+                <DataGridTextColumn Header="Транспорт" Binding="{Binding Vehicles.Model}" Width="*"/>
+                <DataGridTextColumn Header="Дата начала" Binding="{Binding StartDate}" Width="*"/>
+                <DataGridTextColumn Header="Дата окончания" Binding="{Binding EndDate}" Width="*"/>
+                <DataGridTextColumn Header="Начальное местоположение" Binding="{Binding StartLocation}" Width="*"/>
+                <DataGridTextColumn Header="Конечное местоположение" Binding="{Binding EndLocation}" Width="*"/>
+                <DataGridTextColumn Header="Расстояние (км)" Binding="{Binding Distance}" Width="*"/>
+                <DataGridTextColumn Header="Статус" Binding="{Binding VehicleStatus}" Width="*"/>
+            </DataGrid.Columns>
+        </DataGrid>
+    </Grid>
+</Page>

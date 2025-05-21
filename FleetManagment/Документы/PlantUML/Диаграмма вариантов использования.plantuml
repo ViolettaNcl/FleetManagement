@@ -1,0 +1,57 @@
+@startuml
+left to right direction
+
+actor "Обычный пользователь" as User #ADD8E6
+actor "Водитель" as Driver #98FB98
+actor "Администратор" as Admin #FF6347
+
+rectangle "Система управления автопарком" {
+
+  (Авторизация) as UC1
+  (Регистрация пользователя) as UC2
+  (Просмотр информации о транспортных средствах) as UC3
+  (Просмотр информации о водителях) as UC4
+  (Просмотр информации о рейсах) as UC5
+  (Фильтрация и сортировка) as UC6
+  (Выход из системы) as UC7
+
+  (Добавление/Редактирование/Удаление транспорта) as UC8
+  (Добавление/Редактирование/Удаление водителей) as UC9
+  (Добавление/Редактирование/Удаление маршрутов) as UC10
+  (Обслуживание транспорта) as UC11
+  (Пробег транспортного средства) as UC12
+
+  ' Все пользователи могут выполнять следующие действия:
+  User -- UC1
+  User -- UC2
+  User -- UC3
+  User -- UC4
+  User -- UC5
+  User -- UC6
+  User -- UC7
+  
+  Driver -- UC1
+  Driver -- UC2
+  Driver -- UC3
+  Driver -- UC4
+  Driver -- UC5
+  Driver -- UC6
+  Driver -- UC7
+
+  Admin -- UC1
+  Admin -- UC2
+  Admin -- UC3
+  Admin -- UC4
+  Admin -- UC5
+  Admin -- UC6
+  Admin -- UC7
+
+  ' Только Администратор может выполнять эти действия:
+  Admin -- UC8
+  Admin -- UC9
+  Admin -- UC10
+  Admin -- UC11
+  Admin -- UC12
+}
+
+@enduml

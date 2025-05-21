@@ -1,0 +1,80 @@
+@startgantt
+language ru
+
+saturday are closed
+sunday are closed
+
+2025-04-30 is closed
+project starts the 2025-03-20
+
+[Анализ требований и проектирование БД] requires 5 days
+    [Сбор требований] requires 1 day
+    [Проектирование структуры базы] requires 1 day
+
+[Разработка серверной части] requires 4 days
+    [Настройка базы данных] requires 1 day
+    [Реализация CRUD-операций] requires 2 days
+
+[Разработка клиентской части (WPF-интерфейс)] requires 4 days
+    [Разработка макета UI] requires 2 days
+    [Реализация основных функций] requires 2 days
+
+[Интеграция всех компонентов] requires 4 days
+    [Тестирование взаимодействия] requires 4 days
+
+[Тестирование системы] requires 4 days
+    [Проверка функционала] requires 2 days
+    [Исправление ошибок] requires 2 days
+
+[Ввод в эксплуатацию] requires 2 days
+[Зачёт] requires 1 day
+
+[Анализ требований и проектирование БД] starts at 2025-03-20
+[Сбор требований] starts at 2025-03-20
+[Проектирование структуры базы] starts at [Сбор требований]'s end
+
+[Разработка серверной части] starts at [Анализ требований и проектирование БД]'s end
+[Настройка базы данных] starts at [Разработка серверной части]'s start
+[Реализация CRUD-операций] starts at [Настройка базы данных]'s end
+
+[Разработка клиентской части (WPF-интерфейс)] starts at [Разработка серверной части]'s end
+[Разработка макета UI] starts at [Разработка клиентской части (WPF-интерфейс)]'s start
+[Реализация основных функций] starts at [Разработка макета UI]'s end
+
+[Интеграция всех компонентов] starts at [Разработка клиентской части (WPF-интерфейс)]'s end
+[Тестирование взаимодействия] starts at [Интеграция всех компонентов]'s start
+
+[Тестирование системы] starts at [Интеграция всех компонентов]'s end
+[Проверка функционала] starts at [Тестирование системы]'s start
+[Исправление ошибок] starts at [Проверка функционала]'s end
+
+[Ввод в эксплуатацию] starts at [Тестирование системы]'s end
+[Зачёт] starts at 2025-04-29
+
+'Стили
+
+[Анализ требований и проектирование БД] is colored in red
+[Разработка серверной части] is colored in blue
+[Разработка клиентской части (WPF-интерфейс)] is colored in green
+[Интеграция всех компонентов] is colored in yellow
+[Тестирование системы] is colored in orange
+[Ввод в эксплуатацию] is colored in purple
+[Зачёт] is colored in pink
+
+[Сбор требований] is colored in red
+[Проектирование структуры базы] is colored in red
+[Настройка базы данных] is colored in blue
+[Реализация CRUD-операций] is colored in blue
+[Разработка макета UI] is colored in green
+[Реализация основных функций] is colored in green
+[Тестирование взаимодействия] is colored in yellow
+[Проверка функционала] is colored in orange
+[Исправление ошибок] is colored in orange
+
+tuesday are colored in lightgray
+thursday are colored in lightgray
+saturday are colored in lightgray
+sunday are colored in lightgray
+2025-04-29 are colored in lightsalmon
+@endgantt
+

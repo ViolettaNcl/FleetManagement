@@ -1,0 +1,181 @@
+{
+  "Version": 1,
+  "WorkspaceRootPath": "C:\\Users\\User\\OneDrive\\Desktop\\NinjaCar\\FleetManagment\\",
+  "Documents": [
+    {
+      "AbsoluteMoniker": "D:0:0:{810A491F-F257-4D33-AE17-03265D48FF37}|FleetManagement.csproj|c:\\users\\user\\onedrive\\desktop\\ninjacar\\fleetmanagment\\\u0434\u043E\u043A\u0443\u043C\u0435\u043D\u0442\u044B\\\u0434\u0438\u0430\u0433\u0440\u0430\u043C\u043C\u044B\\\u0434\u0438\u0430\u0433\u0440\u0430\u043C\u043C\u0430\u043F\u043E\u0441\u043B\u0435\u0434\u043E\u0432\u0430\u0442\u0435\u043B\u044C\u043D\u043E\u0441\u0442\u0438.drawio||{FA3CD31E-987B-443A-9B81-186104E8DAC1}",
+      "RelativeMoniker": "D:0:0:{810A491F-F257-4D33-AE17-03265D48FF37}|FleetManagement.csproj|solutionrelative:\u0434\u043E\u043A\u0443\u043C\u0435\u043D\u0442\u044B\\\u0434\u0438\u0430\u0433\u0440\u0430\u043C\u043C\u044B\\\u0434\u0438\u0430\u0433\u0440\u0430\u043C\u043C\u0430\u043F\u043E\u0441\u043B\u0435\u0434\u043E\u0432\u0430\u0442\u0435\u043B\u044C\u043D\u043E\u0441\u0442\u0438.drawio||{FA3CD31E-987B-443A-9B81-186104E8DAC1}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{810A491F-F257-4D33-AE17-03265D48FF37}|FleetManagement.csproj|c:\\users\\user\\onedrive\\desktop\\ninjacar\\fleetmanagment\\\u0434\u043E\u043A\u0443\u043C\u0435\u043D\u0442\u044B\\plantuml\\\u0433\u0440\u0430\u0444\u0438\u043A.plantuml||{8B382828-6202-11D1-8870-0000F87579D2}",
+      "RelativeMoniker": "D:0:0:{810A491F-F257-4D33-AE17-03265D48FF37}|FleetManagement.csproj|solutionrelative:\u0434\u043E\u043A\u0443\u043C\u0435\u043D\u0442\u044B\\plantuml\\\u0433\u0440\u0430\u0444\u0438\u043A.plantuml||{8B382828-6202-11D1-8870-0000F87579D2}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{810A491F-F257-4D33-AE17-03265D48FF37}|FleetManagement.csproj|c:\\users\\user\\onedrive\\desktop\\ninjacar\\fleetmanagment\\\u0434\u043E\u043A\u0443\u043C\u0435\u043D\u0442\u044B\\plantuml\\diagram-class.plantuml||{8B382828-6202-11D1-8870-0000F87579D2}",
+      "RelativeMoniker": "D:0:0:{810A491F-F257-4D33-AE17-03265D48FF37}|FleetManagement.csproj|solutionrelative:\u0434\u043E\u043A\u0443\u043C\u0435\u043D\u0442\u044B\\plantuml\\diagram-class.plantuml||{8B382828-6202-11D1-8870-0000F87579D2}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{810A491F-F257-4D33-AE17-03265D48FF37}|FleetManagement.csproj|c:\\users\\user\\onedrive\\desktop\\ninjacar\\fleetmanagment\\\u0434\u043E\u043A\u0443\u043C\u0435\u043D\u0442\u044B\\content.md||{24510B54-A648-4D69-A6C5-F68CBDF07546}",
+      "RelativeMoniker": "D:0:0:{810A491F-F257-4D33-AE17-03265D48FF37}|FleetManagement.csproj|solutionrelative:\u0434\u043E\u043A\u0443\u043C\u0435\u043D\u0442\u044B\\content.md||{24510B54-A648-4D69-A6C5-F68CBDF07546}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{810A491F-F257-4D33-AE17-03265D48FF37}|FleetManagement.csproj|C:\\Users\\User\\OneDrive\\Desktop\\NinjaCar\\FleetManagment\\\u0434\u043E\u043A\u0443\u043C\u0435\u043D\u0442\u044B\\\u0438\u043D\u0441\u0442\u0440\u0443\u043A\u0446\u0438\u044F.md||{24510B54-A648-4D69-A6C5-F68CBDF07546}",
+      "RelativeMoniker": "D:0:0:{810A491F-F257-4D33-AE17-03265D48FF37}|FleetManagement.csproj|solutionrelative:\u0434\u043E\u043A\u0443\u043C\u0435\u043D\u0442\u044B\\\u0438\u043D\u0441\u0442\u0440\u0443\u043A\u0446\u0438\u044F.md||{24510B54-A648-4D69-A6C5-F68CBDF07546}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{810A491F-F257-4D33-AE17-03265D48FF37}|FleetManagement.csproj|C:\\Users\\User\\OneDrive\\Desktop\\NinjaCar\\FleetManagment\\\u0434\u043E\u043A\u0443\u043C\u0435\u043D\u0442\u044B\\script.sql||{CC5D8DF0-88F4-4BB2-9DBB-B48CEE65C30A}",
+      "RelativeMoniker": "D:0:0:{810A491F-F257-4D33-AE17-03265D48FF37}|FleetManagement.csproj|solutionrelative:\u0434\u043E\u043A\u0443\u043C\u0435\u043D\u0442\u044B\\script.sql||{CC5D8DF0-88F4-4BB2-9DBB-B48CEE65C30A}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{810A491F-F257-4D33-AE17-03265D48FF37}|FleetManagement.csproj|C:\\Users\\User\\OneDrive\\Desktop\\NinjaCar\\FleetManagment\\\u0434\u043E\u043A\u0443\u043C\u0435\u043D\u0442\u044B\\\u0438\u043D\u0442\u0435\u0440\u0444\u0435\u0439\u0441.md||{24510B54-A648-4D69-A6C5-F68CBDF07546}",
+      "RelativeMoniker": "D:0:0:{810A491F-F257-4D33-AE17-03265D48FF37}|FleetManagement.csproj|solutionrelative:\u0434\u043E\u043A\u0443\u043C\u0435\u043D\u0442\u044B\\\u0438\u043D\u0442\u0435\u0440\u0444\u0435\u0439\u0441.md||{24510B54-A648-4D69-A6C5-F68CBDF07546}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{810A491F-F257-4D33-AE17-03265D48FF37}|FleetManagement.csproj|C:\\Users\\User\\OneDrive\\Desktop\\NinjaCar\\FleetManagment\\\u0434\u043E\u043A\u0443\u043C\u0435\u043D\u0442\u044B\\\u0442\u0440\u0435\u0431\u043E\u0432\u0430\u043D\u0438\u044F\u043F\u0440\u043E\u0433\u0440\u0430\u043C\u043C\u0435.md||{24510B54-A648-4D69-A6C5-F68CBDF07546}",
+      "RelativeMoniker": "D:0:0:{810A491F-F257-4D33-AE17-03265D48FF37}|FleetManagement.csproj|solutionrelative:\u0434\u043E\u043A\u0443\u043C\u0435\u043D\u0442\u044B\\\u0442\u0440\u0435\u0431\u043E\u0432\u0430\u043D\u0438\u044F\u043F\u0440\u043E\u0433\u0440\u0430\u043C\u043C\u0435.md||{24510B54-A648-4D69-A6C5-F68CBDF07546}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{810A491F-F257-4D33-AE17-03265D48FF37}|FleetManagement.csproj|c:\\users\\user\\onedrive\\desktop\\ninjacar\\fleetmanagment\\\u0434\u043E\u043A\u0443\u043C\u0435\u043D\u0442\u044B\\script.sql||{CC5D8DF0-88F4-4BB2-9DBB-B48CEE65C30A}|CodeFrame",
+      "RelativeMoniker": "D:0:0:{810A491F-F257-4D33-AE17-03265D48FF37}|FleetManagement.csproj|solutionrelative:\u0434\u043E\u043A\u0443\u043C\u0435\u043D\u0442\u044B\\script.sql||{CC5D8DF0-88F4-4BB2-9DBB-B48CEE65C30A}|CodeFrame"
+    }
+  ],
+  "DocumentGroupContainers": [
+    {
+      "Orientation": 0,
+      "VerticalTabListWidth": 100,
+      "DocumentGroups": [
+        {
+          "DockedWidth": 372,
+          "SelectedChildIndex": 5,
+          "Children": [
+            {
+              "$type": "Bookmark",
+              "Name": "ST:0:0:{6d4078d1-5951-4ed1-ac0e-0a8099c1cce5}"
+            },
+            {
+              "$type": "Bookmark",
+              "Name": "ST:0:0:{bb3677d1-3b5c-45a3-8a3a-897108c3ba28}"
+            },
+            {
+              "$type": "Bookmark",
+              "Name": "ST:0:0:{3ae79031-e1bc-11d0-8f78-00a0c9110057}"
+            },
+            {
+              "$type": "Bookmark",
+              "Name": "ST:0:0:{b1e99781-ab81-11d0-b683-00aa00a3ee26}"
+            },
+            {
+              "$type": "Bookmark",
+              "Name": "ST:0:0:{1c4feeaa-4718-4aa9-859d-94ce25d182ba}"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 0,
+              "Title": "\u0434\u0438\u0430\u0433\u0440\u0430\u043C\u043C\u0430\u041F\u043E\u0441\u043B\u0435\u0434\u043E\u0432\u0430\u0442\u0435\u043B\u044C\u043D\u043E\u0441\u0442\u0438.drawio",
+              "DocumentMoniker": "C:\\Users\\User\\OneDrive\\Desktop\\NinjaCar\\FleetManagment\\\u0414\u043E\u043A\u0443\u043C\u0435\u043D\u0442\u044B\\\u0414\u0438\u0430\u0433\u0440\u0430\u043C\u043C\u044B\\\u0434\u0438\u0430\u0433\u0440\u0430\u043C\u043C\u0430\u041F\u043E\u0441\u043B\u0435\u0434\u043E\u0432\u0430\u0442\u0435\u043B\u044C\u043D\u043E\u0441\u0442\u0438.drawio",
+              "RelativeDocumentMoniker": "\u0414\u043E\u043A\u0443\u043C\u0435\u043D\u0442\u044B\\\u0414\u0438\u0430\u0433\u0440\u0430\u043C\u043C\u044B\\\u0434\u0438\u0430\u0433\u0440\u0430\u043C\u043C\u0430\u041F\u043E\u0441\u043B\u0435\u0434\u043E\u0432\u0430\u0442\u0435\u043B\u044C\u043D\u043E\u0441\u0442\u0438.drawio",
+              "ToolTip": "C:\\Users\\User\\OneDrive\\Desktop\\NinjaCar\\FleetManagment\\\u0414\u043E\u043A\u0443\u043C\u0435\u043D\u0442\u044B\\\u0414\u0438\u0430\u0433\u0440\u0430\u043C\u043C\u044B\\\u0434\u0438\u0430\u0433\u0440\u0430\u043C\u043C\u0430\u041F\u043E\u0441\u043B\u0435\u0434\u043E\u0432\u0430\u0442\u0435\u043B\u044C\u043D\u043E\u0441\u0442\u0438.drawio",
+              "RelativeToolTip": "\u0414\u043E\u043A\u0443\u043C\u0435\u043D\u0442\u044B\\\u0414\u0438\u0430\u0433\u0440\u0430\u043C\u043C\u044B\\\u0434\u0438\u0430\u0433\u0440\u0430\u043C\u043C\u0430\u041F\u043E\u0441\u043B\u0435\u0434\u043E\u0432\u0430\u0442\u0435\u043B\u044C\u043D\u043E\u0441\u0442\u0438.drawio",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.001001|",
+              "WhenOpened": "2025-05-21T20:33:26.898Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 1,
+              "Title": "\u0413\u0440\u0430\u0444\u0438\u043A.plantuml",
+              "DocumentMoniker": "C:\\Users\\User\\OneDrive\\Desktop\\NinjaCar\\FleetManagment\\\u0414\u043E\u043A\u0443\u043C\u0435\u043D\u0442\u044B\\PlantUML\\\u0413\u0440\u0430\u0444\u0438\u043A.plantuml",
+              "RelativeDocumentMoniker": "\u0414\u043E\u043A\u0443\u043C\u0435\u043D\u0442\u044B\\PlantUML\\\u0413\u0440\u0430\u0444\u0438\u043A.plantuml",
+              "ToolTip": "C:\\Users\\User\\OneDrive\\Desktop\\NinjaCar\\FleetManagment\\\u0414\u043E\u043A\u0443\u043C\u0435\u043D\u0442\u044B\\PlantUML\\\u0413\u0440\u0430\u0444\u0438\u043A.plantuml",
+              "RelativeToolTip": "\u0414\u043E\u043A\u0443\u043C\u0435\u043D\u0442\u044B\\PlantUML\\\u0413\u0440\u0430\u0444\u0438\u043A.plantuml",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.001001|",
+              "WhenOpened": "2025-05-21T20:33:16.689Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 2,
+              "Title": "diagram-class.plantuml",
+              "DocumentMoniker": "C:\\Users\\User\\OneDrive\\Desktop\\NinjaCar\\FleetManagment\\\u0414\u043E\u043A\u0443\u043C\u0435\u043D\u0442\u044B\\PlantUML\\diagram-class.plantuml",
+              "RelativeDocumentMoniker": "\u0414\u043E\u043A\u0443\u043C\u0435\u043D\u0442\u044B\\PlantUML\\diagram-class.plantuml",
+              "ToolTip": "C:\\Users\\User\\OneDrive\\Desktop\\NinjaCar\\FleetManagment\\\u0414\u043E\u043A\u0443\u043C\u0435\u043D\u0442\u044B\\PlantUML\\diagram-class.plantuml",
+              "RelativeToolTip": "\u0414\u043E\u043A\u0443\u043C\u0435\u043D\u0442\u044B\\PlantUML\\diagram-class.plantuml",
+              "ViewState": "AgIAAAYAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.001001|",
+              "WhenOpened": "2025-05-21T20:32:55.79Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Bookmark",
+              "Name": "ST:0:0:{34e76e81-ee4a-11d0-ae2e-00a0c90fffc3}"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 6,
+              "Title": "\u0418\u043D\u0442\u0435\u0440\u0444\u0435\u0439\u0441.md",
+              "DocumentMoniker": "C:\\Users\\User\\OneDrive\\Desktop\\NinjaCar\\FleetManagment\\\u0414\u043E\u043A\u0443\u043C\u0435\u043D\u0442\u044B\\\u0418\u043D\u0442\u0435\u0440\u0444\u0435\u0439\u0441.md",
+              "RelativeDocumentMoniker": "\u0414\u043E\u043A\u0443\u043C\u0435\u043D\u0442\u044B\\\u0418\u043D\u0442\u0435\u0440\u0444\u0435\u0439\u0441.md",
+              "ToolTip": "C:\\Users\\User\\OneDrive\\Desktop\\NinjaCar\\FleetManagment\\\u0414\u043E\u043A\u0443\u043C\u0435\u043D\u0442\u044B\\\u0418\u043D\u0442\u0435\u0440\u0444\u0435\u0439\u0441.md",
+              "RelativeToolTip": "\u0414\u043E\u043A\u0443\u043C\u0435\u043D\u0442\u044B\\\u0418\u043D\u0442\u0435\u0440\u0444\u0435\u0439\u0441.md",
+              "ViewState": "AgIAAFoAAAAAAAAAAAAAAGkAAAAAAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.001818|",
+              "WhenOpened": "2025-05-14T08:57:13.384Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 5,
+              "Title": "script.sql ",
+              "DocumentMoniker": "C:\\Users\\User\\OneDrive\\Desktop\\NinjaCar\\FleetManagment\\\u0414\u043E\u043A\u0443\u043C\u0435\u043D\u0442\u044B\\script.sql",
+              "RelativeDocumentMoniker": "\u0414\u043E\u043A\u0443\u043C\u0435\u043D\u0442\u044B\\script.sql",
+              "ToolTip": "C:\\Users\\User\\OneDrive\\Desktop\\NinjaCar\\FleetManagment\\\u0414\u043E\u043A\u0443\u043C\u0435\u043D\u0442\u044B\\script.sql",
+              "RelativeToolTip": "\u0414\u043E\u043A\u0443\u043C\u0435\u043D\u0442\u044B\\script.sql",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000826|",
+              "WhenOpened": "2025-05-14T08:54:31.487Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 7,
+              "Title": "\u0422\u0440\u0435\u0431\u043E\u0432\u0430\u043D\u0438\u044F\u041F\u0440\u043E\u0433\u0440\u0430\u043C\u043C\u0435.md",
+              "DocumentMoniker": "C:\\Users\\User\\OneDrive\\Desktop\\NinjaCar\\FleetManagment\\\u0414\u043E\u043A\u0443\u043C\u0435\u043D\u0442\u044B\\\u0422\u0440\u0435\u0431\u043E\u0432\u0430\u043D\u0438\u044F\u041F\u0440\u043E\u0433\u0440\u0430\u043C\u043C\u0435.md",
+              "RelativeDocumentMoniker": "\u0414\u043E\u043A\u0443\u043C\u0435\u043D\u0442\u044B\\\u0422\u0440\u0435\u0431\u043E\u0432\u0430\u043D\u0438\u044F\u041F\u0440\u043E\u0433\u0440\u0430\u043C\u043C\u0435.md",
+              "ToolTip": "C:\\Users\\User\\OneDrive\\Desktop\\NinjaCar\\FleetManagment\\\u0414\u043E\u043A\u0443\u043C\u0435\u043D\u0442\u044B\\\u0422\u0440\u0435\u0431\u043E\u0432\u0430\u043D\u0438\u044F\u041F\u0440\u043E\u0433\u0440\u0430\u043C\u043C\u0435.md",
+              "RelativeToolTip": "\u0414\u043E\u043A\u0443\u043C\u0435\u043D\u0442\u044B\\\u0422\u0440\u0435\u0431\u043E\u0432\u0430\u043D\u0438\u044F\u041F\u0440\u043E\u0433\u0440\u0430\u043C\u043C\u0435.md",
+              "ViewState": "AgIAAAkAAAAAAAAAAAAAAB0AAAATAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.001818|",
+              "WhenOpened": "2025-05-14T08:50:04.672Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 3,
+              "Title": "content.md",
+              "DocumentMoniker": "C:\\Users\\User\\OneDrive\\Desktop\\NinjaCar\\FleetManagment\\\u0414\u043E\u043A\u0443\u043C\u0435\u043D\u0442\u044B\\content.md",
+              "RelativeDocumentMoniker": "\u0414\u043E\u043A\u0443\u043C\u0435\u043D\u0442\u044B\\content.md",
+              "ToolTip": "C:\\Users\\User\\OneDrive\\Desktop\\NinjaCar\\FleetManagment\\\u0414\u043E\u043A\u0443\u043C\u0435\u043D\u0442\u044B\\content.md",
+              "RelativeToolTip": "\u0414\u043E\u043A\u0443\u043C\u0435\u043D\u0442\u044B\\content.md",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAABQAAAA+AAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.001818|",
+              "WhenOpened": "2025-05-14T08:40:13.444Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 4,
+              "Title": "\u0418\u043D\u0441\u0442\u0440\u0443\u043A\u0446\u0438\u044F.md",
+              "DocumentMoniker": "C:\\Users\\User\\OneDrive\\Desktop\\NinjaCar\\FleetManagment\\\u0414\u043E\u043A\u0443\u043C\u0435\u043D\u0442\u044B\\\u0418\u043D\u0441\u0442\u0440\u0443\u043A\u0446\u0438\u044F.md",
+              "RelativeDocumentMoniker": "\u0414\u043E\u043A\u0443\u043C\u0435\u043D\u0442\u044B\\\u0418\u043D\u0441\u0442\u0440\u0443\u043A\u0446\u0438\u044F.md",
+              "ToolTip": "C:\\Users\\User\\OneDrive\\Desktop\\NinjaCar\\FleetManagment\\\u0414\u043E\u043A\u0443\u043C\u0435\u043D\u0442\u044B\\\u0418\u043D\u0441\u0442\u0440\u0443\u043A\u0446\u0438\u044F.md",
+              "RelativeToolTip": "\u0414\u043E\u043A\u0443\u043C\u0435\u043D\u0442\u044B\\\u0418\u043D\u0441\u0442\u0440\u0443\u043A\u0446\u0438\u044F.md",
+              "ViewState": "AgIAACoAAADAYWJRgjMvwEYAAAAUAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.001818|",
+              "WhenOpened": "2025-05-14T08:39:35.888Z",
+              "EditorCaption": ""
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

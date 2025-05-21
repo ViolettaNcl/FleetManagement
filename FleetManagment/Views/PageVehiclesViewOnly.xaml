@@ -1,0 +1,61 @@
+﻿<Page
+    x:Class="Zachet.Views.PageVehiclesViewOnly"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:av="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    mc:Ignorable="av"
+    Title="PageVehiclesViewOnly"
+    av:DesignWidth="967.75">
+
+    <Grid Background="#F0F0FF" HorizontalAlignment="Stretch" VerticalAlignment="Stretch">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="100"/>
+            <RowDefinition Height="*"/>
+        </Grid.RowDefinitions>
+
+        <TextBlock Text="Список транспорта" 
+                   FontSize="24" FontWeight="Bold" Foreground="#6A0DAD" 
+                   HorizontalAlignment="Center" VerticalAlignment="Top" Margin="0,10,0,0"/>
+
+        <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" VerticalAlignment="Center" Margin="0,0,20,0">
+            <Button Click="BackButton_Click" 
+                    Height="40" Width="120" 
+                    Background="#FF6F61" Foreground="White" 
+                    FontWeight="Bold" BorderBrush="#483D8B" BorderThickness="2" 
+                    Padding="10,5" Margin="0,0,10,0" Cursor="Hand" Content="Назад"/>
+        </StackPanel>
+
+        <StackPanel Orientation="Horizontal" HorizontalAlignment="Left" VerticalAlignment="Center" Margin="20,0,0,0">
+            <ComboBox x:Name="SortComboBox" Width="120" Height="25" Margin="0,0,5,0" 
+                      Background="#E6E6FA" Foreground="#483D8B" 
+                      BorderBrush="#6A5ACD" BorderThickness="1">
+                <ComboBoxItem Content="По возрастанию пробега" Tag="MileageAscending" />
+                <ComboBoxItem Content="По убыванию пробега" Tag="MileageDescending" />
+                <ComboBoxItem Content="По возрастанию года выпуска" Tag="YearAscending" />
+                <ComboBoxItem Content="По убыванию года выпуска" Tag="YearDescending" />
+            </ComboBox>
+            <Button Click="SortButton_Click" 
+                    Background="#4682B4" Foreground="White" 
+                    FontWeight="Bold" BorderBrush="#483D8B" BorderThickness="2" 
+                    Padding="5,2" Height="25" Width="120" Cursor="Hand" Content="Сортировать"/>
+        </StackPanel>
+
+        <DataGrid Grid.Row="1" 
+                  IsReadOnly="True" CanUserAddRows="False" CanUserDeleteRows="False" 
+                  Name="VehiclesGrid" AutoGenerateColumns="False" 
+                  Background="White" 
+                  AlternatingRowBackground="#EEEAF8" BorderBrush="#6A5ACD" BorderThickness="2" 
+                  Margin="20,10,20,20" HorizontalAlignment="Stretch" VerticalAlignment="Stretch">
+            <DataGrid.Columns>
+                <DataGridTextColumn Header="Id" Binding="{Binding Id}" Width="*"/>
+                <DataGridTextColumn Header="Госномер" Binding="{Binding LicensePlate}" Width="*"/>
+                <DataGridTextColumn Header="Модель" Binding="{Binding Model}" Width="*"/>
+                <DataGridTextColumn Header="Производитель" Binding="{Binding Manufacturer}" Width="*"/>
+                <DataGridTextColumn Header="Год выпуска" Binding="{Binding YearOfManufacture}" Width="*"/>
+                <DataGridTextColumn Header="Пробег" Binding="{Binding Mileage}" Width="*"/>
+                <DataGridTextColumn Header="Статус" Binding="{Binding Status}" Width="*"/>
+            </DataGrid.Columns>
+        </DataGrid>
+    </Grid>
+</Page>

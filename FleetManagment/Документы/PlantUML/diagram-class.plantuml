@@ -1,0 +1,69 @@
+@startuml
+
+Drivers <--* Routes
+Drivers <.. Users
+class Drivers {
+    + Id : int <<get>> <<set>>
+    + FullName : string <<get>> <<set>>
+    + LicenseNumber : string <<get>> <<set>>
+    + PhoneNumber : string <<get>> <<set>>
+    + Experience : int <<get>> <<set>>
+
+    + AddDriver(driver: Drivers) : void
+    + EditDriver(driver: Drivers) : void
+    + DeleteDriver(driverId: int) : void
+}
+
+class Routes {
+    + Id : int <<get>> <<set>>
+    + VehicleId : int <<get>> <<set>>
+    + DriverId : int <<get>> <<set>>
+    + StartDate : DateTime <<get>> <<set>>
+    + EndDate : DateTime <<get>> <<set>>
+    + StartLocation : string <<get>> <<set>>
+    + EndLocation : string <<get>> <<set>>
+    + Distance : double <<get>> <<set>>
+    + UserId : int <<get>> <<set>>
+
+    + GetVehicleStatus(vehicleId: int) : string
+    + AddRoute(route: Routes) : void
+    + EditRoute(route: Routes) : void
+    + DeleteRoute(routeId: int) : void
+    + CalculateTotalMileageForVehicle(vehicleId: int) : double
+}
+
+Users <--* Routes
+class Users {
+    + Id : int <<get>> <<set>>
+    + FullName : string <<get>> <<set>>
+    + Email : string <<get>> <<set>>
+    + Password : string <<get>> <<set>>
+    + RoleId : int <<get>> <<set>>
+
+    + RegisterUser(fullName: string, email: string, password: string, roleId: int) : bool
+    + LoginUser(email: string, password: string) : Users
+}
+
+Roles <--o Users
+class Roles {
+    + Id : int <<get>> <<set>>
+    + RoleName : string <<get>> <<set>>
+}
+
+Vehicles <--o Routes
+class Vehicles {
+    + Id : int <<get>> <<set>>
+    + LicensePlate : string <<get>> <<set>>
+    + Model : string <<get>> <<set>>
+    + Manufacturer : string <<get>> <<set>>
+    + YearOfManufacture : int <<get>> <<set>>
+    + Mileage : double <<get>> <<set>>
+    + Status : string <<get>> <<set>>
+    + LastMaintenanceDate : DateTime <<get>> <<set>>
+
+    + AddVehicle(vehicle: Vehicles) : void
+    + EditVehicle(vehicle: Vehicles) : void
+    + DeleteVehicle(vehicleId: int) : void
+}
+
+@enduml

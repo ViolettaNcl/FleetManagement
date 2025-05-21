@@ -1,0 +1,114 @@
+﻿<Page
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:av="http://schemas.microsoft.com/expression/blend/2008" 
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
+    mc:Ignorable="av" 
+    x:Class="Zachet.Views.PageRoutes"
+    Title="PageRoutes"
+    Background="#F0F0FF" av:DesignWidth="967.75">
+
+    <Grid Background="#F0F0FF" HorizontalAlignment="Stretch" VerticalAlignment="Stretch">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="80"/>
+            <RowDefinition Height="*"/>
+        </Grid.RowDefinitions>
+
+        <!-- Панель для фильтрации с левой стороны -->
+        <Grid HorizontalAlignment="Left" VerticalAlignment="Center" Margin="20,0,0,0">
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto"/>
+                <RowDefinition Height="Auto"/>
+            </Grid.RowDefinitions>
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="Auto"/>
+                <ColumnDefinition Width="Auto"/>
+                <ColumnDefinition Width="Auto"/>
+            </Grid.ColumnDefinitions>
+
+            <TextBlock Grid.Row="0" Grid.Column="0" Text="Начальная дата:" VerticalAlignment="Center" Width="100" Margin="0,0,5,5"/>
+            <DatePicker x:Name="StartDatePicker" Grid.Row="0" Grid.Column="1" Width="120" Height="25" VerticalAlignment="Center" Margin="0,0,5,5"/>
+            <Button Click="FilterRoutesButton_Click" Grid.Row="0" Grid.Column="2" Grid.RowSpan="2"
+                    Height="25" Width="80" 
+                    Background="#20B2AA" Foreground="White" 
+                    FontWeight="Bold" BorderBrush="#483D8B" BorderThickness="2" 
+                    Padding="5,2" Cursor="Hand" VerticalAlignment="Center" Content="Фильтр"/>
+
+            <TextBlock Grid.Row="1" Grid.Column="0" Text="Конечная дата:" VerticalAlignment="Center" Width="100" Margin="0,0,5,0"/>
+            <DatePicker x:Name="EndDatePicker" Grid.Row="1" Grid.Column="1" Width="120" Height="25" VerticalAlignment="Center" Margin="0,0,5,0"/>
+        </Grid>
+
+        <Grid Grid.Row="0">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="*"/>
+                <ColumnDefinition Width="Auto"/>
+                <ColumnDefinition Width="Auto"/>
+                <ColumnDefinition Width="Auto"/>
+                <ColumnDefinition Width="Auto"/>
+            </Grid.ColumnDefinitions>
+
+            <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" VerticalAlignment="Center" Margin="0,0,20,0">
+                <Button Click="CalculateMileageButton_Click" 
+                        Height="25" Width="120" 
+                        Background="#32CD32" Foreground="White" 
+                        FontWeight="Bold" BorderBrush="#483D8B" BorderThickness="2" 
+                        Padding="5,2" Margin="5,0" Content="Пробег машины"/>
+
+                <Button Click="AddRouteButton_Click" 
+                        Height="25" Width="134" 
+                        Background="#6A0DAD" Foreground="White" 
+                        FontWeight="Bold" BorderBrush="#483D8B" BorderThickness="2" 
+                        Padding="5,2" Margin="5,0" Content="Добавить маршрут"/>
+
+                <Button Click="RefreshRoutesButton_Click" 
+                        Height="25" Width="80" 
+                        Background="#7B68EE" Foreground="White" 
+                        FontWeight="Bold" BorderBrush="#483D8B" BorderThickness="2" 
+                        Padding="5,2" Margin="5,0" Content="Обновить"/>
+
+                <Button Click="BackButton_Click" 
+                        Height="25" Width="80" 
+                        Background="#FF6F61" Foreground="White" 
+                        FontWeight="Bold" BorderBrush="#483D8B" BorderThickness="2" 
+                        Padding="5,2" Margin="5,0" Content="Назад"/>
+            </StackPanel>
+        </Grid>
+
+        <DataGrid Grid.Row="1" 
+                  IsReadOnly="True" CanUserAddRows="False" CanUserDeleteRows="False" 
+                  x:Name="RoutesGrid" AutoGenerateColumns="False" 
+                  Background="White" 
+                  AlternatingRowBackground="#EEEAF8" BorderBrush="#6A5ACD" BorderThickness="2"
+                  Margin="20,10,20,20">
+            <DataGrid.Columns>
+                <DataGridTextColumn Header="Id" Binding="{Binding Id}" Width="*"/>
+                <DataGridTextColumn Header="Водитель" Binding="{Binding Drivers.FullName}" Width="*"/>
+                <DataGridTextColumn Header="Транспорт" Binding="{Binding Vehicles.Model}" Width="*"/>
+                <DataGridTextColumn Header="Дата начала" Binding="{Binding StartDate}" Width="*"/>
+                <DataGridTextColumn Header="Дата окончания" Binding="{Binding EndDate}" Width="*"/>
+                <DataGridTextColumn Header="Начальное местоположение" Binding="{Binding StartLocation}" Width="*"/>
+                <DataGridTextColumn Header="Конечное местоположение" Binding="{Binding EndLocation}" Width="*"/>
+                <DataGridTextColumn Header="Расстояние (км)" Binding="{Binding Distance}" Width="*"/>
+                <DataGridTextColumn Header="Статус" Binding="{Binding VehicleStatus}" Width="*"/>
+                <DataGridTemplateColumn Header="Редактирование" Width="Auto">
+                    <DataGridTemplateColumn.CellTemplate>
+                        <DataTemplate>
+                            <Button Background="#9370DB" Foreground="White" 
+                                    BorderBrush="#483D8B" BorderThickness="2" 
+                                    Click="EditRouteButton_Click" FontWeight="Bold" Padding="5,2" Cursor="Hand" Content="Редактировать"/>
+                        </DataTemplate>
+                    </DataGridTemplateColumn.CellTemplate>
+                </DataGridTemplateColumn>
+                <DataGridTemplateColumn Header="Удаление" Width="Auto">
+                    <DataGridTemplateColumn.CellTemplate>
+                        <DataTemplate>
+                            <Button Background="#BA55D3" Foreground="White" 
+                                    BorderBrush="#8A2BE2" BorderThickness="2" 
+                                    Click="DeleteRouteButton_Click" FontWeight="Bold" Padding="5,2" Cursor="Hand" Content="Удалить"/>
+                        </DataTemplate>
+                    </DataGridTemplateColumn.CellTemplate>
+                </DataGridTemplateColumn>
+            </DataGrid.Columns>
+        </DataGrid>
+    </Grid>
+</Page>

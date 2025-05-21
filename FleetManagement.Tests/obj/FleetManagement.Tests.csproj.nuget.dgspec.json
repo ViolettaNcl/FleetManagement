@@ -1,0 +1,91 @@
+{
+  "format": 1,
+  "restore": {
+    "C:\\Users\\User\\OneDrive\\Desktop\\NinjaCar\\FleetManagement.Tests\\FleetManagement.Tests.csproj": {}
+  },
+  "projects": {
+    "C:\\Users\\User\\OneDrive\\Desktop\\NinjaCar\\FleetManagement.Tests\\FleetManagement.Tests.csproj": {
+      "version": "1.0.0",
+      "restore": {
+        "projectUniqueName": "C:\\Users\\User\\OneDrive\\Desktop\\NinjaCar\\FleetManagement.Tests\\FleetManagement.Tests.csproj",
+        "projectName": "FleetManagement.Tests",
+        "projectPath": "C:\\Users\\User\\OneDrive\\Desktop\\NinjaCar\\FleetManagement.Tests\\FleetManagement.Tests.csproj",
+        "packagesPath": "C:\\Users\\User\\.nuget\\packages\\",
+        "outputPath": "C:\\Users\\User\\OneDrive\\Desktop\\NinjaCar\\FleetManagement.Tests\\obj\\",
+        "projectStyle": "PackageReference",
+        "fallbackFolders": [
+          "C:\\Program Files (x86)\\Microsoft Visual Studio\\Shared\\NuGetPackages"
+        ],
+        "configFilePaths": [
+          "C:\\Users\\User\\AppData\\Roaming\\NuGet\\NuGet.Config",
+          "C:\\Program Files (x86)\\NuGet\\Config\\Microsoft.VisualStudio.FallbackLocation.config",
+          "C:\\Program Files (x86)\\NuGet\\Config\\Microsoft.VisualStudio.Offline.config"
+        ],
+        "originalTargetFrameworks": [
+          "net472"
+        ],
+        "sources": {
+          "C:\\Program Files (x86)\\Microsoft SDKs\\NuGetPackages\\": {},
+          "https://api.nuget.org/v3/index.json": {}
+        },
+        "frameworks": {
+          "net472": {
+            "targetAlias": "net472",
+            "projectReferences": {
+              "C:\\Users\\User\\OneDrive\\Desktop\\NinjaCar\\FleetManagment\\FleetManagement.csproj": {
+                "projectPath": "C:\\Users\\User\\OneDrive\\Desktop\\NinjaCar\\FleetManagment\\FleetManagement.csproj"
+              }
+            }
+          }
+        },
+        "warningProperties": {
+          "warnAsError": [
+            "NU1605"
+          ]
+        },
+        "restoreAuditProperties": {
+          "enableAudit": "true",
+          "auditLevel": "low",
+          "auditMode": "direct"
+        },
+        "SdkAnalysisLevel": "9.0.200"
+      },
+      "frameworks": {
+        "net472": {
+          "targetAlias": "net472",
+          "dependencies": {
+            "EntityFramework": {
+              "target": "Package",
+              "version": "[6.2.0, )"
+            },
+            "MSTest": {
+              "target": "Package",
+              "version": "[3.6.4, )"
+            },
+            "Microsoft.NET.Test.Sdk": {
+              "target": "Package",
+              "version": "[17.12.0, )"
+            }
+          },
+          "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\9.0.200\\RuntimeIdentifierGraph.json"
+        }
+      }
+    },
+    "C:\\Users\\User\\OneDrive\\Desktop\\NinjaCar\\FleetManagment\\FleetManagement.csproj": {
+      "restore": {
+        "projectUniqueName": "C:\\Users\\User\\OneDrive\\Desktop\\NinjaCar\\FleetManagment\\FleetManagement.csproj",
+        "projectName": "FleetManagement",
+        "projectPath": "C:\\Users\\User\\OneDrive\\Desktop\\NinjaCar\\FleetManagment\\FleetManagement.csproj",
+        "UsingMicrosoftNETSdk": false,
+        "frameworks": {
+          "net472": {
+            "projectReferences": {}
+          }
+        }
+      },
+      "frameworks": {
+        "net472": {}
+      }
+    }
+  }
+}

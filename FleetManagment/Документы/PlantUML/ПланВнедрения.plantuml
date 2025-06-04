@@ -1,0 +1,66 @@
+@startgantt
+language ru
+saturday are closed
+sunday are closed
+2025-05-09 is closed
+
+project starts the 2025-05-05
+
+[Подготовка инфраструктуры] requires 2 days
+    [Установка SQL Server] requires 1 day
+[Установка клиента] requires 2 days
+    [Развертывание на ПК] requires 1 day
+[Настройка системы] requires 2 days
+    [Выполнение SQL-скрипта] requires 1 day
+[Обучение пользователей] requires 3 days
+    [Проведение тренингов] requires 2 days
+[Тестирование и интеграция] requires 3 days
+    [Тестирование авторизации] requires 2 days
+[Пилотный запуск] requires 2 days
+    [Тестирование функционала] requires 1 day
+[Полный запуск] requires 2 days
+    [Запуск в эксплуатацию] requires 1 day
+[Мониторинг и поддержка] requires 2 days
+    [Отслеживание ошибок] requires 1 day
+
+[Подготовка инфраструктуры] starts at 2025-05-05
+[Установка SQL Server] starts at 2025-05-05
+[Установка клиента] starts at [Подготовка инфраструктуры]'s end
+[Развертывание на ПК] starts at [Установка клиента]'s start
+[Настройка системы] starts at [Установка клиента]'s end
+[Выполнение SQL-скрипта] starts at [Настройка системы]'s start
+[Обучение пользователей] starts at [Настройка системы]'s end
+[Проведение тренингов] starts at [Обучение пользователей]'s start
+[Тестирование и интеграция] starts at [Обучение пользователей]'s end
+[Тестирование авторизации] starts at [Тестирование и интеграция]'s start
+[Пилотный запуск] starts at [Тестирование и интеграция]'s end
+[Тестирование функционала] starts at [Пилотный запуск]'s start
+[Полный запуск] starts at [Пилотный запуск]'s end
+[Запуск в эксплуатацию] starts at [Полный запуск]'s start
+[Мониторинг и поддержка] starts at [Полный запуск]'s end
+[Отслеживание ошибок] starts at [Мониторинг и поддержка]'s start
+
+'Стили
+[Подготовка инфраструктуры] is colored in lightblue
+[Установка SQL Server] is colored in lightblue
+[Установка клиента] is colored in lightgreen
+[Развертывание на ПК] is colored in lightgreen
+[Настройка системы] is colored in yellow
+[Выполнение SQL-скрипта] is colored in yellow
+[Обучение пользователей] is colored in orange
+[Проведение тренингов] is colored in orange
+[Тестирование и интеграция] is colored in lightcyan
+[Тестирование авторизации] is colored in lightcyan
+[Пилотный запуск] is colored in purple
+[Тестирование функционала] is colored in purple
+[Полный запуск] is colored in pink
+[Запуск в эксплуатацию] is colored in pink
+[Мониторинг и поддержка] is colored in Gainsboro
+[Отслеживание ошибок] is colored in Gainsboro
+
+tuesday are colored in lightgray
+thursday are colored in lightgray
+saturday are closed
+sunday are closed
+2025-05-09 are colored in lightsalmon
+@endgantt

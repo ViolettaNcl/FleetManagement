@@ -20,14 +20,14 @@ jobs:
         dotnet-version: 6.0.x
 
     - name: Restore dependencies
-      run: dotnet restore FleetManagement/FleetManagment/FleetManagement.sln
+      run: dotnet restore FleetManagment/FleetManagement.sln
 
     - name: Build
-      run: dotnet build FleetManagement/FleetManagment/FleetManagement.sln --no-restore --configuration Release
+      run: dotnet build FleetManagment/FleetManagement.sln --no-restore --configuration Release
 
     - name: Test with coverage
       run: |
-        dotnet test FleetManagement/FleetManagment/FleetManagement.sln --no-build --verbosity normal \
+        dotnet test FleetManagment/FleetManagement.sln --no-build --verbosity normal \
         --collect:"XPlat Code Coverage" \
         --settings coverlet.runsettings
       env:
@@ -56,13 +56,13 @@ jobs:
       run: npm install -g docfx
 
     - name: Generate documentation
-      run: docfx FleetManagement/Документы/docfx.json
+      run: docfx FleetManagment/Документы/docfx.json
 
     - name: Upload documentation
       uses: actions/upload-artifact@v4
       with:
         name: documentation
-        path: FleetManagement/Документы/_site
+        path: FleetManagment/Документы/_site
 
     - name: Setup Java for PlantUML
       uses: actions/setup-java@v4
@@ -79,7 +79,7 @@ jobs:
 
     - name: Validate PlantUML diagrams
       run: |
-        for file in FleetManagement/Документы/*.plantuml; do
+        for file in FleetManagment/Документы/*.plantuml; do
           echo "Checking $file"
           java -jar $PLANTUML_JAR -checkonly "$file"
         done

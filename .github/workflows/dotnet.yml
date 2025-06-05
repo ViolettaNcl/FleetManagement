@@ -34,7 +34,7 @@ jobs:
         COVERLET_OUTPUT: TestResults/
 
     - name: Generate coverage report
-      uses: danielpalme/ReportGenerator-GitHub-Action@5.3.1
+      uses: danielpalme/ReportGenerator-GitHub-Action@5.3.7
       with:
         reports: 'TestResults/*/coverage.cobertura.xml'
         targetdir: 'coveragereport'

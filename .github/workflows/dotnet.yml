@@ -7,7 +7,7 @@ on:
     branches: [ "master" ]
 
 jobs:
-  build:
+  .NET:
     runs-on: ubuntu-latest
 
     steps:

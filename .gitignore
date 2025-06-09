@@ -1,6 +1,4 @@
-﻿cd C:\Users\User\OneDrive\Desktop\NinjaCar
-@"
-# Visual Studio
+﻿# Visual Studio
 .vs/
 *.suo
 *.user
@@ -28,4 +26,3 @@ project.nuget.cache
 *.nuget.g.props
 *.nuget.g.targets
 *.nuget.dgspec.json
-"@ | Out-File -FilePath .\.gitignore -Encoding UTF8

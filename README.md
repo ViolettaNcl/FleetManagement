@@ -12,7 +12,7 @@ WPF-приложение для управления автопарком ком
 ```powershell
 cd C:\Users\User\OneDrive\Desktop\NinjaCar
 .\build.ps1
-
+```
 ## Основные документы
 
 - [Постановка задачи](./FleetManagment/Документы/ОбщаяПостановка.md)

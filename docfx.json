@@ -1,0 +1,25 @@
+﻿{
+  "metadata": [
+    {
+      "src": [
+        {
+          "files": ["FleetManagment/*.csproj"],
+          "src": "."
+        }
+      ],
+      "dest": "api"
+    }
+  ],
+  "build": {
+    "content": [
+      {
+        "files": ["api/**.yml", "api/index.md"]
+      },
+      {
+        "files": ["*.md"]
+      }
+    ],
+    "dest": "_site",
+    "template": ["default"]
+  }
+}

@@ -11,7 +11,7 @@ namespace Zachet
 {
     using System;
     using System.Collections.Generic;
-
+    
     public partial class Users
     {
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Usage", "CA2214:DoNotCallOverridableMethodsInConstructors")]
@@ -19,16 +19,15 @@ namespace Zachet
         {
             this.Routes = new HashSet<Routes>();
         }
-
+    
         public int Id { get; set; }
         public string FullName { get; set; }
         public string Email { get; set; }
         public string Password { get; set; }
         public Nullable<int> RoleId { get; set; }
-
+    
         public virtual Roles Roles { get; set; }
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Usage", "CA2227:CollectionPropertiesShouldBeReadOnly")]
         public virtual ICollection<Routes> Routes { get; set; }
     }
-
 }

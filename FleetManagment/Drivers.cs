@@ -11,7 +11,7 @@ namespace Zachet
 {
     using System;
     using System.Collections.Generic;
-
+    
     public partial class Drivers
     {
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Usage", "CA2214:DoNotCallOverridableMethodsInConstructors")]
@@ -19,19 +19,14 @@ namespace Zachet
         {
             this.Routes = new HashSet<Routes>();
         }
-
+    
         public int Id { get; set; }
         public string FullName { get; set; }
         public string LicenseNumber { get; set; }
         public string PhoneNumber { get; set; }
         public int Experience { get; set; }
-
+    
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Usage", "CA2227:CollectionPropertiesShouldBeReadOnly")]
         public virtual ICollection<Routes> Routes { get; set; }
-
-        public override string ToString()
-        {
-            return FullName;
-        }
     }
 }

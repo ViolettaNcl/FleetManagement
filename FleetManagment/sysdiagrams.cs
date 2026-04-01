@@ -12,21 +12,12 @@ namespace Zachet
     using System;
     using System.Collections.Generic;
     
-    public partial class Routes
+    public partial class sysdiagrams
     {
-        public int Id { get; set; }
-        public int VehicleId { get; set; }
-        public int? DriverId { get; set; }
-        public System.DateTime StartDate { get; set; }
-        public System.DateTime EndDate { get; set; }
-        public string StartLocation { get; set; }
-        public string EndLocation { get; set; }
-        public int Distance { get; set; }
-        public Nullable<int> UserId { get; set; }
-        public string VehicleStatus { get; set; }
-    
-        public virtual Drivers Drivers { get; set; }
-        public virtual Vehicles Vehicles { get; set; }
-        public virtual Users Users { get; set; }
+        public string name { get; set; }
+        public int principal_id { get; set; }
+        public int diagram_id { get; set; }
+        public Nullable<int> version { get; set; }
+        public byte[] definition { get; set; }
     }
 }

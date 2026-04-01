@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Windows;
 using System.Windows.Controls;
+using Zachet;               // важно, чтобы видеть Vehicles
 using Zachet.Services;
 
 namespace Zachet.Views
@@ -10,12 +11,12 @@ namespace Zachet.Views
     public partial class PageVehicles : Page
     {
         private readonly VehicleService _vehicleService;
-        private readonly string _userName; 
+        private readonly string _userName;
 
         public PageVehicles(string userName)
         {
             InitializeComponent();
-            _userName = userName; 
+            _userName = userName;
             _vehicleService = new VehicleService();
             LoadVehicles();
         }
@@ -27,14 +28,23 @@ namespace Zachet.Views
             {
                 try
                 {
-                    selectedVehicle.PerformMaintenance();
+                    selectedVehicle.LastMaintenanceDate = DateTime.Now;
+                    selectedVehicle.Status = "На обслуживании"; // или "Обслужено"
+
                     _vehicleService.EditVehicle(selectedVehicle);
                     LoadVehicles();
-                    MessageBox.Show($"Транспортное средство {selectedVehicle.LicensePlate} обслужено успешно! Дата: {selectedVehicle.LastMaintenanceDate?.ToString("dd.MM.yyyy HH:mm:ss") ?? "Не указана"}");
+
+                    var dateText = selectedVehicle.LastMaintenanceDate.HasValue
+                        ? selectedVehicle.LastMaintenanceDate.Value.ToString("dd.MM.yyyy HH:mm:ss")
+                        : "Не указана";
+
+                    MessageBox.Show(
+                        "Транспортное средство " + selectedVehicle.LicensePlate +
+                        " обслужено успешно! Дата: " + dateText);
                 }
                 catch (Exception ex)
                 {
-                    MessageBox.Show($"Ошибка при сохранении: {ex.Message}");
+                    MessageBox.Show("Ошибка при сохранении: " + ex.Message);
                 }
             }
             else
@@ -45,7 +55,11 @@ namespace Zachet.Views
 
         private void SortButton_Click(object sender, RoutedEventArgs e)
         {
-            string selectedSort = ((ComboBoxItem)SortComboBox.SelectedItem).Content.ToString();
+            var comboItem = SortComboBox.SelectedItem as ComboBoxItem;
+            if (comboItem == null)
+                return;
+
+            string selectedSort = comboItem.Content.ToString();
 
             IEnumerable<Vehicles> sortedVehicles = null;
 
@@ -64,7 +78,7 @@ namespace Zachet.Views
 
         private void BackButton_Click(object sender, RoutedEventArgs e)
         {
-            NavigationService.Navigate(new PageMenuAdmin("Имя пользователя")); 
+            NavigationService.Navigate(new PageMenuAdmin(_userName));
         }
 
         private void LoadVehicles()
@@ -100,8 +114,10 @@ namespace Zachet.Views
             var selectedVehicle = (Vehicles)VehiclesGrid.SelectedItem;
             if (selectedVehicle != null)
             {
-                var result = MessageBox.Show($"Вы уверены, что хотите удалить транспорт {selectedVehicle.LicensePlate}?",
-                                              "Удалить транспорт", MessageBoxButton.YesNo);
+                var result = MessageBox.Show(
+                    "Вы уверены, что хотите удалить транспорт " + selectedVehicle.LicensePlate + "?",
+                    "Удалить транспорт",
+                    MessageBoxButton.YesNo);
 
                 if (result == MessageBoxResult.Yes)
                 {
@@ -116,6 +132,3 @@ namespace Zachet.Views
         }
     }
 }
-
-
-

@@ -11,7 +11,7 @@ namespace Zachet
 {
     using System;
     using System.Collections.Generic;
-
+    
     public partial class Vehicles
     {
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Usage", "CA2214:DoNotCallOverridableMethodsInConstructors")]
@@ -19,7 +19,7 @@ namespace Zachet
         {
             this.Routes = new HashSet<Routes>();
         }
-
+    
         public int Id { get; set; }
         public string LicensePlate { get; set; }
         public string Model { get; set; }
@@ -27,32 +27,9 @@ namespace Zachet
         public int YearOfManufacture { get; set; }
         public int Mileage { get; set; }
         public string Status { get; set; }
-        public int MaintenanceMileage { get; set; } = 10000;
-        public DateTime? LastMaintenanceDate { get; set; }
-
-        
-
+        public Nullable<System.DateTime> LastMaintenanceDate { get; set; }
+    
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Usage", "CA2227:CollectionPropertiesShouldBeReadOnly")]
         public virtual ICollection<Routes> Routes { get; set; }
-
-        public bool NeedsMaintenance()
-        {
-            return Mileage >= MaintenanceMileage;
-        }
-
-        public void PerformMaintenance()
-        {
-            LastMaintenanceDate = DateTime.Now;
-            Status = "Обслужено"; 
-                                 
-        }
-
-        public override string ToString()
-        {
-            return $"{Manufacturer} {Model}";
-        }
-        
-
     }
-
 }

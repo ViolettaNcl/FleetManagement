@@ -1,5 +1,7 @@
-﻿using System.Windows;
+﻿using System;
+using System.Windows;
 using System.Windows.Controls;
+using Zachet;               // чтобы видеть Vehicles
 using Zachet.Services;
 
 namespace Zachet.Views
@@ -28,25 +30,26 @@ namespace Zachet.Views
             _vehicle.Model = VehicleModel.Text;
             _vehicle.Manufacturer = VehicleManufacturer.Text;
 
-            if (int.TryParse(VehicleYear.Text, out int year) && int.TryParse(VehicleMileage.Text, out int mileage))
+            if (int.TryParse(VehicleYear.Text, out int year) &&
+                int.TryParse(VehicleMileage.Text, out int mileage))
             {
                 _vehicle.YearOfManufacture = year;
                 _vehicle.Mileage = mileage;
-                
-                _vehicleService.EditVehicle(_vehicle); 
+
+                _vehicleService.EditVehicle(_vehicle);
 
                 MessageBox.Show("Изменения сохранены успешно.");
-                NavigationService.GoBack();
+                NavigationService?.GoBack();
             }
             else
             {
                 MessageBox.Show("Пожалуйста, введите корректные данные для года и пробега.");
             }
         }
+
         private void CancelButton_Click(object sender, RoutedEventArgs e)
         {
             NavigationService?.GoBack();
         }
-
     }
 }

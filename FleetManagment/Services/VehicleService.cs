@@ -37,7 +37,7 @@ namespace Zachet.Services
                 existingVehicle.YearOfManufacture = vehicle.YearOfManufacture;
                 existingVehicle.Mileage = vehicle.Mileage;
                 existingVehicle.Status = vehicle.Status;
-                existingVehicle.MaintenanceMileage = vehicle.MaintenanceMileage;
+                // existingVehicle.MaintenanceMileage = vehicle.MaintenanceMileage;
                 existingVehicle.LastMaintenanceDate = vehicle.LastMaintenanceDate;
                 try
                 {

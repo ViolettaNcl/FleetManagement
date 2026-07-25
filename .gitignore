@@ -21,6 +21,7 @@ CoverageReport/
 *.bkp
 
 # NuGet
+packages/
 project.assets.json
 project.nuget.cache
 *.nuget.g.props

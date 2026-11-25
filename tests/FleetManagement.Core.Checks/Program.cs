@@ -76,4 +76,19 @@ Check(Math.Abs(RouteOptimizer.Distance(new(1,"A",0,0),new(2,"B",3,4))-5)<1e-8,"E
 Check(RouteOptimizer.Compare([new(0,"Depot",0,0),new(1,"Stop",3,4)]).All(r=>r.DistanceKm==10),"two-stop round trip");
 bool invalidRoute=false;try{RouteOptimizer.Compare([new(0,"Depot",0,0),new(0,"Duplicate",1,1)]);}catch(ArgumentException){invalidRoute=true;}
 Check(invalidRoute,"route rejects duplicate ids");
-Console.WriteLine("All 55 business rule checks passed.");
+var experiment=MaintenanceLearning.Train();
+var repeat=MaintenanceLearning.Train();
+Check(experiment.TrainRows==2400&&experiment.TestRows==720,"ML dataset dimensions");
+Check(MaintenanceLearning.Generate(42,0,40,60).Select(x=>x.VehicleId).Distinct().Intersect(MaintenanceLearning.Generate(42^0x5A17,1000,12,60).Select(x=>x.VehicleId)).Count()==0,"ML held-out vehicle split");
+Check(experiment.Test==repeat.Test,"ML deterministic training");
+Check(experiment.LossHistory[^1]<experiment.LossHistory[0],"ML training reduces loss");
+Check(experiment.Test.TP+experiment.Test.FP+experiment.Test.TN+experiment.Test.FN==experiment.TestRows,"ML confusion matrix totals");
+Check(experiment.Test.Brier<experiment.Baseline.Brier,"ML improves held-out Brier versus prevalence baseline");
+var normal=new TelemetryFeatures(80,1.5,13.8,.2,1000);
+var stressed=new TelemetryFeatures(110,5.5,11.8,1.3,5500);
+Check(experiment.Model.Predict(normal)<experiment.Model.Predict(stressed),"ML synthetic stress ranking");
+Check(experiment.Model.Predict(stressed) is >=0 and <=1,"ML probability bounds");
+Check(experiment.Model.Explain(stressed).Count==5,"ML feature contribution count");
+Check(experiment.Test.F1 is >=0 and <=1&&experiment.Test.Recall is >=0 and <=1,"ML metric bounds");
+Console.WriteLine($"ML held-out: F1={experiment.Test.F1:F3}; Brier={experiment.Test.Brier:F3}; baseline Brier={experiment.Baseline.Brier:F3}");
+Console.WriteLine("All 65 business rule checks passed.");

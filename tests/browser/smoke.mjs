@@ -61,6 +61,13 @@ try {
   await page.getByRole('button',{name:'Nearest neighbor',exact:true}).click();
   await page.getByRole('button',{name:'2-opt',exact:true}).click();
   await page.screenshot({path:'browser-results/optimization.png',fullPage:true});
+  await page.getByRole('button',{name:'Intelligence',exact:true}).click();
+  await page.getByRole('button',{name:'Train model'}).click();
+  await page.getByRole('heading',{name:'Held-out evaluation'}).waitFor();
+  await page.getByLabel('Engine temperature (°C)',{exact:true}).fill('110');
+  await page.getByLabel('Vibration (mm/s)',{exact:true}).fill('5');
+  await page.getByRole('heading',{name:'Feature contributions'}).waitFor();
+  await page.screenshot({path:'browser-results/intelligence.png',fullPage:true});
   await page.setViewportSize({width:390,height:844});
   await page.getByRole('button',{name:'Overview',exact:true}).click();
   await page.screenshot({path:'browser-results/mobile.png',fullPage:true});

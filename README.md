@@ -35,6 +35,7 @@ The browser edition runs C# in WebAssembly, uses synthetic data, and requires no
 | Tracking | Play the simulated clock and inspect trip progress on the route schematic. |
 | Maintenance | Compare service intervals and record a service to reset the maintenance assessment. |
 | Optimization | Compare original, nearest-neighbor and 2-opt tours on seeded stops. |
+| Intelligence | Train a local synthetic maintenance classifier and inspect held-out metrics and predictions. |
 | Analytics | Filter trips by departure date and download a genuine two-sheet Excel workbook. |
 
 Use **Reset demo** to restore the synthetic dataset. Changes stay in your browser.
@@ -98,7 +99,7 @@ FleetManagement.Tests/      Original desktop tests (legacy)
 
 The CI workflows are the source of truth for the latest test outcomes. Earlier revisions have passed both SQLite and SQL Server HTTP/Identity/audit/restart checks and browser smoke tests. The V2 baseline passed browser, API and CodeQL checks. V3 changes are under development and must pass their own CI before release. CI screenshots and published static builds are available as workflow artifacts.
 
-The browser demo has synthetic data, local simulation rather than real GPS, and deterministic service interval rules rather than a trained ML model. The local API is a portfolio implementation, not a hardened production service; schema migrations, multi-instance scheduling concurrency, account lifecycle, and durable events remain future work. The legacy WPF app has known security and test limitations.
+The browser demo has synthetic data, local simulation rather than real GPS, and deterministic service interval rules plus a separate experimental classifier trained on synthetic telemetry. The local API is a portfolio implementation, not a hardened production service; schema migrations, multi-instance scheduling concurrency, account lifecycle, and durable events remain future work. The legacy WPF app has known security and test limitations.
 
 [Security policy](SECURITY.md) · [Release checklist](docs/deployment.md) · [Change history](CHANGELOG.md)
 

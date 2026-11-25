@@ -6,6 +6,8 @@
 
 - Route optimization lab: reproducible synthetic coordinates, baseline, nearest neighbor and 2-opt tours; measured distances and savings.
 
+- Fleet Intelligence Lab: seeded synthetic telemetry, locally trained logistic regression, held-out vehicle split, baseline comparison, confusion matrix, loss curve and adjustable prediction sandbox.
+
 ## V2 baseline — portfolio edition
 
 ### Added

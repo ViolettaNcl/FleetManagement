@@ -1,7 +1,7 @@
 "use strict";
 const $=id=>document.getElementById(id);
 let token=null, generation=0, busy=false, currentPage="fleet";
-const editors=[$("work-form"),$("shift-form"),$("reservation-form"),$("trip-form")];
+const editors=[$("work-form"),$("shift-form"),$("reservation-form"),$("trip-form"),$("vehicle-form"),$("driver-form")];
 let revision=null,revisionTimer=null,checkingRevision=false;
 let tripVersion=null,tripId=null,latestFleet=null,batchRequests=[],batchPlans=[],nextRequest=1;
 function status(text,error=false){uiText($("status"),text);$("status").classList.toggle("error",error);}
@@ -13,7 +13,7 @@ function signOut(message="Signed out."){
     for(const id of ["vehicles","drivers","trips","work","shifts","reservations","audit","finance-summary","finance-vehicles"])$(id).replaceChildren();
     for(const id of ["vehicles-count","drivers-count","trips-count","work-count"])$(id).textContent="—";
     for(const form of editors){form.reset();form.hidden=true;for(const select of form.querySelectorAll("select[name=vehicleId],select[name=driverId]"))select.replaceChildren();}
-    $("audit-tab").hidden=true;$("login").reset();latestFleet=null;resetTrip();clearBatch();$("batch-panel").hidden=true;status(message);
+    $("audit-tab").hidden=true;$("login").reset();latestFleet=null;for(const filter of document.querySelectorAll("[data-filter]"))filter.value="";resetTrip();clearBatch();$("batch-panel").hidden=true;status(message);
 }
 async function api(path,method="GET",body,authenticated=true,format="json"){
     const active=generation;
@@ -36,7 +36,7 @@ function table(id,columns,rows){
     const body=document.createElement("tbody");
     for(const row of rows){const r=document.createElement("tr");for(const [,get] of columns){const td=document.createElement("td");const value=get(row);if(value instanceof Node)td.append(value);else td.textContent=value==null?"—":String(value);r.append(td);}body.append(r);}
     if(!rows.length){const r=document.createElement("tr"),td=document.createElement("td");td.colSpan=columns.length;uiText(td,"No records.");r.append(td);body.append(r);}
-    root.append(body);
+    root.append(body);applyFilter(id);
 }
 const date=x=>typeof x==="string"?x.replace("T"," ").replace(/Z$/," UTC"):"—";
 const text=key=>row=>row[key];
@@ -61,8 +61,8 @@ async function refresh(){
     table("drivers",[["Name",text("name")],["License",text("license")],["Experience",text("experience")]],drivers);
     table("trips",[["Vehicle",r=>vehicle(r.vehicleId)],["Driver",r=>driver(r.driverId)],["Origin",text("origin")],["Destination",text("destination")],["Start",r=>date(r.start)],["End",r=>date(r.end)],["Distance",text("distance")],...(canWrite?[["Action",t=>tripAction(t)]]:[])],fleet.trips);
     table("work",[["Vehicle",r=>vehicle(r.vehicleId)],["Work",text("kind")],["Recorded",r=>date(r.recordedAt)],["Mileage",text("mileage")],["Cost EUR",r=>r.costEur??"Unknown"],["Notes",text("notes")]],work);
-    table("shifts",[["Driver",r=>driver(r.driverId)],["Start",r=>date(r.start)],["End",r=>date(r.end)]],shifts);
-    table("reservations",[["Vehicle",r=>vehicle(r.vehicleId)],["Category",text("kind")],["Start",r=>date(r.start)],["End",r=>date(r.end)],["Notes",text("notes")]],reservations);
+    table("shifts",[["Driver",r=>driver(r.driverId)],["Start",r=>date(r.start)],["End",r=>date(r.end)],...(canWrite?[["Action",r=>cancelAction(r,"shifts")]]:[])],shifts);
+    table("reservations",[["Vehicle",r=>vehicle(r.vehicleId)],["Category",text("kind")],["Start",r=>date(r.start)],["End",r=>date(r.end)],["Notes",text("notes")],...(canWrite?[["Action",r=>cancelAction(r,"reservations")]]:[])],reservations);
     table("audit",[["Time",r=>date(r.occurredUtc)],["Actor",text("actorId")],["Entity",text("entityType")],["ID",text("entityId")],["Action",text("action")]],audit);
     for(const form of editors){form.hidden=!canWrite;for(const select of form.querySelectorAll("select[name=vehicleId]"))options(select,vehicles,v=>v.plate);for(const select of form.querySelectorAll("select[name=driverId]"))options(select,drivers,d=>d.name);}
     $("batch-panel").hidden=!canWrite;
@@ -148,3 +148,15 @@ async function checkRevision(){
 }
 $("change-refresh").addEventListener("click",()=>operation(async()=>{await refresh();status("Records refreshed.");}));
 document.addEventListener("visibilitychange",()=>{if(!document.hidden)checkRevision();});
+
+function applyFilter(id){const filter=document.querySelector('[data-filter="'+id+'"]');if(!filter)return;const q=filter.value.trim().toLocaleLowerCase();for(const row of $(id).querySelectorAll("tbody tr"))row.hidden=q!==""&&!row.textContent.toLocaleLowerCase().includes(q);}
+for(const filter of document.querySelectorAll("[data-filter]"))filter.addEventListener("input",()=>applyFilter(filter.dataset.filter));
+editor($("vehicle-form"),"/api/vehicles",d=>({plate:d.get("plate"),model:d.get("model"),mileage:Number(d.get("mileage")),lastServiceMileage:Number(d.get("lastServiceMileage")),lastService:d.get("lastService")+"T00:00:00Z",serviceIntervalKm:Number(d.get("serviceIntervalKm")),serviceIntervalDays:Number(d.get("serviceIntervalDays"))}));
+editor($("driver-form"),"/api/drivers",d=>({name:d.get("name"),license:d.get("license"),experience:Number(d.get("experience"))}));
+function cancelAction(record,kind){
+    if(new Date(record.start)<=new Date()){const span=document.createElement("span");uiText(span,"History");return span;}
+    const button=document.createElement("button");button.type="button";uiText(button,kind==="shifts"?"Cancel shift":"Cancel reservation");button.className="danger-button";
+    button.addEventListener("click",()=>{if(busy||!window.confirm(translate("Cancel this future record?")))return;
+        operation(async()=>{await api("/api/operations/"+kind+"/"+record.id,"DELETE");status("Record cancelled. Refreshing…");try{await refresh();status("Record cancelled and server data refreshed.");}catch{if(token)status("Record cancelled; refresh failed. Do not resubmit.",true);}});
+    });return button;
+}

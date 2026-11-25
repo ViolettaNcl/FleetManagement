@@ -128,3 +128,7 @@ The original Russian requirements, UML diagrams, SQL scripts and user/developer 
 ### Integrated batch dispatch
 
 Create trip requests in Batch Dispatch, compare two assignment heuristics, review the proposed subset, then explicitly apply. Assigned trips enter the shared register/calendar; pending requests stay in the session. See [batch dispatch](docs/batch-dispatch.md).
+
+### Local connected workspace (V3)
+
+With the local API running, open http://127.0.0.1:5095/console and sign in using your existing Identity account. Read registered fleet and operational history, record completed work and create shifts/reservations with an authorized role. Offline GitHub Pages demo remains independent. See [backend operations](docs/backend-operations.md), [database recovery](docs/database-recovery.md) and [database concurrency](docs/database-concurrency.md).

@@ -7,4 +7,9 @@
     <PackageReference Include="Microsoft.AspNetCore.Identity.EntityFrameworkCore" Version="10.0.0" />
     <PackageReference Include="Microsoft.AspNetCore.OpenApi" Version="10.0.0" />
   </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="Console/index.html" LogicalName="Fleet.Console.index.html" />
+    <EmbeddedResource Include="Console/app.js" LogicalName="Fleet.Console.app.js" />
+    <EmbeddedResource Include="Console/style.css" LogicalName="Fleet.Console.style.css" />
+  </ItemGroup>
 </Project>

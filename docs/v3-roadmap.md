@@ -64,3 +64,5 @@ Explicit V2→V3 additive schema upgrade supports SQLite and SQL Server (dbo), u
 SQLite recovery CLI uses native SQLite backup API, verified integrity/foreign keys, SHA-256 manifest, exclusive restore to a new file and CI row comparisons against the actual database. SQL Server remains native backup/restore operator procedure.
 
 Provider-level write serialization now encloses all FleetStore writes in a transaction: SQLite non-deferred writer reservation; SQL Server transaction-owned sp_getapplock. Successful writes commit before local SignalR. CI starts two processes against the same database and tests overlapping trips, nonconflicting ID allocation and trip/reservation conflict. Cooperating V3 processes only, no external-writer protection or SignalR backplane.
+
+Connected workspace V1 served by API at /console, same-origin Identity login, memory-only bearer, role-sensitive reads and confirmed maintenance/shift/reservation writes, restrictive CSP, safe text rendering. Independent offline Blazor demo remains unchanged. No full UI parity or SignalR integration.

@@ -140,3 +140,11 @@ with ThreadPoolExecutor(max_workers=2) as pool:
 assert len(request("GET","/api/trips"))==before+2
 assert len([t for t in request("GET","/api/trips") if t["origin"]=="QA batch"])==2
 print("PASS: batch preview, explicit confirmation, atomic rejection and competing HTTP writes")
+
+# The same-origin connected console is embedded and served without exposing fleet data.
+for path,content in (("/console",b"Connected operations workspace"),("/console/app.js",b"/api/auth/login"),("/console/style.css",b"#6a5acd")):
+    with urllib.request.urlopen(BASE+path,timeout=15) as response:
+        assert response.status==200 and content in response.read()
+        assert response.headers["Cache-Control"]=="no-store"
+        assert "frame-ancestors 'none'" in response.headers["Content-Security-Policy"]
+print("PASS: same-origin console assets and security headers")

@@ -87,6 +87,7 @@ if(builder.Configuration.GetValue<bool>("Fleet:InitializeDatabase")){
         await db.SaveChangesAsync();
     }
 }
+ConnectedConsole.Map(app);
 app.MapGet("/health",()=>Results.Ok(new { status="ok" }));
 app.MapOpenApi().RequireAuthorization("FleetRead");
 app.MapHub<FleetHub>("/hubs/fleet",options=>options.CloseOnAuthenticationExpiration=true).RequireAuthorization("FleetRead");

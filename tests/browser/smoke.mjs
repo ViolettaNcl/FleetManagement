@@ -127,6 +127,15 @@ try {
   await page.locator('input[type=file]').setInputFiles({name:'bad.json',mimeType:'application/json',buffer:Buffer.from('{}')});
   await page.getByRole('status').filter({hasText:'rejected 1'}).waitFor();
   await page.screenshot({path:'browser-results/model-registry.png',fullPage:true});
+  await page.getByRole('button',{name:'Data Quality',exact:true}).click();
+  await page.locator('input[type=file]').setInputFiles('src/FleetManagement.Web/wwwroot/data/telemetry-example.csv');
+  await page.getByRole('status').filter({hasText:'Inspected 5 rows; rejected 0'}).waitFor();
+  await page.getByRole('heading',{name:'Valid data preview'}).waitFor();
+  await page.locator('input[type=file]').setInputFiles({name:'bad.csv',mimeType:'text/csv',buffer:Buffer.from('wrong_header')});
+  await page.getByRole('status').filter({hasText:'header does not match'}).waitFor();
+  await page.locator('input[type=file]').setInputFiles('src/FleetManagement.Web/wwwroot/data/telemetry-example.csv');
+  await page.getByRole('heading',{name:'Valid data preview'}).waitFor();
+  await page.screenshot({path:'browser-results/data-quality.png',fullPage:true});
   await page.setViewportSize({width:390,height:844});
   assert.equal(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth),true);
   await page.getByRole('button',{name:'Overview',exact:true}).click();

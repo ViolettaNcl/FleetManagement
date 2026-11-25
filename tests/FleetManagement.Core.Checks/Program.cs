@@ -193,4 +193,16 @@ Check(RejectManifest(manifestJson.Replace("\"TP\":3","\"TP\":4")),"registry reje
 Check(RejectManifest(manifestJson.Replace("\"F1\":0.667","\"F1\":1.5")),"registry rejects invalid metric");
 Check(RejectManifest(new string('x',70000)),"registry size limit");
 Check(RejectManifest("{}"),"registry incomplete manifest");
-Console.WriteLine("All 137 business rule checks passed.");
+var csv=TelemetryCsv.Header+"\n1,0,84,2.1,13.6,0.3,1200,0\n1,0,85,2.2,13.5,0.31,1207,0\n2,0,105,4.2,12.2,0.95,4800,1\n3,0,NaN,2.8,13.2,0.5,2400,0\n4,0,90,2.8,13.2,0.5,2400,2\n";
+var inspection=TelemetryCsv.Inspect(csv);
+Check(inspection.Rows==5&&inspection.ValidRows==2&&inspection.InvalidRows==3,"CSV exact row accounting");
+Check(inspection.VehicleCount==2&&inspection.PositiveLabels==1,"CSV labels and vehicle counts");
+Check(inspection.Issues.Any(i=>i.Line==3&&i.Reason.Contains("Duplicate")),"CSV duplicate detection");
+Check(inspection.Issues.Any(i=>i.Line==5&&i.Reason.Contains("non-finite")),"CSV nonfinite rejection");
+Check(inspection.Issues.Any(i=>i.Line==6&&i.Reason.Contains("Label")),"CSV invalid label");
+Check(TelemetryCsv.Inspect("\uFEFF"+TelemetryCsv.Header+"\r\n").Rows==0,"CSV BOM and empty dataset");
+bool RejectCsv(string value){try{TelemetryCsv.Inspect(value);return false;}catch(FormatException){return true;}}
+Check(RejectCsv("wrong_header\n"),"CSV schema rejection");
+Check(RejectCsv(new string('x',TelemetryCsv.MaxBytes+1)),"CSV byte bound");
+Check(RejectCsv(TelemetryCsv.Header+"\n"+string.Concat(Enumerable.Repeat("1,0,84,2.1,13.6,0.3,1200,0\n",10001))),"CSV row bound");
+Console.WriteLine("All 146 business rule checks passed.");

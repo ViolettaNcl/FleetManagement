@@ -1,0 +1,26 @@
+@using Microsoft.AspNetCore.Components.Forms
+<section class="panel"><h2>Telemetry data quality</h2><p class="muted">Inspect a strict numeric CSV locally before future model training. No upload, persistent storage, automatic correction or model training. Ranges are demo schema bounds, not vehicle safety limits.</p>
+<p><a href="data/telemetry-example.csv" download>Download synthetic CSV example</a></p>
+<label>Telemetry CSV (up to 1 MiB, 10,000 rows)<InputFile OnChange="InspectFile" accept=".csv,text/csv"/></label>
+<p class="muted">Required header:</p><code class="csv-header">@TelemetryCsv.Header</code>
+@if(message.Length>0){<p role="status" class="notice">@message</p>}</section>
+@if(report is not null){
+    var result=report;
+    <div class="metrics"><div class="metric">Rows<strong>@result.Rows</strong></div><div class="metric">Valid<strong>@result.ValidRows</strong></div><div class="metric">Rejected<strong>@result.InvalidRows</strong></div><div class="metric">Vehicles<strong>@result.VehicleCount</strong></div></div>
+    <section class="panel"><h2>Label distribution</h2><p>Positive labels: @result.PositiveLabels / @result.ValidRows valid rows.</p><div class="progress"><i style="@Width(result)"></i></div><p class="muted">A positive label is a supplied outcome, not a prediction. Class balance alone does not establish dataset quality or truth.</p></section>
+    <section class="panel"><h2>Validation issues</h2>@if(result.Issues.Count==0){<p>No row-level issues detected by this schema.</p>}else{<div class="tablewrap"><table><thead><tr><th>CSV line</th><th>Reason</th></tr></thead><tbody>@foreach(var issue in result.Issues){<tr><td>@issue.Line</td><td>@issue.Reason</td></tr>}</tbody></table></div><p class="muted">First @result.Issues.Count issues shown; @result.InvalidRows rejected rows in total.</p>}</section>
+    <section class="panel"><h2>Valid data preview</h2><p class="muted">First @result.Preview.Count accepted rows. This is not a stored or cleaned dataset.</p><div class="tablewrap"><table><thead><tr><th>Vehicle</th><th>Day</th><th>Temperature</th><th>Vibration</th><th>Voltage</th><th>Service fraction</th><th>Hours</th><th>Label</th></tr></thead><tbody>@foreach(var row in result.Preview){<tr><td>@row.VehicleId</td><td>@row.Day</td><td>@row.Features.Temperature</td><td>@row.Features.Vibration</td><td>@row.Features.BatteryVoltage</td><td>@row.Features.ServiceFraction</td><td>@row.Features.EngineHours</td><td>@(row.FailureWithin7Days?1:0)</td></tr>}</tbody></table></div></section>
+}
+@code{
+    private CsvInspection? report;
+    private string message="";
+    private async Task InspectFile(InputFileChangeEventArgs e){
+        report=null;
+        try{
+            using var reader=new StreamReader(e.File.OpenReadStream(TelemetryCsv.MaxBytes));
+            report=TelemetryCsv.Inspect(await reader.ReadToEndAsync());
+            message=$"Inspected {report.Rows} rows; rejected {report.InvalidRows}.";
+        }catch(Exception ex) when(ex is IOException or FormatException or InvalidOperationException){message=ex is FormatException?ex.Message:"Unable to read CSV within the file size limit.";}
+    }
+    private static string Width(CsvInspection r)=>"width:"+(r.ValidRows==0?0:100.0*r.PositiveLabels/r.ValidRows).ToString("F2",CultureInfo.InvariantCulture)+"%";
+}

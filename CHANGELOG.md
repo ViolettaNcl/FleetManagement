@@ -24,6 +24,8 @@
 
 - Browser model registry: bounded JSON manifest import, validation, paired model metrics and dataset provenance comparison. Metadata only, no execution or model promotion.
 
+- Telemetry CSV quality inspector: strict schema, bounded local preview, missing/nonfinite/out-of-range fields, duplicate vehicle/day detection and label distribution.
+
 ## V2 baseline — portfolio edition
 
 ### Added

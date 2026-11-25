@@ -37,6 +37,8 @@
 
 - Driver resource planning: persisted explicit shift windows, day timeline, optional strict dispatch coverage, conflict/deletion guards and assistant alerts for uncovered assignments.
 
+- Budget projection and four-sheet financial Excel export with editable period budget, fixed allowance, cost estimates, recorded work expenses and explicit headroom. Numeric decimal cells and safe inline strings.
+
 ## V2 baseline — portfolio edition
 
 ### Added

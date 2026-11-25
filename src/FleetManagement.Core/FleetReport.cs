@@ -8,7 +8,7 @@ namespace FleetManagement.Core;
 public sealed record VehicleReportRow(string Registration,string Model,int Trips,int CompletedTrips,long CompletedDistanceKm,string ServiceStatus);
 public sealed record FleetSummary(int Vehicles,int Drivers,int Trips,int Completed,int Active,int Scheduled,long CompletedDistanceKm,long PlannedDistanceKm,int ServiceDue,int ServiceSoon,List<VehicleReportRow> VehicleRows);
 
-public static class FleetReport
+public static partial class FleetReport
 {
     public static bool ValidRange(DateTime from, DateTime to) => from.Year >= 1900 && to.Year < 9999 && from.Date <= to.Date && (to.Date-from.Date).TotalDays <= 365;
     public static FleetSummary Build(FleetData data,DateTime now,DateTime from,DateTime to)
@@ -65,7 +65,7 @@ public static class FleetReport
             xml.WriteStartElement("row",ns);xml.WriteAttributeString("r",(++rowIndex).ToString(CultureInfo.InvariantCulture));
             for(var i=0;i<row.Length;i++){
                 xml.WriteStartElement("c",ns);xml.WriteAttributeString("r",$"{(char)('A'+i)}{rowIndex}");
-                if(row[i] is int or long)xml.WriteElementString("v",ns,Convert.ToString(row[i],CultureInfo.InvariantCulture));
+                if(row[i] is int or long or decimal || row[i] is double n && double.IsFinite(n))xml.WriteElementString("v",ns,Convert.ToString(row[i],CultureInfo.InvariantCulture));
                 else {
                     xml.WriteAttributeString("t","inlineStr");xml.WriteStartElement("is",ns);xml.WriteStartElement("t",ns);
                     xml.WriteAttributeString("xml","space","http://www.w3.org/XML/1998/namespace","preserve");

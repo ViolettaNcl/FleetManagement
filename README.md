@@ -48,7 +48,7 @@ The grouped V3 workspace separates operational records, tracking/reporting, simu
 | Geo Map | Replay synthetic regional journeys on bundled Natural Earth geometry with geofence history. |
 | Model Registry | Import local experiment manifests, compare reported ML metrics and inspect fingerprints. |
 | Data Quality | Inspect bounded numeric telemetry CSV, row errors, duplicates and label distribution. |
-| Cost Intelligence | Estimate fuel, maintenance and driver cost for completed trips; inspect clock-time occupancy. |
+| Cost Intelligence | Estimate completed-trip costs and occupancy, project a period budget and export a four-sheet financial Excel workbook. |
 | Demand Forecast | Compare seasonal baseline and weekday-trend regression on a chronological synthetic holdout. |
 | Analytics | Filter trips by departure date and download a genuine two-sheet Excel workbook. |
 

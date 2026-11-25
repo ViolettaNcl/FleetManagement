@@ -268,4 +268,23 @@ Check(ResourcePlanning.Remove(resourceFleet,shifts,1,now,true)!=null,"resource s
 Check(ResourcePlanning.Day(resourceFleet,shifts,now).Single(d=>d.DriverId==3).Shifts.Count==2,"resource daily timeline");
 Check(ResourcePlanning.CanRemoveDriver(3,shifts)!=null,"resource protects driver history");
 Check(FleetAdvisor.Assess(resourceFleet,now,shifts,true).Any(a=>a.Key=="shift:103")&&!FleetAdvisor.Assess(resourceFleet,now,shifts,false).Any(a=>a.Key.StartsWith("shift:")),"resource assistant coverage alerts");
-Console.WriteLine("All 197 business rule checks passed.");
+var budgetPlan=FleetBudget.Build(fleet,now,now.Date,now.Date,new(25,2,.1m,10),1000,100);
+Check(budgetPlan.Trips==4&&budgetPlan.Completed==1&&budgetPlan.Active==2&&budgetPlan.Scheduled==1,"budget includes all statuses");
+Check(budgetPlan.DistanceKm==418&&budgetPlan.FuelLitres==104.5m,"budget distance and fuel");
+Check(budgetPlan.ProjectedTotal==budgetPlan.FuelCost+budgetPlan.MaintenanceAllowance+budgetPlan.DriverCost+100,"budget arithmetic");
+Check(budgetPlan.Headroom==1000-budgetPlan.ProjectedTotal,"budget headroom");
+Check(FleetBudget.Build(new([],[],[]),now,now.Date,now.Date,new(25,2,.1m,10),10,20).Headroom==-10,"budget fixed allowance and overspend");
+var financeEntries=new List<MaintenanceEntry>{new(1,3,now,110800,"Repair","=1+1",125.50m),new(2,3,now,110800,"Inspection","Unknown cost",null)};
+var financeBytes=FleetReport.ExportFinanceXlsx(fleet,now,now.Date,now.Date,new(25,2,.1m,10),1000,100,financeEntries);
+using(var financeStream=new MemoryStream(financeBytes))
+using(var financeZip=new System.IO.Compression.ZipArchive(financeStream,System.IO.Compression.ZipArchiveMode.Read)){
+    string FinancePart(string path){using var reader=new StreamReader(financeZip.GetEntry(path)!.Open());return reader.ReadToEnd();}
+    var workbookXml=System.Xml.Linq.XDocument.Parse(FinancePart("xl/workbook.xml"));
+    Check(workbookXml.Descendants().Count(x=>x.Name.LocalName=="sheet")==4,"finance workbook four sheets");
+    var workXml=System.Xml.Linq.XDocument.Parse(FinancePart("xl/worksheets/sheet3.xml"));
+    Check(workXml.Descendants().Any(x=>x.Name.LocalName=="v"&&x.Value=="125.50"),"finance numeric decimal cell");
+    Check(workXml.Descendants().Any(x=>x.Name.LocalName=="t"&&x.Value=="=1+1")&&!workXml.Descendants().Any(x=>x.Name.LocalName=="f"),"finance text never formula");
+    Check(workXml.Descendants().Any(x=>x.Name.LocalName=="t"&&x.Value=="Unknown"),"finance unknown cost preserved");
+    Check(System.Xml.Linq.XDocument.Parse(FinancePart("xl/worksheets/sheet4.xml")).Descendants().Any(x=>x.Name.LocalName=="t"&&x.Value=="Budget headroom"),"finance budget sheet");
+}
+Console.WriteLine("All 207 business rule checks passed.");

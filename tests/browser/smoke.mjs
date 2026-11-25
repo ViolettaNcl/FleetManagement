@@ -165,6 +165,14 @@ try {
   await page.getByRole('heading',{name:'Vehicle cost estimates'}).waitFor();
   await page.getByLabel('Fuel price (EUR/L)').fill('2.50');
   await page.getByRole('heading',{name:'Cost breakdown'}).waitFor();
+  await page.getByLabel('Period budget (EUR)').fill('1');
+  await page.getByRole('heading',{name:'Budget projection'}).waitFor();
+  await page.getByText(/Projected over budget/).waitFor();
+  const financialDownload=page.waitForEvent('download');
+  await page.getByRole('button',{name:'Export financial Excel (.xlsx)',exact:true}).click();
+  const financialFile=await financialDownload;
+  assert.match(financialFile.suggestedFilename(),/^fleet-finance-.*\.xlsx$/);
+  await financialFile.saveAs('browser-results/fleet-finance.xlsx');
   await page.screenshot({path:'browser-results/cost-intelligence.png',fullPage:true});
   await page.getByRole('button',{name:'Demand Forecast',exact:true}).click();
   await page.getByLabel('Forecast horizon (days)').fill('21');

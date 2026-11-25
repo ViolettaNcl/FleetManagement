@@ -1,0 +1,26 @@
+name: Browser demo CI
+on:
+  push:
+    branches: [master, 'feature/**']
+  pull_request:
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '10.0.x'
+      - name: Run business rule regression checks
+        run: dotnet run --project tests/FleetManagement.Core.Checks -c Release
+      - name: Publish browser demo
+        run: dotnet publish src/FleetManagement.Web -c Release -o publish
+      - name: Upload static preview
+        uses: actions/upload-artifact@v4
+        with:
+          name: fleetmanagement-browser-demo
+          path: publish/wwwroot
+          if-no-files-found: error

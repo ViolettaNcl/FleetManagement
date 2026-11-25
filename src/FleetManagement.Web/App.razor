@@ -57,7 +57,7 @@
                 @foreach (var t in fleet.Trips.Where(t => t.Track >= 0)) { <button class="@(selectedTrip==t.Id?"":"secondary")" @onclick="()=>selectedTrip=t.Id">#@t.Id · @VehicleName(t.VehicleId)<br/><small style="color:inherit">@FleetRules.TripStatus(t,Now)</small></button> }
                 @if (fleet.Trips.FirstOrDefault(t=>t.Id==selectedTrip) is Trip selected) {
                     <p>@selected.Origin → @selected.Destination<br/><small>Progress: @((FleetRules.Progress(selected,Now)*100).ToString("0"))% · ETA @selected.End.ToString("HH:mm")</small></p>
-                    <div class="progress"><i style="width:@(FleetRules.Progress(selected,Now).ToString("P0",CultureInfo.InvariantCulture))"></i></div>
+                    <div class="progress"><i style="width:@((FleetRules.Progress(selected,Now)*100).ToString("0",CultureInfo.InvariantCulture) + "%")"></i></div>
                 }
                 </div>
             </div>
@@ -107,7 +107,7 @@
     private async Task RunClock(){try{while(await timer!.WaitForNextTickAsync(cts.Token)){await InvokeAsync(()=>{if(playing){Now=Now.AddMinutes(2);StateHasChanged();}});}}catch(OperationCanceledException){}}
     private async Task Persist(){try{await JS.InvokeVoidAsync("localStorage.setItem",Key,JsonSerializer.Serialize(new Snapshot(fleet,Now)));}catch(Exception){storageMessage="Unable to save locally; changes are session-only.";}}
     private void Navigate(string item){section=item;feedback="";}
-    private void ToggleSimulation()=>playing=!playing;
+    private async Task ToggleSimulation(){playing=!playing;if(!playing)await Persist();}
     private async Task Advance(){Now=Now.AddMinutes(15);await Persist();}
     private async Task Reset(){if(!await JS.InvokeAsync<bool>("confirm","Reset all demo data?"))return;playing=false;Now=DateTime.Now;fleet=FleetRules.Sample(Now);start=Now.AddHours(1);end=Now.AddHours(2);vehicleId=driverId=1;selectedTrip=101;feedback="";await Persist();}
     private string VehicleName(int id)=>fleet.Vehicles.FirstOrDefault(v=>v.Id==id)?.Plate??"Unknown";

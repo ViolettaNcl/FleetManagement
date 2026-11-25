@@ -15,6 +15,14 @@
 
 ---
 
+## Interactive portfolio demo (in development)
+
+The Blazor WebAssembly prototype retains the original lavender WPF design and runs entirely in the browser with synthetic data. It includes simulated fleet tracking, conflict-aware dispatch and rule-based maintenance.
+
+[Demo setup, technical details and limitations](./docs/portfolio-v2.md) · [C# business rules](./src/FleetManagement.Core/Fleet.cs)
+
+GitHub Pages publication is pending successful build and repository Pages configuration. The original desktop app is retained.
+
 ## 📌 Описание
 
 WPF-приложение для управления автопарком компании. Позволяет администрировать
@@ -29,7 +37,7 @@ FleetManagement. Ниже представлено краткое содержа
 Для автоматизации используется PowerShell-скрипт `build.ps1`, расположенный в корневой
 папке проекта. Выполните в PowerShell:
 ```powershell
-cd путь\к\проекту\NinjaCar
+cd путь\к\проекту\FleetManagement
 .\build.ps1
 ```
 

@@ -641,6 +641,10 @@ internal static class DemoLocale
         ["I reviewed the assigned trips and understand that unassigned requests stay pending."]="Я проверил назначенные рейсы и понимаю, что неназначенные остаются в ожидании.",
         ["Apply assigned trips"]="Применить назначения",
         ["Apply revalidates every assignment against current time, vehicle service status, reservations, shifts and trip conflicts. If any fails, no trips are added. Pending requests are session-only; applied trips use the existing local snapshot."]="При применении каждое назначение повторно проверяется по времени, ТО, резервированиям, сменам и конфликтам. При любой ошибке ни один рейс не добавляется. Ожидающие заявки хранятся в сеансе; применённые — в локальном снимке.",
+        ["No matching alerts. This does not certify vehicle safety."]="Нет подходящих предупреждений. Это не подтверждение безопасности автомобиля.",
+        ["What needs attention?"]="Что требует внимания?",
+        ["Financial workbook generated."]="Финансовый отчёт сформирован.",
+        ["Unable to download the workbook in this browser."]="Не удалось загрузить отчёт в этом браузере.",
     };
     public static string Text(string value,bool russian)=>russian&&Russian.TryGetValue(value,out var translated)?translated:value;
 }

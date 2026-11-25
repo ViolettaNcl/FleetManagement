@@ -137,6 +137,9 @@ Check(notices.Any(a=>a.Subject=="FM-205"&&a.Severity=="Medium"),"advisor detects
 Check(notices.All(a=>a.Evidence.Length>0&&a.Recommendation.Length>0),"advisor evidence and recommendations");
 Check(notices.Select(a=>a.Key).Distinct().Count()==notices.Count,"advisor unique alert ids");
 Check(FleetAdvisor.Answer(fleet,now,"ТО").Evidence.Count==2,"advisor Russian maintenance intent");
+var russianAnswer=FleetAdvisor.Answer(fleet,now,"ТО",russian:true);
+Check(russianAnswer.Title=="Проверка обслуживания"&&russianAnswer.Evidence.All(a=>a.Destination=="Maintenance")&&russianAnswer.Evidence.Any(a=>a.Title.Contains("ТО")),"localized advisor retains canonical destinations");
+Check(FleetAdvisor.Assess(fleet,now,russian:true).Select(a=>a.Key).SequenceEqual(notices.Select(a=>a.Key)),"localized advisor preserves alert identity and order");
 Check(FleetAdvisor.Answer(fleet,now,"unknown request").Title=="Supported questions","advisor unsupported intent");
 Check(FleetAdvisor.Answer(fleet,now,"dispatch").Summary.Contains("FM-415"),"advisor dispatch availability");
 var riskyFleet=FleetRules.Sample(now);riskyFleet.Trips.Add(new(300,3,3,"A","B",now.AddHours(6),now.AddHours(7),100,-1));

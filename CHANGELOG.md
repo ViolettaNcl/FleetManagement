@@ -14,6 +14,8 @@
 
 - Fleet Intelligence Assistant and Smart Alert Center: deterministic evidence-linked recommendations, three supported intents, severity filters and separate Digital Twin alerts.
 
+- Multi-vehicle dispatch: first feasible append and cheapest feasible insertion, capacity/time-window/shift constraints, transparent unassigned orders, route preview and Gantt timeline.
+
 ## V2 baseline — portfolio edition
 
 ### Added

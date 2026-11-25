@@ -11,3 +11,5 @@ POST /api/operations/batch/preview with {"requests":[...]} returns three strateg
 
 ## Connected workspace
 Open http://127.0.0.1:5095/console on the local API. Embedded HTML, JS and CSS use same-origin requests, Identity sign-in and memory-only access token. It reads fleet, trips, maintenance, shifts, reservations and admin audit; authorized roles can record work and create shifts/reservations with explicit confirmation. All server checks remain authoritative. Manual refresh; no browser LocalStorage token, external service, cross-origin configuration or automatic synchronization with the offline demo. Trip editing and batch apply are API-only for now.
+
+Dedicated Connected workspace CI launches a fresh SQLite API and exercises the actual UI using Playwright: failed/successful login, authorized work/shift/reservation creation, literal text rendering, admin audit, viewer read-only mode, mobile viewport and sign-out/reload. This is separate from the offline Pages demo test.

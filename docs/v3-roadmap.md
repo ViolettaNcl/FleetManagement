@@ -66,3 +66,5 @@ SQLite recovery CLI uses native SQLite backup API, verified integrity/foreign ke
 Provider-level write serialization now encloses all FleetStore writes in a transaction: SQLite non-deferred writer reservation; SQL Server transaction-owned sp_getapplock. Successful writes commit before local SignalR. CI starts two processes against the same database and tests overlapping trips, nonconflicting ID allocation and trip/reservation conflict. Cooperating V3 processes only, no external-writer protection or SignalR backplane.
 
 Connected workspace V1 served by API at /console, same-origin Identity login, memory-only bearer, role-sensitive reads and confirmed maintenance/shift/reservation writes, restrictive CSP, safe text rendering. Independent offline Blazor demo remains unchanged. No full UI parity or SignalR integration.
+
+Connected browser CI checks actual Identity login and retry, work/shift/reservation forms, role-sensitive audit and read-only Viewer, safe literal DOM text, mobile layout and memory-only session. Session change guards reject stale responses.

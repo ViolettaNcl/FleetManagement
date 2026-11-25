@@ -5,6 +5,7 @@ const editors=[$("work-form"),$("shift-form"),$("reservation-form")];
 function status(text,error=false){$("status").textContent=text;$("status").classList.toggle("error",error);}
 function signOut(message="Signed out."){
     token=null;generation++;busy=false;
+    for(const button of document.querySelectorAll("button"))button.disabled=false;
     $("auth").hidden=false;$("workspace").hidden=true;$("logout").hidden=true;
     $("identity").textContent="";$("policy").textContent="";$("updated").textContent="";
     for(const id of ["vehicles","drivers","trips","work","shifts","reservations","audit"])$(id).replaceChildren();
@@ -13,13 +14,17 @@ function signOut(message="Signed out."){
     $("audit-tab").hidden=true;$("login").reset();status(message);
 }
 async function api(path,method="GET",body,authenticated=true){
+    const active=generation;
     const headers={"Accept":"application/json"};
     if(authenticated){if(!token)throw Error("Sign in again.");headers.Authorization="Bearer "+token;}
     if(body!==undefined)headers["Content-Type"]="application/json";
     const response=await fetch(path,{method,headers,body:body===undefined?undefined:JSON.stringify(body),cache:"no-store",credentials:"omit",redirect:"error"});
+    if(active!==generation)throw Error("Session changed.");
     if(response.status===401){if(authenticated)signOut("Session expired. Sign in again.");throw Error("Authentication failed.");}
     if(!response.ok){let detail;try{detail=await response.json();}catch{}throw Error(typeof detail?.error==="string"?detail.error:"Request failed (HTTP "+response.status+").");}
-    return response.status===204?null:await response.json();
+    const result=response.status===204?null:await response.json();
+    if(active!==generation)throw Error("Session changed.");
+    return result;
 }
 function table(id,columns,rows){
     const root=$(id);root.replaceChildren();
@@ -38,10 +43,10 @@ function tab(name){currentPage=name;for(const item of document.querySelectorAll(
 async function refresh(){
     const active=generation;
     const [me,fleet,work,shifts,reservations,policy]=await Promise.all([api("/api/auth/me"),api("/api/fleet"),api("/api/operations/maintenance"),api("/api/operations/shifts"),api("/api/operations/reservations"),api("/api/operations/policy")]);
-    if(active!==generation||!token)return;
+    if(active!==generation||!token)throw Error("Session changed.");
     const admin=me.roles.includes("Admin"),canWrite=admin||me.roles.includes("Dispatcher");
     const audit=admin?await api("/api/admin/audit?limit=100"):[];
-    if(active!==generation||!token)return;
+    if(active!==generation||!token)throw Error("Session changed.");
     $("identity").textContent=me.name+" · "+me.roles.join(", ");
     $("policy").textContent=policy.requireShifts?"Strict driver shifts enabled":"Driver shifts advisory";
     const vehicles=fleet.vehicles,drivers=fleet.drivers;
@@ -62,12 +67,12 @@ async function refresh(){
     $("auth").hidden=true;$("workspace").hidden=false;$("logout").hidden=false;
 }
 async function operation(action){if(busy)return;busy=true;const active=generation;for(const button of document.querySelectorAll("button:not(#logout)"))button.disabled=true;try{await action();}catch(e){if(active===generation)status(e.message||"Request failed.",true);}finally{if(active===generation){busy=false;for(const button of document.querySelectorAll("button"))button.disabled=false;}}}
-$("login").addEventListener("submit",event=>{event.preventDefault();const data=new FormData(event.currentTarget);event.currentTarget.elements.password.value="";operation(async()=>{const result=await api("/api/auth/login","POST",{email:data.get("email"),password:data.get("password")},false);token=result.accessToken;if(typeof token!=="string"){token=null;throw Error("Missing access token.");}try{await refresh();tab("fleet");status("Connected to local API.");}catch(e){signOut("Unable to load workspace. Sign in again.");throw e;}});});
+$("login").addEventListener("submit",event=>{event.preventDefault();const data=new FormData(event.currentTarget);event.currentTarget.elements.password.value="";operation(async()=>{const result=await api("/api/auth/login","POST",{email:data.get("email"),password:data.get("password")},false);token=result.accessToken;if(typeof token!=="string"){token=null;throw Error("Missing access token.");}try{await refresh();tab("fleet");status("Connected to local API.");}catch(e){if(token)signOut("Unable to load workspace. Sign in again.");throw e;}});});
 $("logout").addEventListener("click",()=>{signOut();for(const button of document.querySelectorAll("button"))button.disabled=false;});
 $("refresh").addEventListener("click",()=>operation(async()=>{await refresh();status("Records refreshed.");}));
 for(const button of document.querySelectorAll("[data-tab]"))button.addEventListener("click",()=>tab(button.dataset.tab));
 function utc(value){return new Date(value+"Z").toISOString();}
-function editor(form,path,build){form.addEventListener("submit",event=>{event.preventDefault();const data=new FormData(form);if(!data.has("confirmed"))return;operation(async()=>{await api(path,"POST",build(data));form.reset();status("Record saved. Refreshing server data…");try{await refresh();status("Record saved and server data refreshed.");}catch(e){if(token)status("Record saved, but refresh failed. Use Refresh server records; do not resubmit.",true);}});});}
+function editor(form,path,build){form.addEventListener("submit",event=>{event.preventDefault();const data=new FormData(form);if(!data.has("confirmed"))return;operation(async()=>{const active=generation;await api(path,"POST",build(data));form.reset();status("Record saved. Refreshing server data…");try{await refresh();status("Record saved and server data refreshed.");}catch(e){if(token&&active===generation)status("Record saved, but refresh failed. Use Refresh server records; do not resubmit.",true);}});});}
 editor($("work-form"),"/api/operations/maintenance",d=>({vehicleId:Number(d.get("vehicleId")),kind:d.get("kind"),notes:d.get("notes"),costEur:d.get("costEur")===""?null:Number(d.get("costEur"))}));
 editor($("shift-form"),"/api/operations/shifts",d=>({driverId:Number(d.get("driverId")),start:utc(d.get("start")),end:utc(d.get("end"))}));
 editor($("reservation-form"),"/api/operations/reservations",d=>({vehicleId:Number(d.get("vehicleId")),kind:d.get("kind"),notes:d.get("notes"),start:utc(d.get("start")),end:utc(d.get("end"))}));

@@ -8,6 +8,8 @@
 
 - Fleet Intelligence Lab: seeded synthetic telemetry, locally trained logistic regression, held-out vehicle split, baseline comparison, confusion matrix, loss curve and adjustable prediction sandbox.
 
+- Predictions Lab: train-only-scaled ETA regression with a separate validation residual estimate and held-out metrics; normal-reference z-score anomaly detection and alert timeline.
+
 ## V2 baseline — portfolio edition
 
 ### Added

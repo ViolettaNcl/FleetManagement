@@ -36,6 +36,7 @@ The browser edition runs C# in WebAssembly, uses synthetic data, and requires no
 | Maintenance | Compare service intervals and record a service to reset the maintenance assessment. |
 | Optimization | Compare original, nearest-neighbor and 2-opt tours on seeded stops. |
 | Intelligence | Train a local synthetic maintenance classifier and inspect held-out metrics and predictions. |
+| Predictions | Train an ETA regressor, compare errors and scan synthetic telemetry anomalies. |
 | Analytics | Filter trips by departure date and download a genuine two-sheet Excel workbook. |
 
 Use **Reset demo** to restore the synthetic dataset. Changes stay in your browser.

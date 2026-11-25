@@ -1,0 +1,34 @@
+<section class="panel"><div class="registerhead"><div><h2>ETA prediction lab</h2><p class="muted">Train a linear regression on synthetic journeys, compare with free-flow travel time, and estimate duration without any map API.</p></div><button @onclick="RunEta">Train ETA model</button></div></section>
+@if(eta is not null){
+    var e=eta;
+    <div class="metrics"><div class="metric">Training trips<strong>@e.TrainRows</strong></div><div class="metric">Held-out trips<strong>@e.TestRows</strong></div><div class="metric">Test MAE<strong>@e.Test.Mae.ToString("F1") min</strong></div><div class="metric">Test R²<strong>@e.Test.R2.ToString("F3")</strong></div></div>
+    <section class="panel"><h2>ETA model comparison</h2><div class="tablewrap"><table><thead><tr><th>Metric</th><th>Free-flow baseline</th><th>Learned model</th></tr></thead><tbody><tr><td>MAE (min)</td><td>@e.Baseline.Mae.ToString("F2")</td><td>@e.Test.Mae.ToString("F2")</td></tr><tr><td>RMSE (min)</td><td>@e.Baseline.Rmse.ToString("F2")</td><td>@e.Test.Rmse.ToString("F2")</td></tr><tr><td>R²</td><td>@e.Baseline.R2.ToString("F3")</td><td>@e.Test.R2.ToString("F3")</td></tr></tbody></table></div>
+        <h3>Actual vs predicted duration</h3><svg class="ml-chart" viewBox="0 0 320 180" role="img" aria-label="Held-out actual versus predicted duration scatter plot"><line x1="24" y1="155" x2="300" y2="155" stroke="#D8CCEF"/><line x1="24" y1="155" x2="24" y2="12" stroke="#D8CCEF"/><line x1="24" y1="155" x2="300" y2="12" stroke="#9370DB" stroke-dasharray="4 4"/>@foreach(var sample in e.Samples){<circle cx="@ScatterX(sample.Actual,e)" cy="@ScatterY(sample.Predicted,e)" r="2.6" fill="#6A5ACD" opacity=".65"/>}</svg><p class="muted">Horizontal: actual minutes. Vertical: predicted minutes. Dashed line: perfect agreement. First 80 test trips.</p>
+    </section>
+    <section class="panel"><h2>Journey scenario</h2><div class="formgrid"><label>Distance (km)<input type="number" @bind="distance"/></label><label>Traffic intensity (0–1)<input type="number" step=".1" @bind="traffic"/></label><label>Free-flow speed (km/h)<input type="number" @bind="speed"/></label><label>Stops<input type="number" @bind="stops"/></label><label>Load ratio (0–1)<input type="number" step=".1" @bind="load"/></label></div>
+        @if(Features.Valid){var predicted=e.Model.Predict(Features);<div class="metric">Estimated journey duration<strong>@predicted.ToString("F0") min</strong><p class="muted">Validation 90th-percentile absolute error: @e.ValidationResidual90.ToString("F1") min. This is an empirical error summary, not a guaranteed prediction interval.</p></div>}else{<p class="error">Use 1–500 km, 20–100 km/h, 0–20 stops and ratios from 0 to 1.</p>}
+    </section>
+}
+<section class="panel"><div class="registerhead"><div><h2>Telemetry anomaly detection</h2><p class="muted">Learn normal sensor means and deviations; flag unusual synthetic observations with a maximum absolute z-score detector.</p></div><button @onclick="RunAnomalies">Run anomaly scan</button></div><div class="formgrid"><label>Scenario seed<input type="number" @bind="seed"/></label><label>Alert threshold (z-score)<input type="number" min="2" max="8" step=".1" @bind="threshold"/></label></div>@if(error.Length>0){<p class="error" role="status">@error</p>}</section>
+@if(anomalies is not null){
+    var a=anomalies;
+    <div class="metrics"><div class="metric">Normal reference<strong>@a.TrainRows</strong></div><div class="metric">Flagged samples<strong>@a.Test.Count(t=>t.Flagged)</strong></div><div class="metric">Test precision<strong>@a.Metrics.Precision.ToString("P1")</strong></div><div class="metric">Test recall<strong>@a.Metrics.Recall.ToString("P1")</strong></div></div>
+    <section class="panel"><h2>Anomaly score timeline</h2><svg viewBox="0 0 600 180" class="ml-chart" role="img" aria-label="Synthetic anomaly scores and threshold"><line x1="15" x2="585" y1="@ScoreY(a.Threshold,a)" y2="@ScoreY(a.Threshold,a)" stroke="#BA55A7" stroke-dasharray="6 4"/><polyline points="@ScorePoints(a)" fill="none" stroke="#6A5ACD" stroke-width="1.5"/>@foreach(var p in a.Test.Where(t=>t.Flagged)){<circle cx="@IndexX(p.Point.Index,a)" cy="@ScoreY(p.Score,a)" r="3" fill="#BA55A7"/>}</svg><p class="muted">Dashed line: threshold @a.Threshold.ToString("F1"). Alerts: @a.Metrics.TP true positives · @a.Metrics.FP false positives · @a.Metrics.FN missed injected events.</p><div class="tablewrap"><table><thead><tr><th>Sample</th><th>Score</th><th>Leading sensor</th><th>Injected fault</th></tr></thead><tbody>@foreach(var p in a.Test.Where(t=>t.Flagged).OrderByDescending(t=>t.Score).Take(20)){<tr><td>@p.Point.Index</td><td>@p.Score.ToString("F2")</td><td>@p.LeadingFeature</td><td>@(p.Point.InjectedAnomaly?"Yes":"No")</td></tr>}</tbody></table></div><p class="muted">Synthetic independent faults, not real telemetry or mechanical diagnosis. Threshold is adjustable for exploration, not tuned on an independent validation set.</p></section>
+}
+@code{
+    private EtaExperiment? eta;
+    private AnomalyExperiment? anomalies;
+    private double distance=132,traffic=.4,speed=65,load=.6,threshold=3.5;
+    private int stops=3,seed=42;
+    private string error="";
+    private EtaFeatures Features=>new(distance,traffic,speed,stops,load);
+    private void RunEta()=>eta=EtaLearning.Train(seed);
+    private void RunAnomalies(){if(!double.IsFinite(threshold)||threshold<2||threshold>8){error="Choose a threshold from 2 to 8.";return;}error="";anomalies=AnomalyLearning.Run(seed,threshold);}
+    private static string F(double v)=>v.ToString("F2",CultureInfo.InvariantCulture);
+    private static double ScatterMax(EtaExperiment e)=>Math.Max(1,e.Samples.Max(p=>Math.Max(p.Actual,p.Predicted)));
+    private static string ScatterX(double x,EtaExperiment e)=>F(24+276*x/ScatterMax(e));
+    private static string ScatterY(double y,EtaExperiment e)=>F(155-143*y/ScatterMax(e));
+    private static string IndexX(int i,AnomalyExperiment a)=>F(15+570.0*i/Math.Max(1,a.Test.Count-1));
+    private static string ScoreY(double score,AnomalyExperiment a)=>F(165-150*score/Math.Max(a.Threshold,a.Test.Max(p=>p.Score)));
+    private static string ScorePoints(AnomalyExperiment a)=>string.Join(" ",a.Test.Select(p=>IndexX(p.Point.Index,a)+","+ScoreY(p.Score,a)));
+}

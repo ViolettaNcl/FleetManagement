@@ -4,6 +4,7 @@ on:
 permissions:
   contents: read
   actions: read
+  checks: read
 jobs:
   evidence:
     runs-on: ubuntu-24.04

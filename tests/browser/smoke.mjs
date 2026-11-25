@@ -30,6 +30,11 @@ try {
   await page.getByRole('button',{name:'Обслуживание',exact:true}).click();
   await page.getByRole('heading',{name:'Журнал работ по обслуживанию'}).waitFor();
   assert.equal(await page.getByLabel('Категория работы',{exact:true}).inputValue(),'Scheduled service');
+  await page.getByRole('button',{name:'Прогноз неисправностей',exact:true}).click();
+  await page.getByRole('heading',{name:'Лаборатория интеллектуальной аналитики',exact:true}).waitFor();
+  await page.getByRole('button',{name:'Обучить модель',exact:true}).waitFor();
+  await page.getByRole('button',{name:'Дрейф модели',exact:true}).click();
+  await page.getByRole('heading',{name:'Лаборатория дрейфа модели',exact:true}).waitFor();
   await page.getByRole('button',{name:'Обзор',exact:true}).click();
   await page.getByLabel('Язык',{exact:true}).selectOption('en');
   await page.getByRole('heading',{name:'Fleet workload'}).waitFor();

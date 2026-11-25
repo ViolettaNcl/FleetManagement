@@ -122,3 +122,5 @@ Connected ordinary write recovery panel retains the confirmed payload and UUID i
 Offline localization extended to passport, maintenance history/journal, shift planning and vehicle reservations, including form labels and canonical category option values. Shared server/domain errors and several remaining laboratories/exports are not fully localized.
 
 Release evidence gate checks the latest exact-SHA run of all seven CI workflows, generates JSON and never publishes. Added logical ER diagram and explicit migration-baseline limitations.
+
+ML laboratory localization: headings, forms, tables and explanatory text for maintenance intelligence, drift/retraining, ETA/anomaly, demand, registry and data quality; explicit accessible work-category label fixes the Russian smoke locator. Computed output strings, some chart legends and export contents remain English.

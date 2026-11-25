@@ -1,37 +1,40 @@
+@using FleetManagement.Web
 <section class="panel">
-    <div class="registerhead"><div><h2>Fleet Intelligence Lab</h2><p class="muted">Train a logistic regression classifier in C# on synthetic telemetry. The model estimates a simulated seven-day failure label, not real-world vehicle safety.</p></div><button @onclick="Train">Train model</button></div>
-    <div class="formgrid"><label>Dataset seed<input type="number" @bind="seed" /></label><label>Training epochs<input type="number" min="10" max="500" @bind="epochs" /></label></div>
-    @if(message.Length>0){<p role="status" class="notice">@message</p>}
+    <div class="registerhead"><div><h2>@T("Fleet Intelligence Lab")</h2><p class="muted">@T("Train a logistic regression classifier in C# on synthetic telemetry. The model estimates a simulated seven-day failure label, not real-world vehicle safety.")</p></div><button @onclick="Train">@T("Train model")</button></div>
+    <div class="formgrid"><label>@T("Dataset seed")<input type="number" @bind="seed" /></label><label>@T("Training epochs")<input type="number" min="10" max="500" @bind="epochs" /></label></div>
+    @if(message.Length>0){<p role="status" class="notice">@T(message)</p>}
 </section>
 @if(experiment is not null){
     var e=experiment;
-    <div class="metrics"><div class="metric">Training rows<strong>@e.TrainRows</strong></div><div class="metric">Held-out rows<strong>@e.TestRows</strong></div><div class="metric">Test F1<strong>@e.Test.F1.ToString("P1")</strong></div><div class="metric">Test Brier loss<strong>@e.Test.Brier.ToString("F3")</strong></div></div>
+    <div class="metrics"><div class="metric">@T("Training rows")<strong>@e.TrainRows</strong></div><div class="metric">@T("Held-out rows")<strong>@e.TestRows</strong></div><div class="metric">@T("Test F1")<strong>@e.Test.F1.ToString("P1")</strong></div><div class="metric">@T("Test Brier loss")<strong>@e.Test.Brier.ToString("F3")</strong></div></div>
     <div class="split">
-        <section class="panel"><h2>Held-out evaluation</h2><p class="muted">40 training vehicles, 12 distinct test vehicles. Test positives: @e.TestFailures. Classification threshold: 0.5.</p>
-            <div class="tablewrap"><table><thead><tr><th>Metric</th><th>Prevalence baseline</th><th>Logistic model</th></tr></thead><tbody>
+        <section class="panel"><h2>@T("Held-out evaluation")</h2><p class="muted">40 training vehicles, 12 distinct test vehicles. Test positives: @e.TestFailures. Classification threshold: 0.5.</p>
+            <div class="tablewrap"><table><thead><tr><th>@T("Metric")</th><th>@T("Prevalence baseline")</th><th>@T("Logistic model")</th></tr></thead><tbody>
                 @foreach(var row in MetricRows(e)){<tr><td>@row.Name</td><td>@row.Baseline</td><td>@row.Model</td></tr>}
             </tbody></table></div>
-            <h3>Confusion matrix</h3><div class="confusion"><span></span><strong>Predicted +</strong><strong>Predicted −</strong><strong>Actual +</strong><div class="correct">TP @e.Test.TP</div><div>FN @e.Test.FN</div><strong>Actual −</strong><div>FP @e.Test.FP</div><div class="correct">TN @e.Test.TN</div></div>
+            <h3>@T("Confusion matrix")</h3><div class="confusion"><span></span><strong>@T("Predicted +")</strong><strong>@T("Predicted −")</strong><strong>@T("Actual +")</strong><div class="correct">TP @e.Test.TP</div><div>FN @e.Test.FN</div><strong>@T("Actual −")</strong><div>FP @e.Test.FP</div><div class="correct">TN @e.Test.TN</div></div>
         </section>
-        <section class="panel"><h2>Training loss</h2><p class="muted">Binary cross-entropy measured on training data.</p><svg viewBox="0 0 320 170" class="ml-chart" role="img" aria-label="Training loss curve"><line x1="15" y1="145" x2="305" y2="145" stroke="#D8CCEF"/><line x1="15" y1="15" x2="15" y2="145" stroke="#D8CCEF"/><polyline points="@LossPoints(e)" fill="none" stroke="#6A5ACD" stroke-width="3" stroke-linejoin="round"/></svg><p>Initial loss: @e.LossHistory[0].ToString("F3") · Final loss: @e.LossHistory[^1].ToString("F3")</p></section>
+        <section class="panel"><h2>@T("Training loss")</h2><p class="muted">@T("Binary cross-entropy measured on training data.")</p><svg viewBox="0 0 320 170" class="ml-chart" role="img" aria-label="Training loss curve"><line x1="15" y1="145" x2="305" y2="145" stroke="#D8CCEF"/><line x1="15" y1="15" x2="15" y2="145" stroke="#D8CCEF"/><polyline points="@LossPoints(e)" fill="none" stroke="#6A5ACD" stroke-width="3" stroke-linejoin="round"/></svg><p>Initial loss: @e.LossHistory[0].ToString("F3") · Final loss: @e.LossHistory[^1].ToString("F3")</p></section>
     </div>
-    <section class="panel"><h2>Predictive maintenance sandbox</h2><p class="muted">Adjust a hypothetical sensor snapshot and inspect the actual learned model output. This is not a live vehicle measurement.</p>
+    <section class="panel"><h2>@T("Predictive maintenance sandbox")</h2><p class="muted">@T("Adjust a hypothetical sensor snapshot and inspect the actual learned model output. This is not a live vehicle measurement.")</p>
         <div class="formgrid">
-            <label>Engine temperature (°C)<input type="number" @bind="temp" /></label>
-            <label>Vibration (mm/s)<input type="number" step=".1" @bind="vibration" /></label>
-            <label>Battery voltage (V)<input type="number" step=".1" @bind="voltage" /></label>
-            <label>Service interval used (ratio)<input type="number" step=".1" @bind="service" /></label>
-            <label>Engine hours<input type="number" @bind="hours" /></label>
+            <label>@T("Engine temperature (°C)")<input type="number" @bind="temp" /></label>
+            <label>@T("Vibration (mm/s)")<input type="number" step=".1" @bind="vibration" /></label>
+            <label>@T("Battery voltage (V)")<input type="number" step=".1" @bind="voltage" /></label>
+            <label>@T("Service interval used (ratio)")<input type="number" step=".1" @bind="service" /></label>
+            <label>@T("Engine hours")<input type="number" @bind="hours" /></label>
         </div>
         @if(ValidFeatures){
             var risk=e.Model.Predict(Features);
-            <div class="metric ml-risk">Simulated seven-day failure probability<strong>@risk.ToString("P1")</strong><div class="progress"><i style="@Width(risk)"></i></div></div>
-            <h3>Feature contributions</h3><p class="muted">Signed log-odds contributions relative to training means; not causal explanations.</p>
-            <div class="tablewrap"><table><thead><tr><th>Feature</th><th>Contribution</th></tr></thead><tbody>@foreach(var c in e.Model.Explain(Features)){<tr><td>@c.Feature</td><td>@c.LogOddsContribution.ToString("+0.00;-0.00;0.00")</td></tr>}</tbody></table></div>
-        }else{<p class="error">Enter finite values within the supported demonstration ranges.</p>}
+            <div class="metric ml-risk">@T("Simulated seven-day failure probability")<strong>@risk.ToString("P1")</strong><div class="progress"><i style="@Width(risk)"></i></div></div>
+            <h3>@T("Feature contributions")</h3><p class="muted">@T("Signed log-odds contributions relative to training means; not causal explanations.")</p>
+            <div class="tablewrap"><table><thead><tr><th>@T("Feature")</th><th>@T("Contribution")</th></tr></thead><tbody>@foreach(var c in e.Model.Explain(Features)){<tr><td>@c.Feature</td><td>@c.LogOddsContribution.ToString("+0.00;-0.00;0.00")</td></tr>}</tbody></table></div>
+        }else{<p class="error">@T("Enter finite values within the supported demonstration ranges.")</p>}
     </section>
 }
 @code{
+    [Parameter] public bool Russian{get;set;}
+    private string T(string value)=>DemoLocale.Text(value,Russian);
     private int seed=42,epochs=120;
     private double temp=95,vibration=3.5,voltage=12.8,service=.8,hours=3500;
     private string message="";

@@ -2,7 +2,7 @@
 <section class="panel"><h2>@T("Maintenance work journal")</h2><p class="muted">@T("Append a completed demo work record at the current simulated time and odometer. Only scheduled service resets the service interval. Repair and inspection do not reset it. Costs are user-entered EUR amounts; leave blank if unknown.")</p>
 <div class="formgrid">
 <label>@T("Work vehicle")<select @bind="vehicle"><option value="0">@T("Select vehicle")</option>@foreach(var v in Fleet.Vehicles.OrderBy(v=>v.Plate)){<option value="@v.Id">@v.Plate</option>}</select></label>
-<label>@T("Work category")<select @bind="kind"><option value="Scheduled service">@T("Scheduled service")</option><option value="Repair">@T("Repair")</option><option value="Inspection">@T("Inspection")</option></select></label>
+<label>@T("Work category")<select aria-label="@T("Work category")" @bind="kind"><option value="Scheduled service">@T("Scheduled service")</option><option value="Repair">@T("Repair")</option><option value="Inspection">@T("Inspection")</option></select></label>
 <label>@T("Recorded cost (EUR)")<input type="number" min="0" max="1000000" step=".01" @bind="cost"/></label>
 <label>@T("Work notes")<input maxlength="500" @bind="notes"/></label>
 </div>

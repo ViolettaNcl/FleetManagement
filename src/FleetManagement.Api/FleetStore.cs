@@ -66,17 +66,21 @@ public sealed class FleetStore(FleetDbContext db, FleetWriteGate gate, IHubConte
     public async Task<IResult> WriteWithReceipt(object? input,Func<FleetData,Task<IResult>> action,CancellationToken ct)
     {
         var context=http.HttpContext??throw new InvalidOperationException("HTTP context required.");
-        var header=context.Request.Headers["Idempotency-Key"];
-        if(header.Count==0)return await Write(action,ct);
-        if(header.Count!=1||!Guid.TryParseExact(header.ToString(),"D",out var key)||key==Guid.Empty)
-            return Results.BadRequest(new{error="Idempotency-Key must be a nonempty UUID."});
+        // Every caller uses the same actor-scoped receipt transaction.
         var actor=context.User.FindFirstValue(ClaimTypes.NameIdentifier);
         if(string.IsNullOrEmpty(actor))return Results.Unauthorized();
+        var header=context.Request.Headers["Idempotency-Key"];
+        var key=Guid.NewGuid();
+        if(header.Count>0){
+            if(header.Count!=1||!Guid.TryParseExact(header.ToString(),"D",out var parsed)||parsed==Guid.Empty)
+                return Results.BadRequest(new{error="Idempotency-Key must be a nonempty UUID."});
+            key=parsed;
+        }
         var options=new JsonSerializerOptions(JsonSerializerDefaults.Web);
         var path=context.Request.Path.Value??"";
         var fingerprint=Convert.ToHexString(SHA256.HashData(JsonSerializer.SerializeToUtf8Bytes(new{version="fleet-write-v1",method=context.Request.Method,path,input},options)));
         bool replayed=false;
-        return await Write(async data=>{
+        var outcome=await Write(async data=>{
             var old=await db.BatchReceipts.AsNoTracking().SingleOrDefaultAsync(r=>r.ActorId==actor&&r.Key==key,ct);
             if(old is not null){
                 if(old.PayloadHash!=fingerprint)return Results.Conflict(new{error="Idempotency key already used for a different operation."});
@@ -104,6 +108,8 @@ public sealed class FleetStore(FleetDbContext db, FleetWriteGate gate, IHubConte
             await db.SaveChangesAsync(ct);
             return result;
         },ct,()=>!replayed);
+        if(Success(outcome))context.Response.Headers["Idempotency-Key"]=key.ToString("D");
+        return outcome;
     }
     private sealed record WriteReceipt(int Status,string? Location,JsonElement Body);
     private static bool Success(IResult result)=>result is IStatusCodeHttpResult{StatusCode:>=200 and <300};

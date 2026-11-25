@@ -1,0 +1,195 @@
+"use strict";
+const translations={
+  "FleetManagement · Connected workspace": "FleetManagement · Рабочее пространство",
+  "Connected operations workspace · local API": "Управление автопарком · локальный API",
+  "Language": "Язык",
+  "Sign out": "Выйти",
+  "Sign in to the fleet server": "Вход в систему автопарка",
+  "Email": "Электронная почта",
+  "Password": "Пароль",
+  "Sign in": "Войти",
+  "Use an existing FleetManagement Identity account. No external API key is requested. The browser keeps the access token in memory only; reloading signs you out.": "Используйте существующую учётную запись FleetManagement. Внешний API-ключ не требуется. Токен хранится только в памяти страницы; перезагрузка завершает сеанс.",
+  "Use localhost or an appropriately secured HTTPS deployment. This workspace is independent of the offline portfolio demo.": "Используйте localhost или защищённое HTTPS-развёртывание. Этот режим независим от автономного демо.",
+  "Operations overview": "Обзор операций",
+  "Refresh server records": "Обновить данные сервера",
+  "Vehicles": "Автомобили",
+  "Drivers": "Водители",
+  "Trips": "Рейсы",
+  "Work records": "Записи о работах",
+  "Server records changed. Refresh to review them.": "Данные сервера изменились. Обновите их для просмотра.",
+  "Review updated records": "Просмотреть обновления",
+  "Fleet register": "Реестр автопарка",
+  "Maintenance": "Обслуживание",
+  "Resources": "Ресурсы",
+  "Financial reports": "Финансовые отчёты",
+  "Audit": "Аудит",
+  "Registered trips": "Зарегистрированные рейсы",
+  "Server UTC times. Only future trips can be edited. Server validation is authoritative.": "Время сервера в UTC. Редактировать можно только будущие рейсы. Окончательная проверка выполняется сервером.",
+  "Create trip": "Создать рейс",
+  "Trip vehicle": "Автомобиль рейса",
+  "Trip driver": "Водитель рейса",
+  "Trip origin": "Пункт отправления",
+  "Trip destination": "Пункт назначения",
+  "Trip start (UTC)": "Отправление (UTC)",
+  "Trip end (UTC)": "Прибытие (UTC)",
+  "Trip distance (km)": "Расстояние рейса (км)",
+  "Confirm trip assignment in UTC.": "Подтверждаю назначение рейса по времени UTC.",
+  "Save trip": "Сохранить рейс",
+  "New trip / cancel editing": "Новый рейс / отменить редактирование",
+  "Batch dispatch": "Пакетная диспетчеризация",
+  "Up to 40 fixed-time requests. Preview compares two greedy strategies. Apply checks the current database again. Pending requests are kept in this session only.": "До 40 заявок с заданным временем. Предпросмотр сравнивает две жадные стратегии. Перед применением сервер повторно проверяет базу. Ожидающие заявки хранятся только в сеансе.",
+  "Request origin": "Отправление заявки",
+  "Request destination": "Назначение заявки",
+  "Request start (UTC)": "Начало заявки (UTC)",
+  "Request end (UTC)": "Конец заявки (UTC)",
+  "Request distance (km)": "Расстояние заявки (км)",
+  "Add request": "Добавить заявку",
+  "Preview assignments": "Рассчитать назначения",
+  "Clear pending requests": "Очистить ожидающие заявки",
+  "Assignment strategy": "Стратегия назначения",
+  "Confirm selected assignments; unassigned requests remain pending.": "Подтверждаю выбранные назначения; остальные заявки останутся в ожидании.",
+  "Apply batch": "Применить пакет",
+  "Maintenance journal": "Журнал обслуживания",
+  "Record completed work": "Зарегистрировать выполненную работу",
+  "Vehicle": "Автомобиль",
+  "Category": "Категория",
+  "Repair": "Ремонт",
+  "Inspection": "Осмотр",
+  "Scheduled service": "Плановое ТО",
+  "Cost (EUR, optional)": "Стоимость (EUR, необязательно)",
+  "Notes": "Примечания",
+  "Confirm this completed work at the server's current time and odometer.": "Подтверждаю выполненную работу с текущими временем сервера и пробегом.",
+  "Save work record": "Сохранить работу",
+  "Driver shifts": "Смены водителей",
+  "Register driver shift": "Зарегистрировать смену",
+  "Driver": "Водитель",
+  "Start (UTC)": "Начало (UTC)",
+  "End (UTC)": "Конец (UTC)",
+  "Confirm shift in UTC.": "Подтверждаю смену по времени UTC.",
+  "Save shift": "Сохранить смену",
+  "Vehicle reservations": "Резервирование транспорта",
+  "Reserve vehicle": "Зарезервировать автомобиль",
+  "Unavailable": "Недоступен",
+  "Confirm reservation in UTC; this does not record completed service.": "Подтверждаю резервирование по UTC; это не запись о выполненном ТО.",
+  "Financial estimates and budget": "Финансовые оценки и бюджет",
+  "Server-side calculations from registered trips and work records. Rates are illustrative EUR assumptions, not market prices. Completed-trip estimates, whole-period budget projection and recorded work costs are separate. Reports read current records; independent API queries can reflect concurrent changes.": "Серверные расчёты по зарегистрированным рейсам и работам. Тарифы в евро — условные, не рыночные цены. Оценки завершённых рейсов, бюджет периода и расходы на работы учитываются отдельно. Независимые запросы могут отражать параллельные изменения.",
+  "Report from (UTC)": "Отчёт с (UTC)",
+  "Report to (UTC, inclusive)": "Отчёт по (UTC, включительно)",
+  "Fuel intensity (L/100 km)": "Расход топлива (л/100 км)",
+  "Fuel price (EUR/L)": "Цена топлива (EUR/л)",
+  "Maintenance allowance (EUR/km)": "Резерв на ТО (EUR/км)",
+  "Driver rate (EUR/hour)": "Ставка водителя (EUR/час)",
+  "Period budget (EUR)": "Бюджет периода (EUR)",
+  "Fixed allowance (EUR)": "Постоянные затраты (EUR)",
+  "Calculate financial report": "Рассчитать финансовый отчёт",
+  "Download financial Excel": "Скачать финансовый Excel",
+  "Recent audit entries": "Последние записи аудита",
+  "Administrator only · most recent 100 actions. No passwords or clinical/private notes.": "Только администратор · последние 100 действий. Без паролей и личных примечаний.",
+  "Connected mode · server-backed data · no third-party services": "Подключённый режим · серверные данные · без сторонних сервисов",
+  "Plate": "Госномер",
+  "Model": "Модель",
+  "Mileage (km)": "Пробег (км)",
+  "Last service": "Последнее ТО",
+  "Name": "Имя",
+  "License": "Удостоверение",
+  "Experience": "Стаж",
+  "Origin": "Отправление",
+  "Destination": "Назначение",
+  "Start": "Начало",
+  "End": "Конец",
+  "Distance": "Расстояние",
+  "Action": "Действие",
+  "Work": "Работа",
+  "Recorded": "Записано",
+  "Mileage": "Пробег",
+  "Cost EUR": "Стоимость EUR",
+  "Time": "Время",
+  "Actor": "Пользователь",
+  "Entity": "Сущность",
+  "ID": "ID",
+  "Metric": "Показатель",
+  "Value": "Значение",
+  "Completed distance (km)": "Завершённый пробег (км)",
+  "Completed-trip estimate": "Оценка завершённых рейсов",
+  "Cost per km": "Стоимость километра",
+  "Recorded maintenance (separate)": "Зарегистрированные расходы ТО (отдельно)",
+  "Unknown work costs": "Работы с неизвестной стоимостью",
+  "Projected whole-period total": "Прогноз расходов за период",
+  "Period budget": "Бюджет периода",
+  "Budget headroom": "Остаток бюджета",
+  "Calculated at": "Время расчёта",
+  "Distance (km)": "Расстояние (км)",
+  "Estimated cost": "Расчётная стоимость",
+  "EUR/km": "EUR/км",
+  "Request": "Заявка",
+  "Route": "Маршрут",
+  "Pending request": "Ожидающая заявка",
+  "No records.": "Нет записей.",
+  "Select": "Выберите",
+  "History": "История",
+  "Edit trip": "Редактировать рейс",
+  "Unknown": "Неизвестно",
+  "Strict driver shifts enabled": "Строгий контроль смен включён",
+  "Driver shifts advisory": "Смены учитываются справочно",
+  "Review current values before saving. A changed original record is rejected.": "Проверьте значения перед сохранением. Если запись изменилась, сервер отклонит обновление.",
+  "Signed out.": "Вы вышли из системы.",
+  "Session expired. Sign in again.": "Сеанс истёк. Войдите снова.",
+  "Authentication failed.": "Ошибка авторизации.",
+  "Connected to local API.": "Подключено к локальному API.",
+  "Unable to load workspace. Sign in again.": "Не удалось загрузить рабочее пространство. Войдите снова.",
+  "Records refreshed.": "Данные обновлены.",
+  "Record saved. Refreshing server data…": "Запись сохранена. Обновление данных…",
+  "Record saved and server data refreshed.": "Запись сохранена, данные обновлены.",
+  "Record saved, but refresh failed. Use Refresh server records; do not resubmit.": "Запись сохранена, но обновление не удалось. Обновите данные; не отправляйте повторно.",
+  "Financial report calculated from server records.": "Финансовый отчёт рассчитан по данным сервера.",
+  "Financial workbook downloaded.": "Финансовый файл скачан.",
+  "Trip saved. Refreshing…": "Рейс сохранён. Обновление…",
+  "Trip saved and server data refreshed.": "Рейс сохранён, данные обновлены.",
+  "Trip saved; refresh failed. Do not resubmit.": "Рейс сохранён, обновление не удалось. Не отправляйте повторно.",
+  "At most 40 requests.": "Не более 40 заявок.",
+  "Choose a future positive interval.": "Выберите будущий интервал положительной длительности.",
+  "Request added.": "Заявка добавлена.",
+  "Pending requests cleared.": "Ожидающие заявки очищены.",
+  "Add at least one request.": "Добавьте хотя бы одну заявку.",
+  "Preview ready; server register unchanged.": "Предпросмотр готов; реестр не изменён.",
+  "Confirm the selected assignments first.": "Сначала подтвердите назначения.",
+  "No assigned requests.": "Нет назначенных заявок.",
+  "Batch saved; refresh failed. Do not resubmit.": "Пакет сохранён, обновление не удалось. Не отправляйте повторно.",
+  "Change monitoring: every 10 seconds while this page is open.": "Проверка изменений каждые 10 секунд, пока страница открыта.",
+  "Server records changed. Refresh to review them; your current forms will not be overwritten automatically.": "Данные сервера изменились. Обновите их для просмотра; черновики форм не будут перезаписаны автоматически.",
+  "Change monitoring temporarily unavailable. Use manual refresh.": "Проверка изменений недоступна. Обновите данные вручную."
+};
+let language="en";
+function translate(value){
+    if(language!=="ru")return value;
+    if(Object.hasOwn(translations,value))return translations[value];
+    if(/^Edit trip #\d+$/.test(value))return value.replace("Edit trip #","Редактировать рейс №");
+    if(/^Applied \d+ trips/.test(value))return value.replace(/^Applied (\d+) trips and refreshed server data\.$/,"Применено рейсов: $1. Данные обновлены.").replace(/^Applied (\d+) trips\. Refreshing…$/,"Применено рейсов: $1. Обновление…");
+    if(/^\d+ assigned · \d+ pending$/.test(value))return value.replace(/(\d+) assigned · (\d+) pending/,"Назначено: $1 · ожидают: $2");
+    if(value.startsWith("Change monitoring active · "))return value.replace("Change monitoring active · ","Проверка изменений активна · ");
+    if(value.startsWith("Last refreshed "))return value.replace("Last refreshed ","Обновлено ").replace(" · independent API reads, not a transactional snapshot."," · независимые запросы API, не транзакционный снимок.");
+    return value;
+}
+const staticText=[];
+const walker=document.createTreeWalker(document.body,NodeFilter.SHOW_TEXT);
+while(walker.nextNode()){
+    const n=walker.currentNode;
+    if(n.parentElement.closest("script,style"))continue;
+    const original=n.nodeValue,trimmed=original.trim();
+    if(!Object.hasOwn(translations,trimmed))continue;
+    if(n.parentElement.tagName==="OPTION"&&!n.parentElement.hasAttribute("value"))n.parentElement.value=trimmed;
+    staticText.push({n,original,trimmed});
+}
+function uiText(node,value){
+    node.dataset.uiText=value;
+    node.textContent=translate(value);
+}
+function setLanguage(value){
+    language=value==="ru"?"ru":"en";
+    document.documentElement.lang=language;
+    document.title=translate("FleetManagement · Connected workspace");
+    for(const item of staticText)if(item.n.isConnected)item.n.nodeValue=item.original.replace(item.trimmed,translate(item.trimmed));
+    for(const el of document.querySelectorAll("[data-ui-text]"))el.textContent=translate(el.dataset.uiText);
+    document.getElementById("language").setAttribute("aria-label",translate("Language"));
+}
+document.getElementById("language").addEventListener("change",e=>setLanguage(e.target.value));

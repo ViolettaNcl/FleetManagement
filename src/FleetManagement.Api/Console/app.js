@@ -4,12 +4,12 @@ let token=null, generation=0, busy=false, currentPage="fleet";
 const editors=[$("work-form"),$("shift-form"),$("reservation-form"),$("trip-form")];
 let revision=null,revisionTimer=null,checkingRevision=false;
 let tripVersion=null,tripId=null,latestFleet=null,batchRequests=[],batchPlans=[],nextRequest=1;
-function status(text,error=false){$("status").textContent=text;$("status").classList.toggle("error",error);}
+function status(text,error=false){uiText($("status"),text);$("status").classList.toggle("error",error);}
 function signOut(message="Signed out."){
     token=null;generation++;busy=false;stopRevisionWatch();
     for(const button of document.querySelectorAll("button"))button.disabled=false;
     $("auth").hidden=false;$("workspace").hidden=true;$("logout").hidden=true;
-    $("identity").textContent="";$("policy").textContent="";$("updated").textContent="";
+    $("identity").textContent="";uiText($("policy"),"");uiText($("updated"),"");
     for(const id of ["vehicles","drivers","trips","work","shifts","reservations","audit","finance-summary","finance-vehicles"])$(id).replaceChildren();
     for(const id of ["vehicles-count","drivers-count","trips-count","work-count"])$(id).textContent="—";
     for(const form of editors){form.reset();form.hidden=true;for(const select of form.querySelectorAll("select[name=vehicleId],select[name=driverId]"))select.replaceChildren();}
@@ -31,16 +31,16 @@ async function api(path,method="GET",body,authenticated=true,format="json"){
 function table(id,columns,rows){
     const root=$(id);root.replaceChildren();
     const head=document.createElement("thead"),tr=document.createElement("tr");
-    for(const [label] of columns){const th=document.createElement("th");th.scope="col";th.textContent=label;tr.append(th);}
+    for(const [label] of columns){const th=document.createElement("th");th.scope="col";uiText(th,label);tr.append(th);}
     head.append(tr);root.append(head);
     const body=document.createElement("tbody");
     for(const row of rows){const r=document.createElement("tr");for(const [,get] of columns){const td=document.createElement("td");const value=get(row);if(value instanceof Node)td.append(value);else td.textContent=value==null?"—":String(value);r.append(td);}body.append(r);}
-    if(!rows.length){const r=document.createElement("tr"),td=document.createElement("td");td.colSpan=columns.length;td.textContent="No records.";r.append(td);body.append(r);}
+    if(!rows.length){const r=document.createElement("tr"),td=document.createElement("td");td.colSpan=columns.length;uiText(td,"No records.");r.append(td);body.append(r);}
     root.append(body);
 }
 const date=x=>typeof x==="string"?x.replace("T"," ").replace(/Z$/," UTC"):"—";
 const text=key=>row=>row[key];
-function options(select,rows,label){const old=select.value;select.replaceChildren();const blank=document.createElement("option");blank.value="";blank.textContent="Select";select.append(blank);for(const r of rows){const o=document.createElement("option");o.value=String(r.id);o.textContent=label(r);select.append(o);}if([...select.options].some(o=>o.value===old))select.value=old;}
+function options(select,rows,label){const old=select.value;select.replaceChildren();const blank=document.createElement("option");blank.value="";uiText(blank,"Select");select.append(blank);for(const r of rows){const o=document.createElement("option");o.value=String(r.id);o.textContent=label(r);select.append(o);}if([...select.options].some(o=>o.value===old))select.value=old;}
 function tab(name){currentPage=name;for(const item of document.querySelectorAll("[data-page]"))item.hidden=item.dataset.page!==name;for(const button of document.querySelectorAll("[data-tab]"))button.setAttribute("aria-pressed",String(button.dataset.tab===name));}
 async function refresh(){
     const active=generation;
@@ -51,7 +51,7 @@ async function refresh(){
     const audit=admin?await api("/api/admin/audit?limit=100"):[];
     if(active!==generation||!token)throw Error("Session changed.");
     $("identity").textContent=me.name+" · "+me.roles.join(", ");
-    $("policy").textContent=policy.requireShifts?"Strict driver shifts enabled":"Driver shifts advisory";
+    uiText($("policy"),policy.requireShifts?"Strict driver shifts enabled":"Driver shifts advisory");
     latestFleet=fleet;
     const vehicles=fleet.vehicles,drivers=fleet.drivers;
     const vehicle=id=>vehicles.find(v=>v.id===id)?.plate??("#"+id);
@@ -68,7 +68,7 @@ async function refresh(){
     $("batch-panel").hidden=!canWrite;
     $("audit-tab").hidden=!admin;
     if(!admin&&currentPage==="audit")tab("fleet");
-    $("updated").textContent="Last refreshed "+new Date().toLocaleString()+" · independent API reads, not a transactional snapshot.";
+    uiText($("updated"),"Last refreshed "+new Date().toLocaleString()+" · independent API reads, not a transactional snapshot.");
     revision=checkpoint.revision;$("change-notice").hidden=true;
     $("auth").hidden=true;$("workspace").hidden=false;$("logout").hidden=false;
     startRevisionWatch();
@@ -118,32 +118,32 @@ $("finance-export").addEventListener("click",()=>{if(!financeForm.reportValidity
 const tripForm=$("trip-form"),batchForm=$("batch-form");
 function tripFields(d){return {vehicleId:Number(d.get("vehicleId")),driverId:Number(d.get("driverId")),origin:d.get("origin").trim(),destination:d.get("destination").trim(),start:utc(d.get("start")),end:utc(d.get("end")),distance:Number(d.get("distance"))};}
 function versionOf(t){return {vehicleId:t.vehicleId,driverId:t.driverId,origin:t.origin,destination:t.destination,start:t.start,end:t.end,distance:t.distance};}
-function resetTrip(){tripId=null;tripVersion=null;$("trip-form").reset();$("trip-heading").textContent="Create trip";$("trip-edit-status").textContent="";}
-function tripAction(t){if(new Date(t.start)<=new Date())return "History";const button=document.createElement("button");button.type="button";button.textContent="Edit trip";button.addEventListener("click",()=>{if(busy)return;tripId=t.id;tripVersion=versionOf(t);const e=tripForm.elements;for(const k of ["vehicleId","driverId","origin","destination","distance"])e[k].value=t[k];e.start.value=new Date(t.start).toISOString().slice(0,19);e.end.value=new Date(t.end).toISOString().slice(0,19);e.confirmed.checked=false;$("trip-heading").textContent="Edit trip #"+t.id;$("trip-edit-status").textContent="Review current values before saving. A changed original record is rejected.";tripForm.scrollIntoView({block:"nearest"});});return button;}
+function resetTrip(){tripId=null;tripVersion=null;$("trip-form").reset();uiText($("trip-heading"),"Create trip");uiText($("trip-edit-status"),"");}
+function tripAction(t){if(new Date(t.start)<=new Date()){const span=document.createElement("span");uiText(span,"History");return span;}const button=document.createElement("button");button.type="button";uiText(button,"Edit trip");button.addEventListener("click",()=>{if(busy)return;tripId=t.id;tripVersion=versionOf(t);const e=tripForm.elements;for(const k of ["vehicleId","driverId","origin","destination","distance"])e[k].value=t[k];e.start.value=new Date(t.start).toISOString().slice(0,19);e.end.value=new Date(t.end).toISOString().slice(0,19);e.confirmed.checked=false;uiText($("trip-heading"),"Edit trip #"+t.id);uiText($("trip-edit-status"),"Review current values before saving. A changed original record is rejected.");tripForm.scrollIntoView({block:"nearest"});});return button;}
 $("trip-new").addEventListener("click",resetTrip);
 tripForm.addEventListener("submit",event=>{event.preventDefault();const d=new FormData(tripForm);if(!d.has("confirmed"))return;operation(async()=>{const body=tripFields(d);if(tripVersion)body.expected=tripVersion;await api(tripId===null?"/api/trips":"/api/trips/"+tripId,tripId===null?"POST":"PUT",body);resetTrip();status("Trip saved. Refreshing…");try{await refresh();status("Trip saved and server data refreshed.");}catch{if(token)status("Trip saved; refresh failed. Do not resubmit.",true);}});});
 function renderRequests(){table("batch-requests",[["Request",text("id")],["Origin",text("origin")],["Destination",text("destination")],["Start",r=>date(r.start)],["End",r=>date(r.end)],["Distance",text("distance")]],batchRequests);}
-function invalidateBatch(){batchPlans=[];$("batch-result").hidden=true;$("batch-confirm").checked=false;$("batch-assigned").replaceChildren();$("batch-unassigned").replaceChildren();$("batch-strategy").replaceChildren();$("batch-counts").textContent="";}
+function invalidateBatch(){batchPlans=[];$("batch-result").hidden=true;$("batch-confirm").checked=false;$("batch-assigned").replaceChildren();$("batch-unassigned").replaceChildren();$("batch-strategy").replaceChildren();uiText($("batch-counts"),"");}
 function clearBatch(){batchRequests=[];nextRequest=1;batchForm.reset();invalidateBatch();renderRequests();}
 batchForm.addEventListener("submit",event=>{event.preventDefault();if(busy)return;if(batchRequests.length>=40){status("At most 40 requests.",true);return;}const d=new FormData(batchForm);const start=utc(d.get("start")),end=utc(d.get("end"));if(new Date(end)<=new Date(start)||new Date(start)<=new Date()){status("Choose a future positive interval.",true);return;}batchRequests.push({id:nextRequest++,origin:d.get("origin").trim(),destination:d.get("destination").trim(),start,end,distance:Number(d.get("distance"))});invalidateBatch();renderRequests();status("Request added.");});
 $("batch-clear").addEventListener("click",()=>{clearBatch();status("Pending requests cleared.");});
 $("batch-preview").addEventListener("click",()=>operation(async()=>{if(!batchRequests.length)throw Error("Add at least one request.");invalidateBatch();batchPlans=await api("/api/operations/batch/preview","POST",{requests:batchRequests});const select=$("batch-strategy");for(const [i,p] of batchPlans.entries()){const o=document.createElement("option");o.value=i;o.textContent=p.strategy+" ("+p.assigned.length+" assigned)";select.append(o);}select.value=String(batchPlans.length-1);renderPlan();status("Preview ready; server register unchanged.");}));
-function renderPlan(){const p=batchPlans[Number($("batch-strategy").value)];if(!p)return;$("batch-confirm").checked=false;$("batch-result").hidden=false;$("batch-counts").textContent=p.assigned.length+" assigned · "+p.unassigned.length+" pending";table("batch-assigned",[["Request",r=>r.request.id],["Route",r=>r.request.origin+" → "+r.request.destination],["Vehicle",r=>latestFleet?.vehicles.find(v=>v.id===r.vehicleId)?.plate??r.vehicleId],["Driver",r=>latestFleet?.drivers.find(v=>v.id===r.driverId)?.name??r.driverId]],p.assigned);table("batch-unassigned",[["Pending request",text("id")],["Origin",text("origin")],["Destination",text("destination")]],p.unassigned);}
+function renderPlan(){const p=batchPlans[Number($("batch-strategy").value)];if(!p)return;$("batch-confirm").checked=false;$("batch-result").hidden=false;uiText($("batch-counts"),p.assigned.length+" assigned · "+p.unassigned.length+" pending");table("batch-assigned",[["Request",r=>r.request.id],["Route",r=>r.request.origin+" → "+r.request.destination],["Vehicle",r=>latestFleet?.vehicles.find(v=>v.id===r.vehicleId)?.plate??r.vehicleId],["Driver",r=>latestFleet?.drivers.find(v=>v.id===r.driverId)?.name??r.driverId]],p.assigned);table("batch-unassigned",[["Pending request",text("id")],["Origin",text("origin")],["Destination",text("destination")]],p.unassigned);}
 $("batch-strategy").addEventListener("change",renderPlan);
 $("batch-apply").addEventListener("click",()=>{if(!$("batch-confirm").checked){status("Confirm the selected assignments first.",true);return;}operation(async()=>{const p=batchPlans[Number($("batch-strategy").value)];if(!p?.assigned.length)throw Error("No assigned requests.");const saved=await api("/api/operations/batch/apply","POST",{confirmed:true,assignments:p.assigned});const ids=new Set(p.assigned.map(a=>a.request.id));batchRequests=batchRequests.filter(r=>!ids.has(r.id));invalidateBatch();renderRequests();status("Applied "+saved.length+" trips. Refreshing…");try{await refresh();status("Applied "+saved.length+" trips and refreshed server data.");}catch{if(token)status("Batch saved; refresh failed. Do not resubmit.",true);}});});
 renderRequests();
 
-function stopRevisionWatch(){if(revisionTimer!==null)clearInterval(revisionTimer);revisionTimer=null;revision=null;checkingRevision=false;$("change-notice").hidden=true;$("connection-state").textContent="";}
-function startRevisionWatch(){if(revisionTimer!==null)return;$("connection-state").textContent="Change monitoring: every 10 seconds while this page is open.";revisionTimer=setInterval(checkRevision,10000);}
+function stopRevisionWatch(){if(revisionTimer!==null)clearInterval(revisionTimer);revisionTimer=null;revision=null;checkingRevision=false;$("change-notice").hidden=true;uiText($("connection-state"),"");}
+function startRevisionWatch(){if(revisionTimer!==null)return;uiText($("connection-state"),"Change monitoring: every 10 seconds while this page is open.");revisionTimer=setInterval(checkRevision,10000);}
 async function checkRevision(){
     if(!token||busy||checkingRevision||document.hidden)return;
     const active=generation;checkingRevision=true;
     try{
         const result=await api("/api/operations/revision");
         if(active!==generation||!token)return;
-        if(result.revision!==revision){$("change-notice").hidden=false;$("change-message").textContent="Server records changed. Refresh to review them; your current forms will not be overwritten automatically.";}
-        $("connection-state").textContent="Change monitoring active · "+new Date().toLocaleTimeString();
-    }catch(e){if(active===generation&&token)$("connection-state").textContent="Change monitoring temporarily unavailable. Use manual refresh.";}
+        if(result.revision!==revision){$("change-notice").hidden=false;uiText($("change-message"),"Server records changed. Refresh to review them; your current forms will not be overwritten automatically.");}
+        uiText($("connection-state"),"Change monitoring active · "+new Date().toLocaleTimeString());
+    }catch(e){if(active===generation&&token)uiText($("connection-state"),"Change monitoring temporarily unavailable. Use manual refresh.");}
     finally{if(active===generation)checkingRevision=false;}
 }
 $("change-refresh").addEventListener("click",()=>operation(async()=>{await refresh();status("Records refreshed.");}));

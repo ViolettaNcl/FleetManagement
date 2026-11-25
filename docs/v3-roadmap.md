@@ -74,3 +74,5 @@ Server finance V1 reuses the shared cost, budget and XLSX engines via authorized
 Connected dispatch includes confirmed single-trip creation and future edit, stale-record comparison, batch preview/apply and Viewer UI restrictions. API tests reject outdated expected record; browser tests actual trip and batch workflows.
 
 Connected revision watch: bounded ten-second polling of authorized audit watermark, change notice and manual refresh preserving draft inputs. Server hub remains available; this is polling, not browser SignalR push.
+
+Connected EN/RU localization first pass covers static shell/forms, table headers and common client messages while preserving canonical API values. Browser smoke switches languages and verifies selected work category unchanged. Server errors and offline Blazor still English.

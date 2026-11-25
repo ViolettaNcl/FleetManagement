@@ -22,6 +22,10 @@ try{
     await mkdir("browser-results",{recursive:true});
     await page.goto(base+"/console");
     await page.getByRole("heading",{name:"Sign in to the fleet server"}).waitFor();
+    await page.getByLabel("Language",{exact:true}).selectOption("ru");
+    await page.getByRole("heading",{name:"Вход в систему автопарка"}).waitFor();
+    assert.equal(await page.locator("html").getAttribute("lang"),"ru");
+    await page.getByLabel("Язык",{exact:true}).selectOption("en");
     await page.getByLabel("Email").fill(adminEmail);
     await page.getByLabel("Password").fill("invalid-password");
     await page.getByRole("button",{name:"Sign in",exact:true}).click();
@@ -36,6 +40,10 @@ try{
     await page.locator("#work-form").getByLabel("Category").selectOption("Repair");
     await page.locator("#work-form").getByLabel("Cost (EUR, optional)").fill("12.50");
     const literal="<b>QA literal note</b>";
+    await page.getByLabel("Language",{exact:true}).selectOption("ru");
+    assert.equal(await page.locator("#work-form select[name=kind]").inputValue(),"Repair");
+    await page.getByRole("heading",{name:"Журнал обслуживания"}).waitFor();
+    await page.getByLabel("Язык",{exact:true}).selectOption("en");
     await page.locator("#work-form").getByLabel("Notes").fill(literal);
     await page.getByLabel("Confirm this completed work").check();
     await page.getByRole("button",{name:"Save work record"}).click();

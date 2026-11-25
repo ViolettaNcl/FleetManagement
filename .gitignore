@@ -9,7 +9,7 @@ obj/
 
 # DocFX generated files
 _site/
-api/
+/api/
 
 # Coverage reports
 CoverageReport/
@@ -27,3 +27,15 @@ project.nuget.cache
 *.nuget.g.props
 *.nuget.g.targets
 *.nuget.dgspec.json
+
+# Local secrets, databases and browser tooling
+.env
+.env.*
+!.env.example
+*.db
+*.db-shm
+*.db-wal
+node_modules/
+browser-results/
+publish/
+preview/

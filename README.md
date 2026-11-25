@@ -2,7 +2,7 @@
 
 # 🚚 FleetManagement
 
-### Desktop-приложение для управления автопарком компании
+### Fleet management platform · .NET 10 browser & API + original WPF desktop
 
 <p>
   <img src="https://img.shields.io/badge/WPF-.NET_Framework_4.7.2-512BD4?style=flat-square" alt="WPF">
@@ -21,7 +21,17 @@ The Blazor WebAssembly prototype retains the original lavender WPF design and ru
 
 [Demo setup, technical details and limitations](./docs/portfolio-v2.md) · [C# business rules](./src/FleetManagement.Core/Fleet.cs)
 
-GitHub Pages publication is pending successful build and repository Pages configuration. The original desktop app is retained.
+GitHub Pages publication is pending browser validation and repository Pages configuration. The original desktop app is retained.
+
+## Modern backend (.NET 10)
+
+The independent ASP.NET Core API reuses the same C# fleet rules and persists data using EF Core, with SQLite for local development and optional SQL Server in Docker Compose.
+
+- [Backend quick start, endpoints and limitations](./docs/backend.md)
+- [API source](./src/FleetManagement.Api)
+- [HTTP integration checks](./tests/api/smoke.py)
+
+The API is a local-development prototype; it is not connected to the public browser demo and is not a production authentication system.
 
 ## 📌 Описание
 

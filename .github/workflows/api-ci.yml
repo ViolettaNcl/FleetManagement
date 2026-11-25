@@ -34,7 +34,7 @@ jobs:
             cat "$RUNNER_TEMP/fleet-api.log"
             return 1
           }
-          trap 'kill "${pid:-0}" 2>/dev/null || true; cat "$RUNNER_TEMP/fleet-api.log" || true' EXIT
+          trap 'if [ -n "${pid:-}" ]; then kill "$pid" 2>/dev/null || true; fi; cat "$RUNNER_TEMP/fleet-api.log" || true' EXIT
           start_api
           python3 tests/api/smoke.py
           kill "$pid"

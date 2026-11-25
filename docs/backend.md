@@ -2,7 +2,7 @@
 
 The .NET 10 minimal API reuses FleetManagement.Core rules. EF Core supports a file-based SQLite database for frictionless development and SQL Server for the optional Docker Compose stack. The browser GitHub Pages demo remains independent, with no embedded secrets or server dependencies.
 
-## Run locally (PowerShell)
+## Run locally (PowerShell 7+)
 ```powershell
 $env:Fleet__ApiKey = [Convert]::ToHexString([System.Security.Cryptography.RandomNumberGenerator]::GetBytes(32))
 $env:Fleet__InitializeDatabase = "true"

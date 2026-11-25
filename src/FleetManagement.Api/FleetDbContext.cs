@@ -16,6 +16,7 @@ public sealed class FleetDbContext(DbContextOptions<FleetDbContext> options) : D
         vehicles.Property(v=>v.Plate).HasMaxLength(40);
         vehicles.Property(v=>v.Model).HasMaxLength(100);
         vehicles.HasIndex(v=>v.Plate).IsUnique();
+        vehicles.Property(v=>v.LastService).HasConversion(v=>v,v=>DateTime.SpecifyKind(v,DateTimeKind.Utc));
         var drivers=model.Entity<Driver>();
         drivers.Property(d=>d.Id).ValueGeneratedNever();
         drivers.Property(d=>d.Name).HasMaxLength(100);
@@ -25,6 +26,8 @@ public sealed class FleetDbContext(DbContextOptions<FleetDbContext> options) : D
         trips.Property(t=>t.Id).ValueGeneratedNever();
         trips.Property(t=>t.Origin).HasMaxLength(100);
         trips.Property(t=>t.Destination).HasMaxLength(100);
+        trips.Property(t=>t.Start).HasConversion(v=>v,v=>DateTime.SpecifyKind(v,DateTimeKind.Utc));
+        trips.Property(t=>t.End).HasConversion(v=>v,v=>DateTime.SpecifyKind(v,DateTimeKind.Utc));
         trips.HasOne<Vehicle>().WithMany().HasForeignKey(t=>t.VehicleId).OnDelete(DeleteBehavior.Restrict);
         trips.HasOne<Driver>().WithMany().HasForeignKey(t=>t.DriverId).OnDelete(DeleteBehavior.Restrict);
         trips.HasIndex(t=>new{t.VehicleId,t.Start,t.End});

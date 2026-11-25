@@ -4,13 +4,13 @@ let token=null, generation=0, busy=false, currentPage="fleet";
 const editors=[$("work-form"),$("shift-form"),$("reservation-form"),$("trip-form"),$("vehicle-form"),$("driver-form")];
 let registerEdits={vehicles:null,drivers:null},accountsOffset=0,accountsTotal=0;
 let revision=null,revisionTimer=null,checkingRevision=false,stopRealtime=null;
-let pendingBatch=null;
+let pendingBatch=null,pendingWrite=null;
 let tripVersion=null,tripId=null,latestFleet=null,batchRequests=[],batchPlans=[],nextRequest=1;
 function status(text,error=false){uiText($("status"),text);$("status").classList.toggle("error",error);}
 function signOut(message="Signed out."){
     token=null;generation++;busy=false;stopRevisionWatch();$("section-search").value="";for(const button of document.querySelectorAll("[data-tab]"))button.classList.remove("section-filtered");
     for(const button of document.querySelectorAll("button"))button.disabled=false;
-    $("auth").hidden=false;$("workspace").hidden=true;$("logout").hidden=true;$("revoke-self").hidden=true;pendingBatch=null;$("batch-receipt-status").textContent="";
+    $("auth").hidden=false;$("workspace").hidden=true;$("logout").hidden=true;$("revoke-self").hidden=true;pendingBatch=null;pendingWrite=null;$("write-recovery").hidden=true;$("batch-receipt-status").textContent="";
     $("identity").textContent="";uiText($("policy"),"");uiText($("updated"),"");
     for(const id of ["vehicles","drivers","trips","work","shifts","reservations","audit","finance-summary","finance-vehicles","accounts","overview-alerts","calendar-events"])$(id).replaceChildren();
     for(const id of ["vehicles-count","drivers-count","trips-count","work-count"])$(id).textContent="—";
@@ -80,13 +80,39 @@ async function refresh(){
     $("auth").hidden=true;$("workspace").hidden=false;$("logout").hidden=false;$("revoke-self").hidden=false;
     startRevisionWatch();
 }
+async function sendWrite(path,method,body,onSuccess){
+    if(pendingBatch)throw Error("Resolve the previous batch submission before changing its payload.");
+    if(pendingWrite)throw Error("Resolve the pending write before submitting another.");
+    pendingWrite={path,method,body,key:crypto.randomUUID(),onSuccess};
+    await retryWrite();
+}
+async function retryWrite(){
+    if(!pendingWrite)return;
+    const current=pendingWrite,active=generation;
+    let result;
+    try{result=await api(current.path,current.method,current.body,true,"json",{"Idempotency-Key":current.key});}
+    catch(e){
+        if(active!==generation||!token)throw e;
+        if([400,403,404,409,413,422].includes(e.httpStatus)){
+            pendingWrite=null;$("write-recovery").hidden=true;
+        }else{
+            $("write-recovery").hidden=false;
+            $("write-recovery-key").textContent=current.key;
+        }
+        throw e;
+    }
+    if(active!==generation)return;
+    pendingWrite=null;$("write-recovery").hidden=true;
+    await current.onSuccess(result);
+}
+$("retry-write").addEventListener("click",()=>operation(retryWrite));
 async function operation(action){if(busy)return;busy=true;const active=generation;for(const button of document.querySelectorAll("button:not(#logout)"))button.disabled=true;try{await action();}catch(e){if(active===generation)status(e.message||"Request failed.",true);}finally{if(active===generation){busy=false;for(const button of document.querySelectorAll("button"))button.disabled=false;}}}
 $("login").addEventListener("submit",event=>{event.preventDefault();const data=new FormData(event.currentTarget);event.currentTarget.elements.password.value="";operation(async()=>{const result=await api("/api/auth/login","POST",{email:data.get("email"),password:data.get("password")},false);token=result.accessToken;if(typeof token!=="string"){token=null;throw Error("Missing access token.");}try{await refresh();tab("fleet");status("Connected to local API.");}catch(e){if(token)signOut("Unable to load workspace. Sign in again.");throw e;}});});
 $("logout").addEventListener("click",()=>{signOut();for(const button of document.querySelectorAll("button"))button.disabled=false;});
 $("refresh").addEventListener("click",()=>operation(async()=>{await refresh();status("Records refreshed.");}));
 for(const button of document.querySelectorAll("[data-tab]"))button.addEventListener("click",()=>tab(button.dataset.tab));
 function utc(value){return new Date(value+"Z").toISOString();}
-function editor(form,path,build){form.addEventListener("submit",event=>{event.preventDefault();const data=new FormData(form);if(!data.has("confirmed"))return;operation(async()=>{const active=generation;await api(path,"POST",build(data));form.reset();status("Record saved. Refreshing server data…");try{await refresh();status("Record saved and server data refreshed.");}catch(e){if(token&&active===generation)status("Record saved, but refresh failed. Use Refresh server records; do not resubmit.",true);}});});}
+function editor(form,path,build){form.addEventListener("submit",event=>{event.preventDefault();const data=new FormData(form);if(!data.has("confirmed"))return;operation(async()=>{const active=generation;await sendWrite(path,"POST",build(data),async()=>{form.reset();status("Record saved. Refreshing server data…");try{await refresh();status("Record saved and server data refreshed.");}catch(e){if(token&&active===generation)status("Record saved, but refresh failed. Use Refresh server records; do not resubmit.",true);}});});});}
 editor($("work-form"),"/api/operations/maintenance",d=>({vehicleId:Number(d.get("vehicleId")),kind:d.get("kind"),notes:d.get("notes"),costEur:d.get("costEur")===""?null:Number(d.get("costEur"))}));
 editor($("shift-form"),"/api/operations/shifts",d=>({driverId:Number(d.get("driverId")),start:utc(d.get("start")),end:utc(d.get("end"))}));
 editor($("reservation-form"),"/api/operations/reservations",d=>({vehicleId:Number(d.get("vehicleId")),kind:d.get("kind"),notes:d.get("notes"),start:utc(d.get("start")),end:utc(d.get("end"))}));
@@ -128,7 +154,7 @@ function versionOf(t){return {vehicleId:t.vehicleId,driverId:t.driverId,origin:t
 function resetTrip(){tripId=null;tripVersion=null;$("trip-form").reset();uiText($("trip-heading"),"Create trip");uiText($("trip-edit-status"),"");}
 function tripAction(t){if(new Date(t.start)<=new Date()){const span=document.createElement("span");uiText(span,"History");return span;}const button=document.createElement("button");button.type="button";uiText(button,"Edit trip");button.addEventListener("click",()=>{if(busy)return;tripId=t.id;tripVersion=versionOf(t);const e=tripForm.elements;for(const k of ["vehicleId","driverId","origin","destination","distance"])e[k].value=t[k];e.start.value=new Date(t.start).toISOString().slice(0,19);e.end.value=new Date(t.end).toISOString().slice(0,19);e.confirmed.checked=false;uiText($("trip-heading"),"Edit trip #"+t.id);uiText($("trip-edit-status"),"Review current values before saving. A changed original record is rejected.");tripForm.scrollIntoView({block:"nearest"});});return button;}
 $("trip-new").addEventListener("click",resetTrip);
-tripForm.addEventListener("submit",event=>{event.preventDefault();const d=new FormData(tripForm);if(!d.has("confirmed"))return;operation(async()=>{const body=tripFields(d);if(tripVersion)body.expected=tripVersion;await api(tripId===null?"/api/trips":"/api/trips/"+tripId,tripId===null?"POST":"PUT",body);resetTrip();status("Trip saved. Refreshing…");try{await refresh();status("Trip saved and server data refreshed.");}catch{if(token)status("Trip saved; refresh failed. Do not resubmit.",true);}});});
+tripForm.addEventListener("submit",event=>{event.preventDefault();const d=new FormData(tripForm);if(!d.has("confirmed"))return;operation(async()=>{const body=tripFields(d);if(tripVersion)body.expected=tripVersion;await sendWrite(tripId===null?"/api/trips":"/api/trips/"+tripId,tripId===null?"POST":"PUT",body,async()=>{resetTrip();status("Trip saved. Refreshing…");try{await refresh();status("Trip saved and server data refreshed.");}catch{if(token)status("Trip saved; refresh failed. Do not resubmit.",true);}});});});
 function renderRequests(){table("batch-requests",[["Request",text("id")],["Origin",text("origin")],["Destination",text("destination")],["Start",r=>date(r.start)],["End",r=>date(r.end)],["Distance",text("distance")]],batchRequests);}
 function invalidateBatch(){batchPlans=[];$("batch-result").hidden=true;$("batch-confirm").checked=false;$("batch-assigned").replaceChildren();$("batch-unassigned").replaceChildren();$("batch-strategy").replaceChildren();uiText($("batch-counts"),"");}
 function clearBatch(){batchRequests=[];nextRequest=1;batchForm.reset();invalidateBatch();renderRequests();}
@@ -137,7 +163,7 @@ $("batch-clear").addEventListener("click",()=>{if(pendingBatch){status("Resolve 
 $("batch-preview").addEventListener("click",()=>operation(async()=>{if(pendingBatch)throw Error("Resolve the previous batch submission before changing its payload.");if(!batchRequests.length)throw Error("Add at least one request.");invalidateBatch();batchPlans=await api("/api/operations/batch/preview","POST",{requests:batchRequests});const select=$("batch-strategy");for(const [i,p] of batchPlans.entries()){const o=document.createElement("option");o.value=i;o.textContent=p.strategy+" ("+p.assigned.length+" assigned)";select.append(o);}select.value=String(batchPlans.length-1);renderPlan();status("Preview ready; server register unchanged.");}));
 function renderPlan(){const p=batchPlans[Number($("batch-strategy").value)];if(!p)return;$("batch-confirm").checked=false;$("batch-result").hidden=false;uiText($("batch-counts"),p.assigned.length+" assigned · "+p.unassigned.length+" pending");table("batch-assigned",[["Request",r=>r.request.id],["Route",r=>r.request.origin+" → "+r.request.destination],["Vehicle",r=>latestFleet?.vehicles.find(v=>v.id===r.vehicleId)?.plate??r.vehicleId],["Driver",r=>latestFleet?.drivers.find(v=>v.id===r.driverId)?.name??r.driverId]],p.assigned);table("batch-unassigned",[["Pending request",text("id")],["Origin",text("origin")],["Destination",text("destination")]],p.unassigned);}
 $("batch-strategy").addEventListener("change",renderPlan);
-$("batch-apply").addEventListener("click",()=>{if(!$("batch-confirm").checked){status("Confirm the selected assignments first.",true);return;}operation(async()=>{const p=batchPlans[Number($("batch-strategy").value)];if(!p?.assigned.length)throw Error("No assigned requests.");const body={confirmed:true,assignments:p.assigned};const serialized=JSON.stringify(body);
+$("batch-apply").addEventListener("click",()=>{if(!$("batch-confirm").checked){status("Confirm the selected assignments first.",true);return;}operation(async()=>{if(pendingWrite)throw Error("Resolve the pending write before submitting another.");const p=batchPlans[Number($("batch-strategy").value)];if(!p?.assigned.length)throw Error("No assigned requests.");const body={confirmed:true,assignments:p.assigned};const serialized=JSON.stringify(body);
     if(pendingBatch&&pendingBatch.serialized!==serialized)throw Error("Resolve the previous batch submission before changing its payload.");
     if(!pendingBatch)pendingBatch={key:crypto.randomUUID(),serialized,body};
     uiText($("batch-receipt-status"),"Submission UUID: "+pendingBatch.key);
@@ -171,7 +197,7 @@ function cancelAction(record,kind){
     if(new Date(record.start)<=new Date()){const span=document.createElement("span");uiText(span,"History");return span;}
     const button=document.createElement("button");button.type="button";uiText(button,kind==="shifts"?"Cancel shift":"Cancel reservation");button.className="danger-button";
     button.addEventListener("click",()=>{if(busy||!window.confirm(translate("Cancel this future record?")))return;
-        operation(async()=>{await api("/api/operations/"+kind+"/"+record.id,"DELETE");status("Record cancelled. Refreshing…");try{await refresh();status("Record cancelled and server data refreshed.");}catch{if(token)status("Record cancelled; refresh failed. Do not resubmit.",true);}});
+        operation(async()=>{await sendWrite("/api/operations/"+kind+"/"+record.id,"DELETE",undefined,async()=>{status("Record cancelled. Refreshing…");try{await refresh();status("Record cancelled and server data refreshed.");}catch{if(token)status("Record cancelled; refresh failed. Do not resubmit.",true);}});});
     });return button;
 }
 
@@ -188,7 +214,7 @@ for(const [kind,c] of Object.entries(registerConfig)){
     $(kind==="vehicles"?"vehicle-new":"driver-new").addEventListener("click",()=>resetRegister(kind));
     c.form.addEventListener("submit",event=>{event.preventDefault();const d=new FormData(c.form);if(!d.has("confirmed"))return;operation(async()=>{
         const edit=registerEdits[kind],body=c.build(d);if(edit)body.expected=edit.expected;
-        await api("/api/"+kind+(edit?"/"+edit.id:""),edit?"PUT":"POST",body);resetRegister(kind);status("Record saved. Refreshing server data…");try{await refresh();status("Record saved and server data refreshed.");}catch{if(token)status("Record saved, but refresh failed. Use Refresh server records; do not resubmit.",true);}
+        await sendWrite("/api/"+kind+(edit?"/"+edit.id:""),edit?"PUT":"POST",body,async()=>{resetRegister(kind);status("Record saved. Refreshing server data…");try{await refresh();status("Record saved and server data refreshed.");}catch{if(token)status("Record saved, but refresh failed. Use Refresh server records; do not resubmit.",true);}});
     });});
 }
 async function loadAccounts(){

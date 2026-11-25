@@ -1,5 +1,9 @@
 "use strict";
 const translations={
+"Resolve the pending write before submitting another.":"Сначала завершите предыдущую запись.",
+"Write outcome uncertain. Retry the original confirmed request, not a new submission. The UUID remains valid for this session only.":"Результат записи неизвестен. Повторите исходный подтверждённый запрос, а не создавайте новый. UUID сохраняется только в текущем сеансе.",
+"Retry original write":"Повторить исходный запрос",
+
 "SignalR connecting…":"Подключение SignalR…",
 "SignalR connected":"SignalR подключён",
 "SignalR unavailable · revision polling remains active":"SignalR недоступен · проверка версии данных продолжается",

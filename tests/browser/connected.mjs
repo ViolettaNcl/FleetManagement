@@ -134,8 +134,26 @@ try{
     await trip.getByLabel("Trip end (UTC)").fill(arrival);
     await trip.getByLabel("Trip distance (km)").fill("90");
     await trip.getByLabel("Confirm trip assignment").check();
+    const tripKeys=[];
+    await page.route("**/api/trips",async route=>{
+        if(route.request().method()!=="POST"){await route.continue();return;}
+        tripKeys.push(route.request().headers()["idempotency-key"]);
+        const response=await route.fetch();
+        assert.equal(response.status(),201);
+        if(tripKeys.length===1)await route.abort("failed");
+        else {assert.equal(response.headers()["idempotency-replayed"],"true");await route.fulfill({response});}
+    });
     await trip.getByRole("button",{name:"Save trip",exact:true}).click();
+    await page.locator("#write-recovery").waitFor();
+    await trip.getByLabel("Trip destination").fill("Not the confirmed request");
+    await trip.getByRole("button",{name:"Save trip",exact:true}).click();
+    await page.getByRole("status").filter({hasText:"Resolve the pending write"}).waitFor();
+    await page.getByRole("button",{name:"Retry original write"}).click();
     await page.getByRole("status").filter({hasText:"Trip saved and server data refreshed"}).waitFor();
+    assert.equal(tripKeys.length,2);assert.ok(tripKeys[0]);assert.equal(tripKeys[0],tripKeys[1]);
+    await page.unroute("**/api/trips");
+    assert.equal(await page.locator("#trips").getByRole("row").filter({hasText:"QA console trip"}).count(),1);
+    assert.equal(await page.locator("#trips").getByRole("row").filter({hasText:"Not the confirmed request"}).count(),0);
     await page.locator("#trips").getByRole("row").filter({hasText:"QA console trip"}).getByRole("button",{name:"Edit trip"}).click();
     await trip.getByLabel("Trip destination").fill("Updated hub");
     await trip.getByLabel("Confirm trip assignment").check();

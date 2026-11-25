@@ -116,3 +116,5 @@ Windows launcher CI parses the actual PowerShell script and starts it against an
 Dependency triage reviewed actual NuGet inventory and pins patched OpenAPI, SQLite native library, PKCS, and SignalR client packages. Native SQLite initialization verifies >=3.50.2. No suppression; functional/advisory rerun required.
 
 Generic durable receipts extend actor-scoped UUIDs to ordinary fleet mutations using the existing table, method/path/body fingerprint, successful response envelope and post-commit notifications only once. HTTP tests cover create/edit/delete/work replay, cross-operation key collision, Viewer denial and restart. Identity writes excluded.
+
+Connected ordinary write recovery panel retains the confirmed payload and UUID in memory, blocks competing ordinary writes/batch apply, and explicitly retries the original request. Browser test commits a trip, drops the response, edits the form and verifies only the original trip exists after replay.

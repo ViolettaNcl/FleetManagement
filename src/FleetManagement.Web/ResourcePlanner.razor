@@ -1,28 +1,31 @@
+@using FleetManagement.Web
 <section class="panel">
-<h2>Driver resource planning</h2><p class="muted">Register explicit driver availability windows. When strict mode is enabled, new and edited trips must fit entirely within one shift. Existing trips are not cancelled or changed; uncovered assignments are flagged. These windows are not a legal driving-hours or rest-period compliance system.</p>
-<label><input type="checkbox" checked="@Enforce" @onchange="Toggle"/> Require registered shifts for new assignments</label>
-<p class="muted">@(Enforce?"Strict shift checking enabled. Drivers without a covering shift are not eligible.":"Compatibility mode: shift coverage is advisory only.")</p>
-<div class="formgrid"><label>Shift driver<select @bind="driver"><option value="0">Select driver</option>@foreach(var d in Fleet.Drivers){<option value="@d.Id">@d.Name</option>}</select></label><label>Shift start<input type="datetime-local" @bind="start"/></label><label>Shift end<input type="datetime-local" @bind="end"/></label></div>
-<button @onclick="Add">Add shift</button>
-@if(message.Length>0){<p role="status" class="@(failed?"error":"notice")">@message</p>}
+<h2>@T("Driver resource planning")</h2><p class="muted">@T("Register explicit driver availability windows. When strict mode is enabled, new and edited trips must fit entirely within one shift. Existing trips are not cancelled or changed; uncovered assignments are flagged. These windows are not a legal driving-hours or rest-period compliance system.")</p>
+<label><input type="checkbox" checked="@Enforce" @onchange="Toggle"/> @T("Require registered shifts for new assignments")</label>
+<p class="muted">@T(Enforce?"Strict shift checking enabled. Drivers without a covering shift are not eligible.":"Compatibility mode: shift coverage is advisory only.")</p>
+<div class="formgrid"><label>@T("Shift driver")<select @bind="driver"><option value="0">@T("Select driver")</option>@foreach(var d in Fleet.Drivers){<option value="@d.Id">@d.Name</option>}</select></label><label>@T("Shift start")<input type="datetime-local" @bind="start"/></label><label>@T("Shift end")<input type="datetime-local" @bind="end"/></label></div>
+<button @onclick="Add">@T("Add shift")</button>
+@if(message.Length>0){<p role="status" class="@(failed?"error":"notice")">@T(message)</p>}
 </section>
-<section class="panel"><h2>Driver availability timeline</h2><div class="actions"><button class="secondary" @onclick="()=>day=day.AddDays(-1)">Previous day</button><label>Resource date<input type="date" @bind="day"/></label><button class="secondary" @onclick="()=>day=day.AddDays(1)">Next day</button><button class="secondary" @onclick="()=>day=Now.Date">Today</button></div>
-<p class="muted">Pale bars: registered shift availability. Purple bars: assigned trips. Cross-midnight intervals are clipped to the selected day.</p>
+<section class="panel"><h2>@T("Driver availability timeline")</h2><div class="actions"><button class="secondary" @onclick="()=>day=day.AddDays(-1)">@T("Previous day")</button><label>@T("Resource date")<input type="date" @bind="day"/></label><button class="secondary" @onclick="()=>day=day.AddDays(1)">@T("Next day")</button><button class="secondary" @onclick="()=>day=Now.Date">@T("Today")</button></div>
+<p class="muted">@T("Pale bars: registered shift availability. Purple bars: assigned trips. Cross-midnight intervals are clipped to the selected day.")</p>
 <div class="gantt-scroll"><div class="gantt-grid"><div></div><div class="gantt-axis">@foreach(var h in new[]{0,4,8,12,16,20,24}){<span>@($"{h:00}:00")</span>}</div>
 @foreach(var row in ResourcePlanning.Day(Fleet,Shifts,day)){<strong>@row.Name</strong><div class="gantt-track" aria-label="@($"Daily schedule for {row.Name}")">
 @foreach(var shift in row.Shifts){<div class="gantt-away" style="@Span(shift.Start,shift.End)" title="@($"Shift {shift.Start:dd MMM HH:mm} – {shift.End:dd MMM HH:mm}")"></div>}
 @foreach(var trip in row.Trips){<div class="gantt-visit" style="@(Span(trip.Start,trip.End)+";background:"+(ResourcePlanning.Covers(Shifts,trip.DriverId,trip.Start,trip.End)?"#6A5ACD":"#BA55A7"))" title="@($"Trip #{trip.Id}: {trip.Start:dd MMM HH:mm} – {trip.End:dd MMM HH:mm}")"></div>}
 </div>}
-</div></div><p class="muted">Pink trip blocks lack a covering shift. In compatibility mode this is informational.</p></section>
-<section class="panel"><h2>Uncovered assignments</h2>
+</div></div><p class="muted">@T("Pink trip blocks lack a covering shift. In compatibility mode this is informational.")</p></section>
+<section class="panel"><h2>@T("Uncovered assignments")</h2>
 @{var uncovered=ResourcePlanning.Uncovered(Fleet,Shifts,Now);}
-@if(uncovered.Count==0){<p>All active and future trips have a covering shift.</p>}else{
-<div class="tablewrap"><table><thead><tr><th>Trip</th><th>Driver</th><th>Start</th><th>End</th></tr></thead><tbody>@foreach(var t in uncovered){<tr><td>#@t.Id</td><td>@Name(t.DriverId)</td><td>@t.Start.ToString("dd MMM HH:mm")</td><td>@t.End.ToString("dd MMM HH:mm")</td></tr>}</tbody></table></div>}
-<button class="secondary" @onclick='()=>Open.InvokeAsync("Dispatch")'>Review dispatch</button></section>
-<section class="panel"><h2>Shift register</h2><div class="tablewrap"><table><thead><tr><th>Driver</th><th>Start</th><th>End</th><th>Hours</th><th>Action</th></tr></thead><tbody>
-@foreach(var s in Shifts.OrderBy(s=>s.Start).ThenBy(s=>s.Id)){<tr><td>@Name(s.DriverId)</td><td>@s.Start.ToString("dd MMM yyyy HH:mm")</td><td>@s.End.ToString("dd MMM yyyy HH:mm")</td><td>@((s.End-s.Start).TotalHours.ToString("F1"))</td><td>@if(s.Start>Now){<button class="delete" @onclick="()=>Remove(s.Id)">Remove shift</button>}else{<small>History</small>}</td></tr>}
-</tbody></table></div>@if(Shifts.Count==0){<p>No registered shifts.</p>}</section>
+@if(uncovered.Count==0){<p>@T("All active and future trips have a covering shift.")</p>}else{
+<div class="tablewrap"><table><thead><tr><th>@T("Trip")</th><th>@T("Driver")</th><th>@T("Start")</th><th>@T("End")</th></tr></thead><tbody>@foreach(var t in uncovered){<tr><td>#@t.Id</td><td>@Name(t.DriverId)</td><td>@t.Start.ToString("dd MMM HH:mm")</td><td>@t.End.ToString("dd MMM HH:mm")</td></tr>}</tbody></table></div>}
+<button class="secondary" @onclick='()=>Open.InvokeAsync("Dispatch")'>@T("Review dispatch")</button></section>
+<section class="panel"><h2>@T("Shift register")</h2><div class="tablewrap"><table><thead><tr><th>@T("Driver")</th><th>@T("Start")</th><th>@T("End")</th><th>@T("Hours")</th><th>@T("Action")</th></tr></thead><tbody>
+@foreach(var s in Shifts.OrderBy(s=>s.Start).ThenBy(s=>s.Id)){<tr><td>@Name(s.DriverId)</td><td>@s.Start.ToString("dd MMM yyyy HH:mm")</td><td>@s.End.ToString("dd MMM yyyy HH:mm")</td><td>@((s.End-s.Start).TotalHours.ToString("F1"))</td><td>@if(s.Start>Now){<button class="delete" @onclick="()=>Remove(s.Id)">@T("Remove shift")</button>}else{<small>@T("History")</small>}</td></tr>}
+</tbody></table></div>@if(Shifts.Count==0){<p>@T("No registered shifts.")</p>}</section>
 @code{
+    [Parameter] public bool Russian{get;set;}
+    private string T(string value)=>DemoLocale.Text(value,Russian);
     [Parameter,EditorRequired] public FleetData Fleet{get;set;}=default!;
     [Parameter,EditorRequired] public List<DriverShift> Shifts{get;set;}=[];
     [Parameter] public DateTime Now{get;set;}

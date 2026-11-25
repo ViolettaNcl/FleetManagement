@@ -23,6 +23,13 @@ try {
   await page.getByRole('heading',{name:'Реестр автомобилей'}).waitFor();
   await page.getByRole('button',{name:'Календарь',exact:true}).click();
   await page.getByRole('heading',{name:'Календарь автопарка'}).waitFor();
+  await page.getByRole('button',{name:'Паспорт автомобиля',exact:true}).click();
+  await page.getByRole('heading',{name:'Цифровой паспорт автомобиля'}).waitFor();
+  await page.getByRole('button',{name:'Планирование ресурсов',exact:true}).click();
+  await page.getByRole('heading',{name:'Планирование ресурсов водителей'}).waitFor();
+  await page.getByRole('button',{name:'Обслуживание',exact:true}).click();
+  await page.getByRole('heading',{name:'Журнал работ по обслуживанию'}).waitFor();
+  assert.equal(await page.getByLabel('Категория работы',{exact:true}).inputValue(),'Scheduled service');
   await page.getByRole('button',{name:'Обзор',exact:true}).click();
   await page.getByLabel('Язык',{exact:true}).selectOption('en');
   await page.getByRole('heading',{name:'Fleet workload'}).waitFor();

@@ -55,7 +55,7 @@
     }
     else if (section == "Resource Planning")
     {
-        <ResourcePlanner Fleet="fleet" Shifts="driverShifts" Now="Now" Enforce="requireShifts" EnforceChanged="SetRequireShifts" Changed="Persist" Open="Navigate"/>
+        <ResourcePlanner Russian="@(language=="ru")" Fleet="fleet" Shifts="driverShifts" Now="Now" Enforce="requireShifts" EnforceChanged="SetRequireShifts" Changed="Persist" Open="Navigate"/>
     }
     else if (section == "Cost Intelligence")
     {
@@ -67,7 +67,7 @@
     }
     else if (section == "Vehicle Passport")
     {
-        <VehiclePassportView Fleet="fleet" MaintenanceEntries="maintenanceEntries" Now="Now" @bind-SelectedId="passportId" Open="Navigate" EditTrip="EditTrip" />
+        <VehiclePassportView Russian="@(language=="ru")" Fleet="fleet" MaintenanceEntries="maintenanceEntries" Now="Now" @bind-SelectedId="passportId" Open="Navigate" EditTrip="EditTrip" />
     }
     else if (section == "Data Quality")
     {
@@ -166,8 +166,8 @@
         <div class="tablewrap"><table><thead><tr><th>@T("Vehicle")</th><th>Remaining km</th><th>Remaining days</th><th>@T("Health")</th><th>Explanation</th><th>Action</th></tr></thead><tbody>
         @foreach(var v in fleet.Vehicles){var a=FleetRules.Assess(v,Now);<tr><td>@v.Plate · @v.Model</td><td>@a.RemainingKm.ToString("N0")</td><td>@a.RemainingDays</td><td><span class="pill @a.Status.ToLowerInvariant()">@a.Status</span></td><td>@a.Reason</td><td><button class="secondary" @onclick="()=>RecordService(v.Id)">Record service</button></td></tr>}
         </tbody></table></div>@if(maintenanceFeedback.Length>0){<p role="status" class="notice">@maintenanceFeedback</p>}</section>
-        <VehicleReservationView Fleet="fleet" Reservations="vehicleReservations" Now="Now" Changed="Persist" Open="Navigate"/>
-        <MaintenanceJournalView Fleet="fleet" Entries="maintenanceEntries" Now="Now" Changed="Persist"/>
+        <VehicleReservationView Russian="@(language=="ru")" Fleet="fleet" Reservations="vehicleReservations" Now="Now" Changed="Persist" Open="Navigate"/>
+        <MaintenanceJournalView Russian="@(language=="ru")" Fleet="fleet" Entries="maintenanceEntries" Now="Now" Changed="Persist"/>
     }
     <footer class="footer">FleetManagement · WPF-inspired .NET WebAssembly demo · synthetic data only · <a href="https://github.com/ViolettaNcl/FleetManagement">Source repository</a></footer>
     </div>

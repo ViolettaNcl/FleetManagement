@@ -38,6 +38,8 @@ jobs:
           export ConnectionStrings__Fleet="Data Source=$RUNNER_TEMP/fleet-test.db"
           cleanup() {
             if [ -n "${pid:-}" ]; then kill "$pid" 2>/dev/null || true; fi
+            if [ -n "${pid2:-}" ]; then kill "$pid2" 2>/dev/null || true; fi
+            cat "$RUNNER_TEMP/fleet-api2.log" 2>/dev/null || true
             if [ -n "${sql_container:-}" ]; then docker rm -f "$sql_container" >/dev/null 2>&1 || true; fi
             cat "$RUNNER_TEMP/fleet-api.log" 2>/dev/null || true
           }
@@ -86,6 +88,17 @@ jobs:
           kill "$pid"; wait "$pid" || true; unset pid Fleet__UpgradeV2Schema
           start_api
           python3 tests/api/smoke.py
+          # Second independent API process; do not run initialization concurrently.
+          Fleet__InitializeDatabase=false dotnet src/FleetManagement.Api/bin/Release/net10.0/FleetManagement.Api.dll --urls http://127.0.0.1:5096 > "$RUNNER_TEMP/fleet-api2.log" 2>&1 &
+          pid2=$!
+          ready=false
+          for i in $(seq 1 60); do
+            if curl -fsS http://127.0.0.1:5096/health >/dev/null 2>&1; then ready=true; break; fi
+            sleep 1
+          done
+          test "$ready" = true
+          python3 tests/api/cross_process.py
+          kill "$pid2"; wait "$pid2" || true; unset pid2
           dotnet run --project tests/FleetManagement.Realtime.Checks -c Release
           kill "$pid"
           wait "$pid" || true

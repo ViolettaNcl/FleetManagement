@@ -2,9 +2,9 @@ name: Backend API integration
 on:
   push:
     branches: [master, 'feature/**']
-    paths: ['src/FleetManagement.Core/**','src/FleetManagement.Api/**','tests/api/**','tests/FleetManagement.Realtime.Checks/**','.github/workflows/api-ci.yml']
+    paths: ['src/FleetManagement.Core/**','src/FleetManagement.Api/**','tests/api/**','tools/sqlite_recovery.py','tests/FleetManagement.Realtime.Checks/**','.github/workflows/api-ci.yml']
   pull_request:
-    paths: ['src/FleetManagement.Core/**','src/FleetManagement.Api/**','tests/api/**','tests/FleetManagement.Realtime.Checks/**','.github/workflows/api-ci.yml']
+    paths: ['src/FleetManagement.Core/**','src/FleetManagement.Api/**','tests/api/**','tools/sqlite_recovery.py','tests/FleetManagement.Realtime.Checks/**','.github/workflows/api-ci.yml']
   workflow_dispatch:
 permissions:
   contents: read
@@ -91,3 +91,7 @@ jobs:
           wait "$pid" || true
           start_api
           python3 tests/api/smoke.py --verify-persistence
+          if [ "$Fleet__Provider" = "Sqlite" ]; then
+            kill "$pid"; wait "$pid" || true; unset pid
+            python3 tests/api/recovery.py "$RUNNER_TEMP/fleet-test.db"
+          fi

@@ -42,3 +42,7 @@ preview/
 
 # Generated local model artifacts
 model-registry/
+
+# Sensitive local recovery bundles
+fleet-backups/
+__pycache__/

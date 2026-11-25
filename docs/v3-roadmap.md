@@ -60,3 +60,5 @@ Server operations V1 adds EF Core tables and protected API endpoints for work, s
 Backend batch dispatch V1 exposes authenticated preview and confirmed apply; all assignments revalidated inside existing write gate, trip and audit rows saved together. Concurrent identical applies are tested for one commit and one conflict within one process. Browser remains offline; no distributed locking or cross-instance scheduling guarantee.
 
 Explicit V2→V3 additive schema upgrade supports SQLite and SQL Server (dbo), uses static DDL in a transaction, checks known baseline tables and mapped columns, refuses partial schemas, and verifies new tables. CI starts the pinned actual V2 build, captures fleet/identity/audit, checks refusal without opt-in, runs upgrade twice and compares records, then executes normal API/restart tests. Not an EF migration history baseline or generic repair.
+
+SQLite recovery CLI uses native SQLite backup API, verified integrity/foreign keys, SHA-256 manifest, exclusive restore to a new file and CI row comparisons against the actual database. SQL Server remains native backup/restore operator procedure.

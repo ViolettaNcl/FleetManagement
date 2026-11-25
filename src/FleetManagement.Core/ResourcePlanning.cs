@@ -30,17 +30,18 @@ public static class ResourcePlanning
         shifts.Remove(shift);return null;
     }
     public static string? CanRemoveDriver(int id,IEnumerable<DriverShift> shifts)=>shifts.Any(s=>s.DriverId==id)?"Driver has shift records and cannot be deleted.":null;
-    public static string? ValidateTrip(FleetData fleet,Trip trip,IReadOnlyList<DriverShift> shifts,bool enforce)
+    public static string? ValidateTrip(FleetData fleet,Trip trip,IReadOnlyList<DriverShift> shifts,bool enforce,IReadOnlyList<VehicleReservation>? reservations=null)
     {
-        return FleetRules.ValidateTrip(fleet,trip)??(enforce&&!Covers(shifts,trip.DriverId,trip.Start,trip.End)?"Trip must fit inside a registered driver shift.":null);
+        return FleetRules.ValidateTrip(fleet,trip)??(VehicleReservations.Blocked(reservations??[],trip.VehicleId,trip.Start,trip.End)?"Vehicle is reserved during this interval.":null)??(enforce&&!Covers(shifts,trip.DriverId,trip.Start,trip.End)?"Trip must fit inside a registered driver shift.":null);
     }
-    public static Assignment? Recommend(FleetData fleet,DateTime start,DateTime end,DateTime now,IReadOnlyList<DriverShift> shifts,bool enforce,int? excludeTripId=null)
+    public static Assignment? Recommend(FleetData fleet,DateTime start,DateTime end,DateTime now,IReadOnlyList<DriverShift> shifts,bool enforce,int? excludeTripId=null,IReadOnlyList<VehicleReservation>? reservations=null)
     {
-        if(!enforce)return FleetRules.Recommend(fleet,start,end,now,excludeTripId);
+        var available=fleet.Vehicles.Where(v=>!VehicleReservations.Blocked(reservations??[],v.Id,start,end)).ToList();
+        if(!enforce)return FleetRules.Recommend(new(available,fleet.Drivers,fleet.Trips),start,end,now,excludeTripId);
         var eligible=fleet.Drivers.Where(d=>Covers(shifts,d.Id,start,end)).ToList();
         // Keep all trips in the view so assignment conflicts and workload
         // ranking use the complete register, not a filtered trip history.
-        return FleetRules.Recommend(new(fleet.Vehicles,eligible,fleet.Trips),start,end,now,excludeTripId);
+        return FleetRules.Recommend(new(available,eligible,fleet.Trips),start,end,now,excludeTripId);
     }
     public static IReadOnlyList<DriverDay> Day(FleetData fleet,IReadOnlyList<DriverShift> shifts,DateTime day)
     {

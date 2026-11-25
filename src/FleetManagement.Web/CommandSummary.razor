@@ -12,7 +12,7 @@
         <p class="muted">Configured service intervals, not mechanical safety certification.</p>
     </section>
     <section class="panel"><div class="registerhead"><div><h2>Today's agenda</h2><p class="muted">Trips overlapping the demo day and date-based service reminders.</p></div><button class="secondary" @onclick='()=>Open.InvokeAsync("Calendar")'>Full calendar</button></div>
-        @{var entries=FleetCalendar.Entries(Fleet,Now.Date,Now.Date.AddDays(1));}
+        @{var entries=FleetCalendar.Entries(Fleet,Now.Date,Now.Date.AddDays(1),Reservations);}
         @if(entries.Count==0){<p>No events today.</p>}
         @foreach(var entry in entries.Take(6)){
             <div class="command-event"><span class="calendar-chip @(entry.Kind=="Trip"?"trip":"service")">@(entry.Kind=="Trip"?entry.Start.ToString("HH:mm"):"Service due")</span><div><strong>@entry.Title</strong><p class="muted">@entry.Detail</p></div></div>
@@ -23,6 +23,7 @@
 @code{
     [Parameter,EditorRequired] public FleetData Fleet{get;set;}=default!;
     [Parameter] public DateTime Now{get;set;}
+    [Parameter] public IReadOnlyList<VehicleReservation> Reservations{get;set;}=[];
     [Parameter] public EventCallback<string> Open{get;set;}
     private static string Width(int count,int total)=>"width:"+(total==0?0:100.0*count/total).ToString("F2",CultureInfo.InvariantCulture)+"%";
 }

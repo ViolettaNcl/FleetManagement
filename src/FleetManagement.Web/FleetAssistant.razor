@@ -1,10 +1,10 @@
 <section class="panel"><div class="registerhead"><div><h2>Fleet intelligence assistant</h2><p class="muted">Offline expert system. Answers use current demo records and fixed supported intents, not a generative language model. It never changes records.</p></div></div>
 <div class="actions"><button class="secondary" @onclick='()=>Ask("overview")'>Fleet overview</button><button class="secondary" @onclick='()=>Ask("maintenance")'>Maintenance review</button><button class="secondary" @onclick='()=>Ask("dispatch")'>Dispatch availability</button></div>
 <div class="actions registertools"><label>Ask a supported question<input maxlength="200" @bind="question" placeholder="What needs attention?"/></label><button @onclick="()=>Ask(question)">Ask assistant</button></div>
-@if(intent is not null){var answer=FleetAdvisor.Answer(Fleet,Now,intent,Shifts,RequireShifts);<div class="advisor-answer" role="status"><h3>@answer.Title</h3><p>@answer.Summary</p></div><FleetAlertList Alerts="answer.Evidence" Open="Open"/>}
+@if(intent is not null){var answer=FleetAdvisor.Answer(Fleet,Now,intent,Shifts,RequireShifts,Reservations);<div class="advisor-answer" role="status"><h3>@answer.Title</h3><p>@answer.Summary</p></div><FleetAlertList Alerts="answer.Evidence" Open="Open"/>}
 </section>
 <section class="panel"><div class="registerhead"><div><h2>Smart alert center</h2><p class="muted">Computed from current register data, service intervals and upcoming trips. Digital Twin alerts stay in their own sandbox.</p></div><label>Severity<select @bind="severity"><option>All</option><option>High</option><option>Medium</option></select></label></div>
-@{var all=FleetAdvisor.Assess(Fleet,Now,Shifts,RequireShifts);}
+@{var all=FleetAdvisor.Assess(Fleet,Now,Shifts,RequireShifts,Reservations);}
 <div class="metrics"><div class="metric">All alerts<strong>@all.Count</strong></div><div class="metric">High priority<strong>@all.Count(a=>a.Severity=="High")</strong></div><div class="metric">Review soon<strong>@all.Count(a=>a.Severity=="Medium")</strong></div></div>
 <FleetAlertList Alerts="@(all.Where(a=>severity=="All"||a.Severity==severity).ToArray())" Open="Open"/>
 </section>
@@ -13,6 +13,7 @@
     [Parameter] public DateTime Now{get;set;}
     [Parameter] public IReadOnlyList<DriverShift> Shifts{get;set;}=[];
     [Parameter] public bool RequireShifts{get;set;}
+    [Parameter] public IReadOnlyList<VehicleReservation> Reservations{get;set;}=[];
     [Parameter] public EventCallback<string> Open{get;set;}
     private string question="",severity="All";
     private string? intent;

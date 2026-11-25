@@ -287,4 +287,19 @@ using(var financeZip=new System.IO.Compression.ZipArchive(financeStream,System.I
     Check(workXml.Descendants().Any(x=>x.Name.LocalName=="t"&&x.Value=="Unknown"),"finance unknown cost preserved");
     Check(System.Xml.Linq.XDocument.Parse(FinancePart("xl/worksheets/sheet4.xml")).Descendants().Any(x=>x.Name.LocalName=="t"&&x.Value=="Budget headroom"),"finance budget sheet");
 }
-Console.WriteLine("All 207 business rule checks passed.");
+var reservationFleet=FleetRules.Sample(now);
+var reservations=new List<VehicleReservation>();
+Check(VehicleReservations.Add(reservationFleet,reservations,4,now.AddHours(1),now.AddHours(2),"Repair","Test",now)==null,"reservation added");
+Check(VehicleReservations.Add(reservationFleet,reservations,4,now.AddHours(1),now.AddHours(3),"Repair","",now)!=null,"reservation overlap");
+Check(VehicleReservations.Add(reservationFleet,reservations,4,now.AddHours(3),now.AddHours(4),"Repair","",now)!=null,"reservation rejects assigned trip");
+Check(VehicleReservations.Add(reservationFleet,reservations,4,now.AddHours(2),now.AddHours(3),"Inspection","",now)==null,"reservation adjacent interval");
+var reservedTrip=new Trip(999,4,3,"A","B",now.AddHours(1),now.AddHours(2),10,-1);
+Check(ResourcePlanning.ValidateTrip(reservationFleet,reservedTrip,[],false,reservations)!=null,"reservation blocks manual dispatch");
+Check(ResourcePlanning.Recommend(reservationFleet,now.AddHours(1),now.AddHours(2),now,[],false,reservations:reservations)?.VehicleId!=4,"reservation blocks suggested dispatch");
+Check(FleetCalendar.Entries(reservationFleet,now.Date,now.Date.AddDays(1),reservations).Count(e=>e.Kind=="Reservation")==2,"reservation calendar integration");
+Check(FleetAdvisor.Assess(reservationFleet,now,reservations:reservations).Any(a=>a.Key=="reservation:1"),"reservation assistant alert");
+Check(VehicleReservations.CanRemoveVehicle(4,reservations)!=null,"reservation protects vehicle");
+Check(VehicleReservations.Remove(reservations,1,now.AddHours(1))!=null,"reservation active cannot cancel");
+Check(VehicleReservations.Remove(reservations,1,now)==null,"reservation future cancellation");
+Check(ResourcePlanning.ValidateTrip(reservationFleet,reservedTrip,[],false,reservations)==null,"reservation releases interval");
+Console.WriteLine("All 219 business rule checks passed.");

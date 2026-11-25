@@ -193,6 +193,18 @@ try {
   await page.getByRole('heading',{name:'Shift register'}).waitFor();
   await page.screenshot({path:'browser-results/resource-planning.png',fullPage:true});
   await page.getByLabel('Require registered shifts for new assignments').uncheck();
+  await page.getByRole('button',{name:'Maintenance',exact:true}).click();
+  await page.getByLabel('Reserved vehicle').selectOption('3');
+  await page.getByRole('button',{name:'Reserve vehicle',exact:true}).click();
+  await page.getByRole('status').filter({hasText:'Reservation saved'}).waitFor();
+  await page.getByRole('button',{name:'Reserve vehicle',exact:true}).click();
+  await page.getByRole('status').filter({hasText:'overlapping reservation'}).waitFor();
+  await page.reload();
+  await page.getByRole('button',{name:'Maintenance',exact:true}).click();
+  await page.getByRole('button',{name:'Cancel reservation',exact:true}).waitFor();
+  await page.screenshot({path:'browser-results/vehicle-reservations.png',fullPage:true});
+  await page.getByRole('button',{name:'Cancel reservation',exact:true}).click();
+  await page.getByRole('status').filter({hasText:'Reservation cancelled'}).waitFor();
   await page.setViewportSize({width:390,height:844});
   assert.equal(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth),true,'Demand forecast must fit the mobile viewport');
   await page.getByRole('button',{name:'Cost Intelligence',exact:true}).click();

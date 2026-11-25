@@ -7,7 +7,7 @@ public sealed record AdvisorAnswer(string Title,string Summary,IReadOnlyList<Fle
 
 public static class FleetAdvisor
 {
-    public static IReadOnlyList<FleetAlert> Assess(FleetData fleet,DateTime now,IReadOnlyList<DriverShift>? shifts=null,bool requireShifts=false)
+    public static IReadOnlyList<FleetAlert> Assess(FleetData fleet,DateTime now,IReadOnlyList<DriverShift>? shifts=null,bool requireShifts=false,IReadOnlyList<VehicleReservation>? reservations=null)
     {
         var alerts=new List<FleetAlert>();
         foreach(var v in fleet.Vehicles.OrderBy(v=>v.Id)){
@@ -26,6 +26,12 @@ public static class FleetAdvisor
                 alerts.Add(new($"dispatch:{trip.Id}","High",$"Trip #{trip.Id}","Scheduled with service-due vehicle",
                     $"{v.Plate}; departure {trip.Start:yyyy-MM-dd HH:mm} (demo time).",
                     "Review the vehicle and consider a different available assignment. No changes are made automatically.","Dispatch"));
+        }
+        foreach(var r in (reservations??[]).Where(r=>r.End>now&&r.Start<=now.AddHours(24))){
+            var plate=fleet.Vehicles.FirstOrDefault(v=>v.Id==r.VehicleId)?.Plate??"Unknown";
+            alerts.Add(new($"reservation:{r.Id}","Medium",plate,"Vehicle reserved",
+                $"{r.Kind}; {r.Start:yyyy-MM-dd HH:mm} – {r.End:yyyy-MM-dd HH:mm}.",
+                "Keep this vehicle out of overlapping assignments. Record completed work separately.","Maintenance"));
         }
         if(requireShifts)foreach(var trip in ResourcePlanning.Uncovered(fleet,shifts??[],now)){
             alerts.Add(new($"shift:{trip.Id}","High",$"Trip #{trip.Id}","Assignment outside registered driver shift",
@@ -54,17 +60,17 @@ public static class FleetAdvisor
         return Order(alerts);
     }
     private static IReadOnlyList<FleetAlert> Order(IEnumerable<FleetAlert> alerts)=>alerts.OrderBy(a=>a.Severity=="High"?0:1).ThenBy(a=>a.Key,StringComparer.Ordinal).ToArray();
-    public static AdvisorAnswer Answer(FleetData fleet,DateTime now,string question,IReadOnlyList<DriverShift>? shifts=null,bool requireShifts=false)
+    public static AdvisorAnswer Answer(FleetData fleet,DateTime now,string question,IReadOnlyList<DriverShift>? shifts=null,bool requireShifts=false,IReadOnlyList<VehicleReservation>? reservations=null)
     {
         var q=question.Trim().ToLowerInvariant();
-        var alerts=Assess(fleet,now,shifts,requireShifts);
+        var alerts=Assess(fleet,now,shifts,requireShifts,reservations);
         if(q is "maintenance" or "service" or "what needs maintenance?" or "то" or "обслуживание"){
             var evidence=alerts.Where(a=>a.Destination=="Maintenance").ToArray();
             return new("Maintenance review",evidence.Length==0?"No vehicles currently exceed or approach the configured service intervals. This is not a safety certification.":$"{evidence.Length} vehicle(s) require service interval review.",evidence);
         }
         if(q is "dispatch" or "availability" or "who is available?" or "диспетчер" or "доступность"){
             var start=now.AddMinutes(15);var end=start.AddHours(1);
-            var pair=ResourcePlanning.Recommend(fleet,start,end,start,shifts??[],requireShifts);
+            var pair=ResourcePlanning.Recommend(fleet,start,end,start,shifts??[],requireShifts,reservations:reservations);
             var summary=pair is null?"No eligible vehicle/driver pair for the next one-hour planning window.":$"Suggested pair: {fleet.Vehicles.Single(v=>v.Id==pair.VehicleId).Plate} / {fleet.Drivers.Single(d=>d.Id==pair.DriverId).Name}.";
             return new("Dispatch review",summary+$" Window: {start:HH:mm}–{end:HH:mm} (demo time). Recommendation only; verify assignment constraints.",alerts.Where(a=>a.Destination is "Dispatch" or "Resource Planning").ToArray());
         }

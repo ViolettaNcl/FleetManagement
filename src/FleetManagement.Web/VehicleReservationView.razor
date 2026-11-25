@@ -1,0 +1,23 @@
+<section class="panel"><h2>Vehicle availability reservations</h2><p class="muted">Reserve a vehicle for planned work or other unavailability. Reservations block overlapping trip assignments; they are not completed work or confirmation of mechanical readiness. Record actual work separately in the maintenance journal.</p>
+<div class="formgrid"><label>Reserved vehicle<select @bind="vehicleId"><option value="0">Select vehicle</option>@foreach(var v in Fleet.Vehicles){<option value="@v.Id">@v.Plate</option>}</select></label><label>Reservation category<select @bind="kind"><option>Scheduled service</option><option>Repair</option><option>Inspection</option><option>Unavailable</option></select></label><label>Reservation start<input type="datetime-local" @bind="start"/></label><label>Reservation end<input type="datetime-local" @bind="end"/></label><label>Reservation notes<input maxlength="500" @bind="notes"/></label></div>
+<button @onclick="Add">Reserve vehicle</button>
+@if(message.Length>0){<p role="status" class="@(failed?"error":"notice")">@message</p>}</section>
+<section class="panel"><h2>Vehicle reservation register</h2>
+<div class="actions"><label>Reservation filter<select @bind="filter"><option value="0">All vehicles</option>@foreach(var v in Fleet.Vehicles){<option value="@v.Id">@v.Plate</option>}</select></label><button class="secondary" @onclick='()=>Open.InvokeAsync("Calendar")'>Open calendar</button></div>
+<div class="tablewrap"><table><thead><tr><th>Vehicle</th><th>Category</th><th>Start</th><th>End</th><th>Status</th><th>Notes</th><th>Action</th></tr></thead><tbody>
+@foreach(var r in Reservations.Where(r=>filter==0||r.VehicleId==filter).OrderBy(r=>r.Start)){<tr><td>@(Fleet.Vehicles.FirstOrDefault(v=>v.Id==r.VehicleId)?.Plate??"Unknown")</td><td>@r.Kind</td><td>@r.Start.ToString("dd MMM yyyy HH:mm")</td><td>@r.End.ToString("dd MMM yyyy HH:mm")</td><td>@VehicleReservations.Status(r,Now)</td><td style="white-space:normal;overflow-wrap:anywhere;max-width:260px">@r.Notes</td><td>@if(r.Start>Now){<button class="delete" @onclick="()=>Remove(r.Id)">Cancel reservation</button>}else{<small>History</small>}</td></tr>}
+</tbody></table></div><p class="muted">Elapsed reservations do not reset service intervals. Only a separately registered scheduled service does.</p></section>
+@code{
+    [Parameter,EditorRequired] public FleetData Fleet{get;set;}=default!;
+    [Parameter,EditorRequired] public List<VehicleReservation> Reservations{get;set;}=[];
+    [Parameter] public DateTime Now{get;set;}
+    [Parameter] public EventCallback Changed{get;set;}
+    [Parameter] public EventCallback<string> Open{get;set;}
+    private int vehicleId,filter;
+    private string kind="Scheduled service",notes="",message="";
+    private bool failed;
+    private DateTime start,end;
+    protected override void OnInitialized(){start=Now.AddHours(2);end=start.AddHours(2);}
+    private async Task Add(){var error=VehicleReservations.Add(Fleet,Reservations,vehicleId,start,end,kind,notes,Now);failed=error is not null;message=error??"Reservation saved.";if(!failed){notes="";await Changed.InvokeAsync();}}
+    private async Task Remove(int id){var error=VehicleReservations.Remove(Reservations,id,Now);failed=error is not null;message=error??"Reservation cancelled.";if(!failed)await Changed.InvokeAsync();}
+}

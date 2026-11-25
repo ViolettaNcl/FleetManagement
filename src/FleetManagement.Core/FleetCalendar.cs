@@ -5,7 +5,7 @@ public sealed record CalendarEntry(string Title, string Detail, DateTime Start, 
 public static class FleetCalendar
 {
     public static DateTime WeekStart(DateTime date) => date.Date.AddDays(-((int)date.DayOfWeek+6)%7);
-    public static IReadOnlyList<CalendarEntry> Entries(FleetData fleet, DateTime from, DateTime until)
+    public static IReadOnlyList<CalendarEntry> Entries(FleetData fleet, DateTime from, DateTime until,IReadOnlyList<VehicleReservation>? reservations=null)
     {
         if(until<=from || (until-from).TotalDays>62) throw new ArgumentException("Invalid calendar window.");
         var result=new List<CalendarEntry>();
@@ -20,6 +20,10 @@ public static class FleetCalendar
             var due=v.LastService.Date.AddDays(v.ServiceIntervalDays);
             if(due>=from && due<until)
                 result.Add(new(v.Plate,"Calendar-based service deadline (not a booking)",due,due.AddDays(1),"Service due",null,v.Id));
+        }
+        foreach(var r in (reservations??[]).Where(r=>r.Start<until&&from<r.End)){
+            var plate=fleet.Vehicles.FirstOrDefault(v=>v.Id==r.VehicleId)?.Plate??"Unknown";
+            result.Add(new(plate,$"{r.Kind} · {r.Notes}",r.Start,r.End,"Reservation",null,r.VehicleId));
         }
         return result.OrderBy(e=>e.Start).ThenBy(e=>e.VehicleId).ToList();
     }

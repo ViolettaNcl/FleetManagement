@@ -124,3 +124,5 @@ Offline localization extended to passport, maintenance history/journal, shift pl
 Release evidence gate checks the latest exact-SHA run of all seven CI workflows, generates JSON and never publishes. Added logical ER diagram and explicit migration-baseline limitations.
 
 ML laboratory localization: headings, forms, tables and explanatory text for maintenance intelligence, drift/retraining, ETA/anomaly, demand, registry and data quality; explicit accessible work-category label fixes the Russian smoke locator. Computed output strings, some chart legends and export contents remain English.
+
+Extended dependency review adds npm audit, exact historical WPF package advisory lookups and final container vulnerability scan, uploading reports without publishing images or altering legacy packages. Scan findings require review.

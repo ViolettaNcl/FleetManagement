@@ -33,3 +33,5 @@ Do not merge or publish a revision with known failed acceptance checks.
 
 ## Read-only release evidence gate
 Run `Release evidence gate` manually on the intended candidate branch. It checks the latest run of each of the seven required CI workflows on the exact workflow commit SHA, fails if any is absent, running or unsuccessful, and uploads `release-evidence.json`. Path-filtered workflows must be dispatched for that same commit first. A successful evidence gate does not certify zero vulnerabilities or approve publication. Review the manual items, actual media and advisory inventory separately. The gate never merges, tags or deploys anything.
+
+Review the additional dependency inventory (npm, historical WPF declarations and final runtime image) as well as modern NuGet. Do not treat a successful report-only scan as a security approval.

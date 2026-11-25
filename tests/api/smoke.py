@@ -253,6 +253,19 @@ assert second==(201,first[1],"true"),second
 assert receipt_call({**receipt_body,"confirmed":False})[0]==409
 assert receipt_call(receipt_body,"not-a-uuid")[0]==400
 assert len([t for t in request("GET","/api/trips") if t["origin"]=="QA receipt"])==1
+# Headerless batch writes must also produce a replayable durable receipt.
+legacy_start=receipt_start+timedelta(days=2)
+legacy_requests=[{"id":1,"origin":"QA generated batch receipt","destination":"Depot","start":legacy_start.isoformat(),"end":(legacy_start+timedelta(hours=1)).isoformat(),"distance":33}]
+legacy_plan=request("POST","/api/operations/batch/preview",{"requests":legacy_requests})[2]
+legacy_body={"confirmed":True,"assignments":legacy_plan["assigned"]}
+legacy_req=urllib.request.Request(BASE+"/api/operations/batch/apply",data=json.dumps(legacy_body).encode(),headers={"Content-Type":"application/json","X-Fleet-Key":KEY},method="POST")
+with urllib.request.urlopen(legacy_req,timeout=15) as response:
+    assert response.status==201
+    legacy_key=response.headers["Idempotency-Key"]
+    assert uuid.UUID(legacy_key).int!=0
+    legacy_response=json.load(response)
+assert receipt_call(legacy_body,legacy_key)==(201,legacy_response,"true")
+assert len([t for t in request("GET","/api/trips") if t["origin"]=="QA generated batch receipt"])==1
 from pathlib import Path
 Path(os.environ.get("RUNNER_TEMP","."),"fleet-receipt-test.json").write_text(json.dumps({"key":receipt_key,"body":receipt_body,"response":first[1]}))
 print("PASS: durable batch replay, changed payload conflict and invalid UUID")
@@ -328,6 +341,26 @@ assert write_receipt("POST",ordinary_path,ordinary_body,ordinary_key)==(201,ordi
 assert write_receipt("POST",ordinary_path,{**ordinary_body,"experience":4},ordinary_key)[0]==409
 assert write_receipt("POST","/api/operations/maintenance",{"vehicleId":3,"kind":"Repair"},ordinary_key)[0]==409
 assert write_receipt("POST",ordinary_path,ordinary_body,str(uuid.uuid4()),viewer)[0]==403
+# Invalid and unauthenticated requests must never mutate the register.
+guard_body={"name":"QA receipt guard","license":"QA-RECEIPT-GUARD","experience":2}
+guard_before=request("GET","/api/drivers")
+for invalid_key in ("", "not-a-uuid", str(uuid.UUID(int=0)), str(uuid.uuid4())+","+str(uuid.uuid4())):
+    assert write_receipt("POST",ordinary_path,guard_body,invalid_key)[0]==400
+request("POST",ordinary_path,guard_body,status=401,authorized=False)
+request("POST",ordinary_path,guard_body,status=403,token=viewer)
+assert request("GET","/api/drivers")==guard_before
+# Missing headers use a server-generated durable key, not an alternate write.
+legacy_req=urllib.request.Request(BASE+ordinary_path,data=json.dumps(guard_body).encode(),headers={"Content-Type":"application/json","X-Fleet-Key":KEY},method="POST")
+with urllib.request.urlopen(legacy_req,timeout=15) as response:
+    assert response.status==201
+    generated=response.headers["Idempotency-Key"]
+    assert uuid.UUID(generated).int!=0
+    generated_body=json.load(response)
+    generated_location=response.headers["Location"]
+assert write_receipt("POST",ordinary_path,guard_body,generated)==(201,generated_body,"true",generated_location)
+assert len([d for d in request("GET","/api/drivers") if d["license"]==guard_body["license"]])==1
+request("DELETE",f"/api/drivers/{generated_body['id']}",status=204)
+print("PASS: missing, malformed and unauthorized ordinary receipt headers")
 ordinary_id=ordinary[1]["id"]
 edit_key=str(uuid.uuid4())
 edit_body={**ordinary_body,"experience":4,"expected":ordinary_body}

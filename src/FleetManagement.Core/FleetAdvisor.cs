@@ -7,7 +7,7 @@ public sealed record AdvisorAnswer(string Title,string Summary,IReadOnlyList<Fle
 
 public static class FleetAdvisor
 {
-    public static IReadOnlyList<FleetAlert> Assess(FleetData fleet,DateTime now,IReadOnlyList<DriverShift>? shifts=null,bool requireShifts=false,IReadOnlyList<VehicleReservation>? reservations=null)
+    public static IReadOnlyList<FleetAlert> Assess(FleetData fleet,DateTime now,IReadOnlyList<DriverShift>? shifts=null,bool requireShifts=false,IReadOnlyList<VehicleReservation>? reservations=null,string clockLabel="demo time")
     {
         var alerts=new List<FleetAlert>();
         foreach(var v in fleet.Vehicles.OrderBy(v=>v.Id)){
@@ -24,7 +24,7 @@ public static class FleetAdvisor
             var v=fleet.Vehicles.FirstOrDefault(v=>v.Id==trip.VehicleId);
             if(v is not null&&FleetRules.Assess(v,trip.Start).Status=="Due")
                 alerts.Add(new($"dispatch:{trip.Id}","High",$"Trip #{trip.Id}","Scheduled with service-due vehicle",
-                    $"{v.Plate}; departure {trip.Start:yyyy-MM-dd HH:mm} (demo time).",
+                    $"{v.Plate}; departure {trip.Start:yyyy-MM-dd HH:mm} ({clockLabel}).",
                     "Review the vehicle and consider a different available assignment. No changes are made automatically.","Dispatch"));
         }
         foreach(var r in (reservations??[]).Where(r=>r.End>now&&r.Start<=now.AddHours(24))){

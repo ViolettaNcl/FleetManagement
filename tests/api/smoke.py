@@ -203,3 +203,18 @@ assert {"Trip","Shift","Reservation"} <= {e["kind"] for e in calendar["entries"]
 request("GET",f"/api/operations/calendar?from={now.date().isoformat()}&days=32",400,token=viewer)
 request("GET","/api/operations/overview",status=401,authorized=False)
 print("PASS: server dashboard counts and bounded calendar events")
+
+# Request envelope and cache protections. Oversized data is rejected before JSON binding.
+huge=json.dumps({"origin":"x"*(257*1024)}).encode()
+req=urllib.request.Request(BASE+"/api/trips",data=huge,headers={"Content-Type":"application/json","X-Fleet-Key":KEY},method="POST")
+try:
+    urllib.request.urlopen(req,timeout=15)
+    raise AssertionError("Oversized request accepted")
+except urllib.error.HTTPError as ex:
+    assert ex.code==413,ex.code
+    assert ex.headers["Cache-Control"]=="no-store"
+req=urllib.request.Request(BASE+"/api/fleet",headers={"X-Fleet-Key":KEY})
+with urllib.request.urlopen(req,timeout=15) as response:
+    assert response.headers["Cache-Control"]=="no-store"
+    assert response.headers["X-Content-Type-Options"]=="nosniff"
+print("PASS: oversized request rejected and API cache/type headers")

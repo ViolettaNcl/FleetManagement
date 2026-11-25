@@ -20,7 +20,7 @@ public static class OverviewEndpoints
                 service=new{healthy=statuses.Count(s=>s=="Healthy"),soon=statuses.Count(s=>s=="Soon"),due=statuses.Count(s=>s=="Due")},
                 reservedNow=reservations.Count(r=>r.Start<=now&&now<r.End),
                 departures=Enumerable.Range(0,7).Select(i=>new{date=today.AddDays(i).ToString("yyyy-MM-dd",System.Globalization.CultureInfo.InvariantCulture),count=fleet.Trips.Count(t=>t.Start>=today.AddDays(i)&&t.Start<today.AddDays(i+1))}),
-                alerts=FleetAdvisor.Assess(fleet,now,shifts,policy.RequireShifts,reservations).Take(20)
+                alerts=FleetAdvisor.Assess(fleet,now,shifts,policy.RequireShifts,reservations,clockLabel:"UTC").Take(20)
             });
         });
         api.MapGet("/operations/calendar",async Task<IResult> (DateOnly from,int? days,FleetStore store,FleetDbContext db,CancellationToken ct)=>{

@@ -9,6 +9,8 @@ using Microsoft.AspNetCore.RateLimiting;
 using Microsoft.EntityFrameworkCore;
 
 var builder=WebApplication.CreateBuilder(args);
+const long MaxRequestBytes=256*1024;
+builder.WebHost.ConfigureKestrel(options=>options.Limits.MaxRequestBodySize=MaxRequestBytes);
 var secret=builder.Configuration["Fleet:ApiKey"];
 if (string.IsNullOrWhiteSpace(secret) || secret.Length<32)
     throw new InvalidOperationException("Set Fleet__ApiKey to a randomly generated secret of at least 32 characters.");
@@ -58,8 +60,11 @@ builder.Services.AddProblemDetails();
 var app=builder.Build();
 app.UseExceptionHandler();
 app.Use(async (context,next)=>{
-    if(context.Request.Path.StartsWithSegments("/api") || context.Request.Path.StartsWithSegments("/openapi"))
+    if(context.Request.Path.StartsWithSegments("/api") || context.Request.Path.StartsWithSegments("/openapi")){
         context.Response.Headers.CacheControl="no-store";
+        context.Response.Headers["X-Content-Type-Options"]="nosniff";
+        if(context.Request.ContentLength>MaxRequestBytes){context.Response.StatusCode=413;await context.Response.WriteAsJsonAsync(new{error="Request body exceeds 256 KiB."});return;}
+    }
     await next();
 });
 app.UseRouting();

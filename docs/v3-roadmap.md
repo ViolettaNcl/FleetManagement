@@ -84,3 +84,5 @@ Read-only performance smoke runs 120 local HTTP reads with eight workers on each
 Connected register edit and admin account list/create: optional stale record protection for vehicle/driver updates, server pagination and role-gated minimal account metadata. No role changes or token revocation; existing admin-only account creation reused.
 
 Connected dashboard and calendar use server-side counts, shared service assessments/alerts/calendar events, shift rows and bounded 1–31 day windows. Native progress graphs, category filtering and Viewer coverage.
+
+Security hardening adds a 256 KiB request envelope, API no-store/nosniff and 30-second client network timeout with explicit uncertain-write recovery guidance. Tests reject oversized authenticated requests. Threat model and residual risks documented; not an independent security audit.

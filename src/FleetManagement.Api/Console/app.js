@@ -21,7 +21,9 @@ async function api(path,method="GET",body,authenticated=true,format="json"){
     const headers={"Accept":"application/json"};
     if(authenticated){if(!token)throw Error("Sign in again.");headers.Authorization="Bearer "+token;}
     if(body!==undefined)headers["Content-Type"]="application/json";
-    const response=await fetch(path,{method,headers,body:body===undefined?undefined:JSON.stringify(body),cache:"no-store",credentials:"omit",redirect:"error"});
+    let response;
+    try{response=await fetch(path,{method,headers,body:body===undefined?undefined:JSON.stringify(body),cache:"no-store",credentials:"omit",redirect:"error",signal:AbortSignal.timeout(30000)});}
+    catch{throw Error(method==="GET"?"Server unavailable or request timed out. Refresh to retry.":"Request outcome unknown. Check server records before resubmitting.");}
     if(active!==generation)throw Error("Session changed.");
     if(response.status===401){if(authenticated)signOut("Session expired. Sign in again.");throw Error("Authentication failed.");}
     if(!response.ok){let detail;try{detail=await response.json();}catch{}throw Error(typeof detail?.error==="string"?detail.error:Array.isArray(detail?.errors)?detail.errors.filter(x=>typeof x==="string").join("; "):"Request failed (HTTP "+response.status+").");}

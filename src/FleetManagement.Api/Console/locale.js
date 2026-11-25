@@ -1,5 +1,8 @@
 "use strict";
 const translations={
+"Server unavailable or request timed out. Refresh to retry.":"Сервер недоступен или истекло время ожидания. Обновите данные для повторной попытки.",
+"Request outcome unknown. Check server records before resubmitting.":"Результат запроса неизвестен. Проверьте записи сервера перед повторной отправкой.",
+
 "Dashboard":"Панель управления",
 "Calendar":"Календарь",
 "Fleet command center":"Центр управления автопарком",

@@ -28,6 +28,8 @@
 
 - Digital vehicle passport: linked register entry, latest service profile, completed distance, trip activity and filtered history with scheduled trip editing.
 
+- Grouped responsive workspace navigation and command center with computed trip workload, maintenance readiness and today's calendar agenda.
+
 ## V2 baseline — portfolio edition
 
 ### Added

@@ -40,3 +40,5 @@ Model Registry UI V1 accepts up to 10 schema-v1 synthetic manifests per selectio
 Data Quality V1 inspects strict, unquoted numeric CSV locally with 1 MiB / 10,000-row limits, demo feature bounds, unique accepted vehicle/day keys and binary labels. Shows counts, up to 50 errors and 20 valid rows. No actual training, correction, data upload or persistence. See data quality docs.
 
 Vehicle Passport V1 derives a read-only view from the shared register and current clock, links back to maintenance/calendar and scheduled-trip editing. Latest recorded service only; no invented historical work orders. Odometer and trip distances are independently maintained fields.
+
+Command center V1 groups the existing browser modules into four navigation categories and displays actual current demo-register counts, service thresholds and today's calendar entries. Preserves purple WPF-style tables and separate laboratory data. No additional backend or fake live telemetry.

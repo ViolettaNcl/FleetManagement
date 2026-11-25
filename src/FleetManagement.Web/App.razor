@@ -6,12 +6,19 @@
     <div class="actions"><span class="pill">Demo mode · local data</span><button class="secondary" @onclick="Reset">Reset demo</button></div>
 </header>
 <main>
-    <nav aria-label="Fleet sections">
-        @foreach (var item in Sections)
+    <nav class="fleet-sidebar" aria-label="Fleet sections">
+        @foreach(var group in NavigationGroups)
         {
-            <button class="@(section == item ? "active" : "")" aria-pressed="@(section == item ? "true" : "false")" @onclick="() => Navigate(item)">@item</button>
+            <div class="nav-group">
+                <h2>@group.Name</h2>
+                @foreach(var item in group.Items)
+                {
+                    <button class="@(section == item ? "active" : "")" aria-pressed="@(section == item ? "true" : "false")" @onclick="() => Navigate(item)">@item</button>
+                }
+            </div>
         }
     </nav>
+    <div class="fleet-content">
     @if (!string.IsNullOrEmpty(storageMessage)) { <p class="notice">@storageMessage</p> }
     @if (section == "Overview")
     {
@@ -21,8 +28,9 @@
             <div class="metric">In transit<strong>@fleet.Trips.Count(t => FleetRules.TripStatus(t, Now) == "In transit")</strong></div>
             <div class="metric">Service due<strong>@fleet.Vehicles.Count(v => FleetRules.Assess(v, Now).Status == "Due")</strong></div>
         </div>
-        <section class="panel"><h2>Operations overview</h2><p class="muted">The original WPF-inspired interface, now running in the browser with C# business rules. Explore fleet operations, reporting, and the original desktop source on GitHub.</p>
+        <section class="panel command-hero"><h2>Operations overview</h2><p class="muted">Fleet command center · monitor schedules, maintenance and operational exceptions in one place. Synthetic records, local browser storage.</p>
         <div class="actions"><button @onclick='() => Navigate("Tracking")'>Open live tracking</button><button @onclick='() => Navigate("Dispatch")'>Plan a trip</button><button @onclick='() => Navigate("Maintenance")'>Review maintenance</button></div></section>
+        <CommandSummary Fleet="fleet" Now="Now" Open="Navigate" />
         <section class="panel"><h2>Try a guided scenario</h2><p class="muted">All records are synthetic. Changes are stored only in this browser, so you can experiment safely.</p>
         <div class="demojourney">
             <button class="secondary" @onclick='() => Navigate("Vehicles")'><strong>01 · Register</strong><small>Add a vehicle and test search or validation.</small></button>
@@ -136,9 +144,15 @@
         </tbody></table></div></section>
     }
     <footer class="footer">FleetManagement · WPF-inspired .NET WebAssembly demo · synthetic data only · <a href="https://github.com/ViolettaNcl/FleetManagement">Source repository</a></footer>
+    </div>
 </main>
 @code {
-    private readonly string[] Sections = ["Overview","Vehicles","Drivers","Tracking","Dispatch","Calendar","Maintenance","Analytics","Optimization","Intelligence","Predictions","Digital Twin","Assistant","Multi Dispatch","What-if","Geo Map","Model Registry","Data Quality","Vehicle Passport"];
+    private readonly (string Name,string[] Items)[] NavigationGroups = [
+        ("Operations",["Overview","Vehicles","Drivers","Vehicle Passport","Dispatch","Calendar","Maintenance"]),
+        ("Tracking & reporting",["Tracking","Geo Map","Analytics","Assistant"]),
+        ("Simulation & optimization",["Optimization","Multi Dispatch","Digital Twin","What-if"]),
+        ("Machine learning",["Intelligence","Predictions","Model Registry","Data Quality"])
+    ];
     private const string Key="fleetmanagement.demo.v1";
     private FleetData fleet=FleetRules.Sample(DateTime.Now);
     private string section="Overview",origin="North depot",destination="Central hub",feedback="",storageMessage="";

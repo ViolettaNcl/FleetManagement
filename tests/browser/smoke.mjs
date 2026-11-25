@@ -9,6 +9,9 @@ try {
   await page.goto('http://127.0.0.1:8080/FleetManagement/');
   await page.getByRole('button',{name:'Vehicles',exact:true}).waitFor({timeout:90000});
   await mkdir('browser-results',{recursive:true});
+  await page.getByRole('heading',{name:'Fleet workload'}).waitFor();
+  await page.getByRole('heading',{name:"Today's agenda"}).waitFor();
+  assert.equal(await page.locator('.nav-group').count(),4);
   await page.screenshot({path:'browser-results/overview.png',fullPage:true});
   await page.getByRole('button',{name:'Vehicles',exact:true}).click();
   await page.getByRole('button',{name:'+ Add vehicle',exact:true}).click();

@@ -25,7 +25,9 @@ The browser edition runs C# in WebAssembly, uses synthetic data, and requires no
 - [How to run the demo and enable GitHub Pages](docs/deployment.md)
 - [Development pull request](https://github.com/ViolettaNcl/FleetManagement/pull/1)
 
-### Guided demo (about two minutes)
+### Guided demo
+
+The grouped V3 workspace separates operational records, tracking/reporting, simulation/optimization and ML experiments. The overview combines live demo-clock trip counts, service readiness, today's agenda and rule-based alerts.
 
 | Screen | What to try |
 | --- | --- |

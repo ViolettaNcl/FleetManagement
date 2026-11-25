@@ -108,6 +108,18 @@ try {
   await page.getByRole('heading',{name:'Scenario outcomes'}).waitFor();
   await page.getByRole('row').filter({hasText:'Alternative + breakdown'}).waitFor();
   await page.screenshot({path:'browser-results/what-if.png',fullPage:true});
+  await page.getByRole('button',{name:'Geo Map',exact:true}).click();
+  await page.getByRole('heading',{name:'Geographic fleet tracking'}).waitFor();
+  await page.getByRole('button',{name:'Reset playback'}).click();
+  assert.equal(await page.getByTestId('geo-clock').innerText(),'08:00');
+  await page.getByRole('button',{name:'+ 15 minutes',exact:true}).click();
+  assert.equal(await page.getByTestId('geo-clock').innerText(),'08:15');
+  await page.getByLabel('Tracked vehicle').selectOption('2');
+  await page.getByRole('heading',{name:'Geofence event history'}).waitFor();
+  const mapResponse=await page.request.get('http://127.0.0.1:8080/FleetManagement/maps/central-europe.svg');
+  assert.equal(mapResponse.ok(),true);
+  assert.match(await mapResponse.text(),/Natural Earth/);
+  await page.screenshot({path:'browser-results/geographic-map.png',fullPage:true});
   await page.setViewportSize({width:390,height:844});
   assert.equal(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth),true);
   await page.getByRole('button',{name:'Overview',exact:true}).click();

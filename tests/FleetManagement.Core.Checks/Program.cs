@@ -170,4 +170,16 @@ Check(comparisons.All(r=>r.ElapsedMinutes<=DigitalTwin.MaxMinutes&&r.FuelLitres>
 Check(comparisons[2].BrokenDown==1,"what-if injected breakdown");
 Check(comparisons[0].FuelPer100Km is double a&&comparisons[1].FuelPer100Km is double b&&a<b,"what-if higher simulated fuel intensity");
 Check(comparisons.SequenceEqual(ScenarioComparison.Compare(8,42,.2,.8,experiment.Model,eta.Model)),"what-if reproducibility");
-Console.WriteLine("All 119 business rule checks passed.");
+var geoRoutes=GeoTracking.Sample();
+Check(geoRoutes.Count==3&&geoRoutes.SelectMany(r=>r.Hubs).All(h=>h.Position.Valid),"geo valid sample coordinates");
+Check(Math.Abs(GeoTracking.Distance(new(0,0),new(0,1))-111.195)<.01,"geo great-circle reference");
+Check(GeoTracking.Distance(new(45,15),new(45,15))==0,"geo identical coordinates");
+var geoRoute=geoRoutes[0];
+Check(GeoTracking.At(geoRoute,-1).Status=="Scheduled"&&GeoTracking.At(geoRoute,-1).Progress==0,"geo predeparture");
+Check(GeoTracking.At(geoRoute,0).Position==geoRoute.Hubs[0].Position,"geo departure position");
+Check(GeoTracking.At(geoRoute,300).Position==geoRoute.Hubs[^1].Position&&GeoTracking.At(geoRoute,300).Status=="Arrived","geo destination position");
+Check(Math.Abs(GeoTracking.At(geoRoute,150).DistanceKm-GeoTracking.Length(geoRoute)/2)<1e-8,"geo distance progression");
+Check(GeoTracking.Events(geoRoutes,0).Count==1,"geo departure zone event");
+Check(GeoTracking.Events(geoRoutes,720).Any(e=>e.Plate=="GEO-101"&&e.Hub=="Vienna"&&e.Kind=="Enter"),"geo destination zone entry");
+Check(GeoTracking.Events(geoRoutes,720).SequenceEqual(GeoTracking.Events(geoRoutes,720)),"geo deterministic replay");
+Console.WriteLine("All 129 business rule checks passed.");

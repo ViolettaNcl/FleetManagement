@@ -18,6 +18,8 @@
 
 - What-if lab: complete deterministic baseline, traffic alternative and breakdown scenario comparison, completion and fuel intensity reports.
 
+- Geographic tracking lab: bundled Natural Earth country geometry, approximate city coordinates, great-circle distance, replay controls, geofence entry/exit history.
+
 ## V2 baseline — portfolio edition
 
 ### Added

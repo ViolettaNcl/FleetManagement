@@ -1,31 +1,32 @@
+@using FleetManagement.Web
 <section class="panel">
     <div class="registerhead">
-        <div><h2>Fleet calendar</h2><p class="muted">Trip schedule, vehicle reservations and calendar-based service deadlines. Deadlines alone do not reserve vehicles.</p></div>
-        <button @onclick="NewTrip">+ Plan trip</button>
+        <div><h2>@T("Fleet calendar")</h2><p class="muted">@T("Trip schedule, vehicle reservations and calendar-based service deadlines. Deadlines alone do not reserve vehicles.")</p></div>
+        <button @onclick="NewTrip">@T("+ Plan trip")</button>
     </div>
     <div class="actions calendar-toolbar">
-        <button class="secondary" aria-label="Previous period" @onclick="()=>Move(-1)">‹</button>
-        <button class="secondary" @onclick="Today">Today</button>
-        <button class="secondary" aria-label="Next period" @onclick="()=>Move(1)">›</button>
+        <button class="secondary" aria-label="@T("Previous period")" @onclick="()=>Move(-1)">‹</button>
+        <button class="secondary" @onclick="Today">@T("Today")</button>
+        <button class="secondary" aria-label="@T("Next period")" @onclick="()=>Move(1)">›</button>
         <strong>@Heading</strong>
         <div class="actions">
-            @foreach(var v in Views){<button class="@(view==v?"":"secondary")" aria-pressed="@(view==v)" @onclick="()=>view=v">@v</button>}
+            @foreach(var v in Views){<button class="@(view==v?"":"secondary")" aria-pressed="@(view==v)" @onclick="()=>view=v">@T(v)</button>}
         </div>
     </div>
     <div class="actions registertools">
-        <label>Vehicle<select @bind="vehicleId"><option value="0">All vehicles</option>@foreach(var v in Fleet.Vehicles){<option value="@v.Id">@v.Plate</option>}</select></label>
-        <label>Event type<select @bind="kind"><option value="All">All events</option><option value="Trip">Trips</option><option value="Service due">Service deadlines</option><option value="Reservation">Vehicle reservations</option></select></label>
+        <label>@T("Vehicle")<select @bind="vehicleId"><option value="0">@T("All vehicles")</option>@foreach(var v in Fleet.Vehicles){<option value="@v.Id">@v.Plate</option>}</select></label>
+        <label>@T("Event type")<select @bind="kind"><option value="All">@T("All events")</option><option value="Trip">@T("Trips")</option><option value="Service due">@T("Service deadlines")</option><option value="Reservation">@T("Vehicle reservations")</option></select></label>
     </div>
     @if(view!="Day")
     {
         <div class="calendar-scroll"><div class="calendar-grid @(view=="Month"?"month":"week")">
-            @foreach(var name in Weekdays){<div class="calendar-label">@name</div>}
+            @foreach(var name in Weekdays){<div class="calendar-label">@T(name)</div>}
             @foreach(var date in Days)
             {
                 var entries=Events(date);
                 <button class="calendar-day @(date==selected.Date?"selected":"") @(date.Month!=selected.Month&&view=="Month"?"outside":"")" aria-label="@date.ToString("yyyy-MM-dd")" aria-pressed="@(date==selected.Date)" @onclick="()=>selected=date">
                     <span class="calendar-date">@date.Day</span>
-                    @foreach(var e in entries.Take(3)){<span class="calendar-chip @(e.Kind=="Trip"?"trip":"service")">@e.Title · @e.Kind</span>}
+                    @foreach(var e in entries.Take(3)){<span class="calendar-chip @(e.Kind=="Trip"?"trip":"service")">@e.Title · @T(e.Kind)</span>}
                     @if(entries.Count>3){<small>+ @(entries.Count-3) more</small>}
                 </button>
             }
@@ -33,19 +34,21 @@
     }
 </section>
 <section class="panel">
-    <h2>Agenda · @selected.ToString("dddd, dd MMM yyyy")</h2>
-    @if(Events(selected).Count==0){<p class="muted">No matching events for this date.</p>}
+    <h2>@T("Agenda") · @selected.ToString("dddd, dd MMM yyyy")</h2>
+    @if(Events(selected).Count==0){<p class="muted">@T("No matching events for this date.")</p>}
     @foreach(var entry in Events(selected))
     {
         <div class="agenda-row">
-            <span class="calendar-chip @(entry.Kind=="Trip"?"trip":"service")">@entry.Kind</span>
-            <div><strong>@entry.Title</strong><div class="muted">@entry.Detail</div><small>@(entry.Kind!="Service due"?entry.Start.ToString("dd MMM HH:mm")+" – "+entry.End.ToString("dd MMM HH:mm"):"All-day reminder")</small></div>
+            <span class="calendar-chip @(entry.Kind=="Trip"?"trip":"service")">@T(entry.Kind)</span>
+            <div><strong>@entry.Title</strong><div class="muted">@T(entry.Detail)</div><small>@(entry.Kind!="Service due"?entry.Start.ToString("dd MMM HH:mm")+" – "+entry.End.ToString("dd MMM HH:mm"):T("All-day reminder"))</small></div>
             @if(entry.TripId is int id && Fleet.Trips.FirstOrDefault(t=>t.Id==id) is Trip trip && trip.Start>Now)
             {<button class="secondary" @onclick="()=>EditTrip.InvokeAsync(trip)">Edit trip #@id</button>}
         </div>
     }
 </section>
 @code {
+    [Parameter] public bool Russian{get;set;}
+    private string T(string value)=>DemoLocale.Text(value,Russian);
     [Parameter, EditorRequired] public FleetData Fleet {get;set;}=default!;
     [Parameter] public DateTime Now {get;set;}
     [Parameter] public IReadOnlyList<VehicleReservation> Reservations {get;set;}=[];

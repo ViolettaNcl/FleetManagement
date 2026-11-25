@@ -319,4 +319,21 @@ Check(BatchDispatch.Apply(batchFleet,batchPlans[2],now,[],false,[])!=null&&batch
 Check(FleetCalendar.Entries(batchFleet,batchStart.Date,batchStart.Date.AddDays(1)).Count(e=>e.Kind=="Trip")==3,"batch calendar integration");
 Check(BatchDispatch.ValidateRequest(batchRequests[0] with{Start=now},now)!=null,"batch past request rejected");
 Check(batchPlans[2].Assigned.Count==batchPlans.Take(2).Max(p=>p.Assigned.Count),"batch coverage selection");
-Console.WriteLine("All 231 business rule checks passed.");
+// A larger deterministic synthetic workload: no external data, no timing SLA.
+var scaleVehicles=Enumerable.Range(1,120).Select(i=>new Vehicle(i,$"SCALE-{i:000}","Synthetic",20000,19000,now.Date.AddDays(-5),10000,180)).ToList();
+var scaleDrivers=Enumerable.Range(1,120).Select(i=>new Driver(i,$"Driver {i}",$"SCALE-{i:000}",5)).ToList();
+var scaleTrips=(from day in Enumerable.Range(1,30) from i in Enumerable.Range(1,120)
+    let start=now.Date.AddDays(-day).AddHours(9)
+    select new Trip((day-1)*120+i,i,i,"Depot","Hub",start,start.AddHours(1),80,-1)).ToList();
+var scaleFleet=new FleetData(scaleVehicles,scaleDrivers,scaleTrips);
+var scaleRequests=Enumerable.Range(1,40).Select(i=>new TripRequest(i,"Depot","Hub",now.Date.AddDays(1).AddHours(9),now.Date.AddDays(1).AddHours(11),90)).ToArray();
+var timer=System.Diagnostics.Stopwatch.StartNew();
+var scalePlan=BatchDispatch.Compare(scaleFleet,scaleRequests,now,[],false,[])[2];
+Check(scalePlan.Assigned.Count==40&&scaleFleet.Trips.Count==3600,"scaled preview covers all 40 requests without mutation");
+Check(scalePlan.Assigned.Select(a=>a.VehicleId).Distinct().Count()==40,"scaled unique vehicle assignment");
+Check(scalePlan.Assigned.Select(a=>a.DriverId).Distinct().Count()==40,"scaled unique driver assignment");
+Check(BatchDispatch.Apply(scaleFleet,scalePlan,now,[],false,[])==null&&scaleFleet.Trips.Count==3640,"scaled batch apply");
+Check(FleetCalendar.Entries(scaleFleet,now.Date.AddDays(1),now.Date.AddDays(2)).Count(e=>e.Kind=="Trip")==40,"scaled calendar");
+timer.Stop();
+Console.WriteLine($"Synthetic scale smoke: 120 vehicles / 120 drivers / 3600 historical trips / 40 requests; elapsed {timer.Elapsed.TotalMilliseconds:F2} ms (no SLA).");
+Console.WriteLine("All 236 business rule checks passed.");

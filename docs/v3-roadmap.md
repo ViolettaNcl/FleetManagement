@@ -94,3 +94,5 @@ Portfolio V3 guide, release checklist and PowerShell 7 local connected launcher 
 Durable batch receipts: actor-scoped UUID + SHA-256 typed payload, immutable success response committed alongside trips/audit, replay after restart without duplicate notification, changed payload rejection, explicit schema upgrade for old V3. API tests cover replay and restart.
 
 Identity lifecycle: server security stamp checks for authenticated HTTP, own-session revocation, admin staff revocation and transactional Viewer/Dispatcher changes with expected role. Browser batch idempotency retries preserve UUID and body in session. Existing connections/in-flight requests not forcibly terminated.
+
+Offline localization expanded to register forms, calendar filters and dispatch labels. Added deterministic core-scale smoke with 120 vehicles, 120 drivers, 3,600 historical trips and 40 simultaneous requests; checks preview, assignment uniqueness, apply and calendar. Timing is informational only.

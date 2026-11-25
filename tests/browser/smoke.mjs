@@ -12,6 +12,11 @@ try {
   await page.getByLabel('Language',{exact:true}).selectOption('ru');
   await page.getByRole('button',{name:'Автомобили',exact:true}).waitFor();
   await page.getByRole('heading',{name:'Загрузка рейсами'}).waitFor();
+  await page.getByRole('button',{name:'Автомобили',exact:true}).click();
+  await page.getByRole('heading',{name:'Реестр автомобилей'}).waitFor();
+  await page.getByRole('button',{name:'Календарь',exact:true}).click();
+  await page.getByRole('heading',{name:'Календарь автопарка'}).waitFor();
+  await page.getByRole('button',{name:'Обзор',exact:true}).click();
   await page.getByLabel('Язык',{exact:true}).selectOption('en');
   await page.getByRole('heading',{name:'Fleet workload'}).waitFor();
   await page.getByRole('heading',{name:"Today's agenda"}).waitFor();

@@ -45,7 +45,7 @@
     }
     else if (section == "Vehicles" || section == "Drivers")
     {
-        <FleetRegister @key="section" Fleet="fleet" IsVehicles="@(section == "Vehicles")" Today="Now" Changed="Persist" OpenPassport="OpenPassport" MaintenanceEntries="maintenanceEntries" Shifts="driverShifts" Reservations="vehicleReservations" />
+        <FleetRegister Russian="@(language=="ru")" @key="section" Fleet="fleet" IsVehicles="@(section == "Vehicles")" Today="Now" Changed="Persist" OpenPassport="OpenPassport" MaintenanceEntries="maintenanceEntries" Shifts="driverShifts" Reservations="vehicleReservations" />
     }
     else if (section == "Batch Dispatch")
     {
@@ -109,7 +109,7 @@
     }
     else if (section == "Calendar")
     {
-        <FleetCalendarView Reservations="vehicleReservations" Fleet="fleet" Now="Now" EditTrip="EditTrip" PlanTrip="PlanFromCalendar" />
+        <FleetCalendarView Russian="@(language=="ru")" Reservations="vehicleReservations" Fleet="fleet" Now="Now" EditTrip="EditTrip" PlanTrip="PlanFromCalendar" />
     }
     else if (section == "Analytics")
     {
@@ -131,7 +131,7 @@
                         var point=Position(t); <g><circle cx="@point.X" cy="@point.Y" r="@(selectedTrip==t.Id?13:9)" fill="#6a0dad" stroke="white" stroke-width="3"/><text x="@(point.X+15)" y="@(point.Y-10)">@VehicleName(t.VehicleId)</text></g>
                     }
                 </svg>
-                <div class="tripselect"><h3>Trips</h3>
+                <div class="tripselect"><h3>@T("Trips")</h3>
                 @foreach (var t in fleet.Trips.Where(t => t.Track >= 0)) { <button class="@(selectedTrip==t.Id?"":"secondary")" @onclick="()=>selectedTrip=t.Id">#@t.Id · @VehicleName(t.VehicleId)<br/><small style="color:inherit">@FleetRules.TripStatus(t,Now)</small></button> }
                 @if (fleet.Trips.FirstOrDefault(t=>t.Id==selectedTrip) is Trip selected) {
                     <p>@selected.Origin → @selected.Destination<br/><small>Progress: @((FleetRules.Progress(selected,Now)*100).ToString("0"))% · ETA @selected.End.ToString("HH:mm")</small></p>
@@ -143,21 +143,21 @@
     }
     else if (section == "Dispatch")
     {
-        <section class="panel"><h2>Intelligent dispatch planner</h2>@if (editingTripId.HasValue) { <p class="notice">Editing trip #@editingTripId</p> }<p class="muted">Find an available vehicle and driver. The C# scheduler checks overlapping assignments and reservations, and avoids vehicles with overdue service when recommending a pair. @(requireShifts?"Strict shift coverage is enabled.":"Shift coverage is advisory.")</p>
+        <section class="panel"><h2>@T("Intelligent dispatch planner")</h2>@if (editingTripId.HasValue) { <p class="notice">Editing trip #@editingTripId</p> }<p class="muted">@T("Find an available vehicle and driver. The C# scheduler checks overlapping assignments and reservations, and avoids vehicles with overdue service when recommending a pair.") @T(requireShifts?"Strict shift coverage is enabled.":"Shift coverage is advisory.")</p>
         <div class="formgrid">
-            <label>Origin<input @bind="origin" /></label><label>Destination<input @bind="destination" /></label><label>Distance (km)<input type="number" min="1" @bind="distance" /></label>
-            <label>Start<input type="datetime-local" @bind="start" /></label><label>End<input type="datetime-local" @bind="end" /></label>
-            <label>Vehicle<select @bind="vehicleId"><option value="0">Select vehicle</option>@foreach(var v in fleet.Vehicles){<option value="@v.Id">@v.Plate · @v.Model</option>}</select></label>
-            <label>Driver<select @bind="driverId"><option value="0">Select driver</option>@foreach(var d in fleet.Drivers){<option value="@d.Id">@d.Name</option>}</select></label>
+            <label>@T("Origin")<input @bind="origin" /></label><label>@T("Destination")<input @bind="destination" /></label><label>@T("Distance (km)")<input type="number" min="1" @bind="distance" /></label>
+            <label>@T("Start")<input type="datetime-local" @bind="start" /></label><label>@T("End")<input type="datetime-local" @bind="end" /></label>
+            <label>@T("Vehicle")<select @bind="vehicleId"><option value="0">@T("Select vehicle")</option>@foreach(var v in fleet.Vehicles){<option value="@v.Id">@v.Plate · @v.Model</option>}</select></label>
+            <label>@T("Driver")<select @bind="driverId"><option value="0">@T("Select driver")</option>@foreach(var d in fleet.Drivers){<option value="@d.Id">@d.Name</option>}</select></label>
         </div>
-        <div class="actions"><button class="secondary" @onclick="Recommend">Suggest assignment</button><button @onclick="SaveTrip" disabled="@(fleet.Vehicles.Count == 0 || fleet.Drivers.Count == 0)">@(editingTripId.HasValue ? "Save changes" : "Create trip")</button>@if(editingTripId.HasValue){<button class="secondary" @onclick="CancelEdit">Cancel edit</button>}</div>
+        <div class="actions"><button class="secondary" @onclick="Recommend">@T("Suggest assignment")</button><button @onclick="SaveTrip" disabled="@(fleet.Vehicles.Count == 0 || fleet.Drivers.Count == 0)">@T(editingTripId.HasValue ? "Save changes" : "Create trip")</button>@if(editingTripId.HasValue){<button class="secondary" @onclick="CancelEdit">@T("Cancel edit")</button>}</div>
         @if(!string.IsNullOrEmpty(feedback)){<p role="status" class="@(isError?"error":"notice")">@feedback</p>}
-        </section><section class="panel"><h2>Trip schedule</h2>@TripTable()</section>
+        </section><section class="panel"><h2>@T("Trip schedule")</h2>@TripTable()</section>
     }
     else if(section=="Maintenance")
     {
         <section class="panel"><h2>Predictive maintenance · rule-based</h2><p class="muted">Explainable assessment based on service mileage and time intervals. Not a trained ML model or a safety certification.</p>
-        <div class="tablewrap"><table><thead><tr><th>Vehicle</th><th>Remaining km</th><th>Remaining days</th><th>Health</th><th>Explanation</th><th>Action</th></tr></thead><tbody>
+        <div class="tablewrap"><table><thead><tr><th>@T("Vehicle")</th><th>Remaining km</th><th>Remaining days</th><th>@T("Health")</th><th>Explanation</th><th>Action</th></tr></thead><tbody>
         @foreach(var v in fleet.Vehicles){var a=FleetRules.Assess(v,Now);<tr><td>@v.Plate · @v.Model</td><td>@a.RemainingKm.ToString("N0")</td><td>@a.RemainingDays</td><td><span class="pill @a.Status.ToLowerInvariant()">@a.Status</span></td><td>@a.Reason</td><td><button class="secondary" @onclick="()=>RecordService(v.Id)">Record service</button></td></tr>}
         </tbody></table></div>@if(maintenanceFeedback.Length>0){<p role="status" class="notice">@maintenanceFeedback</p>}</section>
         <VehicleReservationView Fleet="fleet" Reservations="vehicleReservations" Now="Now" Changed="Persist" Open="Navigate"/>
@@ -227,8 +227,8 @@
     }
     private async Task RecordService(int id){var error=MaintenanceJournal.Record(fleet,maintenanceEntries,new(id,"Scheduled service","",null),Now);maintenanceFeedback=error??"Service recorded; cost unknown.";if(error is null)await Persist();}
     private (int X,int Y) Position(Trip t){var p=FleetRules.Progress(t,Now);var (x1,y1,x2,y2)=t.Track switch{0=>(110,55,300,160),1=>(65,165,535,105),_=>(300,160,420,285)};return ((int)(x1+(x2-x1)*p),(int)(y1+(y2-y1)*p));}
-    private RenderFragment TripTable()=> @<div class="tablewrap"><table><thead><tr><th>@T("Trip")</th><th>Route</th><th>Vehicle</th><th>Driver</th><th>Start</th><th>End</th><th>Distance</th><th>Status</th>@if(section=="Dispatch"){<th>Actions</th>}</tr></thead><tbody>
-    @foreach(var t in fleet.Trips.OrderByDescending(t=>t.Start)){var status=FleetRules.TripStatus(t,Now);<tr><td>#@t.Id</td><td>@t.Origin → @t.Destination</td><td>@VehicleName(t.VehicleId)</td><td>@DriverName(t.DriverId)</td><td>@t.Start.ToString("dd MMM HH:mm")</td><td>@t.End.ToString("dd MMM HH:mm")</td><td>@t.Distance km</td><td><span class="pill @status.Replace(" ","").ToLowerInvariant()">@status</span></td>@if(section=="Dispatch"){<td>@if(status=="Scheduled"){<div class="actions"><button class="secondary" @onclick="()=>EditTrip(t)">Edit</button><button class="delete" @onclick="()=>DeleteTrip(t)">Delete</button></div>}else{<small>History</small>}</td>}</tr>}
+    private RenderFragment TripTable()=> @<div class="tablewrap"><table><thead><tr><th>@T("Trip")</th><th>Route</th><th>@T("Vehicle")</th><th>@T("Driver")</th><th>@T("Start")</th><th>@T("End")</th><th>Distance</th><th>Status</th>@if(section=="Dispatch"){<th>@T("Actions")</th>}</tr></thead><tbody>
+    @foreach(var t in fleet.Trips.OrderByDescending(t=>t.Start)){var status=FleetRules.TripStatus(t,Now);<tr><td>#@t.Id</td><td>@t.Origin → @t.Destination</td><td>@VehicleName(t.VehicleId)</td><td>@DriverName(t.DriverId)</td><td>@t.Start.ToString("dd MMM HH:mm")</td><td>@t.End.ToString("dd MMM HH:mm")</td><td>@t.Distance km</td><td><span class="pill @status.Replace(" ","").ToLowerInvariant()">@status</span></td>@if(section=="Dispatch"){<td>@if(status=="Scheduled"){<div class="actions"><button class="secondary" @onclick="()=>EditTrip(t)">@T("Edit")</button><button class="delete" @onclick="()=>DeleteTrip(t)">@T("Delete")</button></div>}else{<small>History</small>}</td>}</tr>}
     </tbody></table></div>;
     public async ValueTask DisposeAsync(){cts.Cancel();timer?.Dispose();if(timerTask is not null)await timerTask;cts.Dispose();}
 }

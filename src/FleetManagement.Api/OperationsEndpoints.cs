@@ -8,10 +8,40 @@ public sealed record WorkInput(int VehicleId,string? Kind,string? Notes,decimal?
 public sealed record ShiftInput(int DriverId,DateTimeOffset Start,DateTimeOffset End);
 public sealed record ReservationInput(int VehicleId,DateTimeOffset Start,DateTimeOffset End,string? Kind,string? Notes);
 
+public sealed record BatchRequestInput(int Id,string? Origin,string? Destination,DateTimeOffset Start,DateTimeOffset End,int Distance)
+{
+    public TripRequest ToRequest()=>new(Id,(Origin??"").Trim(),(Destination??"").Trim(),Start.UtcDateTime,End.UtcDateTime,Distance);
+}
+public sealed record BatchAssignmentInput(BatchRequestInput? Request,int VehicleId,int DriverId);
+public sealed record BatchPreviewInput(List<BatchRequestInput?>? Requests);
+public sealed record BatchApplyInput(bool Confirmed,List<BatchAssignmentInput?>? Assignments);
+
 public static class OperationsEndpoints
 {
     public static void Map(RouteGroupBuilder api)
     {
+        api.MapPost("/operations/batch/preview",async Task<IResult> (BatchPreviewInput input,FleetDbContext db,FleetStore store,OperationsPolicy policy,CancellationToken ct)=>{
+            if(input.Requests is null||input.Requests.Count is <1 or >BatchDispatch.MaxRequests||input.Requests.Any(r=>r is null))return Invalid("Provide 1–40 trip requests.");
+            try{
+                var plans=BatchDispatch.Compare(await store.Read(ct),input.Requests.Select(r=>r!.ToRequest()).ToArray(),DateTime.UtcNow,
+                    await db.DriverShifts.AsNoTracking().ToListAsync(ct),policy.RequireShifts,await db.VehicleReservations.AsNoTracking().ToListAsync(ct));
+                return Results.Ok(plans);
+            }catch(ArgumentException ex){return Invalid(ex.Message);}
+        }).RequireAuthorization("FleetWrite");
+        api.MapPost("/operations/batch/apply",(BatchApplyInput input,FleetDbContext db,FleetStore store,OperationsPolicy policy,CancellationToken ct)=>
+            store.Write(async data=>{
+                if(!input.Confirmed||input.Assignments is null||input.Assignments.Count is <1 or >BatchDispatch.MaxRequests||input.Assignments.Any(a=>a?.Request is null))
+                    return Invalid("Explicit confirmation and 1–40 assignments required.");
+                var plan=new BatchPlan("Confirmed",input.Assignments.Select(a=>new BatchAssignment(a!.Request!.ToRequest(),a.VehicleId,a.DriverId)).ToArray(),[]);
+                var count=data.Trips.Count;
+                var error=BatchDispatch.Apply(data,plan,DateTime.UtcNow,await db.DriverShifts.AsNoTracking().ToListAsync(ct),policy.RequireShifts,await db.VehicleReservations.AsNoTracking().ToListAsync(ct));
+                if(error is not null)return Results.Conflict(new{error});
+                var added=data.Trips.Skip(count).ToArray();
+                db.Trips.AddRange(added);
+                // EF Core commits all trips and audit rows in one SaveChanges.
+                await db.SaveChangesAsync(ct);
+                return Results.Created("/api/trips",added);
+            },ct)).RequireAuthorization("FleetWrite");
         api.MapGet("/operations/policy",(OperationsPolicy policy)=>policy);
         api.MapGet("/operations/maintenance",async (FleetDbContext db,CancellationToken ct)=>await db.MaintenanceEntries.AsNoTracking().OrderBy(e=>e.Id).ToListAsync(ct));
         api.MapGet("/operations/shifts",async (FleetDbContext db,CancellationToken ct)=>await db.DriverShifts.AsNoTracking().OrderBy(e=>e.Id).ToListAsync(ct));

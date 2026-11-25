@@ -23,6 +23,7 @@ if "--verify-persistence" in sys.argv:
     assert any(e["notes"]=="QA durable work" for e in request("GET","/api/operations/maintenance"))
     assert any(e["notes"]=="QA durable reservation" for e in request("GET","/api/operations/reservations"))
     assert len(request("GET","/api/operations/shifts"))>=1
+    assert len([t for t in request("GET","/api/trips") if t["origin"]=="QA batch"])==2
     print("PASS: durable database, operations records and Identity account after restart")
     sys.exit(0)
 
@@ -111,3 +112,31 @@ request("POST","/api/operations/reservations",reserve,400)
 request("POST","/api/trips",{"vehicleId":v["id"],"driverId":3,"origin":"A","destination":"B","start":shift["start"],"end":shift["end"],"distance":100},400)
 assert any(a["entityType"]=="MaintenanceEntry" and a["entityId"]==work["id"] and a["actorId"]==dispatcher_id for a in request("GET","/api/admin/audit",token=admin))
 print("PASS: operational records, reservation conflicts, authorization and audit")
+
+# Batch preview is non-mutating; application is all-or-nothing under the write gate.
+from concurrent.futures import ThreadPoolExecutor
+batch_start=now+timedelta(days=3)
+batch_requests=[{"id":i,"origin":"QA batch","destination":"Hub","start":batch_start.isoformat(),"end":(batch_start+timedelta(hours=2)).isoformat(),"distance":90} for i in (1,2)]
+before=len(request("GET","/api/trips"))
+request("POST","/api/operations/batch/preview",{"requests":batch_requests},403,token=viewer)
+plans=request("POST","/api/operations/batch/preview",{"requests":batch_requests},token=dispatcher)
+assert len(plans)==3 and len(plans[2]["assigned"])==2
+assert len(request("GET","/api/trips"))==before
+assignments=plans[2]["assigned"]
+request("POST","/api/operations/batch/apply",{"confirmed":False,"assignments":assignments},400,token=dispatcher)
+bad=[assignments[0],{**assignments[1],"vehicleId":999999}]
+request("POST","/api/operations/batch/apply",{"confirmed":True,"assignments":bad},409,token=dispatcher)
+assert len(request("GET","/api/trips"))==before
+def competing_apply(_):
+    body=json.dumps({"confirmed":True,"assignments":assignments}).encode()
+    req=urllib.request.Request(BASE+"/api/operations/batch/apply",data=body,headers={"Content-Type":"application/json","X-Fleet-Key":KEY},method="POST")
+    try:
+        with urllib.request.urlopen(req,timeout=15) as res:
+            return res.status
+    except urllib.error.HTTPError as ex:
+        return ex.code
+with ThreadPoolExecutor(max_workers=2) as pool:
+    assert sorted(pool.map(competing_apply,range(2)))==[201,409]
+assert len(request("GET","/api/trips"))==before+2
+assert len([t for t in request("GET","/api/trips") if t["origin"]=="QA batch"])==2
+print("PASS: batch preview, explicit confirmation, atomic rejection and competing HTTP writes")

@@ -6,6 +6,7 @@ on:
       - 'src/FleetManagement.Core/**'
       - 'src/FleetManagement.Web/**'
       - 'tests/FleetManagement.Core.Checks/**'
+      - 'tests/browser/**'
       - '.github/workflows/pages.yml'
   workflow_dispatch:
 permissions:
@@ -17,7 +18,8 @@ concurrency:
   cancel-in-progress: false
 jobs:
   build:
-    runs-on: ubuntu-latest
+    if: github.ref == 'refs/heads/master'
+    runs-on: ubuntu-24.04
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-dotnet@v4
@@ -25,6 +27,16 @@ jobs:
           dotnet-version: '10.0.x'
       - run: dotnet run --project tests/FleetManagement.Core.Checks -c Release
       - run: dotnet publish src/FleetManagement.Web -c Release -o publish
+      - name: Validate published browser build
+        run: |
+          npm install --prefix tests/browser --no-audit --no-fund
+          (cd tests/browser && npx playwright install --with-deps chromium)
+          mkdir -p preview/FleetManagement
+          cp -a publish/wwwroot/. preview/FleetManagement/
+          python3 -m http.server 8080 --bind 127.0.0.1 --directory preview &
+          server=$!
+          trap 'kill "$server" || true' EXIT
+          node tests/browser/smoke.mjs
       - run: touch publish/wwwroot/.nojekyll
       - uses: actions/configure-pages@v5
       - uses: actions/upload-pages-artifact@v3
@@ -32,7 +44,7 @@ jobs:
           path: publish/wwwroot
   deploy:
     needs: build
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     environment:
       name: github-pages
       url: ${{ steps.deployment.outputs.page_url }}

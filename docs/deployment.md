@@ -1,0 +1,28 @@
+# GitHub Pages deployment and release checklist
+
+## Preview without configuring Pages
+
+1. Open the [Browser demo CI workflow](https://github.com/ViolettaNcl/FleetManagement/actions/workflows/demo-ci.yml).
+2. Select a successful run of the desired commit and download the fleetmanagement-browser-demo artifact or fleetmanagement-browser-screenshots.
+3. For a local static preview, extract the browser artifact and serve it with a static HTTP server. For example, run python -m http.server 8080 in the extracted directory and open http://localhost:8080/. Opening index.html directly as a file is not supported by WebAssembly.
+
+## Enable the permanent public link
+
+The repository owner must set [Settings → Pages](https://github.com/ViolettaNcl/FleetManagement/settings/pages) → Build and deployment → Source → GitHub Actions. The repository's Pages workflow is already provided. After the reviewed branch is merged into master, the workflow builds and browser-tests the static output before uploading and deploying it. It can also be started manually on master after Pages is configured.
+
+Expected URL: https://violettancl.github.io/FleetManagement/
+
+Treat it as live only after the deployment succeeds and the URL is verified. The API, SQL Server, secrets and user data are not published to Pages. GitHub's public static hosting is intended for this portfolio demo, not a production SaaS deployment.
+
+## Release acceptance checklist
+
+- [ ] Browser CI passes on the exact release commit, including Excel download and local persistence.
+- [ ] Both SQLite and SQL Server jobs pass on the exact release commit, including Identity, audit and SignalR.
+- [ ] Review the generated screenshots on desktop and mobile.
+- [ ] Review security boundaries and the pull request.
+- [ ] Enable Pages and merge the reviewed change.
+- [ ] Confirm the deployment status and open the actual public URL in a fresh browser.
+- [ ] Update README with the verified live link and create a versioned GitHub Release.
+- [ ] Add the verified link to the portfolio or CV.
+
+Do not merge or publish a revision with known failed acceptance checks.

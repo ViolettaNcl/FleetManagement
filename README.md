@@ -1,101 +1,105 @@
 <div align="center">
-
-# 🚚 FleetManagement
-
-### Fleet management platform · .NET 10 browser & API + original WPF desktop
-
-<p>
-  <img src="https://img.shields.io/badge/WPF-.NET_Framework_4.7.2-512BD4?style=flat-square" alt="WPF">
-  <img src="https://img.shields.io/badge/Entity_Framework-6-68217A?style=flat-square" alt="EF6">
-  <img src="https://img.shields.io/badge/MS_SQL_Server-CC2927?style=flat-square&logo=microsoftsqlserver&logoColor=white" alt="MS SQL Server">
-  <img src="https://img.shields.io/badge/MSTest-tests-brightgreen?style=flat-square" alt="MSTest">
-</p>
-
+  <img src="docs/assets/banner.svg" alt="FleetManagement — fleet operations platform" width="100%">
+  <h1>FleetManagement</h1>
+  <p><strong>A modern .NET fleet operations platform, evolved from a WPF desktop application.</strong></p>
+  <p>
+    <a href="README.ru.md">Русская версия</a> ·
+    <a href="docs/portfolio-v2.md">Demo guide</a> ·
+    <a href="docs/backend.md">Backend documentation</a> ·
+    <a href="docs/architecture.md">Architecture</a>
+  </p>
+  <p>
+    <a href="https://github.com/ViolettaNcl/FleetManagement/actions/workflows/demo-ci.yml"><img alt="Browser CI" src="https://github.com/ViolettaNcl/FleetManagement/actions/workflows/demo-ci.yml/badge.svg?branch=feature%2Ffleetops-v2"></a>
+    <a href="https://github.com/ViolettaNcl/FleetManagement/actions/workflows/api-ci.yml"><img alt="Backend CI" src="https://github.com/ViolettaNcl/FleetManagement/actions/workflows/api-ci.yml/badge.svg?branch=feature%2Ffleetops-v2"></a>
+    <img alt=".NET 10" src="https://img.shields.io/badge/.NET-10_LTS-6A5ACD">
+    <img alt="C#" src="https://img.shields.io/badge/C%23-Blazor%20%7C%20ASP.NET_Core-9370DB">
+    <img alt="SQL Server and SQLite" src="https://img.shields.io/badge/EF_Core-SQL_Server_%7C_SQLite-4B0082">
+  </p>
 </div>
 
----
+## Try the application
 
-## Interactive portfolio demo (in development)
+The browser edition runs C# in WebAssembly, uses synthetic data, and requires no backend, account, API key, or paid hosting. The GitHub Pages deployment is prepared but not yet verified live.
 
-The Blazor WebAssembly prototype retains the original lavender WPF design and runs entirely in the browser with synthetic data. It includes editable vehicle/driver registers, simulated fleet tracking, conflict-aware dispatch, rule-based maintenance, fleet analytics and genuine Excel workbook export.
+- [Latest browser builds and screenshots](https://github.com/ViolettaNcl/FleetManagement/actions/workflows/demo-ci.yml)
+- [How to run the demo and enable GitHub Pages](docs/deployment.md)
+- [Development pull request](https://github.com/ViolettaNcl/FleetManagement/pull/1)
 
-[Demo setup, technical details and limitations](./docs/portfolio-v2.md) · [C# business rules](./src/FleetManagement.Core/Fleet.cs)
+### Guided demo (about two minutes)
 
-GitHub Pages publication is pending browser validation and repository Pages configuration. The original desktop app is retained.
+| Screen | What to try |
+| --- | --- |
+| Vehicles / Drivers | Add a record, search by registration or name, edit it, and observe duplicate validation. |
+| Dispatch | Suggest an available vehicle and driver; schedule a trip, then try a conflicting assignment. |
+| Tracking | Play the simulated clock and inspect trip progress on the route schematic. |
+| Maintenance | Compare service intervals and record a service to reset the maintenance assessment. |
+| Analytics | Filter trips by departure date and download a genuine two-sheet Excel workbook. |
 
-## Modern backend (.NET 10)
+Use **Reset demo** to restore the synthetic dataset. Changes stay in your browser.
 
-The independent ASP.NET Core API reuses the same C# fleet rules and persists data using EF Core, with SQLite for local development and optional SQL Server in Docker Compose.
+## Engineering highlights
 
-- [Backend quick start, endpoints and limitations](./docs/backend.md)
-- [API source](./src/FleetManagement.Api)
-- [HTTP integration checks](./tests/api/smoke.py)
-- [Security boundaries and reporting](./SECURITY.md)
+| Capability | Implementation |
+| --- | --- |
+| Browser UI | Blazor WebAssembly, responsive lavender WPF-inspired tables |
+| Domain | Shared C# records, validation, conflict detection, explainable maintenance rules |
+| Backend | ASP.NET Core minimal REST API, dependency injection, OpenAPI |
+| Data | EF Core with SQLite and SQL Server; unique indexes and restrictive foreign keys |
+| Security | Identity bearer login, Admin / Dispatcher / Viewer policies, rate-limited login and fleet audit |
+| Realtime | Authenticated SignalR change notifications after successful writes |
+| Reporting | Date-filtered analytics and native Open XML workbook generation |
+| QA | Executable C# regression checks, HTTP integration matrix, Playwright browser scenarios |
+| Deployment | GitHub Actions, static Pages workflow, optional local Docker Compose |
 
-The API is a local-development prototype, independent of the browser demo. ASP.NET Core Identity provides user login and role-based permissions; a separate automation key remains available for local integration tests. Fleet changes are recorded in an admin-only audit trail and trigger authenticated SignalR notifications after successful writes. Production deployment and migrations are not yet configured.
+## Architecture
 
-## 📌 Описание
-
-WPF-приложение для управления автопарком компании. Позволяет администрировать
-транспорт, водителей и рейсы, планировать маршруты и контролировать пробег с
-разграничением прав доступа.
-
-В каталоге собраны русскоязычные материалы по разработке и использованию системы
-FleetManagement. Ниже представлено краткое содержание файлов.
-
-## ⚙️ Автоматизация проекта
-
-Для автоматизации используется PowerShell-скрипт `build.ps1`, расположенный в корневой
-папке проекта. Выполните в PowerShell:
-```powershell
-cd путь\к\проекту\FleetManagement
-.\build.ps1
+```mermaid
+flowchart LR
+    B["Blazor WebAssembly"] --> C["FleetManagement.Core"]
+    A["ASP.NET Core API"] --> C
+    B --> L["Browser local storage"]
+    A --> E["EF Core"]
+    E --> S["SQLite / SQL Server"]
+    A --> I["Identity / RBAC"]
+    A --> H["SignalR hub"]
+    A --> D["Audit log"]
 ```
 
-## 📋 Основные документы
+The static browser and local API are independent clients of the same C# rules. The original Windows WPF application remains in `FleetManagment/` as a legacy reference. [Design decisions and limitations](docs/architecture.md).
 
-- [Постановка задачи](./FleetManagment/Документы/ОбщаяПостановка.md)
-- [Техническое задание](./FleetManagment/Документы/ТЗ.md)
-- [Анализ рисков](./FleetManagment/Документы/АнализРисков.md)
-- [План разработки](./FleetManagment/Документы/Диаграммы_png/График.png)
-- [План внедрения](./FleetManagment/Документы/Диаграммы_png/ПланВнедрения.png)
+## Run locally
 
-## 🏗 Архитектура и дизайн
+Requirements: .NET 10 SDK. Docker is optional.
 
-- [Архитектура системы](./FleetManagment/Документы/АрхитектураСистемы.md)
-- [Диаграмма классов](./FleetManagment/Документы/Диаграммы_png/diagram-class.png)
-- [Диаграмма классов программы](./FleetManagment/Документы/Диаграммы_png/КлассыПрограммы.png)
-- [Диаграммы последовательностей](./FleetManagment/Документы/Диаграммы_png/диаграмма%20последовательности.png)
-- [Диаграмма состояний](./FleetManagment/Документы/Диаграммы_png/диаграммаСостояний.png)
-- [Диаграмма деятельности](./FleetManagment/Документы/Диаграммы_png/ДиаграммаДеятельности.png)
-- [Пакеты системы](./FleetManagment/Документы/Диаграммы_png/ДиаграммыПакетов.png)
+```sh
+dotnet run --project src/FleetManagement.Web
+dotnet run --project tests/FleetManagement.Core.Checks -c Release
+```
 
-## 👤 Пользовательские сценарии
+For the independent API, follow the [secure local configuration guide](docs/backend.md). Do not commit keys or passwords or expose the local API publicly. A Docker Compose example is available for SQL Server.
 
-- [Пользователи и бизнес-процессы](./FleetManagment/Документы/ПользователиБизнес-процессы.md)
-- [Варианты использования системы](./FleetManagment/Документы/Диаграммы_png/Диаграмма%20вариантов%20использования.png)
-- [Пример создания маршрута](./FleetManagment/Документы/Пример.md)
+## Repository layout
 
-## 📐 Требования к системе
+```text
+src/
+  FleetManagement.Core/     Shared C# business rules and reports
+  FleetManagement.Web/      Blazor browser edition
+  FleetManagement.Api/      ASP.NET Core, EF Core, Identity, SignalR
+tests/                      Modern regression, browser and HTTP checks
+docs/                       Architecture, demo and deployment guides
+FleetManagment/             Original WPF application and documentation
+FleetManagement.Tests/      Original desktop tests (legacy)
+.github/workflows/          CI and Pages
+```
 
-- [Требования к системе](./FleetManagment/Документы/ТребованияПрограмме.md)
-- [Детализация требований](./FleetManagment/Документы/ДетализацияТребований.md)
-- [Терминологический словарь](./FleetManagment/Документы/ТерминологическийСловарь.md)
+## Validation and project boundaries
 
-## 🖥 Интерфейс программы
+The CI workflows are the source of truth for the latest test outcomes. Earlier revisions have passed both SQLite and SQL Server HTTP/Identity/audit/restart checks and browser smoke tests. Latest reports and realtime changes must pass their own CI runs before release. CI screenshots and published static builds are available as workflow artifacts.
 
-- [Интерфейс программы](./FleetManagment/Документы/Интерфейс.md)
+The browser demo has synthetic data, local simulation rather than real GPS, and deterministic service interval rules rather than a trained ML model. The local API is a portfolio implementation, not a hardened production service; schema migrations, multi-instance scheduling concurrency, account lifecycle, and durable events remain future work. The legacy WPF app has known security and test limitations.
 
-## 📖 Документация для пользователей
+[Security policy](SECURITY.md) · [Release checklist](docs/deployment.md) · [Change history](CHANGELOG.md)
 
-- [Документация для пользователей](./FleetManagment/Документы/ДокументацияПользователей.md)
-- [Инструкция: развёртывание и настройка проекта FleetManagement](./FleetManagment/Документы/Инструкция.md)
+## Original project documentation
 
-## 👨‍💻 Документация для разработчиков
-
-- [Документация для разработчиков](./FleetManagment/Документы/ДокументацияРазработчиков.md)
-- [Скрипт базы данных](./FleetManagment/Документы/script.sql)
-
----
-
-**Обратите внимание**: те же файлы дублируются в каталоге `FleetManagement/Документы`.
+The original Russian requirements, UML diagrams, SQL scripts and user/developer guides are preserved. See [README.ru.md](README.ru.md) for the complete index.

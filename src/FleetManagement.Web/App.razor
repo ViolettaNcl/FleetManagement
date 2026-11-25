@@ -2,7 +2,7 @@
 @inject IJSRuntime JS
 
 <header>
-    <div class="brand"><div class="brandmark" aria-hidden="true">FM</div><div><h1>FleetManagement</h1><small>Fleet operations • interactive portfolio</small></div></div>
+    <div class="brand"><img class="brandicon" src="favicon.svg" alt="" /><div><h1>FleetManagement</h1><small>Fleet operations • interactive portfolio</small></div></div>
     <div class="actions"><span class="pill">Demo mode · local data</span><button class="secondary" @onclick="Reset">Reset demo</button></div>
 </header>
 <main>
@@ -21,8 +21,15 @@
             <div class="metric">In transit<strong>@fleet.Trips.Count(t => FleetRules.TripStatus(t, Now) == "In transit")</strong></div>
             <div class="metric">Service due<strong>@fleet.Vehicles.Count(v => FleetRules.Assess(v, Now).Status == "Due")</strong></div>
         </div>
-        <section class="panel"><h2>Operations overview</h2><p class="muted">The original WPF-inspired interface, now running in the browser with C# business rules. Explore the three operational modules or inspect the original desktop source on GitHub.</p>
+        <section class="panel"><h2>Operations overview</h2><p class="muted">The original WPF-inspired interface, now running in the browser with C# business rules. Explore fleet operations, reporting, and the original desktop source on GitHub.</p>
         <div class="actions"><button @onclick='() => Navigate("Tracking")'>Open live tracking</button><button @onclick='() => Navigate("Dispatch")'>Plan a trip</button><button @onclick='() => Navigate("Maintenance")'>Review maintenance</button></div></section>
+        <section class="panel"><h2>Try a guided scenario</h2><p class="muted">All records are synthetic. Changes are stored only in this browser, so you can experiment safely.</p>
+        <div class="demojourney">
+            <button class="secondary" @onclick='() => Navigate("Vehicles")'><strong>01 · Register</strong><small>Add a vehicle and test search or validation.</small></button>
+            <button class="secondary" @onclick='() => Navigate("Dispatch")'><strong>02 · Schedule</strong><small>Find a free vehicle and driver.</small></button>
+            <button class="secondary" @onclick='() => Navigate("Tracking")'><strong>03 · Track</strong><small>Advance the simulated clock.</small></button>
+            <button class="secondary" @onclick='() => Navigate("Analytics")'><strong>04 · Report</strong><small>Export an Excel workbook.</small></button>
+        </div></section>
         <section class="panel"><h2>Recent trips</h2>@TripTable()</section>
     }
     else if (section == "Vehicles" || section == "Drivers")

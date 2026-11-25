@@ -1,4 +1,4 @@
-# FleetManagement — online demo (second vertical slice)
+# FleetManagement — online demo
 
 The original WPF project remains unchanged. The browser application uses the original XAML's lavender background (#F0F0FF), purple buttons (#6A5ACD, #7B68EE, #9370DB), indigo headings (#4B0082), white panels and alternating grid rows (#EEEAF8). No new brand name was introduced.
 
@@ -18,8 +18,7 @@ The published static content is under publish/wwwroot. The relative base URL sup
 - Explainable service interval assessment and recording service.
 - Browser local storage for register, trip and service changes, and reset.
 - C# business rules separated from UI and executable regression checks.
-
 - Analytics by trip departure date, status breakdown, completed mileage by vehicle and genuine two-sheet Excel export generated entirely in C#.
 
 ## Boundaries / next steps
-The desktop app, SQL schema and EF6 remain unchanged; its known authentication, persistence and legacy test issues are not resolved by this prototype. The public demo has no authentication or production data, uses simulated tracking instead of SignalR, and maintenance uses deterministic rules instead of a trained ML model. Next: production API/EF Core/Identity, migration, real integration tests, desktop MVVM refactoring, accessibility/browser QA.
+The desktop app, SQL schema and EF6 remain unchanged; its known authentication, persistence and legacy test issues are not resolved by this prototype. The public demo has no authentication or production data, uses simulated tracking instead of SignalR, and maintenance uses deterministic rules instead of a trained ML model. An independent local API with EF Core and Identity is documented in backend.md. Remaining work includes migration of old data, desktop MVVM refactoring, production hardening and verified Pages deployment. See deployment.md.

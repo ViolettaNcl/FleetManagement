@@ -1,0 +1,27 @@
+version: 2
+updates:
+  - package-ecosystem: nuget
+    directory: /src/FleetManagement.Api
+    schedule:
+      interval: weekly
+    open-pull-requests-limit: 3
+  - package-ecosystem: nuget
+    directory: /src/FleetManagement.Web
+    schedule:
+      interval: weekly
+    open-pull-requests-limit: 3
+  - package-ecosystem: nuget
+    directory: /tests/FleetManagement.Realtime.Checks
+    schedule:
+      interval: weekly
+    open-pull-requests-limit: 3
+  - package-ecosystem: npm
+    directory: /tests/browser
+    schedule:
+      interval: weekly
+    open-pull-requests-limit: 2
+  - package-ecosystem: github-actions
+    directory: /
+    schedule:
+      interval: weekly
+    open-pull-requests-limit: 3

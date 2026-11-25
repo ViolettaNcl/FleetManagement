@@ -138,3 +138,7 @@ With the local API running, open http://127.0.0.1:5095/console and sign in using
 The backend provider matrix includes a bounded read-only concurrency smoke and aggregate timing artifacts. See [performance testing](docs/performance-testing.md). Measurements are for the small disposable test dataset, not production fleet capacity.
 
 For a guided walkthrough, see [V3 portfolio guide](docs/portfolio-v3.md). On Windows with PowerShell 7 and .NET 10 SDK, `pwsh -File tools/start-connected.ps1` prepares a private local SQLite database and starts the connected workspace. No public deployment or secret is required for this local demo.
+
+### Model monitoring and candidate review
+
+The offline Model Drift lab compares synthetic feature distributions using PSI, then supports a validation-ranked retraining candidate review with independent final evaluation. See [model drift](docs/model-drift.md). The experiments do not imply real-world model performance or automated deployment.

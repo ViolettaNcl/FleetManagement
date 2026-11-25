@@ -351,4 +351,11 @@ Check(shiftedDrift.CurrentMeanRisk>controlDrift.CurrentMeanRisk,"synthetic shift
 Check(ModelDrift.Shift(driftCurrent[0],0)==driftCurrent[0],"zero shift");
 var constantDrift=ModelDrift.Compare(Enumerable.Repeat(driftCurrent[0],20).ToArray(),Enumerable.Repeat(ModelDrift.Shift(driftCurrent[0],1),20).ToArray(),driftModel);
 Check(constantDrift.Features.All(f=>double.IsFinite(f.Psi)),"constant feature bins");
-Console.WriteLine("All 244 business rule checks passed.");
+var retraining=RetrainingReview.Run(42);
+Check(retraining.TrainRows==2400&&retraining.ValidationRows==720&&retraining.EvaluationRows==720,"retraining independent cohort sizes");
+Check(retraining.Candidates.Count==3&&retraining.Candidates.Select(c=>c.Epochs).SequenceEqual(new[]{30,120,300}),"retraining fixed candidates");
+Check(retraining.SelectedEpochs==retraining.Candidates.OrderBy(c=>c.Validation.Brier).ThenBy(c=>c.Epochs).First().Epochs,"retraining selection validation only");
+Check(retraining.CandidateEvaluation.TP+retraining.CandidateEvaluation.FP+retraining.CandidateEvaluation.TN+retraining.CandidateEvaluation.FN==720,"retraining final cohort");
+Check(retraining.IncumbentEvaluation.Brier is >=0 and <=1&&retraining.CandidateEvaluation.Brier is >=0 and <=1,"retraining bounded scores");
+Console.WriteLine($"Synthetic retraining review: selected={retraining.SelectedEpochs} epochs; incumbent Brier={retraining.IncumbentEvaluation.Brier:F4}; candidate Brier={retraining.CandidateEvaluation.Brier:F4}.");
+Console.WriteLine("All 249 business rule checks passed.");

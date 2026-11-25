@@ -104,3 +104,5 @@ Model Drift Lab compares synthetic reference and independent held-out feature wi
 Both workspaces now offer a session-local dark theme and navigation filter, with matching lavender palette, focus styles and browser tests. This is a theme pass, not a comprehensive visual/accessibility audit of every laboratory chart.
 
 Connected SignalR notification subscriber uses authenticated JSON Long Polling, handshake, heartbeat, bounded reconnect and revision polling fallback. Browser test requires connection before external write. No generic SignalR client library, WebSocket or cross-instance push guarantees.
+
+On-demand retraining review compares three fixed logistic training lengths on a separate validation cohort and reports selected versus incumbent performance on a distinct final synthetic cohort. No real data, automated promotion or deployment.

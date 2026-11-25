@@ -4,7 +4,15 @@
     <section class="panel"><h2>Population stability index (PSI)</h2><p class="muted">Reference quantile bins with smoothed proportions. Watch ≥ 0.10; High ≥ 0.25 are illustrative heuristics, not statistical guarantees. Control and shifted windows use the same held-out samples.</p><div class="tablewrap"><table><thead><tr><th>Feature</th><th>Reference mean</th><th>Shifted mean</th><th>Control PSI</th><th>Shifted PSI</th><th>Signal</th></tr></thead><tbody>@for(int i=0;i<report.Features.Count;i++){var f=report.Features[i];<tr><td>@f.Name</td><td>@f.ReferenceMean.ToString("F2")</td><td>@f.CurrentMean.ToString("F2")</td><td>@control.Features[i].Psi.ToString("F3")</td><td>@f.Psi.ToString("F3")</td><td>@f.Level</td></tr>}</tbody></table></div>
     <h3>Average model output</h3><p>Reference @report.ReferenceMeanRisk.ToString("P1") · control @control.CurrentMeanRisk.ToString("P1") · shifted @report.CurrentMeanRisk.ToString("P1")</p><p class="muted">Risk changes are model outputs under hypothetical sensor changes, not observed failure rates. Investigate data quality and collect labels before evaluating performance or retraining. No automatic promotion.</p></section>
 }
+<section class="panel"><h2>Retraining candidate review</h2><p class="muted">Train three fixed configurations on the original synthetic training cohort, rank by validation Brier loss, then evaluate the selected candidate and 120-epoch incumbent on a separate synthetic cohort. No automatic deployment or replacement.</p><button @onclick="Review">Run retraining review</button>
+@if(review is not null){
+    <div class="metrics"><div class="metric">Training rows<strong>@review.TrainRows</strong></div><div class="metric">Validation rows<strong>@review.ValidationRows</strong></div><div class="metric">Final evaluation rows<strong>@review.EvaluationRows</strong></div><div class="metric">Selected epochs<strong>@review.SelectedEpochs</strong></div></div>
+    <div class="tablewrap"><table><thead><tr><th>Epochs</th><th>Validation Brier</th><th>Validation F1</th></tr></thead><tbody>@foreach(var c in review.Candidates){<tr><td>@c.Epochs</td><td>@c.Validation.Brier.ToString("F4")</td><td>@c.Validation.F1.ToString("P1")</td></tr>}</tbody></table></div>
+    <h3>Independent candidate evaluation</h3><p>Incumbent Brier @review.IncumbentEvaluation.Brier.ToString("F4") · selected Brier @review.CandidateEvaluation.Brier.ToString("F4")</p><p>Incumbent F1 @review.IncumbentEvaluation.F1.ToString("P1") · selected F1 @review.CandidateEvaluation.F1.ToString("P1")</p><p class="muted">Candidate selection does not guarantee improvement on final evaluation. Review representative labelled data and operational thresholds before considering a real deployment. Current experiment remains unchanged.</p>
+}</section>
 @code{
+    private RetrainingResult? review;
+    private void Review()=>review=RetrainingReview.Run(seed);
     private int seed=42,intensity=100;
     private DriftReport? report,control;
     private string message="";

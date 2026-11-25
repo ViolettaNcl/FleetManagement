@@ -1,7 +1,7 @@
 namespace FleetManagement.Core;
 
 public sealed record Vehicle(int Id, string Plate, string Model, int Mileage, int LastServiceMileage, DateTime LastService, int ServiceIntervalKm, int ServiceIntervalDays);
-public sealed record Driver(int Id, string Name);
+public sealed record Driver(int Id, string Name, string License = "", int Experience = 0);
 public sealed record Trip(int Id, int VehicleId, int DriverId, string Origin, string Destination, DateTime Start, DateTime End, int Distance, int Track);
 public sealed record FleetData(List<Vehicle> Vehicles, List<Driver> Drivers, List<Trip> Trips);
 public sealed record ServiceAssessment(string Status, int RemainingKm, int RemainingDays, string Reason);
@@ -9,6 +9,32 @@ public sealed record Assignment(int VehicleId, int DriverId);
 
 public static class FleetRules
 {
+    public static string? ValidateVehicle(FleetData fleet, Vehicle vehicle, DateTime today)
+    {
+        if (string.IsNullOrWhiteSpace(vehicle.Plate) || string.IsNullOrWhiteSpace(vehicle.Model)) return "Enter registration and model.";
+        if (fleet.Vehicles.Any(v => v.Id != vehicle.Id && string.Equals(v.Plate.Trim(), vehicle.Plate.Trim(), StringComparison.OrdinalIgnoreCase))) return "Registration already exists.";
+        if (vehicle.Mileage < 0 || vehicle.LastServiceMileage < 0 || vehicle.LastServiceMileage > vehicle.Mileage) return "Invalid mileage or service mileage.";
+        if (vehicle.ServiceIntervalKm is <= 0 or > 1000000 || vehicle.ServiceIntervalDays is <= 0 or > 3650) return "Invalid service intervals.";
+        if (vehicle.LastService.Date > today.Date || vehicle.LastService.Year < 1900) return "Invalid service date.";
+        return null;
+    }
+
+    public static string? ValidateDriver(FleetData fleet, Driver driver)
+    {
+        if (string.IsNullOrWhiteSpace(driver.Name) || string.IsNullOrWhiteSpace(driver.License)) return "Enter driver name and license.";
+        if (driver.Experience is < 0 or > 70) return "Experience must be between 0 and 70 years.";
+        if (fleet.Drivers.Any(d => d.Id != driver.Id && string.Equals(d.License.Trim(), driver.License.Trim(), StringComparison.OrdinalIgnoreCase))) return "License already exists.";
+        return null;
+    }
+
+    public static string? CanRemoveVehicle(FleetData fleet, int id) =>
+        !fleet.Vehicles.Any(v => v.Id == id) ? "Vehicle not found." :
+        fleet.Trips.Any(t => t.VehicleId == id) ? "Vehicle has trip history and cannot be deleted." : null;
+
+    public static string? CanRemoveDriver(FleetData fleet, int id) =>
+        !fleet.Drivers.Any(d => d.Id == id) ? "Driver not found." :
+        fleet.Trips.Any(t => t.DriverId == id) ? "Driver has trip history and cannot be deleted." : null;
+
     public static string? ValidateTrip(FleetData fleet, Trip trip)
     {
         if (string.IsNullOrWhiteSpace(trip.Origin) || string.IsNullOrWhiteSpace(trip.Destination)) return "Enter both locations.";
@@ -49,12 +75,12 @@ public static class FleetRules
             new(3,"FM-310","MAN TGX",110800,100000,now.AddDays(-190),10000,180),
             new(4,"FM-415","Ford Transit",25100,22000,now.AddDays(-45),10000,180)
         };
-        var drivers = new List<Driver> { new(1,"Alex Morgan"),new(2,"Maria Ivanova"),new(3,"Daniel Novak"),new(4,"Sofia Martin") };
+        var drivers = new List<Driver> { new(1,"Alex Morgan","DEMO-101",8),new(2,"Maria Ivanova","DEMO-102",6),new(3,"Daniel Novak","DEMO-103",12),new(4,"Sofia Martin","DEMO-104",4) };
         var trips = new List<Trip> {
             new(101,1,1,"North depot","Central hub",now.AddMinutes(-40),now.AddMinutes(60),132,0),
             new(102,2,2,"West depot","East terminal",now.AddMinutes(-20),now.AddMinutes(80),96,1),
             new(103,4,4,"Central hub","South depot",now.AddHours(3),now.AddHours(5),78,2),
-            new(104,1,3,"East terminal","North depot",now.AddHours(-6),now.AddHours(-3),112,0)
+            new(104,1,3,"East terminal","North depot",now.AddHours(-6),now.AddHours(-3),112,-1)
         };
         return new(vehicles,drivers,trips);
     }

@@ -11,13 +11,17 @@ permissions:
 jobs:
   integration:
     runs-on: ubuntu-24.04
+    strategy:
+      fail-fast: false
+      matrix:
+        provider: [Sqlite, SqlServer]
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-dotnet@v4
         with:
           dotnet-version: '10.0.x'
       - run: dotnet build src/FleetManagement.Api -c Release
-      - name: Test real HTTP and persistent SQLite storage
+      - name: Test HTTP, Identity, audit and persistence (${{ matrix.provider }})
         shell: bash
         run: |
           export Fleet__ApiKey="$(python3 -c 'import secrets; print(secrets.token_hex(32))')"
@@ -25,8 +29,27 @@ jobs:
           export Fleet__BootstrapAdminEmail=admin@example.test
           export Fleet__BootstrapAdminPassword="Admin-$(python3 -c 'import secrets; print(secrets.token_hex(24))')!aA"
           echo "::add-mask::$Fleet__BootstrapAdminPassword"
-          export Fleet__InitializeDatabase=true Fleet__SeedDemo=true Fleet__Provider=Sqlite
+          export Fleet__InitializeDatabase=true Fleet__SeedDemo=true Fleet__Provider="${{ matrix.provider }}"
           export ConnectionStrings__Fleet="Data Source=$RUNNER_TEMP/fleet-test.db"
+          cleanup() {
+            if [ -n "${pid:-}" ]; then kill "$pid" 2>/dev/null || true; fi
+            if [ -n "${sql_container:-}" ]; then docker rm -f "$sql_container" >/dev/null 2>&1 || true; fi
+            cat "$RUNNER_TEMP/fleet-api.log" 2>/dev/null || true
+          }
+          trap cleanup EXIT
+          if [ "$Fleet__Provider" = "SqlServer" ]; then
+            export MSSQL_SA_PASSWORD="Qa!aA1$(python3 -c 'import secrets; print(secrets.token_hex(24))')"
+            echo "::add-mask::$MSSQL_SA_PASSWORD"
+            sql_container="fleet-sql-ci"
+            docker run -d --name "$sql_container" -e ACCEPT_EULA=Y -e MSSQL_PID=Developer -e MSSQL_SA_PASSWORD -p 127.0.0.1:1433:1433 mcr.microsoft.com/mssql/server:2022-latest
+            ready=false
+            for i in $(seq 1 60); do
+              if docker exec "$sql_container" /opt/mssql-tools18/bin/sqlcmd -S localhost -U sa -P "$MSSQL_SA_PASSWORD" -C -Q "SELECT 1" -b >/dev/null 2>&1; then ready=true; break; fi
+              sleep 2
+            done
+            if [ "$ready" != true ]; then docker logs "$sql_container"; exit 1; fi
+            export ConnectionStrings__Fleet="Server=127.0.0.1,1433;Database=FleetCi;User Id=sa;Password=$MSSQL_SA_PASSWORD;Encrypt=True;TrustServerCertificate=True"
+          fi
           start_api() {
             dotnet src/FleetManagement.Api/bin/Release/net10.0/FleetManagement.Api.dll --urls http://127.0.0.1:5095 > "$RUNNER_TEMP/fleet-api.log" 2>&1 &
             pid=$!
@@ -37,7 +60,6 @@ jobs:
             cat "$RUNNER_TEMP/fleet-api.log"
             return 1
           }
-          trap 'if [ -n "${pid:-}" ]; then kill "$pid" 2>/dev/null || true; fi; cat "$RUNNER_TEMP/fleet-api.log" || true' EXIT
           start_api
           python3 tests/api/smoke.py
           kill "$pid"

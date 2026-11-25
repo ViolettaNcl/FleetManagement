@@ -37,6 +37,14 @@ try {
   await page.getByRole('row').filter({hasText:'FM-310'}).getByRole('button',{name:'Record service'}).click();
   await page.getByRole('row').filter({hasText:'FM-310'}).getByText('Healthy',{exact:true}).waitFor();
   await page.screenshot({path:'browser-results/maintenance.png',fullPage:true});
+  await page.getByRole('button',{name:'Analytics',exact:true}).click();
+  await page.getByRole('heading',{name:'Vehicle performance'}).waitFor();
+  const downloadPromise=page.waitForEvent('download');
+  await page.getByRole('button',{name:'Export Excel (.xlsx)'}).click();
+  const download=await downloadPromise;
+  assert.match(download.suggestedFilename(),/^fleet-report-.*\.xlsx$/);
+  await download.saveAs('browser-results/fleet-report.xlsx');
+  await page.screenshot({path:'browser-results/analytics.png',fullPage:true});
   await page.setViewportSize({width:390,height:844});
   await page.getByRole('button',{name:'Overview',exact:true}).click();
   await page.screenshot({path:'browser-results/mobile.png',fullPage:true});

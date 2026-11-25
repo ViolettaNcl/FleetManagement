@@ -7,6 +7,17 @@ public static class FleetEndpoints
 {
     public static void Map(RouteGroupBuilder api)
     {
+        api.MapGet("/reports/summary", async Task<IResult> (DateOnly from,DateOnly to,FleetStore store,CancellationToken ct)=>{
+            var start=from.ToDateTime(TimeOnly.MinValue);var end=to.ToDateTime(TimeOnly.MinValue);
+            if(!FleetReport.ValidRange(start,end))return Invalid("Choose a valid range of up to 366 calendar days.");
+            return Results.Ok(FleetReport.Build(await store.Read(ct),DateTime.UtcNow,start,end));
+        });
+        api.MapGet("/reports/excel", async Task<IResult> (DateOnly from,DateOnly to,FleetStore store,CancellationToken ct)=>{
+            var start=from.ToDateTime(TimeOnly.MinValue);var end=to.ToDateTime(TimeOnly.MinValue);
+            if(!FleetReport.ValidRange(start,end))return Invalid("Choose a valid range of up to 366 calendar days.");
+            var report=FleetReport.Build(await store.Read(ct),DateTime.UtcNow,start,end);
+            return Results.File(FleetReport.ExportXlsx(report,start,end),"application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",$"fleet-report-{from:yyyy-MM-dd}-{to:yyyy-MM-dd}.xlsx");
+        });
         api.MapGet("/fleet", (FleetStore store,CancellationToken ct)=>store.Read(ct));
         api.MapGet("/vehicles", async (FleetDbContext db,CancellationToken ct)=>await db.Vehicles.AsNoTracking().OrderBy(x=>x.Id).ToListAsync(ct));
         api.MapGet("/drivers", async (FleetDbContext db,CancellationToken ct)=>await db.Drivers.AsNoTracking().OrderBy(x=>x.Id).ToListAsync(ct));

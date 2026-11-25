@@ -33,6 +33,9 @@ This schema adds Identity and audit tables. Because the prototype still uses Ens
 | PUT, DELETE | /api/vehicles/{id}, /api/drivers/{id}, /api/trips/{id} |
 | GET | /api/dispatch/recommend?start=...&end=..., /api/maintenance |
 | POST | /api/vehicles/{id}/service |
+| GET | /api/reports/summary?from=YYYY-MM-DD&to=YYYY-MM-DD, /api/reports/excel?from=YYYY-MM-DD&to=YYYY-MM-DD |
+
+Reports use inclusive UTC departure dates, with a maximum 366-day range; completed distance excludes unfinished trips. Vehicle maintenance status is current, not historical. The Excel report contains Summary and Vehicles sheets and writes user text as literal cells.
 
 Dates use ISO 8601 with timezone offsets; the API normalizes them to UTC. The HTTP smoke suite exercises the API with synthetic data and restarts the process to check persisted changes.
 

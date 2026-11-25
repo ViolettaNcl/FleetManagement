@@ -29,6 +29,10 @@
     {
         <FleetRegister @key="section" Fleet="fleet" IsVehicles="@(section == "Vehicles")" Today="Now" Changed="Persist" />
     }
+    else if (section == "Analytics")
+    {
+        <FleetAnalytics Fleet="fleet" Now="Now" />
+    }
     else if (section == "Tracking")
     {
         <section class="panel"><h2>Live fleet tracking</h2><p class="muted">Simulated positions on a schematic route network, not real GPS or geographic coordinates. Advance the simulation or select a trip.</p>
@@ -78,7 +82,7 @@
     <footer class="footer">FleetManagement · WPF-inspired .NET WebAssembly demo · synthetic data only · <a href="https://github.com/ViolettaNcl/FleetManagement">Source repository</a></footer>
 </main>
 @code {
-    private readonly string[] Sections = ["Overview","Vehicles","Drivers","Tracking","Dispatch","Maintenance"];
+    private readonly string[] Sections = ["Overview","Vehicles","Drivers","Tracking","Dispatch","Maintenance","Analytics"];
     private const string Key="fleetmanagement.demo.v1";
     private FleetData fleet=FleetRules.Sample(DateTime.Now);
     private string section="Overview",origin="North depot",destination="Central hub",feedback="",storageMessage="";

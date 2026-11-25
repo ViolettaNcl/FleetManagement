@@ -19,5 +19,7 @@ The published static content is under publish/wwwroot. The relative base URL sup
 - Browser local storage for register, trip and service changes, and reset.
 - C# business rules separated from UI and executable regression checks.
 
+- Analytics by trip departure date, status breakdown, completed mileage by vehicle and genuine two-sheet Excel export generated entirely in C#.
+
 ## Boundaries / next steps
 The desktop app, SQL schema and EF6 remain unchanged; its known authentication, persistence and legacy test issues are not resolved by this prototype. The public demo has no authentication or production data, uses simulated tracking instead of SignalR, and maintenance uses deterministic rules instead of a trained ML model. Next: production API/EF Core/Identity, migration, real integration tests, desktop MVVM refactoring, accessibility/browser QA.

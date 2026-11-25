@@ -17,7 +17,7 @@
 
 ## Interactive portfolio demo (in development)
 
-The Blazor WebAssembly prototype retains the original lavender WPF design and runs entirely in the browser with synthetic data. It includes editable vehicle/driver registers, simulated fleet tracking, conflict-aware dispatch and rule-based maintenance.
+The Blazor WebAssembly prototype retains the original lavender WPF design and runs entirely in the browser with synthetic data. It includes editable vehicle/driver registers, simulated fleet tracking, conflict-aware dispatch, rule-based maintenance, fleet analytics and genuine Excel workbook export.
 
 [Demo setup, technical details and limitations](./docs/portfolio-v2.md) · [C# business rules](./src/FleetManagement.Core/Fleet.cs)
 

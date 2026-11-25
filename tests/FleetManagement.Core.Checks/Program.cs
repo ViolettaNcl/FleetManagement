@@ -36,4 +36,24 @@ Check(FleetRules.CanChangeTrip(fleet,104,now)!=null,"completed trip protected");
 Check(FleetRules.CanChangeTrip(fleet,999,now)!=null,"unknown trip protected");
 Check(FleetRules.ValidateTrip(fleet,fleet.Trips.Single(t=>t.Id==103))==null,"editing ignores own assignment");
 Check(FleetRules.Recommend(fleet,now.AddHours(3),now.AddHours(5),now,103)?.VehicleId==4,"recommendation ignores own trip");
-Console.WriteLine("All 32 business rule checks passed.");
+var report=FleetReport.Build(fleet,now,now.Date,now.Date);
+Check(report.Trips==4 && report.Completed==1 && report.Active==2 && report.Scheduled==1,"trip report status totals");
+Check(report.CompletedDistanceKm==112 && report.PlannedDistanceKm==418,"report distance totals");
+Check(report.ServiceDue==1 && report.ServiceSoon==1,"report maintenance counts");
+Check(report.VehicleRows.Single(v=>v.Registration=="FM-102").CompletedDistanceKm==112,"vehicle report aggregation");
+Check(FleetReport.Build(fleet,now,now.AddDays(2),now.AddDays(2)).Trips==0,"empty date filter");
+Check(!FleetReport.ValidRange(now,now.AddDays(-1))&&!FleetReport.ValidRange(now,now.AddDays(366)),"reject invalid report ranges");
+using(var stream=new MemoryStream(FleetReport.ExportXlsx(report,now,now)))
+using(var zip=new System.IO.Compression.ZipArchive(stream)){
+    Check(zip.GetEntry("xl/workbook.xml") is not null && zip.GetEntry("xl/worksheets/sheet2.xml") is not null,"xlsx package structure");
+    using var reader=new StreamReader(zip.GetEntry("xl/worksheets/sheet1.xml")!.Open());
+    Check(reader.ReadToEnd().Contains("<v>112</v>"),"xlsx numeric cell");
+}
+var malicious=report with{VehicleRows=[new("=1+1","A&B",0,0,0,"Healthy")]};
+using(var stream=new MemoryStream(FleetReport.ExportXlsx(malicious,now,now)))
+using(var zip=new System.IO.Compression.ZipArchive(stream))
+using(var reader=new StreamReader(zip.GetEntry("xl/worksheets/sheet2.xml")!.Open())){
+    var sheet=reader.ReadToEnd();
+    Check(sheet.Contains("=1+1")&&sheet.Contains("inlineStr")&&!sheet.Contains("<f>")&&sheet.Contains("A&amp;B"),"xlsx text escaping and formula safety");
+}
+Console.WriteLine("All 41 business rule checks passed.");

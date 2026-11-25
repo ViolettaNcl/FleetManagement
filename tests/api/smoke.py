@@ -75,3 +75,17 @@ assert any(a["entityId"]==created["id"] and a["entityType"]=="Vehicle" and a["ac
 assert not any("password" in str(a).lower() for a in audit)
 request("POST","/api/auth/login",{"email":"viewer@example.test","password":"wrong-password"},401,authorized=False)
 print("PASS: Identity bearer login, role restrictions, admin-only account creation and attributed audit")
+
+# Report endpoints enforce the read policy and generate a genuine Open XML archive.
+import io, zipfile
+query=f"?from={now.date().isoformat()}&to={now.date().isoformat()}"
+request("GET","/api/reports/summary"+query,status=401,authorized=False)
+summary=request("GET","/api/reports/summary"+query,token=viewer)
+assert summary["trips"]==summary["completed"]+summary["active"]+summary["scheduled"]
+request("GET","/api/reports/summary?from=2026-01-02&to=2026-01-01",status=400,token=viewer)
+with urllib.request.urlopen(urllib.request.Request(BASE+"/api/reports/excel"+query,headers={"Authorization":"Bearer "+viewer}),timeout=15) as response:
+    assert response.headers["Content-Type"].startswith("application/vnd.openxmlformats")
+    with zipfile.ZipFile(io.BytesIO(response.read())) as z:
+        assert "xl/worksheets/sheet2.xml" in z.namelist()
+        assert b"Completed distance" in z.read("xl/worksheets/sheet1.xml")
+print("PASS: authorized reports and Excel workbook export")

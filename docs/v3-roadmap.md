@@ -106,3 +106,5 @@ Both workspaces now offer a session-local dark theme and navigation filter, with
 Connected SignalR notification subscriber uses authenticated JSON Long Polling, handshake, heartbeat, bounded reconnect and revision polling fallback. Browser test requires connection before external write. No generic SignalR client library, WebSocket or cross-instance push guarantees.
 
 On-demand retraining review compares three fixed logistic training lengths on a separate validation cohort and reports selected versus incumbent performance on a distinct final synthetic cohort. No real data, automated promotion or deployment.
+
+Server record IDs use retained audit high-water marks under the provider lock, including batch-created trips, with HTTP regressions for delete/recreate. No audit pruning; dedicated sequence migration remains a future design if audit retention is introduced.

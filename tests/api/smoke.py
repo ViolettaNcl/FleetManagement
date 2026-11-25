@@ -270,3 +270,32 @@ request("POST","/api/auth/revoke-sessions",status=204,token=staff_token)
 request("GET","/api/auth/me",status=401,token=staff_token)
 request("POST","/api/auth/revoke-sessions",status=403)
 print("PASS: staff role change, stale role protection and session revocation")
+
+# Retained audit high-water marks prevent reassignment of deleted IDs.
+id_driver={"name":"QA stable ID driver","license":"QA-STABLE-ID","experience":1}
+old_driver=request("POST","/api/drivers",id_driver,201)
+request("DELETE",f"/api/drivers/{old_driver['id']}",status=204)
+new_driver=request("POST","/api/drivers",id_driver,201)
+assert new_driver["id"]>old_driver["id"]
+request("GET",f"/api/drivers/{old_driver['id']}",status=404)
+id_start=now+timedelta(days=24)
+id_trip={"vehicleId":v["id"],"driverId":new_driver["id"],"origin":"QA stable ID","destination":"Depot","start":id_start.isoformat(),"end":(id_start+timedelta(hours=1)).isoformat(),"distance":12}
+old_trip=request("POST","/api/trips",id_trip,201)
+request("DELETE",f"/api/trips/{old_trip['id']}",status=204)
+new_trip=request("POST","/api/trips",id_trip,201)
+assert new_trip["id"]>old_trip["id"]
+request("GET",f"/api/trips/{old_trip['id']}",status=404)
+request("DELETE",f"/api/trips/{new_trip['id']}",status=204)
+stable_plan=request("POST","/api/operations/batch/preview",{"requests":[{"id":1,"origin":"QA stable batch","destination":"Depot","start":id_trip["start"],"end":id_trip["end"],"distance":12}]})[2]
+stable_batch=request("POST","/api/operations/batch/apply",{"confirmed":True,"assignments":stable_plan["assigned"]},201)
+assert stable_batch[0]["id"]>new_trip["id"]
+shift_start=now+timedelta(days=25)
+stable_shift={"driverId":new_driver["id"],"start":shift_start.isoformat(),"end":(shift_start+timedelta(hours=1)).isoformat()}
+first_shift=request("POST","/api/operations/shifts",stable_shift,201)
+request("DELETE",f"/api/operations/shifts/{first_shift['id']}",status=204)
+assert request("POST","/api/operations/shifts",stable_shift,201)["id"]>first_shift["id"]
+stable_res={"vehicleId":v["id"],"start":stable_shift["start"],"end":stable_shift["end"],"kind":"Repair","notes":"QA stable reservation"}
+first_res=request("POST","/api/operations/reservations",stable_res,201)
+request("DELETE",f"/api/operations/reservations/{first_res['id']}",status=204)
+assert request("POST","/api/operations/reservations",stable_res,201)["id"]>first_res["id"]
+print("PASS: retained audit prevents deleted driver/trip/shift/reservation ID reuse, including batch")

@@ -57,9 +57,11 @@ public static class OperationsEndpoints
                     return Invalid("Explicit confirmation and 1–40 assignments required.");
                 var plan=new BatchPlan("Confirmed",input.Assignments.Select(a=>new BatchAssignment(a!.Request!.ToRequest(),a.VehicleId,a.DriverId)).ToArray(),[]);
                 var count=data.Trips.Count;
+                var firstId=await RecordIds.Next(db,nameof(Trip),data.Trips.Select(t=>t.Id).DefaultIfEmpty(100).Max(),ct);
+                if(firstId>int.MaxValue-plan.Assigned.Count+1)return Results.Conflict(new{error="Trip identifier range exhausted."});
                 var error=BatchDispatch.Apply(data,plan,DateTime.UtcNow,await db.DriverShifts.AsNoTracking().ToListAsync(ct),policy.RequireShifts,await db.VehicleReservations.AsNoTracking().ToListAsync(ct));
                 if(error is not null)return Results.Conflict(new{error});
-                var added=data.Trips.Skip(count).ToArray();
+                var added=data.Trips.Skip(count).Select((t,i)=>t with{Id=checked(firstId+i)}).ToArray();
                 db.Trips.AddRange(added);
                 if(key is Guid receiptKey){
                     var response=JsonSerializer.Serialize(added,jsonOptions);
@@ -86,7 +88,7 @@ public static class OperationsEndpoints
                 var entries=await db.DriverShifts.AsNoTracking().ToListAsync(ct);
                 var error=ResourcePlanning.Add(data,entries,input.DriverId,input.Start.UtcDateTime,input.End.UtcDateTime,DateTime.UtcNow);
                 if(error is not null)return Invalid(error);
-                var added=entries[^1];db.DriverShifts.Add(added);await db.SaveChangesAsync(ct);
+                var added=entries[^1] with{Id=await RecordIds.Next(db,nameof(DriverShift),entries.Take(entries.Count-1).Select(e=>e.Id).DefaultIfEmpty().Max(),ct)};db.DriverShifts.Add(added);await db.SaveChangesAsync(ct);
                 return Results.Created("/api/operations/shifts",added);
             },ct)).RequireAuthorization("FleetWrite");
         api.MapDelete("/operations/shifts/{id:int}",(int id,FleetDbContext db,FleetStore store,OperationsPolicy policy,CancellationToken ct)=>
@@ -102,7 +104,7 @@ public static class OperationsEndpoints
                 var entries=await db.VehicleReservations.AsNoTracking().ToListAsync(ct);
                 var error=VehicleReservations.Add(data,entries,input.VehicleId,input.Start.UtcDateTime,input.End.UtcDateTime,input.Kind??"",input.Notes??"",DateTime.UtcNow);
                 if(error is not null)return Invalid(error);
-                var added=entries[^1];db.VehicleReservations.Add(added);await db.SaveChangesAsync(ct);
+                var added=entries[^1] with{Id=await RecordIds.Next(db,nameof(VehicleReservation),entries.Take(entries.Count-1).Select(e=>e.Id).DefaultIfEmpty().Max(),ct)};db.VehicleReservations.Add(added);await db.SaveChangesAsync(ct);
                 return Results.Created("/api/operations/reservations",added);
             },ct)).RequireAuthorization("FleetWrite");
         api.MapDelete("/operations/reservations/{id:int}",(int id,FleetDbContext db,FleetStore store,CancellationToken ct)=>

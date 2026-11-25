@@ -24,7 +24,7 @@ public static class FleetEndpoints
         api.MapGet("/trips", async (FleetDbContext db,CancellationToken ct)=>await db.Trips.AsNoTracking().OrderBy(x=>x.Start).ToListAsync(ct));
         api.MapPost("/vehicles", (VehicleInput input,FleetDbContext db,FleetStore store,CancellationToken ct)=>
             store.Write(async data=>{
-                var v=input.ToVehicle(data.Vehicles.Select(x=>x.Id).DefaultIfEmpty().Max()+1);
+                var v=input.ToVehicle(await RecordIds.Next(db,nameof(Vehicle),data.Vehicles.Select(x=>x.Id).DefaultIfEmpty().Max(),ct));
                 if(VehicleError(data,v) is string error)return Invalid(error);
                 db.Vehicles.Add(v);await db.SaveChangesAsync(ct);return Results.Created($"/api/vehicles/{v.Id}",v);
             },ct)).RequireAuthorization("FleetWrite");
@@ -49,7 +49,7 @@ public static class FleetEndpoints
             },ct)).RequireAuthorization("FleetWrite");
         api.MapPost("/drivers", (DriverInput input,FleetDbContext db,FleetStore store,CancellationToken ct)=>
             store.Write(async data=>{
-                var d=input.ToDriver(data.Drivers.Select(x=>x.Id).DefaultIfEmpty().Max()+1);
+                var d=input.ToDriver(await RecordIds.Next(db,nameof(Driver),data.Drivers.Select(x=>x.Id).DefaultIfEmpty().Max(),ct));
                 if(DriverError(data,d) is string error)return Invalid(error);
                 db.Drivers.Add(d);await db.SaveChangesAsync(ct);return Results.Created($"/api/drivers/{d.Id}",d);
             },ct)).RequireAuthorization("FleetWrite");
@@ -74,7 +74,7 @@ public static class FleetEndpoints
             await db.Trips.AsNoTracking().SingleOrDefaultAsync(x=>x.Id==id,ct) is Trip t?Results.Ok(t):Results.NotFound());
         api.MapPost("/trips", (TripInput input,FleetDbContext db,FleetStore store,OperationsPolicy policy,CancellationToken ct)=>
             store.Write(async data=>{
-                var t=input.ToTrip(data.Trips.Select(x=>x.Id).DefaultIfEmpty().Max()+1);
+                var t=input.ToTrip(await RecordIds.Next(db,nameof(Trip),data.Trips.Select(x=>x.Id).DefaultIfEmpty().Max(),ct));
                 if(await TripError(data,t,db,policy,ct) is string error)return Invalid(error);
                 db.Trips.Add(t);await db.SaveChangesAsync(ct);return Results.Created($"/api/trips/{t.Id}",t);
             },ct)).RequireAuthorization("FleetWrite");

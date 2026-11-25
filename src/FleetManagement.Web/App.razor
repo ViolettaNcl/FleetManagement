@@ -36,6 +36,10 @@
     {
         <FleetRegister @key="section" Fleet="fleet" IsVehicles="@(section == "Vehicles")" Today="Now" Changed="Persist" />
     }
+    else if (section == "Optimization")
+    {
+        <RouteLab />
+    }
     else if (section == "Calendar")
     {
         <FleetCalendarView Fleet="fleet" Now="Now" EditTrip="EditTrip" PlanTrip="PlanFromCalendar" />
@@ -93,7 +97,7 @@
     <footer class="footer">FleetManagement · WPF-inspired .NET WebAssembly demo · synthetic data only · <a href="https://github.com/ViolettaNcl/FleetManagement">Source repository</a></footer>
 </main>
 @code {
-    private readonly string[] Sections = ["Overview","Vehicles","Drivers","Tracking","Dispatch","Calendar","Maintenance","Analytics"];
+    private readonly string[] Sections = ["Overview","Vehicles","Drivers","Tracking","Dispatch","Calendar","Maintenance","Analytics","Optimization"];
     private const string Key="fleetmanagement.demo.v1";
     private FleetData fleet=FleetRules.Sample(DateTime.Now);
     private string section="Overview",origin="North depot",destination="Central hub",feedback="",storageMessage="";

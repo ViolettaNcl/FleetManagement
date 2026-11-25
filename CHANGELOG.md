@@ -4,6 +4,8 @@
 
 - Fleet calendar: day/week/month, vehicle/event filters, cross-midnight agenda, service date reminders and links to dispatch.
 
+- Route optimization lab: reproducible synthetic coordinates, baseline, nearest neighbor and 2-opt tours; measured distances and savings.
+
 ## V2 baseline — portfolio edition
 
 ### Added

@@ -54,6 +54,13 @@ try {
   await page.screenshot({path:'browser-results/calendar.png',fullPage:true});
   await page.getByRole('button',{name:'+ Plan trip',exact:true}).click();
   await page.getByRole('heading',{name:'Intelligent dispatch planner'}).waitFor();
+  await page.getByRole('button',{name:'Optimization',exact:true}).click();
+  await page.getByRole('heading',{name:'Route optimization lab'}).waitFor();
+  await page.getByLabel('Delivery stops').fill('16');
+  await page.getByRole('button',{name:'Calculate routes'}).click();
+  await page.getByRole('button',{name:'Nearest neighbor',exact:true}).click();
+  await page.getByRole('button',{name:'2-opt',exact:true}).click();
+  await page.screenshot({path:'browser-results/optimization.png',fullPage:true});
   await page.setViewportSize({width:390,height:844});
   await page.getByRole('button',{name:'Overview',exact:true}).click();
   await page.screenshot({path:'browser-results/mobile.png',fullPage:true});

@@ -16,3 +16,5 @@ V2 baseline: 4287aef (browser, API matrix and CodeQL passed). V3 development is 
 Calendar V1 derives trip and date-based service reminders from existing records. It does not reserve service time or model driver shifts; those require explicit new domain entities and persistence.
 
 ML and optimization will run without external AI API keys. Synthetic results are not evidence of real-world fleet accuracy.
+
+Optimization V1 compares closed single-vehicle tours on a common set of synthetic Euclidean coordinates. The starting depot is fixed, each stop is visited exactly once, and 2-opt starts from the shorter of the original and nearest-neighbor tours. The bounded local search does not guarantee global optimality. Road-network costs, capacity and time windows are not implemented. No external keys or dependencies.

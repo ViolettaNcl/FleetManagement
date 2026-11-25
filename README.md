@@ -34,6 +34,7 @@ The browser edition runs C# in WebAssembly, uses synthetic data, and requires no
 | Dispatch | Suggest an available vehicle and driver; schedule a trip, then try a conflicting assignment. |
 | Tracking | Play the simulated clock and inspect trip progress on the route schematic. |
 | Maintenance | Compare service intervals and record a service to reset the maintenance assessment. |
+| Optimization | Compare original, nearest-neighbor and 2-opt tours on seeded stops. |
 | Analytics | Filter trips by departure date and download a genuine two-sheet Excel workbook. |
 
 Use **Reset demo** to restore the synthetic dataset. Changes stay in your browser.

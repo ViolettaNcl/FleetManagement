@@ -1,15 +1,16 @@
+@using FleetManagement.Web
 <section class="panel">
-    <div class="registerhead"><div><h2>Route optimization lab</h2><p class="muted">Compare three closed tours on the same seeded synthetic coordinate set. Distances are Euclidean kilometres, not road travel distances or traffic predictions.</p></div><button @onclick="Calculate">Calculate routes</button></div>
-    <div class="formgrid"><label>Delivery stops<input type="number" min="3" max="49" @bind="count" /></label><label>Scenario seed<input type="number" @bind="seed" /></label></div>
+    <div class="registerhead"><div><h2>@T("Route optimization lab")</h2><p class="muted">@T("Compare three closed tours on the same seeded synthetic coordinate set. Distances are Euclidean kilometres, not road travel distances or traffic predictions.")</p></div><button @onclick="Calculate">@T("Calculate routes")</button></div>
+    <div class="formgrid"><label>@T("Delivery stops")<input type="number" min="3" max="49" @bind="count" /></label><label>@T("Scenario seed")<input type="number" @bind="seed" /></label></div>
     @if(error.Length>0){<p role="status" class="error">@error</p>}
 </section>
 @if(results.Count>0){
     var original=results[0].DistanceKm;
     var active=results[selected];
-    <section class="panel"><h2>Algorithm comparison</h2><div class="tablewrap"><table><thead><tr><th>Algorithm</th><th>Distance</th><th>Savings vs original</th><th>2-opt swaps</th></tr></thead><tbody>
+    <section class="panel"><h2>@T("Algorithm comparison")</h2><div class="tablewrap"><table><thead><tr><th>@T("Algorithm")</th><th>@T("Distance")</th><th>@T("Savings vs original")</th><th>@T("2-opt swaps")</th></tr></thead><tbody>
         @foreach(var result in results){<tr><td>@result.Algorithm</td><td>@result.DistanceKm.ToString("F2") km</td><td>@Savings(result,original).ToString("F1")%</td><td>@result.Improvements</td></tr>}
-    </tbody></table></div><p class="muted">2-opt improves the better starting tour; it is a heuristic, not a proof of optimality. No capacity or delivery-window constraints yet.</p></section>
-    <section class="panel"><div class="registerhead"><h2>Route preview</h2><div class="actions">@for(int i=0;i<results.Count;i++){var index=i;<button class="@(selected==index?"":"secondary")" aria-pressed="@(selected==index)" @onclick="()=>selected=index">@results[index].Algorithm</button>}</div></div>
+    </tbody></table></div><p class="muted">@T("2-opt improves the better starting tour; it is a heuristic, not a proof of optimality. No capacity or delivery-window constraints yet.")</p></section>
+    <section class="panel"><div class="registerhead"><h2>@T("Route preview")</h2><div class="actions">@for(int i=0;i<results.Count;i++){var index=i;<button class="@(selected==index?"":"secondary")" aria-pressed="@(selected==index)" @onclick="()=>selected=index">@results[index].Algorithm</button>}</div></div>
         <svg class="map route-lab-map" viewBox="0 0 600 390" role="img" aria-label="Calculated synthetic route">
             @for(int i=0;i<=10;i++){<line class="road" x1="@(30+i*54)" y1="20" x2="@(30+i*54)" y2="370"/><line class="road" x1="30" y1="@(20+i*35)" x2="570" y2="@(20+i*35)"/>}
             <polyline points="@Polyline(active)" fill="none" stroke="#6A5ACD" stroke-width="3" stroke-linejoin="round"/>
@@ -20,6 +21,8 @@
     </section>
 }
 @code{
+    [Parameter] public bool Russian{get;set;}
+    private string T(string value)=>DemoLocale.Text(value,Russian);
     private int count=12,seed=42,selected=2;
     private string error="";
     private IReadOnlyList<RouteResult> results=[];

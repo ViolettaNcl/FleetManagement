@@ -51,7 +51,7 @@
     }
     else if (section == "Batch Dispatch")
     {
-        <BatchDispatchView Fleet="fleet" Now="Now" Shifts="driverShifts" Reservations="vehicleReservations" Enforce="requireShifts" Changed="Persist" Open="Navigate"/>
+        <BatchDispatchView Russian="@(language=="ru")" Fleet="fleet" Now="Now" Shifts="driverShifts" Reservations="vehicleReservations" Enforce="requireShifts" Changed="Persist" Open="Navigate"/>
     }
     else if (section == "Resource Planning")
     {
@@ -59,7 +59,7 @@
     }
     else if (section == "Cost Intelligence")
     {
-        <CostIntelligence Fleet="fleet" MaintenanceEntries="maintenanceEntries" Now="Now" />
+        <CostIntelligence Russian="@(language=="ru")" Fleet="fleet" MaintenanceEntries="maintenanceEntries" Now="Now" />
     }
     else if (section == "Demand Forecast")
     {
@@ -79,23 +79,23 @@
     }
     else if (section == "Geo Map")
     {
-        <GeoTrackingView />
+        <GeoTrackingView Russian="@(language=="ru")" />
     }
     else if (section == "What-if")
     {
-        <ScenarioLab />
+        <ScenarioLab Russian="@(language=="ru")" />
     }
     else if (section == "Multi Dispatch")
     {
-        <MultiDispatchLab />
+        <MultiDispatchLab Russian="@(language=="ru")" />
     }
     else if (section == "Assistant")
     {
-        <FleetAssistant Fleet="fleet" Now="Now" Open="Navigate" Shifts="driverShifts" RequireShifts="requireShifts" Reservations="vehicleReservations" />
+        <FleetAssistant Russian="@(language=="ru")" Fleet="fleet" Now="Now" Open="Navigate" Shifts="driverShifts" RequireShifts="requireShifts" Reservations="vehicleReservations" />
     }
     else if (section == "Digital Twin")
     {
-        <DigitalTwinLab />
+        <DigitalTwinLab Russian="@(language=="ru")" />
     }
     else if (section == "Predictions")
     {
@@ -111,7 +111,7 @@
     }
     else if (section == "Optimization")
     {
-        <RouteLab />
+        <RouteLab Russian="@(language=="ru")" />
     }
     else if (section == "Calendar")
     {
@@ -119,7 +119,7 @@
     }
     else if (section == "Analytics")
     {
-        <FleetAnalytics Fleet="fleet" Now="Now" />
+        <FleetAnalytics Russian="@(language=="ru")" Fleet="fleet" Now="Now" />
     }
     else if (section == "Tracking")
     {

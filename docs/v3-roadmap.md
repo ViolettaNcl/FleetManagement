@@ -128,3 +128,5 @@ ML laboratory localization: headings, forms, tables and explanatory text for mai
 Extended dependency review adds npm audit, exact historical WPF package advisory lookups and final container vulnerability scan, uploading reports without publishing images or altering legacy packages. Scan findings require review.
 
 EF migration rehearsal scaffolds provider-specific InitialV3 + snapshots and SQL in disposable CI copies, applies twice to fresh databases, and exercises current API/Identity. Artifacts are candidates only; no implicit upgrade or history stamping of existing databases.
+
+Major remaining offline modules now have translated primary headings, forms, tables, explanatory text and canonical select values: route optimization, multi-dispatch, twin, what-if, geographic replay, finance, analytics, assistant and batch dispatch. Computed domain messages, generated labels/plots and workbook exports are still not fully localized; no claim of complete translation.

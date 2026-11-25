@@ -35,6 +35,11 @@ try {
   await page.getByRole('button',{name:'Обучить модель',exact:true}).waitFor();
   await page.getByRole('button',{name:'Дрейф модели',exact:true}).click();
   await page.getByRole('heading',{name:'Лаборатория дрейфа модели',exact:true}).waitFor();
+  await page.getByRole('button',{name:'Цифровой двойник',exact:true}).click();
+  await page.getByRole('heading',{name:'Цифровой двойник автопарка',exact:true}).waitFor();
+  await page.getByRole('button',{name:'Запустить сценарий',exact:true}).waitFor();
+  await page.getByRole('button',{name:'Финансовая аналитика',exact:true}).click();
+  await page.getByRole('heading',{name:'Аналитика топлива и расходов',exact:true}).waitFor();
   await page.getByRole('button',{name:'Обзор',exact:true}).click();
   await page.getByLabel('Язык',{exact:true}).selectOption('en');
   await page.getByRole('heading',{name:'Fleet workload'}).waitFor();

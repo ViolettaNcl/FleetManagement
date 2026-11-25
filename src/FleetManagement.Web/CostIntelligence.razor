@@ -1,42 +1,45 @@
+@using FleetManagement.Web
 @inject IJSRuntime JS
 <section class="panel">
-    <h2>Fuel &amp; cost intelligence</h2><p class="muted">Estimated operating costs from completed registered demo trips. All rates are editable assumptions in EUR, not invoices, real fuel measurements or live market prices.</p>
+    <h2>@T("Fuel & cost intelligence")</h2><p class="muted">@T("Estimated operating costs from completed registered demo trips. All rates are editable assumptions in EUR, not invoices, real fuel measurements or live market prices.")</p>
     <div class="formgrid">
-        <label>Cost period from<input type="date" @bind="from"/></label><label>Cost period to<input type="date" @bind="to"/></label>
-        <label>Fuel intensity (L/100 km)<input type="number" step=".1" min="0" max="100" @bind="intensity"/></label>
-        <label>Fuel price (EUR/L)<input type="number" step=".01" min="0" max="100" @bind="price"/></label>
-        <label>Maintenance allowance (EUR/km)<input type="number" step=".01" min="0" max="100" @bind="maintenance"/></label>
-        <label>Driver rate (EUR/hour)<input type="number" step=".1" min="0" max="1000" @bind="driver"/></label>
+        <label>@T("Cost period from")<input type="date" @bind="from"/></label><label>@T("Cost period to")<input type="date" @bind="to"/></label>
+        <label>@T("Fuel intensity (L/100 km)")<input type="number" step=".1" min="0" max="100" @bind="intensity"/></label>
+        <label>@T("Fuel price (EUR/L)")<input type="number" step=".01" min="0" max="100" @bind="price"/></label>
+        <label>@T("Maintenance allowance (EUR/km)")<input type="number" step=".01" min="0" max="100" @bind="maintenance"/></label>
+        <label>@T("Driver rate (EUR/hour)")<input type="number" step=".1" min="0" max="1000" @bind="driver"/></label>
     </div>
-    <div class="actions"><button class="secondary" @onclick="ResetRates">Reset assumptions</button><button @onclick="Export" disabled="@(!Valid)">Export financial Excel (.xlsx)</button></div>
+    <div class="actions"><button class="secondary" @onclick="ResetRates">@T("Reset assumptions")</button><button @onclick="Export" disabled="@(!Valid)">@T("Export financial Excel (.xlsx)")</button></div>
     @if(exportMessage.Length>0){<p role="status" class="notice">@exportMessage</p>}
-    <h3>Budget assumptions for selected period</h3><div class="formgrid"><label>Period budget (EUR)<input type="number" min="0" max="1000000000" step=".01" @bind="budget"/></label><label>Fixed cost allowance (EUR)<input type="number" min="0" max="1000000000" step=".01" @bind="fixedAllowance"/></label></div>
-    @if(!Valid){<p class="error" role="status">Choose a valid date range and nonnegative rates within the input limits.</p>}
+    <h3>@T("Budget assumptions for selected period")</h3><div class="formgrid"><label>@T("Period budget (EUR)")<input type="number" min="0" max="1000000000" step=".01" @bind="budget"/></label><label>@T("Fixed cost allowance (EUR)")<input type="number" min="0" max="1000000000" step=".01" @bind="fixedAllowance"/></label></div>
+    @if(!Valid){<p class="error" role="status">@T("Choose a valid date range and nonnegative rates within the input limits.")</p>}
 </section>
 @if(Valid){
     var report=FleetEconomics.Build(Fleet,Now,from,to,Assumptions);
-    <div class="metrics"><div class="metric">Estimated total<strong>@Money(report.Total)</strong></div><div class="metric">Completed distance<strong>@report.DistanceKm km</strong></div><div class="metric">Estimated fuel<strong>@report.FuelLitres.ToString("N1") L</strong></div><div class="metric">Cost per km<strong>@(report.CostPerKm is decimal c?Money(c):"—")</strong></div></div>
-    <div class="split"><section class="panel"><h2>Cost breakdown</h2>
+    <div class="metrics"><div class="metric">@T("Estimated total")<strong>@Money(report.Total)</strong></div><div class="metric">@T("Completed distance")<strong>@report.DistanceKm km</strong></div><div class="metric">@T("Estimated fuel")<strong>@report.FuelLitres.ToString("N1") L</strong></div><div class="metric">@T("Cost per km")<strong>@(report.CostPerKm is decimal c?Money(c):"—")</strong></div></div>
+    <div class="split"><section class="panel"><h2>@T("Cost breakdown")</h2>
     @foreach(var item in new[]{("Fuel",report.FuelCost),("Maintenance allowance",report.MaintenanceCost),("Driver time",report.DriverCost)}){
         <div class="reportbar"><div><strong>@item.Item1</strong><span>@Money(item.Item2)</span></div><div class="progress"><i style="@Width(item.Item2,report.Total)"></i></div></div>
     }
-    <p class="muted">Excludes taxes, tolls, financing, depreciation, insurance and other fixed costs.</p></section>
-    <section class="panel"><h2>Recorded trip occupancy</h2><div class="metric">Fleet clock-time occupancy<strong>@(report.Utilization is double u?u.ToString("P1"):"—")</strong></div><p class="muted">Observed window: @report.ObservedHours.ToString("N1") hours. Union of trip intervals clipped to the selected period and demo clock, divided by all registered vehicles × observed calendar hours. Not staffed-shift utilization.</p></section></div>
+    <p class="muted">@T("Excludes taxes, tolls, financing, depreciation, insurance and other fixed costs.")</p></section>
+    <section class="panel"><h2>@T("Recorded trip occupancy")</h2><div class="metric">@T("Fleet clock-time occupancy")<strong>@(report.Utilization is double u?u.ToString("P1"):"—")</strong></div><p class="muted">Observed window: @report.ObservedHours.ToString("N1") hours. Union of trip intervals clipped to the selected period and demo clock, divided by all registered vehicles × observed calendar hours. Not staffed-shift utilization.</p></section></div>
     var projection=FleetBudget.Build(Fleet,Now,from,to,Assumptions,budget,fixedAllowance);
-    <section class="panel"><h2>Budget projection</h2><p class="muted">All registered trips departing in the selected period, including future assignments, using the same illustrative rates. This is the whole-period estimate, not additional spending on top of the completed-trip estimate.</p>
-    <div class="metrics"><div class="metric">Projected total<strong>@Money(projection.ProjectedTotal)</strong></div><div class="metric">Period budget<strong>@Money(projection.Budget)</strong></div><div class="metric">Budget headroom<strong>@Money(projection.Headroom)</strong></div><div class="metric">Registered trips<strong>@projection.Trips</strong></div></div>
+    <section class="panel"><h2>@T("Budget projection")</h2><p class="muted">@T("All registered trips departing in the selected period, including future assignments, using the same illustrative rates. This is the whole-period estimate, not additional spending on top of the completed-trip estimate.")</p>
+    <div class="metrics"><div class="metric">@T("Projected total")<strong>@Money(projection.ProjectedTotal)</strong></div><div class="metric">@T("Period budget")<strong>@Money(projection.Budget)</strong></div><div class="metric">@T("Budget headroom")<strong>@Money(projection.Headroom)</strong></div><div class="metric">@T("Registered trips")<strong>@projection.Trips</strong></div></div>
     <p class="@(projection.Headroom<0?"error":"muted")">@(projection.Headroom<0?"Projected over budget":"Projected within budget") · @projection.Completed completed, @projection.Active active, @projection.Scheduled scheduled.</p>
     @foreach(var item in new[]{("Fuel",projection.FuelCost),("Maintenance allowance",projection.MaintenanceAllowance),("Driver time",projection.DriverCost),("Fixed allowance",projection.FixedAllowance)}){
         <div class="reportbar"><div><strong>@item.Item1</strong><span>@Money(item.Item2)</span></div><div class="progress"><i style="@Width(item.Item2,projection.ProjectedTotal)"></i></div></div>
     }
-    <p class="muted">No unregistered demand, taxes or actual cash-flow prediction. Fixed allowance is manually entered for this entire period; recorded work expenses are shown separately.</p></section>
+    <p class="muted">@T("No unregistered demand, taxes or actual cash-flow prediction. Fixed allowance is manually entered for this entire period; recorded work expenses are shown separately.")</p></section>
     var journal=MaintenanceJournal.Totals(MaintenanceEntries,from,to);
-    <section class="panel"><h2>Recorded maintenance expenses</h2><div class="metrics"><div class="metric">Recorded costs<strong>@Money(journal.RecordedCost)</strong></div><div class="metric">Work entries<strong>@journal.Entries</strong></div><div class="metric">Unknown costs<strong>@(journal.Entries-journal.WithCost)</strong></div></div><p class="muted">Recorded work dates, not trip departure dates. These amounts are separate from the estimated maintenance allowance above and are not added to it.</p></section>
-    <section class="panel"><h2>Vehicle cost estimates</h2><div class="tablewrap"><table><thead><tr><th>Vehicle</th><th>Completed km</th><th>Trip hours</th><th>Fuel (L)</th><th>Fuel EUR</th><th>Maintenance EUR</th><th>Driver EUR</th><th>Total EUR</th><th>EUR/km</th><th>Occupied hours</th></tr></thead><tbody>
+    <section class="panel"><h2>@T("Recorded maintenance expenses")</h2><div class="metrics"><div class="metric">@T("Recorded costs")<strong>@Money(journal.RecordedCost)</strong></div><div class="metric">@T("Work entries")<strong>@journal.Entries</strong></div><div class="metric">@T("Unknown costs")<strong>@(journal.Entries-journal.WithCost)</strong></div></div><p class="muted">@T("Recorded work dates, not trip departure dates. These amounts are separate from the estimated maintenance allowance above and are not added to it.")</p></section>
+    <section class="panel"><h2>@T("Vehicle cost estimates")</h2><div class="tablewrap"><table><thead><tr><th>@T("Vehicle")</th><th>@T("Completed km")</th><th>@T("Trip hours")</th><th>@T("Fuel (L)")</th><th>@T("Fuel EUR")</th><th>@T("Maintenance EUR")</th><th>@T("Driver EUR")</th><th>@T("Total EUR")</th><th>EUR/km</th><th>@T("Occupied hours")</th></tr></thead><tbody>
     @foreach(var row in report.Vehicles){<tr><td>@row.Plate</td><td>@row.DistanceKm</td><td>@row.TripHours.ToString("N1")</td><td>@row.FuelLitres.ToString("N1")</td><td>@row.FuelCost.ToString("N2")</td><td>@row.MaintenanceCost.ToString("N2")</td><td>@row.DriverCost.ToString("N2")</td><td>@row.Total.ToString("N2")</td><td>@(row.CostPerKm?.ToString("N2")??"—")</td><td>@row.OccupiedHours.ToString("N1")</td></tr>}
-    </tbody></table></div><p class="muted">Cost cohort: completed trips departing on selected inclusive dates. Full trip duration and distance count even if arrival is after the period. Occupancy uses overlapping intervals instead. Odometer and actual expenses are not inferred.</p></section>
+    </tbody></table></div><p class="muted">@T("Cost cohort: completed trips departing on selected inclusive dates. Full trip duration and distance count even if arrival is after the period. Occupancy uses overlapping intervals instead. Odometer and actual expenses are not inferred.")</p></section>
 }
 @code{
+    [Parameter] public bool Russian{get;set;}
+    private string T(string value)=>DemoLocale.Text(value,Russian);
     [Parameter,EditorRequired] public FleetData Fleet{get;set;}=default!;
     [Parameter] public DateTime Now{get;set;}
     [Parameter] public IReadOnlyList<MaintenanceEntry> MaintenanceEntries{get;set;}=[];

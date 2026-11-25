@@ -1,45 +1,47 @@
+@using FleetManagement.Web
 @implements IAsyncDisposable
 @inject IJSRuntime JS
 
-<header>
-    <div class="brand"><img class="brandicon" src="favicon.svg" alt="" /><div><h1>FleetManagement</h1><small>Fleet operations • interactive portfolio</small></div></div>
-    <div class="actions"><span class="pill">Demo mode · local data</span><button class="secondary" @onclick="Reset">Reset demo</button></div>
+<header lang="@language">
+    <div class="brand"><img class="brandicon" src="favicon.svg" alt="" /><div><h1>FleetManagement</h1><small>@T("Fleet operations • interactive portfolio")</small></div></div>
+    <div class="actions"><label class="demo-language">@T("Language") <select @bind="language" aria-label="@T("Language")"><option value="en">English</option><option value="ru">Русский</option></select></label><span class="pill">@T("Demo mode · local data")</span><button class="secondary" @onclick="Reset">@T("Reset demo")</button></div>
 </header>
-<main>
-    <nav class="fleet-sidebar" aria-label="Fleet sections">
+<main lang="@language">
+    <nav class="fleet-sidebar" aria-label="@T("Fleet sections")">
         @foreach(var group in NavigationGroups)
         {
             <div class="nav-group">
-                <h2>@group.Name</h2>
+                <h2>@T(group.Name)</h2>
                 @foreach(var item in group.Items)
                 {
-                    <button class="@(section == item ? "active" : "")" aria-pressed="@(section == item ? "true" : "false")" @onclick="() => Navigate(item)">@item</button>
+                    <button class="@(section == item ? "active" : "")" aria-pressed="@(section == item ? "true" : "false")" @onclick="() => Navigate(item)">@T(item)</button>
                 }
             </div>
         }
     </nav>
     <div class="fleet-content">
+    @if(language=="ru"){<p class="muted">@T("Russian navigation and overview; detailed modules and reports remain English.")</p>}
     @if (!string.IsNullOrEmpty(storageMessage)) { <p class="notice">@storageMessage</p> }
     @if (section == "Overview")
     {
         <div class="metrics">
-            <div class="metric">Vehicles<strong>@fleet.Vehicles.Count</strong></div>
-            <div class="metric">Drivers<strong>@fleet.Drivers.Count</strong></div>
-            <div class="metric">In transit<strong>@fleet.Trips.Count(t => FleetRules.TripStatus(t, Now) == "In transit")</strong></div>
-            <div class="metric">Service due<strong>@fleet.Vehicles.Count(v => FleetRules.Assess(v, Now).Status == "Due")</strong></div>
+            <div class="metric">@T("Vehicles")<strong>@fleet.Vehicles.Count</strong></div>
+            <div class="metric">@T("Drivers")<strong>@fleet.Drivers.Count</strong></div>
+            <div class="metric">@T("In transit")<strong>@fleet.Trips.Count(t => FleetRules.TripStatus(t, Now) == "In transit")</strong></div>
+            <div class="metric">@T("Service due")<strong>@fleet.Vehicles.Count(v => FleetRules.Assess(v, Now).Status == "Due")</strong></div>
         </div>
-        <section class="panel command-hero"><h2>Operations overview</h2><p class="muted">Fleet command center · monitor schedules, maintenance and operational exceptions in one place. Synthetic records, local browser storage.</p>
-        <div class="actions"><button @onclick='() => Navigate("Tracking")'>Open live tracking</button><button @onclick='() => Navigate("Dispatch")'>Plan a trip</button><button @onclick='() => Navigate("Maintenance")'>Review maintenance</button></div></section>
-        <CommandSummary Reservations="vehicleReservations" Fleet="fleet" Now="Now" Open="Navigate" />
-        <section class="panel"><h2>Try a guided scenario</h2><p class="muted">All records are synthetic. Changes are stored only in this browser, so you can experiment safely.</p>
+        <section class="panel command-hero"><h2>@T("Operations overview")</h2><p class="muted">@T("Fleet command center · monitor schedules, maintenance and operational exceptions in one place. Synthetic records, local browser storage.")</p>
+        <div class="actions"><button @onclick='() => Navigate("Tracking")'>@T("Open live tracking")</button><button @onclick='() => Navigate("Dispatch")'>@T("Plan a trip")</button><button @onclick='() => Navigate("Maintenance")'>@T("Review maintenance")</button></div></section>
+        <CommandSummary Russian="@(language=="ru")" Reservations="vehicleReservations" Fleet="fleet" Now="Now" Open="Navigate" />
+        <section class="panel"><h2>@T("Try a guided scenario")</h2><p class="muted">@T("All records are synthetic. Changes are stored only in this browser, so you can experiment safely.")</p>
         <div class="demojourney">
-            <button class="secondary" @onclick='() => Navigate("Vehicles")'><strong>01 · Register</strong><small>Add a vehicle and test search or validation.</small></button>
-            <button class="secondary" @onclick='() => Navigate("Dispatch")'><strong>02 · Schedule</strong><small>Find a free vehicle and driver.</small></button>
-            <button class="secondary" @onclick='() => Navigate("Tracking")'><strong>03 · Track</strong><small>Advance the simulated clock.</small></button>
-            <button class="secondary" @onclick='() => Navigate("Analytics")'><strong>04 · Report</strong><small>Export an Excel workbook.</small></button>
+            <button class="secondary" @onclick='() => Navigate("Vehicles")'><strong>@T("01 · Register")</strong><small>@T("Add a vehicle and test search or validation.")</small></button>
+            <button class="secondary" @onclick='() => Navigate("Dispatch")'><strong>@T("02 · Schedule")</strong><small>@T("Find a free vehicle and driver.")</small></button>
+            <button class="secondary" @onclick='() => Navigate("Tracking")'><strong>@T("03 · Track")</strong><small>@T("Advance the simulated clock.")</small></button>
+            <button class="secondary" @onclick='() => Navigate("Analytics")'><strong>@T("04 · Report")</strong><small>@T("Export an Excel workbook.")</small></button>
         </div></section>
-        <section class="panel"><div class="registerhead"><div><h2>Intelligent alerts</h2><p class="muted">Live rule-based review of current demo records.</p></div><button class="secondary" @onclick='()=>Navigate("Assistant")'>Open alert center</button></div><FleetAlertList Alerts="@(FleetAdvisor.Assess(fleet,Now,driverShifts,requireShifts,vehicleReservations).Take(3).ToArray())" Open="Navigate"/></section>
-        <section class="panel"><h2>Recent trips</h2>@TripTable()</section>
+        <section class="panel"><div class="registerhead"><div><h2>@T("Intelligent alerts")</h2><p class="muted">@T("Live rule-based review of current demo records.")</p></div><button class="secondary" @onclick='()=>Navigate("Assistant")'>@T("Open alert center")</button></div><FleetAlertList Alerts="@(FleetAdvisor.Assess(fleet,Now,driverShifts,requireShifts,vehicleReservations).Take(3).ToArray())" Open="Navigate"/></section>
+        <section class="panel"><h2>@T("Recent trips")</h2>@TripTable()</section>
     }
     else if (section == "Vehicles" || section == "Drivers")
     {
@@ -165,6 +167,8 @@
     </div>
 </main>
 @code {
+    private string language="en";
+    private string T(string value)=>DemoLocale.Text(value,language=="ru");
     private readonly (string Name,string[] Items)[] NavigationGroups = [
         ("Operations",["Overview","Vehicles","Drivers","Vehicle Passport","Dispatch","Batch Dispatch","Calendar","Resource Planning","Maintenance"]),
         ("Tracking & reporting",["Tracking","Geo Map","Analytics","Cost Intelligence","Assistant"]),
@@ -223,7 +227,7 @@
     }
     private async Task RecordService(int id){var error=MaintenanceJournal.Record(fleet,maintenanceEntries,new(id,"Scheduled service","",null),Now);maintenanceFeedback=error??"Service recorded; cost unknown.";if(error is null)await Persist();}
     private (int X,int Y) Position(Trip t){var p=FleetRules.Progress(t,Now);var (x1,y1,x2,y2)=t.Track switch{0=>(110,55,300,160),1=>(65,165,535,105),_=>(300,160,420,285)};return ((int)(x1+(x2-x1)*p),(int)(y1+(y2-y1)*p));}
-    private RenderFragment TripTable()=> @<div class="tablewrap"><table><thead><tr><th>Trip</th><th>Route</th><th>Vehicle</th><th>Driver</th><th>Start</th><th>End</th><th>Distance</th><th>Status</th>@if(section=="Dispatch"){<th>Actions</th>}</tr></thead><tbody>
+    private RenderFragment TripTable()=> @<div class="tablewrap"><table><thead><tr><th>@T("Trip")</th><th>Route</th><th>Vehicle</th><th>Driver</th><th>Start</th><th>End</th><th>Distance</th><th>Status</th>@if(section=="Dispatch"){<th>Actions</th>}</tr></thead><tbody>
     @foreach(var t in fleet.Trips.OrderByDescending(t=>t.Start)){var status=FleetRules.TripStatus(t,Now);<tr><td>#@t.Id</td><td>@t.Origin → @t.Destination</td><td>@VehicleName(t.VehicleId)</td><td>@DriverName(t.DriverId)</td><td>@t.Start.ToString("dd MMM HH:mm")</td><td>@t.End.ToString("dd MMM HH:mm")</td><td>@t.Distance km</td><td><span class="pill @status.Replace(" ","").ToLowerInvariant()">@status</span></td>@if(section=="Dispatch"){<td>@if(status=="Scheduled"){<div class="actions"><button class="secondary" @onclick="()=>EditTrip(t)">Edit</button><button class="delete" @onclick="()=>DeleteTrip(t)">Delete</button></div>}else{<small>History</small>}</td>}</tr>}
     </tbody></table></div>;
     public async ValueTask DisposeAsync(){cts.Cancel();timer?.Dispose();if(timerTask is not null)await timerTask;cts.Dispose();}

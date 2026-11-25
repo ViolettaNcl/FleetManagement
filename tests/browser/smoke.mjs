@@ -9,6 +9,10 @@ try {
   await page.goto('http://127.0.0.1:8080/FleetManagement/');
   await page.getByRole('button',{name:'Vehicles',exact:true}).waitFor({timeout:90000});
   await mkdir('browser-results',{recursive:true});
+  await page.getByLabel('Language',{exact:true}).selectOption('ru');
+  await page.getByRole('button',{name:'Автомобили',exact:true}).waitFor();
+  await page.getByRole('heading',{name:'Загрузка рейсами'}).waitFor();
+  await page.getByLabel('Язык',{exact:true}).selectOption('en');
   await page.getByRole('heading',{name:'Fleet workload'}).waitFor();
   await page.getByRole('heading',{name:"Today's agenda"}).waitFor();
   assert.equal(await page.locator('.nav-group').count(),4);

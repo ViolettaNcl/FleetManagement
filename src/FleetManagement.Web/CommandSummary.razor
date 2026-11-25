@@ -1,26 +1,29 @@
+@using FleetManagement.Web
 <div class="split command-summary">
-    <section class="panel"><div class="registerhead"><div><h2>Fleet workload</h2><p class="muted">Current register · @Now.ToString("dd MMM yyyy HH:mm")</p></div><button class="secondary" @onclick='()=>Open.InvokeAsync("Analytics")'>View analytics</button></div>
+    <section class="panel"><div class="registerhead"><div><h2>@T("Fleet workload")</h2><p class="muted">@T("Current register") · @Now.ToString("dd MMM yyyy HH:mm")</p></div><button class="secondary" @onclick='()=>Open.InvokeAsync("Analytics")'>@T("View analytics")</button></div>
         @foreach(var status in new[]{"In transit","Scheduled","Completed"}){
             var number=Fleet.Trips.Count(t=>FleetRules.TripStatus(t,Now)==status);
-            <div class="reportbar"><div><strong>@status</strong><span>@number</span></div><div class="progress"><i style="@Width(number,Fleet.Trips.Count)"></i></div></div>
+            <div class="reportbar"><div><strong>@T(status)</strong><span>@number</span></div><div class="progress"><i style="@Width(number,Fleet.Trips.Count)"></i></div></div>
         }
-        <h3>Maintenance readiness</h3>
+        <h3>@T("Maintenance readiness")</h3>
         @foreach(var status in new[]{"Healthy","Soon","Due"}){
             var number=Fleet.Vehicles.Count(v=>FleetRules.Assess(v,Now).Status==status);
-            <div class="reportbar"><div><strong>@status</strong><span>@number</span></div><div class="progress"><i style="@Width(number,Fleet.Vehicles.Count)"></i></div></div>
+            <div class="reportbar"><div><strong>@T(status)</strong><span>@number</span></div><div class="progress"><i style="@Width(number,Fleet.Vehicles.Count)"></i></div></div>
         }
-        <p class="muted">Configured service intervals, not mechanical safety certification.</p>
+        <p class="muted">@T("Configured service intervals, not mechanical safety certification.")</p>
     </section>
-    <section class="panel"><div class="registerhead"><div><h2>Today's agenda</h2><p class="muted">Trips, vehicle reservations and date-based service reminders.</p></div><button class="secondary" @onclick='()=>Open.InvokeAsync("Calendar")'>Full calendar</button></div>
+    <section class="panel"><div class="registerhead"><div><h2>@T("Today's agenda")</h2><p class="muted">@T("Trips, vehicle reservations and date-based service reminders.")</p></div><button class="secondary" @onclick='()=>Open.InvokeAsync("Calendar")'>@T("Full calendar")</button></div>
         @{var entries=FleetCalendar.Entries(Fleet,Now.Date,Now.Date.AddDays(1),Reservations);}
-        @if(entries.Count==0){<p>No events today.</p>}
+        @if(entries.Count==0){<p>@T("No events today.")</p>}
         @foreach(var entry in entries.Take(6)){
-            <div class="command-event"><span class="calendar-chip @(entry.Kind=="Trip"?"trip":"service")">@(entry.Kind=="Service due"?"Service due":entry.Start.ToString("HH:mm"))</span><div><strong>@entry.Title · @entry.Kind</strong><p class="muted">@entry.Detail</p></div></div>
+            <div class="command-event"><span class="calendar-chip @(entry.Kind=="Trip"?"trip":"service")">@(entry.Kind=="Service due"?T("Service due"):entry.Start.ToString("HH:mm"))</span><div><strong>@entry.Title · @T(entry.Kind)</strong><p class="muted">@T(entry.Detail)</p></div></div>
         }
         @if(entries.Count>6){<p class="muted">+ @(entries.Count-6) more events in calendar.</p>}
     </section>
 </div>
 @code{
+    [Parameter] public bool Russian{get;set;}
+    private string T(string value)=>DemoLocale.Text(value,Russian);
     [Parameter,EditorRequired] public FleetData Fleet{get;set;}=default!;
     [Parameter] public DateTime Now{get;set;}
     [Parameter] public IReadOnlyList<VehicleReservation> Reservations{get;set;}=[];

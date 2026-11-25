@@ -27,7 +27,7 @@ The browser edition runs C# in WebAssembly, uses synthetic data, and requires no
 
 ### Guided demo
 
-The grouped V3 workspace separates operational records, tracking/reporting, simulation/optimization and ML experiments. The overview combines live demo-clock trip counts, service readiness, today's agenda and rule-based alerts.
+The grouped V3 workspace includes an English/Russian navigation and overview switch (detailed offline modules remain English). It separates operational records, tracking/reporting, simulation/optimization and ML experiments. The overview combines live demo-clock trip counts, service readiness, today's agenda and rule-based alerts.
 
 | Screen | What to try |
 | --- | --- |
@@ -131,7 +131,7 @@ Create trip requests in Batch Dispatch, compare two assignment heuristics, revie
 
 ### Local connected workspace (V3)
 
-With the local API running, open http://127.0.0.1:5095/console and sign in using your existing Identity account. Read registered fleet and operational history, record completed work and create shifts/reservations with an authorized role. Offline GitHub Pages demo remains independent. See [backend operations](docs/backend-operations.md), [database recovery](docs/database-recovery.md) and [database concurrency](docs/database-concurrency.md).
+With the local API running, open http://127.0.0.1:5095/console and sign in using your existing Identity account. Use server-backed dashboard, calendar, trip/batch dispatch, financial Excel, register editing, maintenance and resource forms; administrators can list/create staff accounts. The connected shell supports EN/RU; some server messages and exports remain English. Offline GitHub Pages demo remains independent. See [backend operations](docs/backend-operations.md), [database recovery](docs/database-recovery.md) and [database concurrency](docs/database-concurrency.md).
 
 ### Performance checks
 

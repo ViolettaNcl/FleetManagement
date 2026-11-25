@@ -86,3 +86,5 @@ Connected register edit and admin account list/create: optional stale record pro
 Connected dashboard and calendar use server-side counts, shared service assessments/alerts/calendar events, shift rows and bounded 1–31 day windows. Native progress graphs, category filtering and Viewer coverage.
 
 Security hardening adds a 256 KiB request envelope, API no-store/nosniff and 30-second client network timeout with explicit uncertain-write recovery guidance. Tests reject oversized authenticated requests. Threat model and residual risks documented; not an independent security audit.
+
+Offline demo EN/RU first pass adds localized navigation, header and command-center summary; detailed components, generated alert strings and exports remain English, explicitly disclosed. Updated EN/RU README and architecture decisions reflect V3 connected mode, database locks and current limitations.

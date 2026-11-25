@@ -2,9 +2,9 @@ name: Backend API integration
 on:
   push:
     branches: [master, 'feature/**']
-    paths: ['src/FleetManagement.Core/**','src/FleetManagement.Api/**','tests/api/**','.github/workflows/api-ci.yml']
+    paths: ['src/FleetManagement.Core/**','src/FleetManagement.Api/**','tests/api/**','tests/FleetManagement.Realtime.Checks/**','.github/workflows/api-ci.yml']
   pull_request:
-    paths: ['src/FleetManagement.Core/**','src/FleetManagement.Api/**','tests/api/**','.github/workflows/api-ci.yml']
+    paths: ['src/FleetManagement.Core/**','src/FleetManagement.Api/**','tests/api/**','tests/FleetManagement.Realtime.Checks/**','.github/workflows/api-ci.yml']
   workflow_dispatch:
 permissions:
   contents: read
@@ -62,6 +62,7 @@ jobs:
           }
           start_api
           python3 tests/api/smoke.py
+          dotnet run --project tests/FleetManagement.Realtime.Checks -c Release
           kill "$pid"
           wait "$pid" || true
           start_api

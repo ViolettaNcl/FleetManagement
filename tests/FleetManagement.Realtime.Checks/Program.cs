@@ -1,0 +1,25 @@
+using System.Net;
+using System.Net.Http.Json;
+using Microsoft.AspNetCore.SignalR.Client;
+
+const string baseUrl="http://127.0.0.1:5095";
+var key=Environment.GetEnvironmentVariable("Fleet__ApiKey")??throw new InvalidOperationException("Missing test automation key.");
+using var http=new HttpClient{BaseAddress=new Uri(baseUrl)};
+using var denied=await http.PostAsync("/hubs/fleet/negotiate?negotiateVersion=1",null);
+if(denied.StatusCode!=HttpStatusCode.Unauthorized)throw new Exception("Anonymous hub negotiation was not rejected.");
+http.DefaultRequestHeaders.Add("X-Fleet-Key",key);
+await using var hub=new HubConnectionBuilder().WithUrl(baseUrl+"/hubs/fleet",o=>o.Headers.Add("X-Fleet-Key",key)).Build();
+var received=new TaskCompletionSource<DateTimeOffset>(TaskCreationOptions.RunContinuationsAsynchronously);
+hub.On<Changed>("FleetChanged",evt=>received.TrySetResult(evt.OccurredUtc));
+using var timeout=new CancellationTokenSource(TimeSpan.FromSeconds(20));
+await hub.StartAsync(timeout.Token);
+var invalid=await http.PostAsJsonAsync("/api/drivers",new{name="",license="",experience=-1},timeout.Token);
+if(invalid.StatusCode!=HttpStatusCode.BadRequest)throw new Exception("Invalid driver unexpectedly accepted.");
+await Task.Delay(300,timeout.Token);
+if(received.Task.IsCompleted)throw new Exception("Rejected mutation emitted a change notification.");
+var response=await http.PostAsJsonAsync("/api/drivers",new{name="Realtime QA",license="RT-"+Guid.NewGuid().ToString("N"),experience=3},timeout.Token);
+if(response.StatusCode!=HttpStatusCode.Created)throw new Exception("Realtime test driver creation failed.");
+var time=await received.Task.WaitAsync(timeout.Token);
+if(time==default)throw new Exception("Invalid event timestamp.");
+Console.WriteLine("PASS: authenticated SignalR notification after committed write; rejected anonymous connection and invalid write.");
+internal sealed record Changed(DateTimeOffset OccurredUtc);

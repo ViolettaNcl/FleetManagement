@@ -32,7 +32,7 @@ The independent ASP.NET Core API reuses the same C# fleet rules and persists dat
 - [HTTP integration checks](./tests/api/smoke.py)
 - [Security boundaries and reporting](./SECURITY.md)
 
-The API is a local-development prototype, independent of the browser demo. ASP.NET Core Identity provides user login and role-based permissions; a separate automation key remains available for local integration tests. Fleet changes are recorded in an admin-only audit trail. Production deployment and migrations are not yet configured.
+The API is a local-development prototype, independent of the browser demo. ASP.NET Core Identity provides user login and role-based permissions; a separate automation key remains available for local integration tests. Fleet changes are recorded in an admin-only audit trail and trigger authenticated SignalR notifications after successful writes. Production deployment and migrations are not yet configured.
 
 ## 📌 Описание
 

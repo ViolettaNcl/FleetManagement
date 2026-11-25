@@ -52,6 +52,7 @@ builder.Services.AddRateLimiter(options=>{
 builder.Services.AddSingleton<FleetWriteGate>();
 builder.Services.AddScoped<FleetStore>();
 builder.Services.AddOpenApi();
+builder.Services.AddSignalR();
 builder.Services.AddProblemDetails();
 var app=builder.Build();
 app.UseExceptionHandler();
@@ -79,6 +80,7 @@ if(builder.Configuration.GetValue<bool>("Fleet:InitializeDatabase")){
 }
 app.MapGet("/health",()=>Results.Ok(new { status="ok" }));
 app.MapOpenApi().RequireAuthorization("FleetRead");
+app.MapHub<FleetHub>("/hubs/fleet",options=>options.CloseOnAuthenticationExpiration=true).RequireAuthorization("FleetRead");
 var api=app.MapGroup("/api").RequireAuthorization("FleetRead");
 FleetEndpoints.Map(api);
 IdentityEndpoints.Map(api);

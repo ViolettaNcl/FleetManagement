@@ -39,6 +39,10 @@ Reports use inclusive UTC departure dates, with a maximum 366-day range; complet
 
 Dates use ISO 8601 with timezone offsets; the API normalizes them to UTC. The HTTP smoke suite exercises the API with synthetic data and restarts the process to check persisted changes.
 
+## Real-time notifications
+
+The authenticated SignalR endpoint /hubs/fleet broadcasts a FleetChanged event after a successful fleet mutation commits. The payload contains only a UTC timestamp; clients re-fetch authorized API data. Anonymous negotiation is rejected, and rejected mutations do not emit events. The integration client uses the local automation key in a header. The static browser demo does not connect to this hub; its tracking remains a local simulation. Delivery is best effort, not a durable event stream. A production scale-out design would need an outbox and a shared backplane.
+
 ## SQL Server (optional Docker Compose)
 Set FLEET_API_KEY (at least 32 random characters) and MSSQL_SA_PASSWORD (strong SQL Server password; avoid semicolons or connection-string delimiters) in the shell or an untracked .env. Run:
 ```sh
@@ -49,6 +53,6 @@ The API is bound to localhost:5095; SQL Server is not exposed on the host. This 
 ## Architecture and limitations
 - Core: pure C# records and validation, reused by browser and API.
 - API: request DTOs, endpoint mapping, scoped EF Core context, unique indexes, FK constraints, no tracking on reads.
-- Writes serialize within a single process; this is not sufficient for multi-instance concurrent writes. Future work: database-backed concurrency, EF migrations, stable server-generated IDs, richer audit events, HTTPS deployment and SignalR.
+- Writes serialize within a single process; this is not sufficient for multi-instance concurrent writes. Future work: database-backed concurrency, EF migrations, stable server-generated IDs, richer audit events, HTTPS deployment and durable event delivery.
 - The local API key is a separate automation identity, not a user credential. Identity provides user authentication and role policies. Do not deploy this API publicly as-is. No CORS for the browser demo. CI runs the same HTTP and restart suite against SQLite and an isolated SQL Server 2022 container. Check the latest workflow results before claiming both providers pass.
 - The original WPF/EF6 project remains unchanged; it must not be mistaken for this backend or used with real data without security remediation.

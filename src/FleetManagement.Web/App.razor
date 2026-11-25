@@ -57,14 +57,14 @@
     }
     else if (section == "Dispatch")
     {
-        <section class="panel"><h2>Intelligent dispatch planner</h2><p class="muted">Find an available vehicle and driver. The C# scheduler checks overlapping assignments and avoids vehicles with overdue service when recommending a pair.</p>
+        <section class="panel"><h2>Intelligent dispatch planner</h2>@if (editingTripId.HasValue) { <p class="notice">Editing trip #@editingTripId</p> }<p class="muted">Find an available vehicle and driver. The C# scheduler checks overlapping assignments and avoids vehicles with overdue service when recommending a pair.</p>
         <div class="formgrid">
             <label>Origin<input @bind="origin" /></label><label>Destination<input @bind="destination" /></label><label>Distance (km)<input type="number" min="1" @bind="distance" /></label>
             <label>Start<input type="datetime-local" @bind="start" /></label><label>End<input type="datetime-local" @bind="end" /></label>
             <label>Vehicle<select @bind="vehicleId"><option value="0">Select vehicle</option>@foreach(var v in fleet.Vehicles){<option value="@v.Id">@v.Plate · @v.Model</option>}</select></label>
             <label>Driver<select @bind="driverId"><option value="0">Select driver</option>@foreach(var d in fleet.Drivers){<option value="@d.Id">@d.Name</option>}</select></label>
         </div>
-        <div class="actions"><button class="secondary" @onclick="Recommend">Suggest assignment</button><button @onclick="SaveTrip" disabled="@(fleet.Vehicles.Count == 0 || fleet.Drivers.Count == 0)">Create trip</button></div>
+        <div class="actions"><button class="secondary" @onclick="Recommend">Suggest assignment</button><button @onclick="SaveTrip" disabled="@(fleet.Vehicles.Count == 0 || fleet.Drivers.Count == 0)">@(editingTripId.HasValue ? "Save changes" : "Create trip")</button>@if(editingTripId.HasValue){<button class="secondary" @onclick="CancelEdit">Cancel edit</button>}</div>
         @if(!string.IsNullOrEmpty(feedback)){<p role="status" class="@(isError?"error":"notice")">@feedback</p>}
         </section><section class="panel"><h2>Trip schedule</h2>@TripTable()</section>
     }
@@ -83,6 +83,7 @@
     private FleetData fleet=FleetRules.Sample(DateTime.Now);
     private string section="Overview",origin="North depot",destination="Central hub",feedback="",storageMessage="";
     private int distance=132,vehicleId=1,driverId=1,selectedTrip=101;
+    private int? editingTripId;
     private DateTime start=DateTime.Now.AddHours(1),end=DateTime.Now.AddHours(2);
     private DateTime Now=DateTime.Now;
     private bool playing,isError;
@@ -101,15 +102,28 @@
     private void Navigate(string item){section=item;feedback="";if(item=="Dispatch"){if(!fleet.Vehicles.Any(v=>v.Id==vehicleId))vehicleId=fleet.Vehicles.FirstOrDefault()?.Id??0;if(!fleet.Drivers.Any(d=>d.Id==driverId))driverId=fleet.Drivers.FirstOrDefault()?.Id??0;}}
     private async Task ToggleSimulation(){playing=!playing;if(!playing)await Persist();}
     private async Task Advance(){Now=Now.AddMinutes(15);await Persist();}
-    private async Task Reset(){if(!await JS.InvokeAsync<bool>("confirm","Reset all demo data?"))return;playing=false;Now=DateTime.Now;fleet=FleetRules.Sample(Now);start=Now.AddHours(1);end=Now.AddHours(2);vehicleId=driverId=1;selectedTrip=101;feedback="";await Persist();}
+    private async Task Reset(){if(!await JS.InvokeAsync<bool>("confirm","Reset all demo data?"))return;playing=false;Now=DateTime.Now;fleet=FleetRules.Sample(Now);start=Now.AddHours(1);end=Now.AddHours(2);vehicleId=driverId=1;selectedTrip=101;editingTripId=null;feedback="";await Persist();}
     private string VehicleName(int id)=>fleet.Vehicles.FirstOrDefault(v=>v.Id==id)?.Plate??"Unknown";
     private string DriverName(int id)=>fleet.Drivers.FirstOrDefault(d=>d.Id==id)?.Name??"Unknown";
-    private void Recommend(){var a=FleetRules.Recommend(fleet,start,end,Now);isError=a is null;if(a is null){feedback="No available service-ready assignment for this interval.";return;}vehicleId=a.VehicleId;driverId=a.DriverId;feedback=$"Suggested {VehicleName(vehicleId)} and {DriverName(driverId)}.";}
-    private async Task SaveTrip(){var id=fleet.Trips.Select(t=>t.Id).DefaultIfEmpty(100).Max()+1;var trip=new Trip(id,vehicleId,driverId,origin.Trim(),destination.Trim(),start,end,distance,-1);var error=FleetRules.ValidateTrip(fleet,trip);isError=error is not null;if(error is not null){feedback=error;return;}fleet.Trips.Add(trip);feedback=$"Trip #{id} created. Custom routes appear in the schedule, not on the sample map.";await Persist();}
+    private void Recommend(){var a=FleetRules.Recommend(fleet,start,end,Now,editingTripId);isError=a is null;if(a is null){feedback="No available service-ready assignment for this interval.";return;}vehicleId=a.VehicleId;driverId=a.DriverId;feedback=$"Suggested {VehicleName(vehicleId)} and {DriverName(driverId)}.";}
+    private void EditTrip(Trip trip){if(FleetRules.CanChangeTrip(fleet,trip.Id,Now) is string invalid){feedback=invalid;isError=true;return;}editingTripId=trip.Id;origin=trip.Origin;destination=trip.Destination;distance=trip.Distance;start=trip.Start;end=trip.End;vehicleId=trip.VehicleId;driverId=trip.DriverId;feedback="";section="Dispatch";}
+    private void CancelEdit(){editingTripId=null;origin="North depot";destination="Central hub";distance=132;start=Now.AddHours(1);end=Now.AddHours(2);feedback="";}
+    private async Task DeleteTrip(Trip trip){if(FleetRules.CanChangeTrip(fleet,trip.Id,Now) is string invalid){feedback=invalid;isError=true;return;}if(!await JS.InvokeAsync<bool>("confirm",$"Delete scheduled trip #{trip.Id}?"))return;fleet.Trips.RemoveAll(t=>t.Id==trip.Id);if(editingTripId==trip.Id)CancelEdit();feedback=$"Trip #{trip.Id} deleted.";isError=false;await Persist();}
+    private async Task SaveTrip(){
+        if(editingTripId is int existingId && FleetRules.CanChangeTrip(fleet,existingId,Now) is string invalid){feedback=invalid;isError=true;return;}
+        if(start<=Now){feedback="A new or edited trip must start in the future.";isError=true;return;}
+        var id=editingTripId??fleet.Trips.Select(t=>t.Id).DefaultIfEmpty(100).Max()+1;
+        var old=fleet.Trips.FirstOrDefault(t=>t.Id==id);
+        var track=old is not null && old.Origin==origin.Trim() && old.Destination==destination.Trim()?old.Track:-1;
+        var trip=new Trip(id,vehicleId,driverId,origin.Trim(),destination.Trim(),start,end,distance,track);
+        var error=FleetRules.ValidateTrip(fleet,trip);isError=error is not null;if(error is not null){feedback=error;return;}
+        if(old is null)fleet.Trips.Add(trip);else fleet.Trips[fleet.Trips.FindIndex(t=>t.Id==id)]=trip;
+        CancelEdit();feedback=$"Trip #{id} saved.";await Persist();
+    }
     private async Task RecordService(int id){var index=fleet.Vehicles.FindIndex(v=>v.Id==id);if(index<0)return;var v=fleet.Vehicles[index];fleet.Vehicles[index]=v with{LastService=Now,LastServiceMileage=v.Mileage};await Persist();}
     private (int X,int Y) Position(Trip t){var p=FleetRules.Progress(t,Now);var (x1,y1,x2,y2)=t.Track switch{0=>(110,55,300,160),1=>(65,165,535,105),_=>(300,160,420,285)};return ((int)(x1+(x2-x1)*p),(int)(y1+(y2-y1)*p));}
-    private RenderFragment TripTable()=> @<div class="tablewrap"><table><thead><tr><th>Trip</th><th>Route</th><th>Vehicle</th><th>Driver</th><th>Start</th><th>End</th><th>Distance</th><th>Status</th></tr></thead><tbody>
-    @foreach(var t in fleet.Trips.OrderByDescending(t=>t.Start)){var status=FleetRules.TripStatus(t,Now);<tr><td>#@t.Id</td><td>@t.Origin → @t.Destination</td><td>@VehicleName(t.VehicleId)</td><td>@DriverName(t.DriverId)</td><td>@t.Start.ToString("dd MMM HH:mm")</td><td>@t.End.ToString("dd MMM HH:mm")</td><td>@t.Distance km</td><td><span class="pill @status.Replace(" ","").ToLowerInvariant()">@status</span></td></tr>}
+    private RenderFragment TripTable()=> @<div class="tablewrap"><table><thead><tr><th>Trip</th><th>Route</th><th>Vehicle</th><th>Driver</th><th>Start</th><th>End</th><th>Distance</th><th>Status</th>@if(section=="Dispatch"){<th>Actions</th>}</tr></thead><tbody>
+    @foreach(var t in fleet.Trips.OrderByDescending(t=>t.Start)){var status=FleetRules.TripStatus(t,Now);<tr><td>#@t.Id</td><td>@t.Origin → @t.Destination</td><td>@VehicleName(t.VehicleId)</td><td>@DriverName(t.DriverId)</td><td>@t.Start.ToString("dd MMM HH:mm")</td><td>@t.End.ToString("dd MMM HH:mm")</td><td>@t.Distance km</td><td><span class="pill @status.Replace(" ","").ToLowerInvariant()">@status</span></td>@if(section=="Dispatch"){<td>@if(status=="Scheduled"){<div class="actions"><button class="secondary" @onclick="()=>EditTrip(t)">Edit</button><button class="delete" @onclick="()=>DeleteTrip(t)">Delete</button></div>}else{<small>History</small>}</td>}</tr>}
     </tbody></table></div>;
     private sealed record Snapshot(FleetData Data,DateTime Now);
     public async ValueTask DisposeAsync(){cts.Cancel();timer?.Dispose();if(timerTask is not null)await timerTask;cts.Dispose();}

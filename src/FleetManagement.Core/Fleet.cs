@@ -47,10 +47,16 @@ public static class FleetRules
         return null;
     }
 
-    public static Assignment? Recommend(FleetData fleet, DateTime start, DateTime end, DateTime today)
+    public static string? CanChangeTrip(FleetData fleet, int id, DateTime now)
+    {
+        var trip = fleet.Trips.FirstOrDefault(t => t.Id == id);
+        return trip is null ? "Trip not found." : trip.Start <= now ? "Only scheduled trips can be edited or removed." : null;
+    }
+
+    public static Assignment? Recommend(FleetData fleet, DateTime start, DateTime end, DateTime today, int? excludeTripId = null)
     {
         if (end <= start) return null;
-        var busy = fleet.Trips.Where(t => t.Start < end && start < t.End).ToList();
+        var busy = fleet.Trips.Where(t => t.Id != excludeTripId && t.Start < end && start < t.End).ToList();
         var vehicle = fleet.Vehicles.Where(v => busy.All(t => t.VehicleId != v.Id) && Assess(v, today).Status != "Due").OrderBy(v => v.Mileage).ThenBy(v => v.Id).FirstOrDefault();
         var driver = fleet.Drivers.Where(d => busy.All(t => t.DriverId != d.Id)).OrderBy(d => fleet.Trips.Count(t => t.DriverId == d.Id)).ThenBy(d => d.Id).FirstOrDefault();
         return vehicle is null || driver is null ? null : new(vehicle.Id, driver.Id);

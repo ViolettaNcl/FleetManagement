@@ -24,3 +24,23 @@ jobs:
           name: fleetmanagement-browser-demo
           path: publish/wwwroot
           if-no-files-found: error
+      - name: Install browser test dependencies
+        run: |
+          npm install --prefix tests/browser --no-audit --no-fund
+          cd tests/browser
+          npx playwright install --with-deps chromium
+      - name: Browser smoke test at GitHub Pages subpath
+        run: |
+          mkdir -p preview/FleetManagement
+          cp -a publish/wwwroot/. preview/FleetManagement/
+          python3 -m http.server 8080 --bind 127.0.0.1 --directory preview &
+          server=$!
+          trap 'kill "$server" || true' EXIT
+          node tests/browser/smoke.mjs
+      - name: Upload browser screenshots
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: fleetmanagement-browser-screenshots
+          path: browser-results
+          if-no-files-found: ignore

@@ -20,3 +20,6 @@
 .geo-map{width:100%;display:block;background:#F8F6FC;border-radius:8px}
 
 .registry-details{display:grid;grid-template-columns:minmax(120px,1fr) minmax(0,2fr);gap:10px;font-size:14px}.registry-details dd{margin:0;overflow-wrap:anywhere;color:#4B0082}.registry-details dt{color:#665D78}
+
+/* Long schema strings and intrinsic grid/table widths must not expand the viewport. */
+.csv-header{display:block;max-width:100%;overflow-wrap:anywhere;white-space:normal;background:#F0F0FF;padding:10px;border-radius:6px;color:#483D8B}.panel,.metric,.split>*,.formgrid>*,.tablewrap{min-width:0}.tablewrap{max-width:100%}.split{grid-template-columns:minmax(0,2fr) minmax(0,1fr)}@media(max-width:800px){.split{grid-template-columns:minmax(0,1fr)}}

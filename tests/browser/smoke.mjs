@@ -137,7 +137,11 @@ try {
   await page.getByRole('heading',{name:'Valid data preview'}).waitFor();
   await page.screenshot({path:'browser-results/data-quality.png',fullPage:true});
   await page.setViewportSize({width:390,height:844});
-  assert.equal(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth),true);
+  assert.equal(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth),true,'Data Quality must fit the mobile viewport');
+  await page.getByRole('button',{name:'Model Registry',exact:true}).click();
+  await page.locator('input[type=file]').setInputFiles('tests/ml/fixture-manifest.json');
+  await page.getByRole('heading',{name:'Experiment provenance'}).waitFor();
+  assert.equal(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth),true,'Registry must fit the mobile viewport');
   await page.getByRole('button',{name:'Overview',exact:true}).click();
   await page.screenshot({path:'browser-results/mobile.png',fullPage:true});
   assert.equal(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth),true);

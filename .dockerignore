@@ -1,0 +1,10 @@
+**/bin
+**/obj
+**/node_modules
+.git
+.env
+**/*.db
+**/*.db-shm
+**/*.db-wal
+publish
+browser-results

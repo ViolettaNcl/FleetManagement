@@ -1,0 +1,43 @@
+name: Backend API integration
+on:
+  push:
+    branches: [master, 'feature/**']
+    paths: ['src/FleetManagement.Core/**','src/FleetManagement.Api/**','tests/api/**','.github/workflows/api-ci.yml']
+  pull_request:
+    paths: ['src/FleetManagement.Core/**','src/FleetManagement.Api/**','tests/api/**','.github/workflows/api-ci.yml']
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  integration:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '10.0.x'
+      - run: dotnet build src/FleetManagement.Api -c Release
+      - name: Test real HTTP and persistent SQLite storage
+        shell: bash
+        run: |
+          export Fleet__ApiKey="$(python3 -c 'import secrets; print(secrets.token_hex(32))')"
+          echo "::add-mask::$Fleet__ApiKey"
+          export Fleet__InitializeDatabase=true Fleet__SeedDemo=true Fleet__Provider=Sqlite
+          export ConnectionStrings__Fleet="Data Source=$RUNNER_TEMP/fleet-test.db"
+          start_api() {
+            dotnet src/FleetManagement.Api/bin/Release/net10.0/FleetManagement.Api.dll --urls http://127.0.0.1:5095 > "$RUNNER_TEMP/fleet-api.log" 2>&1 &
+            pid=$!
+            for i in $(seq 1 60); do
+              if curl -fsS http://127.0.0.1:5095/health >/dev/null 2>&1; then return; fi
+              sleep 1
+            done
+            cat "$RUNNER_TEMP/fleet-api.log"
+            return 1
+          }
+          trap 'kill "${pid:-0}" 2>/dev/null || true; cat "$RUNNER_TEMP/fleet-api.log" || true' EXIT
+          start_api
+          python3 tests/api/smoke.py
+          kill "$pid"
+          wait "$pid" || true
+          start_api
+          python3 tests/api/smoke.py --verify-persistence

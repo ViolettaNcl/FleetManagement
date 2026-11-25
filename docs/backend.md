@@ -1,0 +1,38 @@
+# FleetManagement API — local backend portfolio slice
+
+The .NET 10 minimal API reuses FleetManagement.Core rules. EF Core supports a file-based SQLite database for frictionless development and SQL Server for the optional Docker Compose stack. The browser GitHub Pages demo remains independent, with no embedded secrets or server dependencies.
+
+## Run locally (PowerShell)
+```powershell
+$env:Fleet__ApiKey = [Convert]::ToHexString([System.Security.Cryptography.RandomNumberGenerator]::GetBytes(32))
+$env:Fleet__InitializeDatabase = "true"
+$env:Fleet__SeedDemo = "true"
+dotnet run --project src/FleetManagement.Api --no-launch-profile --urls http://127.0.0.1:5095
+```
+Use the same API key in the X-Fleet-Key header of API clients. Never commit the key, publish it in the WASM application, or expose this HTTP service to the public internet. GET /health is unauthenticated; all /api and /openapi paths require the key. OpenAPI JSON: /openapi/v1.json. Initialization uses EnsureCreated, only when explicitly enabled, and seeds synthetic records only if all three tables are empty.
+
+## API surface
+| Method | Path |
+|---|---|
+| GET | /health, /api/fleet, /api/vehicles, /api/drivers, /api/trips |
+| GET | /api/vehicles/{id}, /api/drivers/{id}, /api/trips/{id} |
+| POST | /api/vehicles, /api/drivers, /api/trips |
+| PUT, DELETE | /api/vehicles/{id}, /api/drivers/{id}, /api/trips/{id} |
+| GET | /api/dispatch/recommend?start=...&end=..., /api/maintenance |
+| POST | /api/vehicles/{id}/service |
+
+Dates use ISO 8601 with timezone offsets; the API normalizes them to UTC. The HTTP smoke suite exercises the API with synthetic data and restarts the process to check persisted changes.
+
+## SQL Server (optional Docker Compose)
+Set FLEET_API_KEY (at least 32 random characters) and MSSQL_SA_PASSWORD (strong SQL Server password; avoid semicolons or connection-string delimiters) in the shell or an untracked .env. Run:
+```sh
+docker compose -f compose.fleet.yml up --build
+```
+The API is bound to localhost:5095; SQL Server is not exposed on the host. This uses SQL Server Developer edition for development/testing only. Stop with docker compose -f compose.fleet.yml down. The named volume persists data.
+
+## Architecture and limitations
+- Core: pure C# records and validation, reused by browser and API.
+- API: request DTOs, endpoint mapping, scoped EF Core context, unique indexes, FK constraints, no tracking on reads.
+- Writes serialize within a single process; this is not sufficient for multi-instance concurrent writes. Future work: database-backed concurrency, EF migrations, stable server-generated IDs, ASP.NET Core Identity/RBAC, audit trail, HTTPS deployment and SignalR.
+- The local API key is a development access gate, not user authentication. Do not deploy this API publicly as-is. No CORS for the browser demo. No SQL Server CI validation yet; SQLite HTTP integration is the first tested provider.
+- The original WPF/EF6 project remains unchanged; it must not be mistaken for this backend or used with real data without security remediation.

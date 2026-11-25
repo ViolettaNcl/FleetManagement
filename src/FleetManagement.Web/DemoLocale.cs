@@ -31,6 +31,7 @@ internal static class DemoLocale
         ["Demand Forecast"]="Прогноз спроса",
         ["Model Registry"]="Реестр моделей",
         ["Data Quality"]="Качество данных",
+        ["Model Drift"]="Дрейф модели",
         ["Fleet operations • interactive portfolio"]="Управление автопарком • интерактивное портфолио",
         ["Demo mode · local data"]="Демо · локальные данные",
         ["Reset demo"]="Сбросить демо",

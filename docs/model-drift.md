@@ -1,0 +1,3 @@
+# Model drift laboratory
+
+The offline lab trains the existing logistic model using synthetic training vehicles and compares reference features against the disjoint held-out vehicle window. The control and shifted window share observations; the shifted case adds bounded heat/vibration and subtracts voltage. PSI uses up to ten reference-derived bins, deduplicated cuts, open tails and 0.5 additive smoothing. Watch (0.10) and High (0.25) are heuristic thresholds, not significance tests. Mean predicted risk is not observed failure prevalence. Investigate sensor/data shifts, collect representative labels, evaluate on a held-out cohort and review before retraining; no automatic model promotion. No external keys or upload.

@@ -98,3 +98,5 @@ Identity lifecycle: server security stamp checks for authenticated HTTP, own-ses
 Offline localization expanded to register forms, calendar filters and dispatch labels. Added deterministic core-scale smoke with 120 vehicles, 120 drivers, 3,600 historical trips and 40 simultaneous requests; checks preview, assignment uniqueness, apply and calendar. Timing is informational only.
 
 CI extends upgrade coverage through pinned pre-receipt V3, adds actual browser lost-response/retry test, and modern NuGet advisory inventory workflow. Advisory scan reports known issues without automatic upgrades; incomplete source data fails the scan. No complete supply-chain security guarantee.
+
+Model Drift Lab compares synthetic reference and independent held-out feature windows using reference quantile PSI with smoothing, injected covariate shifts and mean model output. Control versus shifted window isolates the injected changes; no actual labels, production drift, or automatic retraining/promotion.

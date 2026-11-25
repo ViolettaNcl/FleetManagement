@@ -99,6 +99,10 @@
     {
         <PredictionLab />
     }
+    else if (section == "Model Drift")
+    {
+        <DriftLab />
+    }
     else if (section == "Intelligence")
     {
         <IntelligenceLab />
@@ -173,7 +177,7 @@
         ("Operations",["Overview","Vehicles","Drivers","Vehicle Passport","Dispatch","Batch Dispatch","Calendar","Resource Planning","Maintenance"]),
         ("Tracking & reporting",["Tracking","Geo Map","Analytics","Cost Intelligence","Assistant"]),
         ("Simulation & optimization",["Optimization","Multi Dispatch","Digital Twin","What-if"]),
-        ("Machine learning",["Intelligence","Predictions","Demand Forecast","Model Registry","Data Quality"])
+        ("Machine learning",["Intelligence","Predictions","Demand Forecast","Model Registry","Data Quality","Model Drift"])
     ];
     private const string Key="fleetmanagement.demo.v1";
     private FleetData fleet=FleetRules.Sample(DateTime.Now);

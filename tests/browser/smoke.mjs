@@ -229,6 +229,10 @@ try {
   await page.reload();
   await page.getByRole('button',{name:'Dispatch',exact:true}).click();
   await page.getByRole('row').filter({hasText:'QA batch origin'}).waitFor();
+  await page.getByRole('button',{name:'Model Drift',exact:true}).click();
+  await page.getByRole('button',{name:'Compare drift windows'}).click();
+  await page.getByRole('heading',{name:'Population stability index (PSI)'}).waitFor();
+  await page.screenshot({path:'browser-results/model-drift.png',fullPage:true});
   await page.setViewportSize({width:390,height:844});
   assert.equal(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth),true,'Demand forecast must fit the mobile viewport');
   await page.getByRole('button',{name:'Cost Intelligence',exact:true}).click();

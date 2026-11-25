@@ -35,6 +35,12 @@ try{
     await page.getByRole("button",{name:"Sign in",exact:true}).click();
     await page.getByRole("heading",{name:"Operations overview"}).waitFor();
     assert.equal(await page.locator("#vehicles-count").innerText(),"4");
+    await page.getByRole("button",{name:"Dashboard",exact:true}).click();
+    await page.locator("#trip-bars progress").first().waitFor();
+    assert.equal(await page.locator("#service-bars progress").count(),3);
+    await page.getByRole("button",{name:"Calendar",exact:true}).click();
+    await page.locator("#calendar-events tbody tr").first().waitFor();
+    await page.getByRole("button",{name:"Fleet register",exact:true}).click();
     const newVehicle=page.locator("#vehicle-form");
     await newVehicle.getByLabel("Vehicle plate").fill("QA-CONSOLE-01");
     await newVehicle.getByLabel("Vehicle model").fill("QA Fleet Van");

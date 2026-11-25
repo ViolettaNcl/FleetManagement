@@ -1,5 +1,37 @@
 "use strict";
 const translations={
+"Dashboard":"Панель управления",
+"Calendar":"Календарь",
+"Fleet command center":"Центр управления автопарком",
+"Server-derived counts and rule-based alerts at the displayed UTC time. No live GPS or predicted failures are implied.":"Расчётные показатели и предупреждения сервера на указанное время UTC. Это не GPS в реальном времени и не прогноз неисправностей.",
+"Trip workload":"Загрузка рейсами",
+"Service readiness":"Готовность по ТО",
+"Departures in the next 7 days":"Отправления в ближайшие 7 дней",
+"Operational alerts":"Операционные предупреждения",
+"Operations calendar":"Операционный календарь",
+"UTC intervals for trips, reservations and shifts; service deadlines are reminders only. Events overlapping a selected day are included.":"Интервалы рейсов, резервирований и смен в UTC; сроки ТО являются напоминаниями. Включены события, пересекающие выбранный период.",
+"Calendar from (UTC)":"Календарь с (UTC)",
+"Calendar days":"Количество дней",
+"Event filter":"Фильтр событий",
+"All events":"Все события",
+"Trip":"Рейс",
+"Reservation":"Резервирование",
+"Shift":"Смена",
+"Service due":"Срок ТО",
+"Load calendar":"Загрузить календарь",
+"Completed":"Завершены",
+"In transit":"В пути",
+"Scheduled":"Запланированы",
+"Healthy":"В норме",
+"Soon":"Скоро ТО",
+"Due":"Требуется ТО",
+"Severity":"Важность",
+"Subject":"Объект",
+"Alert":"Предупреждение",
+"Evidence":"Основание",
+"Recommendation":"Рекомендация",
+"Detail":"Подробности",
+
 "Accounts":"Учётные записи",
 "User accounts":"Учётные записи пользователей",
 "Administrator only. Create Dispatcher or Viewer accounts. Existing roles and passwords are not editable in this workspace.":"Только администратор. Создание диспетчеров и наблюдателей. Изменение существующих ролей и паролей недоступно.",
@@ -218,6 +250,8 @@ function translate(value){
     if(/^Edit trip #\d+$/.test(value))return value.replace("Edit trip #","Редактировать рейс №");
     if(/^Applied \d+ trips/.test(value))return value.replace(/^Applied (\d+) trips and refreshed server data\.$/,"Применено рейсов: $1. Данные обновлены.").replace(/^Applied (\d+) trips\. Refreshing…$/,"Применено рейсов: $1. Обновление…");
     if(/^\d+ assigned · \d+ pending$/.test(value))return value.replace(/(\d+) assigned · (\d+) pending/,"Назначено: $1 · ожидают: $2");
+    if(value.startsWith("Reserved now: "))return value.replace("Reserved now: ","Зарезервировано сейчас: ");
+    if(value.startsWith("Calculated at "))return value.replace("Calculated at ","Рассчитано: ");
     if(value.startsWith("Change monitoring active · "))return value.replace("Change monitoring active · ","Проверка изменений активна · ");
     if(value.startsWith("Last refreshed "))return value.replace("Last refreshed ","Обновлено ").replace(" · independent API reads, not a transactional snapshot."," · независимые запросы API, не транзакционный снимок.");
     return value;

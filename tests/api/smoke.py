@@ -190,3 +190,16 @@ request("PUT",f"/api/drivers/{register_driver['id']}",{**original,"experience":4
 request("PUT",f"/api/drivers/{register_driver['id']}",{**original,"experience":5,"expected":original},409,token=dispatcher)
 assert request("GET",f"/api/drivers/{register_driver['id']}")["experience"]==4
 print("PASS: account list authorization, minimal fields and stale register edit")
+
+# Server-derived overview and calendar are available to Viewer.
+overview=request("GET","/api/operations/overview",token=viewer)
+fleet_now=request("GET","/api/fleet",token=viewer)
+assert sum(overview["trips"].values())==len(fleet_now["trips"])
+assert sum(overview["service"].values())==len(fleet_now["vehicles"])
+assert len(overview["departures"])==7
+calendar=request("GET",f"/api/operations/calendar?from={now.date().isoformat()}&days=14",token=viewer)
+assert calendar["days"]==14
+assert {"Trip","Shift","Reservation"} <= {e["kind"] for e in calendar["entries"]}
+request("GET",f"/api/operations/calendar?from={now.date().isoformat()}&days=32",400,token=viewer)
+request("GET","/api/operations/overview",status=401,authorized=False)
+print("PASS: server dashboard counts and bounded calendar events")

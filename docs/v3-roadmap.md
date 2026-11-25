@@ -82,3 +82,5 @@ Connected fleet register supports confirmed vehicle/driver creation, local text 
 Read-only performance smoke runs 120 local HTTP reads with eight workers on each disposable database provider and stores aggregate p50/p95/max/throughput JSON as CI artifacts. No real workload or production SLA claim.
 
 Connected register edit and admin account list/create: optional stale record protection for vehicle/driver updates, server pagination and role-gated minimal account metadata. No role changes or token revocation; existing admin-only account creation reused.
+
+Connected dashboard and calendar use server-side counts, shared service assessments/alerts/calendar events, shift rows and bounded 1–31 day windows. Native progress graphs, category filtering and Viewer coverage.

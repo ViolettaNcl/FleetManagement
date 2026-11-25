@@ -95,5 +95,6 @@ var api=app.MapGroup("/api").RequireAuthorization("FleetRead");
 FleetEndpoints.Map(api);
 FinancialEndpoints.Map(api);
 OperationsEndpoints.Map(api);
+OverviewEndpoints.Map(api);
 IdentityEndpoints.Map(api);
 app.Run();

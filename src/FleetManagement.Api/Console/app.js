@@ -11,10 +11,10 @@ function signOut(message="Signed out."){
     for(const button of document.querySelectorAll("button"))button.disabled=false;
     $("auth").hidden=false;$("workspace").hidden=true;$("logout").hidden=true;
     $("identity").textContent="";uiText($("policy"),"");uiText($("updated"),"");
-    for(const id of ["vehicles","drivers","trips","work","shifts","reservations","audit","finance-summary","finance-vehicles","accounts"])$(id).replaceChildren();
+    for(const id of ["vehicles","drivers","trips","work","shifts","reservations","audit","finance-summary","finance-vehicles","accounts","overview-alerts","calendar-events"])$(id).replaceChildren();
     for(const id of ["vehicles-count","drivers-count","trips-count","work-count"])$(id).textContent="—";
     for(const form of editors){form.reset();form.hidden=true;for(const select of form.querySelectorAll("select[name=vehicleId],select[name=driverId]"))select.replaceChildren();}
-    $("audit-tab").hidden=true;$("accounts-tab").hidden=true;$("account-form").reset();accountsOffset=0;accountsTotal=0;$("accounts-page").textContent="";resetRegister("vehicles");resetRegister("drivers");$("login").reset();latestFleet=null;for(const filter of document.querySelectorAll("[data-filter]"))filter.value="";resetTrip();clearBatch();$("batch-panel").hidden=true;status(message);
+    $("audit-tab").hidden=true;$("accounts-tab").hidden=true;$("account-form").reset();accountsOffset=0;accountsTotal=0;$("accounts-page").textContent="";clearDashboard();resetRegister("vehicles");resetRegister("drivers");$("login").reset();latestFleet=null;for(const filter of document.querySelectorAll("[data-filter]"))filter.value="";resetTrip();clearBatch();$("batch-panel").hidden=true;status(message);
 }
 async function api(path,method="GET",body,authenticated=true,format="json"){
     const active=generation;
@@ -69,6 +69,8 @@ async function refresh(){
     $("batch-panel").hidden=!canWrite;
     $("audit-tab").hidden=!admin;$("accounts-tab").hidden=!admin;
     if(admin&&currentPage==="accounts")await loadAccounts();
+    if(currentPage==="overview")await loadDashboard();
+    if(currentPage==="calendar")await loadCalendar();
     if(!admin&&["audit","accounts"].includes(currentPage))tab("fleet");
     uiText($("updated"),"Last refreshed "+new Date().toLocaleString()+" · independent API reads, not a transactional snapshot.");
     revision=checkpoint.revision;$("change-notice").hidden=true;
@@ -189,3 +191,33 @@ $("accounts-next").addEventListener("click",()=>operation(async()=>{if(accountsO
 $("account-form").addEventListener("submit",event=>{event.preventDefault();const form=event.currentTarget,d=new FormData(form);if(!d.has("confirmed")||busy)return;form.elements.password.value="";operation(async()=>{
     await api("/api/admin/users","POST",{email:d.get("email"),password:d.get("password"),role:d.get("role")});form.reset();status("Account created.");try{await loadAccounts();}catch{if(token)status("Account created; refresh failed. Do not resubmit.",true);}
 });});
+
+let calendarEntries=[];
+const calendarForm=$("calendar-form");
+calendarForm.elements.from.value=new Date().toISOString().slice(0,10);
+function clearDashboard(){calendarEntries=[];for(const id of ["trip-bars","service-bars","departure-bars","reserved-now","overview-time"])$(id).replaceChildren();$("calendar-filter").value="";calendarForm.reset();calendarForm.elements.from.value=new Date().toISOString().slice(0,10);}
+function barRows(id,items){
+    const root=$(id);root.replaceChildren();const max=Math.max(1,...items.map(x=>x[1]));
+    for(const [label,value] of items){const row=document.createElement("div");row.className="dashboard-bar";
+        const name=document.createElement("span"),amount=document.createElement("strong"),bar=document.createElement("progress");
+        uiText(name,label);amount.textContent=String(value);bar.max=max;bar.value=value;bar.setAttribute("aria-label",translate(label));row.append(name,amount,bar);root.append(row);}
+}
+async function loadDashboard(){
+    const data=await api("/api/operations/overview");
+    barRows("trip-bars",[["Completed",data.trips.completed],["In transit",data.trips.active],["Scheduled",data.trips.scheduled]]);
+    barRows("service-bars",[["Healthy",data.service.healthy],["Soon",data.service.soon],["Due",data.service.due]]);
+    barRows("departure-bars",data.departures.map(d=>[d.date,d.count]));
+    uiText($("reserved-now"),"Reserved now: "+data.reservedNow);
+    uiText($("overview-time"),"Calculated at "+date(data.asOfUtc));
+    table("overview-alerts",[["Severity",text("severity")],["Subject",text("subject")],["Alert",text("title")],["Evidence",text("evidence")],["Recommendation",text("recommendation")]],data.alerts);
+}
+async function loadCalendar(){
+    if(!calendarForm.reportValidity())return;
+    const d=new FormData(calendarForm);const result=await api("/api/operations/calendar?"+new URLSearchParams({from:d.get("from"),days:d.get("days")}));
+    calendarEntries=result.entries;renderCalendar();
+}
+function renderCalendar(){const kind=$("calendar-filter").value;table("calendar-events",[["Category",text("kind")],["Subject",text("title")],["Detail",text("detail")],["Start",r=>date(r.start)],["End",r=>date(r.end)]],calendarEntries.filter(e=>!kind||e.kind===kind));}
+document.querySelector('[data-tab="overview"]').addEventListener("click",()=>operation(loadDashboard));
+document.querySelector('[data-tab="calendar"]').addEventListener("click",()=>operation(loadCalendar));
+calendarForm.addEventListener("submit",e=>{e.preventDefault();operation(loadCalendar);});
+$("calendar-filter").addEventListener("change",renderCalendar);

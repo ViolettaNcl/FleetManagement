@@ -166,6 +166,7 @@ try {
   await page.getByLabel('Fuel price (EUR/L)').fill('2.50');
   await page.getByRole('heading',{name:'Cost breakdown'}).waitFor();
   await page.getByLabel('Period budget (EUR)').fill('1');
+  await page.getByLabel('Period budget (EUR)').press('Tab');
   await page.getByRole('heading',{name:'Budget projection'}).waitFor();
   await page.getByText(/Projected over budget/).waitFor();
   const financialDownload=page.waitForEvent('download');
@@ -207,6 +208,7 @@ try {
   await page.getByRole('status').filter({hasText:'Reservation cancelled'}).waitFor();
   await page.getByRole('button',{name:'Batch Dispatch',exact:true}).click();
   await page.getByLabel('Batch origin').fill('QA batch origin');
+  await page.getByLabel('Batch origin').press('Tab');
   await page.getByRole('button',{name:'Add trip request',exact:true}).click();
   await page.getByRole('button',{name:'Compare assignments',exact:true}).click();
   await page.getByRole('heading',{name:'Assignment preview'}).waitFor();

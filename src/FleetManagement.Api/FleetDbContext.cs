@@ -12,6 +12,9 @@ public sealed class FleetDbContext(DbContextOptions<FleetDbContext> options, IHt
     public DbSet<Driver> Drivers => Set<Driver>();
     public DbSet<Trip> Trips => Set<Trip>();
 
+    public DbSet<MaintenanceEntry> MaintenanceEntries => Set<MaintenanceEntry>();
+    public DbSet<DriverShift> DriverShifts => Set<DriverShift>();
+    public DbSet<VehicleReservation> VehicleReservations => Set<VehicleReservation>();
     public DbSet<AuditEntry> AuditEntries => Set<AuditEntry>();
 
     public override Task<int> SaveChangesAsync(bool acceptAllChangesOnSuccess, CancellationToken cancellationToken = default)
@@ -19,7 +22,7 @@ public sealed class FleetDbContext(DbContextOptions<FleetDbContext> options, IHt
         ChangeTracker.DetectChanges();
         var actor = http.HttpContext?.User.FindFirstValue(ClaimTypes.NameIdentifier) ?? "system";
         var entries = ChangeTracker.Entries()
-            .Where(e => e.Entity is Vehicle or Driver or Trip)
+            .Where(e => e.Entity is Vehicle or Driver or Trip or MaintenanceEntry or DriverShift or VehicleReservation)
             .Where(e => e.State is EntityState.Added or EntityState.Modified or EntityState.Deleted)
             .Select(e => new AuditEntry {
                 ActorId = actor,
@@ -40,6 +43,28 @@ public sealed class FleetDbContext(DbContextOptions<FleetDbContext> options, IHt
         audit.Property(a => a.EntityType).HasMaxLength(50);
         audit.Property(a => a.Action).HasMaxLength(30);
         audit.HasIndex(a => a.OccurredUtc);
+        var work=model.Entity<MaintenanceEntry>();
+        work.Property(e=>e.Id).ValueGeneratedNever();
+        work.Property(e=>e.Kind).HasMaxLength(40);
+        work.Property(e=>e.Notes).HasMaxLength(500);
+        work.Property(e=>e.CostEur).HasPrecision(12,2);
+        work.Property(e=>e.RecordedAt).HasConversion(v=>v,v=>DateTime.SpecifyKind(v,DateTimeKind.Utc));
+        work.HasOne<Vehicle>().WithMany().HasForeignKey(e=>e.VehicleId).OnDelete(DeleteBehavior.Restrict);
+        work.HasIndex(e=>new{e.VehicleId,e.RecordedAt});
+        var shifts=model.Entity<DriverShift>();
+        shifts.Property(e=>e.Id).ValueGeneratedNever();
+        shifts.Property(e=>e.Start).HasConversion(v=>v,v=>DateTime.SpecifyKind(v,DateTimeKind.Utc));
+        shifts.Property(e=>e.End).HasConversion(v=>v,v=>DateTime.SpecifyKind(v,DateTimeKind.Utc));
+        shifts.HasOne<Driver>().WithMany().HasForeignKey(e=>e.DriverId).OnDelete(DeleteBehavior.Restrict);
+        shifts.HasIndex(e=>new{e.DriverId,e.Start,e.End});
+        var reservations=model.Entity<VehicleReservation>();
+        reservations.Property(e=>e.Id).ValueGeneratedNever();
+        reservations.Property(e=>e.Kind).HasMaxLength(40);
+        reservations.Property(e=>e.Notes).HasMaxLength(500);
+        reservations.Property(e=>e.Start).HasConversion(v=>v,v=>DateTime.SpecifyKind(v,DateTimeKind.Utc));
+        reservations.Property(e=>e.End).HasConversion(v=>v,v=>DateTime.SpecifyKind(v,DateTimeKind.Utc));
+        reservations.HasOne<Vehicle>().WithMany().HasForeignKey(e=>e.VehicleId).OnDelete(DeleteBehavior.Restrict);
+        reservations.HasIndex(e=>new{e.VehicleId,e.Start,e.End});
         var vehicles=model.Entity<Vehicle>();
         vehicles.Property(v=>v.Id).ValueGeneratedNever();
         vehicles.Property(v=>v.Plate).HasMaxLength(40);

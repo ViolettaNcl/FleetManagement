@@ -1,0 +1,70 @@
+using FleetManagement.Core;
+using Microsoft.EntityFrameworkCore;
+
+namespace FleetManagement.Api;
+
+public sealed record OperationsPolicy(bool RequireShifts);
+public sealed record WorkInput(int VehicleId,string? Kind,string? Notes,decimal? CostEur);
+public sealed record ShiftInput(int DriverId,DateTimeOffset Start,DateTimeOffset End);
+public sealed record ReservationInput(int VehicleId,DateTimeOffset Start,DateTimeOffset End,string? Kind,string? Notes);
+
+public static class OperationsEndpoints
+{
+    public static void Map(RouteGroupBuilder api)
+    {
+        api.MapGet("/operations/policy",(OperationsPolicy policy)=>policy);
+        api.MapGet("/operations/maintenance",async (FleetDbContext db,CancellationToken ct)=>await db.MaintenanceEntries.AsNoTracking().OrderBy(e=>e.Id).ToListAsync(ct));
+        api.MapGet("/operations/shifts",async (FleetDbContext db,CancellationToken ct)=>await db.DriverShifts.AsNoTracking().OrderBy(e=>e.Id).ToListAsync(ct));
+        api.MapGet("/operations/reservations",async (FleetDbContext db,CancellationToken ct)=>await db.VehicleReservations.AsNoTracking().OrderBy(e=>e.Id).ToListAsync(ct));
+        api.MapPost("/operations/maintenance",(WorkInput input,FleetDbContext db,FleetStore store,CancellationToken ct)=>
+            store.Write(data=>RecordWork(data,db,input,false,ct),ct)).RequireAuthorization("FleetWrite");
+        api.MapPost("/operations/shifts",(ShiftInput input,FleetDbContext db,FleetStore store,CancellationToken ct)=>
+            store.Write(async data=>{
+                var entries=await db.DriverShifts.AsNoTracking().ToListAsync(ct);
+                var error=ResourcePlanning.Add(data,entries,input.DriverId,input.Start.UtcDateTime,input.End.UtcDateTime,DateTime.UtcNow);
+                if(error is not null)return Invalid(error);
+                var added=entries[^1];db.DriverShifts.Add(added);await db.SaveChangesAsync(ct);
+                return Results.Created("/api/operations/shifts",added);
+            },ct)).RequireAuthorization("FleetWrite");
+        api.MapDelete("/operations/shifts/{id:int}",(int id,FleetDbContext db,FleetStore store,OperationsPolicy policy,CancellationToken ct)=>
+            store.Write(async data=>{
+                var entries=await db.DriverShifts.AsNoTracking().ToListAsync(ct);
+                var old=entries.FirstOrDefault(e=>e.Id==id);if(old is null)return Results.NotFound();
+                var error=ResourcePlanning.Remove(data,entries,id,DateTime.UtcNow,policy.RequireShifts);
+                if(error is not null)return Results.Conflict(new{error});
+                db.DriverShifts.Remove(old);await db.SaveChangesAsync(ct);return Results.NoContent();
+            },ct)).RequireAuthorization("FleetWrite");
+        api.MapPost("/operations/reservations",(ReservationInput input,FleetDbContext db,FleetStore store,CancellationToken ct)=>
+            store.Write(async data=>{
+                var entries=await db.VehicleReservations.AsNoTracking().ToListAsync(ct);
+                var error=VehicleReservations.Add(data,entries,input.VehicleId,input.Start.UtcDateTime,input.End.UtcDateTime,input.Kind??"",input.Notes??"",DateTime.UtcNow);
+                if(error is not null)return Invalid(error);
+                var added=entries[^1];db.VehicleReservations.Add(added);await db.SaveChangesAsync(ct);
+                return Results.Created("/api/operations/reservations",added);
+            },ct)).RequireAuthorization("FleetWrite");
+        api.MapDelete("/operations/reservations/{id:int}",(int id,FleetDbContext db,FleetStore store,CancellationToken ct)=>
+            store.Write(async data=>{
+                var entries=await db.VehicleReservations.AsNoTracking().ToListAsync(ct);
+                var old=entries.FirstOrDefault(e=>e.Id==id);if(old is null)return Results.NotFound();
+                var error=VehicleReservations.Remove(entries,id,DateTime.UtcNow);
+                if(error is not null)return Results.Conflict(new{error});
+                db.VehicleReservations.Remove(old);await db.SaveChangesAsync(ct);return Results.NoContent();
+            },ct)).RequireAuthorization("FleetWrite");
+    }
+    public static async Task<IResult> RecordWork(FleetData data,FleetDbContext db,WorkInput input,bool legacy,CancellationToken ct)
+    {
+        var before=data.Vehicles.FirstOrDefault(v=>v.Id==input.VehicleId);
+        if(before is null)return Results.NotFound();
+        if(input.CostEur is decimal cost&&decimal.Round(cost,2)!=cost)return Invalid("Use at most two decimal places for EUR costs.");
+        var entries=await db.MaintenanceEntries.AsNoTracking().ToListAsync(ct);
+        var error=MaintenanceJournal.Record(data,entries,new(input.VehicleId,input.Kind??"",input.Notes??"",input.CostEur),DateTime.UtcNow);
+        if(error is not null)return Invalid(error);
+        var updated=data.Vehicles.Single(v=>v.Id==input.VehicleId);
+        if(updated!=before)db.Vehicles.Update(updated);
+        var entry=entries[^1];db.MaintenanceEntries.Add(entry);
+        // Work, interval reset and audit commit together in one EF SaveChanges transaction.
+        await db.SaveChangesAsync(ct);
+        return legacy?Results.Ok(updated):Results.Created("/api/operations/maintenance",entry);
+    }
+    private static IResult Invalid(string error)=>Results.BadRequest(new{error});
+}

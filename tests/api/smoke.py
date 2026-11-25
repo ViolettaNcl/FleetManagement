@@ -20,7 +20,10 @@ def request(method, path, data=None, status=200, authorized=True, token=None):
 if "--verify-persistence" in sys.argv:
     assert any(v["plate"]=="QA-501" for v in request("GET","/api/vehicles"))
     assert request("POST","/api/auth/login",{"email":os.environ["Fleet__BootstrapAdminEmail"],"password":os.environ["Fleet__BootstrapAdminPassword"]},authorized=False)["accessToken"]
-    print("PASS: durable database and Identity account after restart")
+    assert any(e["notes"]=="QA durable work" for e in request("GET","/api/operations/maintenance"))
+    assert any(e["notes"]=="QA durable reservation" for e in request("GET","/api/operations/reservations"))
+    assert len(request("GET","/api/operations/shifts"))>=1
+    print("PASS: durable database, operations records and Identity account after restart")
     sys.exit(0)
 
 now=datetime.now(timezone.utc)
@@ -89,3 +92,22 @@ with urllib.request.urlopen(urllib.request.Request(BASE+"/api/reports/excel"+que
         assert "xl/worksheets/sheet2.xml" in z.namelist()
         assert b"Completed distance" in z.read("xl/worksheets/sheet1.xml")
 print("PASS: authorized reports and Excel workbook export")
+
+# New operations entities are stored through EF Core and share the fleet write gate.
+assert request("GET","/api/operations/policy")=={"requireShifts":False}
+request("GET","/api/operations/maintenance",status=401,authorized=False)
+request("POST","/api/operations/maintenance",{"vehicleId":v["id"],"kind":"Repair","notes":"QA durable work","costEur":125.5},403,token=viewer)
+work=request("POST","/api/operations/maintenance",{"vehicleId":v["id"],"kind":"Repair","notes":"QA durable work","costEur":125.5},201,token=dispatcher)
+assert work["costEur"]==125.5
+request("DELETE",f"/api/vehicles/{v['id']}",status=409)
+request("POST","/api/operations/maintenance",{"vehicleId":v["id"],"kind":"Repair","costEur":-1},400)
+assert any(e["vehicleId"]==3 and e["kind"]=="Scheduled service" for e in request("GET","/api/operations/maintenance",token=viewer))
+shift={"driverId":3,"start":(now+timedelta(days=2)).isoformat(),"end":(now+timedelta(days=2,hours=8)).isoformat()}
+request("POST","/api/operations/shifts",shift,201)
+request("POST","/api/operations/shifts",shift,400)
+reserve={"vehicleId":v["id"],"start":shift["start"],"end":shift["end"],"kind":"Repair","notes":"QA durable reservation"}
+request("POST","/api/operations/reservations",reserve,201)
+request("POST","/api/operations/reservations",reserve,400)
+request("POST","/api/trips",{"vehicleId":v["id"],"driverId":3,"origin":"A","destination":"B","start":shift["start"],"end":shift["end"],"distance":100},400)
+assert any(a["entityType"]=="MaintenanceEntry" and a["entityId"]==work["id"] and a["actorId"]==dispatcher_id for a in request("GET","/api/admin/audit",token=admin))
+print("PASS: operational records, reservation conflicts, authorization and audit")

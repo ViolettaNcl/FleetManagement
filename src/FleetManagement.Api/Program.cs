@@ -50,6 +50,7 @@ builder.Services.AddRateLimiter(options=>{
         }));
 });
 builder.Services.AddSingleton<FleetWriteGate>();
+builder.Services.AddSingleton(new OperationsPolicy(builder.Configuration.GetValue<bool>("Fleet:RequireShifts")));
 builder.Services.AddScoped<FleetStore>();
 builder.Services.AddOpenApi();
 builder.Services.AddSignalR();
@@ -70,6 +71,9 @@ if(builder.Configuration.GetValue<bool>("Fleet:InitializeDatabase")){
     await using var scope=app.Services.CreateAsyncScope();
     var db=scope.ServiceProvider.GetRequiredService<FleetDbContext>();
     await db.Database.EnsureCreatedAsync();
+    // EnsureCreated does not upgrade an existing V2 schema. Fail before seeding or changing identity.
+    try { await db.MaintenanceEntries.Take(1).ToListAsync();await db.DriverShifts.Take(1).ToListAsync();await db.VehicleReservations.Take(1).ToListAsync(); }
+    catch (System.Data.Common.DbException ex) { throw new InvalidOperationException("V3 operational schema missing or inaccessible. Keep existing database backed up; use a fresh V3 database until migrations are available.",ex); }
     await IdentityEndpoints.Initialize(scope.ServiceProvider,builder.Configuration);
     if(builder.Configuration.GetValue<bool>("Fleet:SeedDemo") &&
         !await db.Vehicles.AnyAsync() && !await db.Drivers.AnyAsync() && !await db.Trips.AnyAsync()){
@@ -83,5 +87,6 @@ app.MapOpenApi().RequireAuthorization("FleetRead");
 app.MapHub<FleetHub>("/hubs/fleet",options=>options.CloseOnAuthenticationExpiration=true).RequireAuthorization("FleetRead");
 var api=app.MapGroup("/api").RequireAuthorization("FleetRead");
 FleetEndpoints.Map(api);
+OperationsEndpoints.Map(api);
 IdentityEndpoints.Map(api);
 app.Run();

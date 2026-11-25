@@ -30,6 +30,13 @@ if "--verify-persistence" in sys.argv:
     with urllib.request.urlopen(req,timeout=15) as response:
         assert response.status==201 and response.headers["Idempotency-Replayed"]=="true"
         assert json.load(response)==receipt["response"]
+    ordinary=json.loads(Path(os.environ.get("RUNNER_TEMP","."),"fleet-write-receipt.json").read_text())
+    req=urllib.request.Request(BASE+ordinary["path"],data=json.dumps(ordinary["body"]).encode(),headers={"Content-Type":"application/json","X-Fleet-Key":KEY,"Idempotency-Key":ordinary["key"]},method="POST")
+    with urllib.request.urlopen(req,timeout=15) as response:
+        assert response.status==201 and response.headers["Idempotency-Replayed"]=="true"
+        assert response.headers["Location"]==ordinary["location"]
+        assert json.load(response)==ordinary["response"]
+    print("PASS: ordinary write receipt survived restart")
     print("PASS: durable database, operations records, batch receipt and Identity account after restart")
     sys.exit(0)
 
@@ -299,3 +306,44 @@ first_res=request("POST","/api/operations/reservations",stable_res,201)
 request("DELETE",f"/api/operations/reservations/{first_res['id']}",status=204)
 assert request("POST","/api/operations/reservations",stable_res,201)["id"]>first_res["id"]
 print("PASS: retained audit prevents deleted driver/trip/shift/reservation ID reuse, including batch")
+
+# Generic durable receipts preserve successful status/body across retries.
+def write_receipt(method,path,body,key,token=None):
+    headers={"Content-Type":"application/json","Idempotency-Key":key}
+    if token: headers["Authorization"]="Bearer "+token
+    else: headers["X-Fleet-Key"]=KEY
+    req=urllib.request.Request(BASE+path,data=json.dumps(body).encode() if body is not None else None,headers=headers,method=method)
+    try:
+        with urllib.request.urlopen(req,timeout=15) as response:
+            raw=response.read()
+            return response.status,json.loads(raw) if raw else None,response.headers.get("Idempotency-Replayed"),response.headers.get("Location")
+    except urllib.error.HTTPError as ex:
+        return ex.code,None,None,None
+ordinary_key=str(uuid.uuid4())
+ordinary_path="/api/drivers"
+ordinary_body={"name":"QA ordinary receipt","license":"QA-ORD-RECEIPT","experience":3}
+ordinary=write_receipt("POST",ordinary_path,ordinary_body,ordinary_key)
+assert ordinary[0]==201 and ordinary[2] is None
+assert write_receipt("POST",ordinary_path,ordinary_body,ordinary_key)==(201,ordinary[1],"true",ordinary[3])
+assert write_receipt("POST",ordinary_path,{**ordinary_body,"experience":4},ordinary_key)[0]==409
+assert write_receipt("POST","/api/operations/maintenance",{"vehicleId":3,"kind":"Repair"},ordinary_key)[0]==409
+assert write_receipt("POST",ordinary_path,ordinary_body,str(uuid.uuid4()),viewer)[0]==403
+ordinary_id=ordinary[1]["id"]
+edit_key=str(uuid.uuid4())
+edit_body={**ordinary_body,"experience":4,"expected":ordinary_body}
+edited=write_receipt("PUT",f"/api/drivers/{ordinary_id}",edit_body,edit_key)
+assert edited[0]==200
+assert write_receipt("PUT",f"/api/drivers/{ordinary_id}",edit_body,edit_key)==(200,edited[1],"true",None)
+delete_key=str(uuid.uuid4())
+assert write_receipt("DELETE",f"/api/drivers/{ordinary_id}",None,delete_key)[0]==204
+assert write_receipt("DELETE",f"/api/drivers/{ordinary_id}",None,delete_key)==(204,None,"true",None)
+assert write_receipt("POST",ordinary_path,ordinary_body,ordinary_key)[1]["id"]==ordinary_id
+request("GET",f"/api/drivers/{ordinary_id}",status=404)
+work_key=str(uuid.uuid4())
+work_body={"vehicleId":3,"kind":"Inspection","notes":"QA ordinary work receipt","costEur":5}
+first_work=write_receipt("POST","/api/operations/maintenance",work_body,work_key)
+assert first_work[0]==201
+assert write_receipt("POST","/api/operations/maintenance",work_body,work_key)==(201,first_work[1],"true",first_work[3])
+assert len([e for e in request("GET","/api/operations/maintenance") if e["notes"]=="QA ordinary work receipt"])==1
+Path(os.environ.get("RUNNER_TEMP","."),"fleet-write-receipt.json").write_text(json.dumps({"key":ordinary_key,"path":ordinary_path,"body":ordinary_body,"response":ordinary[1],"location":ordinary[3]}))
+print("PASS: durable ordinary create/update/delete/work receipts and cross-operation collision rejection")

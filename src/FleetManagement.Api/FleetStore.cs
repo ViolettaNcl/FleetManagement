@@ -4,6 +4,9 @@ using Microsoft.AspNetCore.SignalR;
 using Microsoft.Data.Sqlite;
 using Microsoft.Data.SqlClient;
 using System.Data;
+using System.Security.Claims;
+using System.Security.Cryptography;
+using System.Text.Json;
 
 namespace FleetManagement.Api;
 
@@ -13,7 +16,7 @@ public sealed class FleetWriteGate
 {
     internal SemaphoreSlim Semaphore { get; } = new(1,1);
 }
-public sealed class FleetStore(FleetDbContext db, FleetWriteGate gate, IHubContext<FleetHub> hub, ILogger<FleetStore> logger)
+public sealed class FleetStore(FleetDbContext db, FleetWriteGate gate, IHubContext<FleetHub> hub, ILogger<FleetStore> logger,IHttpContextAccessor http)
 {
     public async Task<FleetData> Read(CancellationToken ct = default) => new(
         await db.Vehicles.AsNoTracking().OrderBy(x=>x.Id).ToListAsync(ct),
@@ -59,5 +62,49 @@ public sealed class FleetStore(FleetDbContext db, FleetWriteGate gate, IHubConte
         }
         return result;
     }
+    // Use existing durable receipt table; method/path/body separates ordinary writes from legacy batches.
+    public async Task<IResult> WriteWithReceipt(object? input,Func<FleetData,Task<IResult>> action,CancellationToken ct)
+    {
+        var context=http.HttpContext??throw new InvalidOperationException("HTTP context required.");
+        var header=context.Request.Headers["Idempotency-Key"];
+        if(header.Count==0)return await Write(action,ct);
+        if(header.Count!=1||!Guid.TryParseExact(header.ToString(),"D",out var key)||key==Guid.Empty)
+            return Results.BadRequest(new{error="Idempotency-Key must be a nonempty UUID."});
+        var actor=context.User.FindFirstValue(ClaimTypes.NameIdentifier);
+        if(string.IsNullOrEmpty(actor))return Results.Unauthorized();
+        var options=new JsonSerializerOptions(JsonSerializerDefaults.Web);
+        var path=context.Request.Path.Value??"";
+        var fingerprint=Convert.ToHexString(SHA256.HashData(JsonSerializer.SerializeToUtf8Bytes(new{version="fleet-write-v1",method=context.Request.Method,path,input},options)));
+        bool replayed=false;
+        return await Write(async data=>{
+            var old=await db.BatchReceipts.AsNoTracking().SingleOrDefaultAsync(r=>r.ActorId==actor&&r.Key==key,ct);
+            if(old is not null){
+                if(old.PayloadHash!=fingerprint)return Results.Conflict(new{error="Idempotency key already used for a different operation."});
+                var saved=JsonSerializer.Deserialize<WriteReceipt>(old.ResponseJson,options)??throw new InvalidOperationException("Invalid stored receipt.");
+                replayed=true;
+                context.Response.Headers["Idempotency-Replayed"]="true";
+                if(saved.Location is not null)context.Response.Headers.Location=saved.Location;
+                return saved.Status==204?Results.NoContent():Results.Json(saved.Body,statusCode:saved.Status);
+            }
+            if(await db.BatchReceipts.CountAsync(ct)>=50000)return Results.Conflict(new{error="Receipt limit reached. Contact the database operator."});
+            var result=await action(data);
+            if(!Success(result))return result;
+            var status=((IStatusCodeHttpResult)result).StatusCode!.Value;
+            if(status!=204&&result is not IValueHttpResult)throw new InvalidOperationException("Unsupported receipt result.");
+            var body=JsonSerializer.SerializeToElement((result as IValueHttpResult)?.Value,options);
+            string? location=null;
+            if(status==201){
+                location=path;
+                if(path is "/api/vehicles" or "/api/drivers" or "/api/trips")
+                    location+="/"+body.GetProperty("id").GetInt32().ToString(System.Globalization.CultureInfo.InvariantCulture);
+            }
+            var response=JsonSerializer.Serialize(new WriteReceipt(status,location,body),options);
+            if(response.Length>65536)return Results.BadRequest(new{error="Receipt exceeds storage limit."});
+            db.BatchReceipts.Add(new BatchReceipt{ActorId=actor,Key=key,PayloadHash=fingerprint,ResponseJson=response,CreatedUtc=DateTime.UtcNow});
+            await db.SaveChangesAsync(ct);
+            return result;
+        },ct,()=>!replayed);
+    }
+    private sealed record WriteReceipt(int Status,string? Location,JsonElement Body);
     private static bool Success(IResult result)=>result is IStatusCodeHttpResult{StatusCode:>=200 and <300};
 }

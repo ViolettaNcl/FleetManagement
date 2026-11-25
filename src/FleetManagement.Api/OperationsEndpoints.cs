@@ -82,9 +82,9 @@ public static class OperationsEndpoints
         api.MapGet("/operations/shifts",async (FleetDbContext db,CancellationToken ct)=>await db.DriverShifts.AsNoTracking().OrderBy(e=>e.Id).ToListAsync(ct));
         api.MapGet("/operations/reservations",async (FleetDbContext db,CancellationToken ct)=>await db.VehicleReservations.AsNoTracking().OrderBy(e=>e.Id).ToListAsync(ct));
         api.MapPost("/operations/maintenance",(WorkInput input,FleetDbContext db,FleetStore store,CancellationToken ct)=>
-            store.Write(data=>RecordWork(data,db,input,false,ct),ct)).RequireAuthorization("FleetWrite");
+            store.WriteWithReceipt(input,data=>RecordWork(data,db,input,false,ct),ct)).RequireAuthorization("FleetWrite");
         api.MapPost("/operations/shifts",(ShiftInput input,FleetDbContext db,FleetStore store,CancellationToken ct)=>
-            store.Write(async data=>{
+            store.WriteWithReceipt(input,async data=>{
                 var entries=await db.DriverShifts.AsNoTracking().ToListAsync(ct);
                 var error=ResourcePlanning.Add(data,entries,input.DriverId,input.Start.UtcDateTime,input.End.UtcDateTime,DateTime.UtcNow);
                 if(error is not null)return Invalid(error);
@@ -92,7 +92,7 @@ public static class OperationsEndpoints
                 return Results.Created("/api/operations/shifts",added);
             },ct)).RequireAuthorization("FleetWrite");
         api.MapDelete("/operations/shifts/{id:int}",(int id,FleetDbContext db,FleetStore store,OperationsPolicy policy,CancellationToken ct)=>
-            store.Write(async data=>{
+            store.WriteWithReceipt(null,async data=>{
                 var entries=await db.DriverShifts.AsNoTracking().ToListAsync(ct);
                 var old=entries.FirstOrDefault(e=>e.Id==id);if(old is null)return Results.NotFound();
                 var error=ResourcePlanning.Remove(data,entries,id,DateTime.UtcNow,policy.RequireShifts);
@@ -100,7 +100,7 @@ public static class OperationsEndpoints
                 db.DriverShifts.Remove(old);await db.SaveChangesAsync(ct);return Results.NoContent();
             },ct)).RequireAuthorization("FleetWrite");
         api.MapPost("/operations/reservations",(ReservationInput input,FleetDbContext db,FleetStore store,CancellationToken ct)=>
-            store.Write(async data=>{
+            store.WriteWithReceipt(input,async data=>{
                 var entries=await db.VehicleReservations.AsNoTracking().ToListAsync(ct);
                 var error=VehicleReservations.Add(data,entries,input.VehicleId,input.Start.UtcDateTime,input.End.UtcDateTime,input.Kind??"",input.Notes??"",DateTime.UtcNow);
                 if(error is not null)return Invalid(error);
@@ -108,7 +108,7 @@ public static class OperationsEndpoints
                 return Results.Created("/api/operations/reservations",added);
             },ct)).RequireAuthorization("FleetWrite");
         api.MapDelete("/operations/reservations/{id:int}",(int id,FleetDbContext db,FleetStore store,CancellationToken ct)=>
-            store.Write(async data=>{
+            store.WriteWithReceipt(null,async data=>{
                 var entries=await db.VehicleReservations.AsNoTracking().ToListAsync(ct);
                 var old=entries.FirstOrDefault(e=>e.Id==id);if(old is null)return Results.NotFound();
                 var error=VehicleReservations.Remove(entries,id,DateTime.UtcNow);

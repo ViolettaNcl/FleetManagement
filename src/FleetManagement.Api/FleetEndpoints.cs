@@ -35,6 +35,7 @@ public static class FleetEndpoints
                 if(!data.Vehicles.Any(x=>x.Id==id))return Results.NotFound();
                 var v=input.ToVehicle(id);if(VehicleError(data,v) is string error)return Invalid(error);
                 var before=data.Vehicles.Single(x=>x.Id==id);
+                if(input.Expected is not null&&!input.Expected.Matches(before))return Conflict("Vehicle changed since it was opened. Refresh and review again.");
                 if(MaintenanceJournal.ValidateVehicleEdit(before,v,await db.MaintenanceEntries.AsNoTracking().Where(e=>e.VehicleId==id).ToListAsync(ct)) is string historyError)return Conflict(historyError);
                 if(v.LastService.Date==before.LastService.Date)v=v with{LastService=before.LastService};
                 db.Vehicles.Update(v);await db.SaveChangesAsync(ct);return Results.Ok(v);
@@ -57,6 +58,8 @@ public static class FleetEndpoints
         api.MapPut("/drivers/{id:int}", (int id,DriverInput input,FleetDbContext db,FleetStore store,CancellationToken ct)=>
             store.Write(async data=>{
                 if(!data.Drivers.Any(x=>x.Id==id))return Results.NotFound();
+                var before=data.Drivers.Single(x=>x.Id==id);
+                if(input.Expected is not null&&!input.Expected.Matches(before))return Conflict("Driver changed since it was opened. Refresh and review again.");
                 var d=input.ToDriver(id);if(DriverError(data,d) is string error)return Invalid(error);
                 db.Drivers.Update(d);await db.SaveChangesAsync(ct);return Results.Ok(d);
             },ct)).RequireAuthorization("FleetWrite");
@@ -114,11 +117,11 @@ public static class FleetEndpoints
         t.Start<=DateTime.UtcNow?"Trip must start in the future.":ResourcePlanning.ValidateTrip(data,t,await db.DriverShifts.AsNoTracking().ToListAsync(ct),policy.RequireShifts,await db.VehicleReservations.AsNoTracking().ToListAsync(ct));
 }
 
-public sealed record VehicleInput(string? Plate,string? Model,int Mileage,int LastServiceMileage,DateTimeOffset LastService,int ServiceIntervalKm,int ServiceIntervalDays)
+public sealed record VehicleInput(string? Plate,string? Model,int Mileage,int LastServiceMileage,DateTimeOffset LastService,int ServiceIntervalKm,int ServiceIntervalDays,VehicleVersion? Expected=null)
 {
     public Vehicle ToVehicle(int id)=>new(id,(Plate??"").Trim().ToUpperInvariant(),(Model??"").Trim(),Mileage,LastServiceMileage,LastService.UtcDateTime,ServiceIntervalKm,ServiceIntervalDays);
 }
-public sealed record DriverInput(string? Name,string? License,int Experience)
+public sealed record DriverInput(string? Name,string? License,int Experience,DriverVersion? Expected=null)
 {
     public Driver ToDriver(int id)=>new(id,(Name??"").Trim(),(License??"").Trim().ToUpperInvariant(),Experience);
 }
@@ -130,4 +133,13 @@ public sealed record TripInput(int VehicleId,int DriverId,string? Origin,string?
 public sealed record TripVersion(int VehicleId,int DriverId,string? Origin,string? Destination,DateTimeOffset Start,DateTimeOffset End,int Distance)
 {
     public bool Matches(Trip t)=>VehicleId==t.VehicleId&&DriverId==t.DriverId&&Origin==t.Origin&&Destination==t.Destination&&Start.UtcDateTime==t.Start&&End.UtcDateTime==t.End&&Distance==t.Distance;
+}
+
+public sealed record VehicleVersion(string? Plate,string? Model,int Mileage,int LastServiceMileage,DateTimeOffset LastService,int ServiceIntervalKm,int ServiceIntervalDays)
+{
+    public bool Matches(Vehicle v)=>Plate==v.Plate&&Model==v.Model&&Mileage==v.Mileage&&LastServiceMileage==v.LastServiceMileage&&LastService.UtcDateTime==v.LastService&&ServiceIntervalKm==v.ServiceIntervalKm&&ServiceIntervalDays==v.ServiceIntervalDays;
+}
+public sealed record DriverVersion(string? Name,string? License,int Experience)
+{
+    public bool Matches(Driver d)=>Name==d.Name&&License==d.License&&Experience==d.Experience;
 }

@@ -47,6 +47,16 @@ public static class IdentityEndpoints
             roles=context.User.FindAll(System.Security.Claims.ClaimTypes.Role).Select(c=>c.Value)
         }));
 
+        api.MapGet("/admin/users",async Task<IResult> (FleetDbContext db,int? offset,int? limit,CancellationToken ct)=>{
+            var skip=Math.Clamp(offset??0,0,1000000);var take=Math.Clamp(limit??50,1,100);
+            var accounts=await db.Users.AsNoTracking().OrderBy(u=>u.Email).ThenBy(u=>u.Id).Skip(skip).Take(take).Select(u=>new{u.Id,u.Email,u.LockoutEnd}).ToListAsync(ct);
+            var ids=accounts.Select(u=>u.Id).ToArray();
+            var assignments=await (from ur in db.UserRoles.AsNoTracking() join role in db.Roles.AsNoTracking() on ur.RoleId equals role.Id where ids.Contains(ur.UserId) select new{ur.UserId,role.Name}).ToListAsync(ct);
+            var total=await db.Users.CountAsync(ct);
+            var now=DateTimeOffset.UtcNow;
+            return Results.Ok(new{offset=skip,limit=take,total,accounts=accounts.Select(u=>new{u.Id,u.Email,locked=u.LockoutEnd>now,roles=assignments.Where(a=>a.UserId==u.Id).Select(a=>a.Name).ToArray()})});
+        }).RequireAuthorization("FleetAdmin");
+
         api.MapPost("/admin/users",async Task<IResult> (CreateUserInput input,UserManager<IdentityUser> users,FleetDbContext db)=>{
             if(string.IsNullOrWhiteSpace(input.Email)||input.Email.Length>254||string.IsNullOrWhiteSpace(input.Password)||input.Password.Length>512||
                input.Role is not ("Dispatcher" or "Viewer"))

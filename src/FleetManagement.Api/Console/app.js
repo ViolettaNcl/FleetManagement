@@ -2,6 +2,7 @@
 const $=id=>document.getElementById(id);
 let token=null, generation=0, busy=false, currentPage="fleet";
 const editors=[$("work-form"),$("shift-form"),$("reservation-form"),$("trip-form"),$("vehicle-form"),$("driver-form")];
+let registerEdits={vehicles:null,drivers:null},accountsOffset=0,accountsTotal=0;
 let revision=null,revisionTimer=null,checkingRevision=false;
 let tripVersion=null,tripId=null,latestFleet=null,batchRequests=[],batchPlans=[],nextRequest=1;
 function status(text,error=false){uiText($("status"),text);$("status").classList.toggle("error",error);}
@@ -10,10 +11,10 @@ function signOut(message="Signed out."){
     for(const button of document.querySelectorAll("button"))button.disabled=false;
     $("auth").hidden=false;$("workspace").hidden=true;$("logout").hidden=true;
     $("identity").textContent="";uiText($("policy"),"");uiText($("updated"),"");
-    for(const id of ["vehicles","drivers","trips","work","shifts","reservations","audit","finance-summary","finance-vehicles"])$(id).replaceChildren();
+    for(const id of ["vehicles","drivers","trips","work","shifts","reservations","audit","finance-summary","finance-vehicles","accounts"])$(id).replaceChildren();
     for(const id of ["vehicles-count","drivers-count","trips-count","work-count"])$(id).textContent="—";
     for(const form of editors){form.reset();form.hidden=true;for(const select of form.querySelectorAll("select[name=vehicleId],select[name=driverId]"))select.replaceChildren();}
-    $("audit-tab").hidden=true;$("login").reset();latestFleet=null;for(const filter of document.querySelectorAll("[data-filter]"))filter.value="";resetTrip();clearBatch();$("batch-panel").hidden=true;status(message);
+    $("audit-tab").hidden=true;$("accounts-tab").hidden=true;$("account-form").reset();accountsOffset=0;accountsTotal=0;$("accounts-page").textContent="";resetRegister("vehicles");resetRegister("drivers");$("login").reset();latestFleet=null;for(const filter of document.querySelectorAll("[data-filter]"))filter.value="";resetTrip();clearBatch();$("batch-panel").hidden=true;status(message);
 }
 async function api(path,method="GET",body,authenticated=true,format="json"){
     const active=generation;
@@ -23,7 +24,7 @@ async function api(path,method="GET",body,authenticated=true,format="json"){
     const response=await fetch(path,{method,headers,body:body===undefined?undefined:JSON.stringify(body),cache:"no-store",credentials:"omit",redirect:"error"});
     if(active!==generation)throw Error("Session changed.");
     if(response.status===401){if(authenticated)signOut("Session expired. Sign in again.");throw Error("Authentication failed.");}
-    if(!response.ok){let detail;try{detail=await response.json();}catch{}throw Error(typeof detail?.error==="string"?detail.error:"Request failed (HTTP "+response.status+").");}
+    if(!response.ok){let detail;try{detail=await response.json();}catch{}throw Error(typeof detail?.error==="string"?detail.error:Array.isArray(detail?.errors)?detail.errors.filter(x=>typeof x==="string").join("; "):"Request failed (HTTP "+response.status+").");}
     const result=response.status===204?null:format==="blob"?await response.blob():await response.json();
     if(active!==generation)throw Error("Session changed.");
     return result;
@@ -57,8 +58,8 @@ async function refresh(){
     const vehicle=id=>vehicles.find(v=>v.id===id)?.plate??("#"+id);
     const driver=id=>drivers.find(d=>d.id===id)?.name??("#"+id);
     $("vehicles-count").textContent=vehicles.length;$("drivers-count").textContent=drivers.length;$("trips-count").textContent=fleet.trips.length;$("work-count").textContent=work.length;
-    table("vehicles",[["Plate",text("plate")],["Model",text("model")],["Mileage (km)",text("mileage")],["Last service",r=>date(r.lastService)]],vehicles);
-    table("drivers",[["Name",text("name")],["License",text("license")],["Experience",text("experience")]],drivers);
+    table("vehicles",[["Plate",text("plate")],["Model",text("model")],["Mileage (km)",text("mileage")],["Last service",r=>date(r.lastService)],...(canWrite?[["Action",v=>registerAction(v,"vehicles")]]:[])],vehicles);
+    table("drivers",[["Name",text("name")],["License",text("license")],["Experience",text("experience")],...(canWrite?[["Action",d=>registerAction(d,"drivers")]]:[])],drivers);
     table("trips",[["Vehicle",r=>vehicle(r.vehicleId)],["Driver",r=>driver(r.driverId)],["Origin",text("origin")],["Destination",text("destination")],["Start",r=>date(r.start)],["End",r=>date(r.end)],["Distance",text("distance")],...(canWrite?[["Action",t=>tripAction(t)]]:[])],fleet.trips);
     table("work",[["Vehicle",r=>vehicle(r.vehicleId)],["Work",text("kind")],["Recorded",r=>date(r.recordedAt)],["Mileage",text("mileage")],["Cost EUR",r=>r.costEur??"Unknown"],["Notes",text("notes")]],work);
     table("shifts",[["Driver",r=>driver(r.driverId)],["Start",r=>date(r.start)],["End",r=>date(r.end)],...(canWrite?[["Action",r=>cancelAction(r,"shifts")]]:[])],shifts);
@@ -66,8 +67,9 @@ async function refresh(){
     table("audit",[["Time",r=>date(r.occurredUtc)],["Actor",text("actorId")],["Entity",text("entityType")],["ID",text("entityId")],["Action",text("action")]],audit);
     for(const form of editors){form.hidden=!canWrite;for(const select of form.querySelectorAll("select[name=vehicleId]"))options(select,vehicles,v=>v.plate);for(const select of form.querySelectorAll("select[name=driverId]"))options(select,drivers,d=>d.name);}
     $("batch-panel").hidden=!canWrite;
-    $("audit-tab").hidden=!admin;
-    if(!admin&&currentPage==="audit")tab("fleet");
+    $("audit-tab").hidden=!admin;$("accounts-tab").hidden=!admin;
+    if(admin&&currentPage==="accounts")await loadAccounts();
+    if(!admin&&["audit","accounts"].includes(currentPage))tab("fleet");
     uiText($("updated"),"Last refreshed "+new Date().toLocaleString()+" · independent API reads, not a transactional snapshot.");
     revision=checkpoint.revision;$("change-notice").hidden=true;
     $("auth").hidden=true;$("workspace").hidden=false;$("logout").hidden=false;
@@ -151,8 +153,6 @@ document.addEventListener("visibilitychange",()=>{if(!document.hidden)checkRevis
 
 function applyFilter(id){const filter=document.querySelector('[data-filter="'+id+'"]');if(!filter)return;const q=filter.value.trim().toLocaleLowerCase();for(const row of $(id).querySelectorAll("tbody tr"))row.hidden=q!==""&&!row.textContent.toLocaleLowerCase().includes(q);}
 for(const filter of document.querySelectorAll("[data-filter]"))filter.addEventListener("input",()=>applyFilter(filter.dataset.filter));
-editor($("vehicle-form"),"/api/vehicles",d=>({plate:d.get("plate"),model:d.get("model"),mileage:Number(d.get("mileage")),lastServiceMileage:Number(d.get("lastServiceMileage")),lastService:d.get("lastService")+"T00:00:00Z",serviceIntervalKm:Number(d.get("serviceIntervalKm")),serviceIntervalDays:Number(d.get("serviceIntervalDays"))}));
-editor($("driver-form"),"/api/drivers",d=>({name:d.get("name"),license:d.get("license"),experience:Number(d.get("experience"))}));
 function cancelAction(record,kind){
     if(new Date(record.start)<=new Date()){const span=document.createElement("span");uiText(span,"History");return span;}
     const button=document.createElement("button");button.type="button";uiText(button,kind==="shifts"?"Cancel shift":"Cancel reservation");button.className="danger-button";
@@ -160,3 +160,32 @@ function cancelAction(record,kind){
         operation(async()=>{await api("/api/operations/"+kind+"/"+record.id,"DELETE");status("Record cancelled. Refreshing…");try{await refresh();status("Record cancelled and server data refreshed.");}catch{if(token)status("Record cancelled; refresh failed. Do not resubmit.",true);}});
     });return button;
 }
+
+const registerConfig={
+    vehicles:{form:$("vehicle-form"),heading:$("vehicle-heading"),create:"Register vehicle",edit:"Edit vehicle",fields:["plate","model","mileage","lastServiceMileage","lastService","serviceIntervalKm","serviceIntervalDays"],build:d=>({plate:d.get("plate"),model:d.get("model"),mileage:Number(d.get("mileage")),lastServiceMileage:Number(d.get("lastServiceMileage")),lastService:d.get("lastService")+"T00:00:00Z",serviceIntervalKm:Number(d.get("serviceIntervalKm")),serviceIntervalDays:Number(d.get("serviceIntervalDays"))})},
+    drivers:{form:$("driver-form"),heading:$("driver-heading"),create:"Register driver",edit:"Edit driver",fields:["name","license","experience"],build:d=>({name:d.get("name"),license:d.get("license"),experience:Number(d.get("experience"))})}
+};
+function resetRegister(kind){const c=registerConfig[kind];registerEdits[kind]=null;c.form.reset();uiText(c.heading,c.create);}
+function registerAction(row,kind){const c=registerConfig[kind],button=document.createElement("button");button.type="button";uiText(button,c.edit);button.addEventListener("click",()=>{if(busy)return;
+    registerEdits[kind]={id:row.id,expected:Object.fromEntries(c.fields.map(k=>[k,row[k]]))};
+    for(const k of c.fields)c.form.elements[k].value=k==="lastService"?row[k].slice(0,10):row[k];c.form.elements.confirmed.checked=false;uiText(c.heading,c.edit);c.form.scrollIntoView({block:"nearest"});
+});return button;}
+for(const [kind,c] of Object.entries(registerConfig)){
+    $(kind==="vehicles"?"vehicle-new":"driver-new").addEventListener("click",()=>resetRegister(kind));
+    c.form.addEventListener("submit",event=>{event.preventDefault();const d=new FormData(c.form);if(!d.has("confirmed"))return;operation(async()=>{
+        const edit=registerEdits[kind],body=c.build(d);if(edit)body.expected=edit.expected;
+        await api("/api/"+kind+(edit?"/"+edit.id:""),edit?"PUT":"POST",body);resetRegister(kind);status("Record saved. Refreshing server data…");try{await refresh();status("Record saved and server data refreshed.");}catch{if(token)status("Record saved, but refresh failed. Use Refresh server records; do not resubmit.",true);}
+    });});
+}
+async function loadAccounts(){
+    const result=await api("/api/admin/users?offset="+accountsOffset+"&limit=50");
+    accountsTotal=result.total;accountsOffset=result.offset;
+    table("accounts",[["Email",text("email")],["Roles",r=>r.roles.join(", ")],["Locked",r=>r.locked?"Yes":"No"]],result.accounts);
+    $("accounts-page").textContent=(accountsTotal===0?0:accountsOffset+1)+"–"+Math.min(accountsOffset+50,accountsTotal)+" / "+accountsTotal;
+}
+$("accounts-tab").addEventListener("click",()=>operation(loadAccounts));
+$("accounts-prev").addEventListener("click",()=>operation(async()=>{accountsOffset=Math.max(0,accountsOffset-50);await loadAccounts();}));
+$("accounts-next").addEventListener("click",()=>operation(async()=>{if(accountsOffset+50<accountsTotal){accountsOffset+=50;await loadAccounts();}}));
+$("account-form").addEventListener("submit",event=>{event.preventDefault();const form=event.currentTarget,d=new FormData(form);if(!d.has("confirmed")||busy)return;form.elements.password.value="";operation(async()=>{
+    await api("/api/admin/users","POST",{email:d.get("email"),password:d.get("password"),role:d.get("role")});form.reset();status("Account created.");try{await loadAccounts();}catch{if(token)status("Account created; refresh failed. Do not resubmit.",true);}
+});});

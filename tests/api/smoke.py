@@ -178,3 +178,15 @@ revision=request("GET","/api/operations/revision",token=viewer)["revision"]
 request("POST","/api/drivers",{"name":"Revision QA","license":"REVISION-QA","experience":2},201)
 assert request("GET","/api/operations/revision",token=viewer)["revision"]>revision
 print("PASS: authenticated database revision detects committed fleet changes")
+
+# Read-only account administration and optional optimistic register edits.
+request("GET","/api/admin/users",status=403,token=viewer)
+account_page=request("GET","/api/admin/users?limit=1",token=admin)
+assert len(account_page["accounts"])==1 and account_page["total"]>=3
+assert set(account_page["accounts"][0])=={"id","email","locked","roles"}
+register_driver=request("POST","/api/drivers",{"name":"QA Register Edit","license":"QA-REG-EDIT","experience":3},201)
+original={k:register_driver[k] for k in ("name","license","experience")}
+request("PUT",f"/api/drivers/{register_driver['id']}",{**original,"experience":4,"expected":original},200,token=dispatcher)
+request("PUT",f"/api/drivers/{register_driver['id']}",{**original,"experience":5,"expected":original},409,token=dispatcher)
+assert request("GET",f"/api/drivers/{register_driver['id']}")["experience"]==4
+print("PASS: account list authorization, minimal fields and stale register edit")

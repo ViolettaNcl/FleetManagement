@@ -58,7 +58,7 @@ The API is bound to localhost:5095; SQL Server is not exposed on the host. This 
 ## Architecture and limitations
 - Core: pure C# records and validation, reused by browser and API.
 - API: request DTOs, endpoint mapping, scoped EF Core context, unique indexes, FK constraints, no tracking on reads.
-- Participating V3 writers serialize through the [provider transaction lock](database-concurrency.md). Remaining work: full EF migration history, durable idempotency, stable non-reused IDs, richer account audit, HTTPS deployment and durable distributed events.
+- Participating V3 writers serialize through the [provider transaction lock](database-concurrency.md). Durable receipts and audit-based ID high-water marks are implemented for fleet writes. Remaining work: adoption of EF migration history for existing databases, receipt retention/capacity, richer account audit, HTTPS deployment and durable distributed events.
 - The local API key is a separate automation identity, not a user credential. Identity provides user authentication and role policies. Do not deploy this API publicly as-is. No CORS for the browser demo. CI runs the same HTTP and restart suite against SQLite and an isolated SQL Server 2022 container. Check the latest workflow results before claiming both providers pass.
 - The original WPF/EF6 project remains unchanged; it must not be mistaken for this backend or used with real data without security remediation.
 

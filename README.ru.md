@@ -108,4 +108,4 @@ cd путь\к\проекту\FleetManagement
 
 Автоматическая видеодемонстрация настоящего автономного интерфейса (без голоса, только синтетические данные) создаётся в Browser demo CI и сохраняется в артефакте `fleetmanagement-portfolio-tour` после успешного запуска. Проверьте видео перед отправкой работодателю.
 
-Проверка Release evidence gate сверяет семь CI workflows на одном точном коммите и формирует JSON-отчёт; не публикует приложение. [Чек-лист](docs/deployment.md) · [ER-диаграмма](docs/architecture.md#logical-persistence-model-v3).
+Проверка Release evidence gate сверяет семь CI workflows и отдельный результат проверки безопасности CodeQL на одном точном коммите и формирует JSON-отчёт; не публикует приложение. [Чек-лист](docs/deployment.md) · [ER-диаграмма](docs/architecture.md#logical-persistence-model-v3).

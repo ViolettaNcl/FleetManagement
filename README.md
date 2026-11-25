@@ -147,4 +147,4 @@ For a guided walkthrough, see [V3 portfolio guide](docs/portfolio-v3.md). On Win
 
 The offline Model Drift lab compares synthetic feature distributions using PSI, then supports a validation-ranked retraining candidate review with independent final evaluation. See [model drift](docs/model-drift.md). The experiments do not imply real-world model performance or automated deployment.
 
-For release review, the manual [Release evidence gate](https://github.com/ViolettaNcl/FleetManagement/actions/workflows/release-gate.yml) checks exact-commit CI and produces JSON without tagging, merging or deployment. See [deployment checklist](docs/deployment.md) and [logical ER diagram](docs/architecture.md#logical-persistence-model-v3).
+For release review, the manual [Release evidence gate](https://github.com/ViolettaNcl/FleetManagement/actions/workflows/release-gate.yml) checks exact-commit CI and the separate GitHub Advanced Security CodeQL results check and produces JSON without tagging, merging or deployment. See [deployment checklist](docs/deployment.md) and [logical ER diagram](docs/architecture.md#logical-persistence-model-v3).

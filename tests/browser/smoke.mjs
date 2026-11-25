@@ -120,6 +120,13 @@ try {
   assert.equal(mapResponse.ok(),true);
   assert.match(await mapResponse.text(),/Natural Earth/);
   await page.screenshot({path:'browser-results/geographic-map.png',fullPage:true});
+  await page.getByRole('button',{name:'Model Registry',exact:true}).click();
+  await page.locator('input[type=file]').setInputFiles('tests/ml/fixture-manifest.json');
+  await page.getByRole('heading',{name:'Experiment history'}).waitFor();
+  await page.getByRole('heading',{name:'Experiment provenance'}).waitFor();
+  await page.locator('input[type=file]').setInputFiles({name:'bad.json',mimeType:'application/json',buffer:Buffer.from('{}')});
+  await page.getByRole('status').filter({hasText:'rejected 1'}).waitFor();
+  await page.screenshot({path:'browser-results/model-registry.png',fullPage:true});
   await page.setViewportSize({width:390,height:844});
   assert.equal(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth),true);
   await page.getByRole('button',{name:'Overview',exact:true}).click();

@@ -42,6 +42,7 @@ The browser edition runs C# in WebAssembly, uses synthetic data, and requires no
 | Multi Dispatch | Compare capacity/time-window heuristics, inspect Gantt timelines and unassigned orders. |
 | What-if | Compare complete seeded Digital Twin scenarios, completion and fuel intensity. |
 | Geo Map | Replay synthetic regional journeys on bundled Natural Earth geometry with geofence history. |
+| Model Registry | Import local experiment manifests, compare reported ML metrics and inspect fingerprints. |
 | Analytics | Filter trips by departure date and download a genuine two-sheet Excel workbook. |
 
 Use **Reset demo** to restore the synthetic dataset. Changes stay in your browser.

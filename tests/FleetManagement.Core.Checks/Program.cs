@@ -182,4 +182,15 @@ Check(Math.Abs(GeoTracking.At(geoRoute,150).DistanceKm-GeoTracking.Length(geoRou
 Check(GeoTracking.Events(geoRoutes,0).Count==1,"geo departure zone event");
 Check(GeoTracking.Events(geoRoutes,720).Any(e=>e.Plate=="GEO-101"&&e.Hub=="Vienna"&&e.Kind=="Enter"),"geo destination zone entry");
 Check(GeoTracking.Events(geoRoutes,720).SequenceEqual(GeoTracking.Events(geoRoutes,720)),"geo deterministic replay");
-Console.WriteLine("All 129 business rule checks passed.");
+var manifestJson="""{"schemaVersion":1,"synthetic":true,"runId":"test-run-001","createdUtc":"2026-11-25T20:00:00Z","seed":42,"sourceRevision":"fixture","mlNetVersion":"5.0.0","maintenance":{"testRows":10,"testSha256":"aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa","reloadVerified":true,"logistic":{"TP":3,"FP":1,"TN":4,"FN":2,"F1":0.667,"Brier":0.12},"fastTree":{"TP":3,"FP":2,"TN":3,"FN":2,"F1":0.6,"Brier":0.13},"artifact":{"sha256":"aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"}},"eta":{"testRows":10,"testSha256":"bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb","reloadVerified":true,"linear":{"Mae":8,"Rmse":10},"fastTree":{"Mae":12,"Rmse":15},"artifact":{"sha256":"bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb"}}}""";
+var registry=RegistryManifest.Parse(manifestJson);
+Check(registry.Seed==42&&registry.LogisticF1==.667,"registry parses manifest metrics");
+Check(RegistryManifest.Comparable(registry,registry with{RunId="other"}),"registry same dataset comparison");
+Check(!RegistryManifest.Comparable(registry,registry with{EtaTestHash=new string('c',64)}),"registry distinct dataset warning");
+bool RejectManifest(string json){try{RegistryManifest.Parse(json);return false;}catch(FormatException){return true;}}
+Check(RejectManifest(manifestJson.Replace("\"synthetic\":true","\"synthetic\":false")),"registry rejects non-synthetic manifest");
+Check(RejectManifest(manifestJson.Replace("\"TP\":3","\"TP\":4")),"registry rejects invalid confusion counts");
+Check(RejectManifest(manifestJson.Replace("\"F1\":0.667","\"F1\":1.5")),"registry rejects invalid metric");
+Check(RejectManifest(new string('x',70000)),"registry size limit");
+Check(RejectManifest("{}"),"registry incomplete manifest");
+Console.WriteLine("All 137 business rule checks passed.");

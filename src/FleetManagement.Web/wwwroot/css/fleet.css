@@ -18,3 +18,5 @@
 .gantt-scroll{overflow-x:auto}.gantt-grid{display:grid;grid-template-columns:90px minmax(600px,1fr);gap:10px;align-items:center;min-width:720px}.gantt-axis{display:flex;justify-content:space-between;font-size:12px;color:#665D78}.gantt-track{height:28px;position:relative;background:#F0F0FF;border:1px solid #D8CCEF;border-radius:4px;overflow:hidden}.gantt-away{position:absolute;top:5px;height:16px;background:#DDD3EF;border-radius:3px}.gantt-visit{position:absolute;top:2px;height:22px;border-radius:3px}
 
 .geo-map{width:100%;display:block;background:#F8F6FC;border-radius:8px}
+
+.registry-details{display:grid;grid-template-columns:minmax(120px,1fr) minmax(0,2fr);gap:10px;font-size:14px}.registry-details dd{margin:0;overflow-wrap:anywhere;color:#4B0082}.registry-details dt{color:#665D78}

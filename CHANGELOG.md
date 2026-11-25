@@ -22,6 +22,8 @@
 
 - Local ML.NET FastTree trainer for maintenance and ETA, paired held-out evaluation, model save/reload verification, versioned manifest and SHA-256 fingerprints, dedicated CI artifacts.
 
+- Browser model registry: bounded JSON manifest import, validation, paired model metrics and dataset provenance comparison. Metadata only, no execution or model promotion.
+
 ## V2 baseline — portfolio edition
 
 ### Added

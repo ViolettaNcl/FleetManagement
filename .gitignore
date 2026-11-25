@@ -46,3 +46,6 @@ model-registry/
 # Sensitive local recovery bundles
 fleet-backups/
 __pycache__/
+
+# Private local V3 startup data
+.fleet-local/

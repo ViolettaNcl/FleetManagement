@@ -2,7 +2,7 @@
 <img src="docs/assets/banner.svg" alt="FleetManagement" width="100%">
 <h1>FleetManagement</h1>
 <p>Система управления автопарком на C# и .NET</p>
-<p><a href="README.md">English</a> · <a href="docs/portfolio-v2.md">Демо</a> · <a href="docs/backend.md">Backend</a> · <a href="docs/architecture.md">Архитектура</a></p>
+<p><a href="README.md">English</a> · <a href="docs/portfolio-v3.md">Демо</a> · <a href="docs/backend.md">Backend</a> · <a href="docs/architecture.md">Архитектура</a></p>
 </div>
 
 ## Современная версия
@@ -103,3 +103,5 @@ cd путь\к\проекту\FleetManagement
 ## ML.NET и реестр моделей V3
 
 Локальный тренер FastTree сравнивает классификацию и регрессию с собственными C#-моделями на одинаковых тестовых выборках. Запуск: `dotnet run --project tools/FleetManagement.ModelTrainer -c Release -- model-registry 42`. [Документация](docs/model-registry.md). Только синтетические данные; браузерное демо остаётся автономным.
+
+Для удобного локального запуска на Windows: `pwsh -File tools/start-connected.ps1`. Требуются PowerShell 7 и .NET 10 SDK. Скрипт использует отдельную локальную SQLite-базу, при первом запуске запрашивает пароль администратора и не выполняет обновление V2 автоматически. [Сценарий демонстрации V3](docs/portfolio-v3.md).

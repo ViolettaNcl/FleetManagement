@@ -17,7 +17,10 @@ Treat it as live only after the deployment succeeds and the URL is verified. The
 ## Release acceptance checklist
 
 - [ ] Browser CI passes on the exact release commit, including Excel download and local persistence.
-- [ ] Both SQLite and SQL Server jobs pass on the exact release commit, including Identity, audit and SignalR.
+- [ ] Both SQLite and SQL Server jobs pass on the exact release commit, including Identity, audit, upgrade, recovery (SQLite), concurrency and SignalR.
+- [ ] Connected workspace CI, ML registry CI and CodeQL pass on the exact release commit (dispatch manually if path filters excluded them).
+- [ ] Validate the local PowerShell launcher on Windows; verify existing V2 data is not upgraded implicitly.
+- [ ] Review the V3 security limitations and ensure no credentials, backup files or account data are in release artifacts.
 - [ ] Review the generated screenshots on desktop and mobile.
 - [ ] Review security boundaries and the pull request.
 - [ ] Enable Pages and merge the reviewed change.

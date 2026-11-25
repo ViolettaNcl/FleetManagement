@@ -4,7 +4,7 @@
   <p><strong>A modern .NET fleet operations platform, evolved from a WPF desktop application.</strong></p>
   <p>
     <a href="README.ru.md">Русская версия</a> ·
-    <a href="docs/portfolio-v2.md">Demo guide</a> ·
+    <a href="docs/portfolio-v3.md">Demo guide</a> ·
     <a href="docs/backend.md">Backend documentation</a> ·
     <a href="docs/architecture.md">Architecture</a>
   </p>
@@ -136,3 +136,5 @@ With the local API running, open http://127.0.0.1:5095/console and sign in using
 ### Performance checks
 
 The backend provider matrix includes a bounded read-only concurrency smoke and aggregate timing artifacts. See [performance testing](docs/performance-testing.md). Measurements are for the small disposable test dataset, not production fleet capacity.
+
+For a guided walkthrough, see [V3 portfolio guide](docs/portfolio-v3.md). On Windows with PowerShell 7 and .NET 10 SDK, `pwsh -File tools/start-connected.ps1` prepares a private local SQLite database and starts the connected workspace. No public deployment or secret is required for this local demo.

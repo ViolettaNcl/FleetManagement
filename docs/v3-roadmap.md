@@ -88,3 +88,5 @@ Connected dashboard and calendar use server-side counts, shared service assessme
 Security hardening adds a 256 KiB request envelope, API no-store/nosniff and 30-second client network timeout with explicit uncertain-write recovery guidance. Tests reject oversized authenticated requests. Threat model and residual risks documented; not an independent security audit.
 
 Offline demo EN/RU first pass adds localized navigation, header and command-center summary; detailed components, generated alert strings and exports remain English, explicitly disclosed. Updated EN/RU README and architecture decisions reflect V3 connected mode, database locks and current limitations.
+
+Portfolio V3 guide, release checklist and PowerShell 7 local connected launcher use a separate ignored database path, random process-scoped automation key, interactive bootstrap only for fresh database, no implicit upgrade. Launcher Windows runtime verification remains required.

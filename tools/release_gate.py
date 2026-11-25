@@ -43,7 +43,24 @@ for workflow in required:
         entry.update(passed=False,reason=type(exc).__name__)
     checks.append(entry)
     print(workflow+": "+("PASS" if entry["passed"] else "NOT READY"))
-report={"schema":1,"commit":sha,"repository":repo,"automatedChecksPassed":all(e["passed"] for e in checks),"workflows":checks,"manualReviewStillRequired":["Review advisories (successful scan is not zero findings)","Review video/screenshots","Fresh Windows password prompt","Security and deployment review","Explicit owner approval before merge/publication"]}
+# An analysis workflow can succeed while the actual CodeQL results check fails.
+security={"name":"CodeQL","app":"github-advanced-security","passed":False}
+try:
+    data=get("/commits/"+sha+"/check-runs",{"filter":"latest","per_page":100})
+    if data["total_count"]>len(data["check_runs"]):
+        security["reason"]="Incomplete check-run listing"
+    else:
+        matches=[c for c in data["check_runs"] if c["name"]=="CodeQL" and (c.get("app") or {}).get("slug")=="github-advanced-security"]
+        if matches:
+            check=max(matches,key=lambda c:c["id"])
+            security.update(checkId=check["id"],url=check.get("html_url"),status=check["status"],conclusion=check["conclusion"])
+            security["passed"]=check["status"]=="completed" and check["conclusion"]=="success"
+        else:
+            security["reason"]="No exact-commit CodeQL results check found"
+except (urllib.error.URLError,ValueError,KeyError) as exc:
+    security["reason"]=type(exc).__name__
+print("CodeQL results: "+("PASS" if security["passed"] else "NOT READY"))
+report={"schema":2,"commit":sha,"repository":repo,"automatedChecksPassed":all(e["passed"] for e in checks) and security["passed"],"workflows":checks,"securityCheck":security,"manualReviewStillRequired":["Review advisories (successful scan is not zero findings)","Review video/screenshots","Fresh Windows password prompt","Security and deployment review","Explicit owner approval before merge/publication"]}
 out.write_text(json.dumps(report,indent=2),encoding="utf-8")
 if not report["automatedChecksPassed"]:
     raise SystemExit("Release evidence incomplete or failed. Do not publish.")

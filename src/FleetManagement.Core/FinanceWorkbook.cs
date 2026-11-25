@@ -11,22 +11,22 @@ public static partial class FleetReport
         var journal=MaintenanceJournal.Totals(entries,from,to);
         string Date(DateTime d)=>d.ToString("yyyy-MM-dd",CultureInfo.InvariantCulture);
         var summary=new List<object[]>{
-            ["Metric","Value"],["From",Date(from)],["To (inclusive)",Date(to)],["Demo clock",now.ToString("yyyy-MM-dd HH:mm:ss",CultureInfo.InvariantCulture)],
-            ["Currency","EUR"],["Fuel intensity (L/100 km)",rates.LitresPer100Km],["Fuel price (EUR/L)",rates.FuelPrice],["Maintenance allowance (EUR/km)",rates.MaintenancePerKm],["Driver rate (EUR/h)",rates.DriverPerHour],
-            ["Completed trip distance (km)",actual.DistanceKm],["Estimated fuel (L)",actual.FuelLitres],["Estimated fuel cost",actual.FuelCost],["Estimated maintenance allowance",actual.MaintenanceCost],["Estimated driver cost",actual.DriverCost],["Estimated completed-trip total",actual.Total],["Estimated EUR/km",(object?)actual.CostPerKm??""],
-            ["Observed calendar hours",actual.ObservedHours],["Clock-time occupancy (fraction)",(object?)actual.Utilization??""],
-            ["Recorded maintenance expense (separate)",journal.RecordedCost],["Journal entries",journal.Entries],["Unknown recorded costs",journal.Entries-journal.WithCost],
-            ["Scope","Demo estimates only; recorded work costs are separate and not added to maintenance allowance."]
+            new object[]{"Metric","Value"},new object[]{"From",Date(from)},new object[]{"To (inclusive)",Date(to)},new object[]{"Demo clock",now.ToString("yyyy-MM-dd HH:mm:ss",CultureInfo.InvariantCulture)},
+            new object[]{"Currency","EUR"},new object[]{"Fuel intensity (L/100 km)",rates.LitresPer100Km},new object[]{"Fuel price (EUR/L)",rates.FuelPrice},new object[]{"Maintenance allowance (EUR/km)",rates.MaintenancePerKm},new object[]{"Driver rate (EUR/h)",rates.DriverPerHour},
+            new object[]{"Completed trip distance (km)",actual.DistanceKm},new object[]{"Estimated fuel (L)",actual.FuelLitres},new object[]{"Estimated fuel cost",actual.FuelCost},new object[]{"Estimated maintenance allowance",actual.MaintenanceCost},new object[]{"Estimated driver cost",actual.DriverCost},new object[]{"Estimated completed-trip total",actual.Total},new object[]{"Estimated EUR/km",(object?)actual.CostPerKm??""},
+            new object[]{"Observed calendar hours",actual.ObservedHours},new object[]{"Clock-time occupancy (fraction)",(object?)actual.Utilization??""},
+            new object[]{"Recorded maintenance expense (separate)",journal.RecordedCost},new object[]{"Journal entries",journal.Entries},new object[]{"Unknown recorded costs",journal.Entries-journal.WithCost},
+            new object[]{"Scope","Demo estimates only; recorded work costs are separate and not added to maintenance allowance."}
         };
-        var vehicles=new List<object[]>{["Vehicle","Completed km","Trip hours","Fuel L","Fuel EUR","Maintenance allowance EUR","Driver EUR","Estimated total EUR","EUR/km","Occupied hours"]};
+        var vehicles=new List<object[]>{new object[]{"Vehicle","Completed km","Trip hours","Fuel L","Fuel EUR","Maintenance allowance EUR","Driver EUR","Estimated total EUR","EUR/km","Occupied hours"}};
         vehicles.AddRange(actual.Vehicles.Select(v=>new object[]{v.Plate,v.DistanceKm,v.TripHours,v.FuelLitres,v.FuelCost,v.MaintenanceCost,v.DriverCost,v.Total,(object?)v.CostPerKm??"",v.OccupiedHours}));
-        var work=new List<object[]>{["Record ID","Vehicle","Recorded at","Odometer km","Category","Notes","Cost EUR","Cost status"]};
+        var work=new List<object[]>{new object[]{"Record ID","Vehicle","Recorded at","Odometer km","Category","Notes","Cost EUR","Cost status"}};
         var plates=fleet.Vehicles.ToDictionary(v=>v.Id,v=>v.Plate);
         work.AddRange(entries.Where(e=>e.RecordedAt.Date>=from.Date&&e.RecordedAt.Date<=to.Date).OrderBy(e=>e.RecordedAt).ThenBy(e=>e.Id)
             .Select(e=>new object[]{e.Id,plates.GetValueOrDefault(e.VehicleId,"Unknown"),e.RecordedAt.ToString("yyyy-MM-dd HH:mm:ss",CultureInfo.InvariantCulture),e.Mileage,e.Kind,e.Notes,(object?)e.CostEur??"",e.CostEur.HasValue?"Known":"Unknown"}));
         var planning=new List<object[]>{
-            ["Metric","Value"],["All registered trips departing in period",plan.Trips],["Completed",plan.Completed],["In transit",plan.Active],["Scheduled",plan.Scheduled],["Planned km",plan.DistanceKm],["Trip hours",plan.TripHours],["Fuel litres",plan.FuelLitres],["Fuel cost",plan.FuelCost],["Maintenance allowance",plan.MaintenanceAllowance],["Driver cost",plan.DriverCost],["Fixed allowance for period",plan.FixedAllowance],["Projected total",plan.ProjectedTotal],["Budget",plan.Budget],["Budget headroom",plan.Headroom],
-            ["Scope","All registered trips in departure cohort; includes future assignments, no unregistered demand. Not an invoice or actual cash forecast."]
+            new object[]{"Metric","Value"},new object[]{"All registered trips departing in period",plan.Trips},new object[]{"Completed",plan.Completed},new object[]{"In transit",plan.Active},new object[]{"Scheduled",plan.Scheduled},new object[]{"Planned km",plan.DistanceKm},new object[]{"Trip hours",plan.TripHours},new object[]{"Fuel litres",plan.FuelLitres},new object[]{"Fuel cost",plan.FuelCost},new object[]{"Maintenance allowance",plan.MaintenanceAllowance},new object[]{"Driver cost",plan.DriverCost},new object[]{"Fixed allowance for period",plan.FixedAllowance},new object[]{"Projected total",plan.ProjectedTotal},new object[]{"Budget",plan.Budget},new object[]{"Budget headroom",plan.Headroom},
+            new object[]{"Scope","All registered trips in departure cohort; includes future assignments, no unregistered demand. Not an invoice or actual cash forecast."}
         };
         (string Name,List<object[]> Rows)[] sheets=[("Summary",summary),("Vehicle Costs",vehicles),("Maintenance Journal",work),("Budget",planning)];
         using var output=new MemoryStream();

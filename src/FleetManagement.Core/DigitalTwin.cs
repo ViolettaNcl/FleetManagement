@@ -66,10 +66,10 @@ public sealed class DigitalTwin
                 FuelLitres=old.FuelLitres+delta*(.24+.12*config.Traffic),
                 Temperature=84+config.Traffic*3+(rng.NextDouble()-.5)*5+(overheat?24:0),
                 Vibration=2+(rng.NextDouble()-.5)*.4+(overheat?1.6:0),
-                Voltage=13.5+(rng.NextDouble()-.5)*.2-(overheat?.45:0),
+                Voltage=13.5+(rng.NextDouble()-.5)*.2-(overheat ? .45 : 0),
                 ServiceFraction=Math.Min(1.6,old.ServiceFraction+delta/10000),
                 EngineHours=old.EngineHours+(speed>0?StepMinutes/60.0:0),Status=status};
-            // Offline means last received sensor/position snapshot stays stale;
+            // Offline means last received sensor readings stay stale;
             // the simulator still knows true distance, which is explicitly labelled.
             if(status=="Offline")next=next with{Temperature=old.Temperature,Vibration=old.Vibration,Voltage=old.Voltage};
             next=Estimate(next);vehicles[i]=next;

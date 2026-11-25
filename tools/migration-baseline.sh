@@ -67,6 +67,7 @@ ef="$work/tools/dotnet-ef"
 "$ef" database update --project "$proj"
 "$ef" database update --project "$proj"
 cp -R "$work/src/FleetManagement.Api/Migrations" "$out/"
+export FLEET_SCHEMA_LEFT="$ConnectionStrings__Fleet"
 export Fleet__InitializeDatabase=true Fleet__SeedDemo=true Fleet__UpgradeV2Schema=false
 dotnet run --project "$proj" --no-launch-profile --urls http://127.0.0.1:5095 > "$work/server.log" 2>&1 &
 pid=$!
@@ -92,4 +93,23 @@ for name in ("maintenance","shifts","reservations"):
     assert read("/api/operations/"+name)==[]
 print("PASS: fresh EF migration applied twice, current API initialization, Identity and fleet records")
 PY
-printf '%s\n' "Generated for fresh $provider database only. Existing database adoption is not authorized or tested by this job." > "$out/README.txt"
+# Compare migration-created catalog to a separate current EnsureCreated database.
+kill "$pid"; wait "$pid" || true; pid=""
+if [ "$provider" = Sqlite ]; then
+    export ConnectionStrings__Fleet="Data Source=$work/ensure-created.db"
+else
+    export ConnectionStrings__Fleet="${ConnectionStrings__Fleet/Database=FleetFreshMigrationCi;/Database=FleetEnsureCreatedCi;}"
+fi
+export FLEET_SCHEMA_RIGHT="$ConnectionStrings__Fleet"
+dotnet run --project "$proj" --no-launch-profile --urls http://127.0.0.1:5095 > "$work/ensure-server.log" 2>&1 &
+pid=$!
+ready=false
+for i in $(seq 1 90); do
+    if curl -fsS http://127.0.0.1:5095/health >/dev/null 2>&1; then ready=true; break; fi
+    if ! kill -0 "$pid" 2>/dev/null; then break; fi
+    sleep 1
+done
+if [ "$ready" != true ]; then cat "$work/ensure-server.log"; exit 1; fi
+kill "$pid"; wait "$pid" || true; pid=""
+dotnet run --project "$root/tools/FleetManagement.SchemaInspector" -c Release -- "$out/schema-parity.json"
+printf '%s\n' "Generated for fresh $provider database only. Catalog parity checked against separate EnsureCreated database. Existing database adoption is not authorized." > "$out/README.txt"

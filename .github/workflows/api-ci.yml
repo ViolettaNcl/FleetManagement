@@ -2,9 +2,9 @@ name: Backend API integration
 on:
   push:
     branches: [master, 'feature/**']
-    paths: ['src/FleetManagement.Core/**','src/FleetManagement.Api/**','tests/api/**','tools/sqlite_recovery.py','tools/migration-baseline.sh','tests/FleetManagement.Realtime.Checks/**','.github/workflows/api-ci.yml']
+    paths: ['src/FleetManagement.Core/**','src/FleetManagement.Api/**','tests/api/**','tools/sqlite_recovery.py','tools/migration-baseline.sh','tools/FleetManagement.SchemaInspector/**','tests/FleetManagement.Realtime.Checks/**','.github/workflows/api-ci.yml']
   pull_request:
-    paths: ['src/FleetManagement.Core/**','src/FleetManagement.Api/**','tests/api/**','tools/sqlite_recovery.py','tools/migration-baseline.sh','tests/FleetManagement.Realtime.Checks/**','.github/workflows/api-ci.yml']
+    paths: ['src/FleetManagement.Core/**','src/FleetManagement.Api/**','tests/api/**','tools/sqlite_recovery.py','tools/migration-baseline.sh','tools/FleetManagement.SchemaInspector/**','tests/FleetManagement.Realtime.Checks/**','.github/workflows/api-ci.yml']
   workflow_dispatch:
 permissions:
   contents: read
@@ -139,7 +139,7 @@ jobs:
       - name: Generate and rehearse fresh EF migration baseline
         run: bash tools/migration-baseline.sh "${{ matrix.provider }}"
       - uses: actions/upload-artifact@v4
-        if: success()
+        if: always()
         with:
           name: ef-baseline-${{ matrix.provider }}
           path: ${{ runner.temp }}/migration-${{ matrix.provider }}

@@ -24,7 +24,13 @@ if "--verify-persistence" in sys.argv:
     assert any(e["notes"]=="QA durable reservation" for e in request("GET","/api/operations/reservations"))
     assert len(request("GET","/api/operations/shifts"))>=1
     assert len([t for t in request("GET","/api/trips") if t["origin"]=="QA batch"])==2
-    print("PASS: durable database, operations records and Identity account after restart")
+    from pathlib import Path
+    receipt=json.loads(Path(os.environ.get("RUNNER_TEMP","."),"fleet-receipt-test.json").read_text())
+    req=urllib.request.Request(BASE+"/api/operations/batch/apply",data=json.dumps(receipt["body"]).encode(),headers={"Content-Type":"application/json","X-Fleet-Key":KEY,"Idempotency-Key":receipt["key"]},method="POST")
+    with urllib.request.urlopen(req,timeout=15) as response:
+        assert response.status==201 and response.headers["Idempotency-Replayed"]=="true"
+        assert json.load(response)==receipt["response"]
+    print("PASS: durable database, operations records, batch receipt and Identity account after restart")
     sys.exit(0)
 
 now=datetime.now(timezone.utc)
@@ -218,3 +224,28 @@ with urllib.request.urlopen(req,timeout=15) as response:
     assert response.headers["Cache-Control"]=="no-store"
     assert response.headers["X-Content-Type-Options"]=="nosniff"
 print("PASS: oversized request rejected and API cache/type headers")
+
+# Durable success receipt: same key + body replays without new trips or audit.
+import uuid
+receipt_key=str(uuid.uuid4())
+receipt_start=now+timedelta(days=20)
+receipt_requests=[{"id":1,"origin":"QA receipt","destination":"Depot","start":receipt_start.isoformat(),"end":(receipt_start+timedelta(hours=1)).isoformat(),"distance":33}]
+receipt_plan=request("POST","/api/operations/batch/preview",{"requests":receipt_requests})[2]
+receipt_body={"confirmed":True,"assignments":receipt_plan["assigned"]}
+def receipt_call(body,key=receipt_key):
+    req=urllib.request.Request(BASE+"/api/operations/batch/apply",data=json.dumps(body).encode(),headers={"Content-Type":"application/json","X-Fleet-Key":KEY,"Idempotency-Key":key},method="POST")
+    try:
+        with urllib.request.urlopen(req,timeout=15) as response:
+            return response.status,json.load(response),response.headers.get("Idempotency-Replayed")
+    except urllib.error.HTTPError as ex:
+        return ex.code,json.loads(ex.read()),None
+first=receipt_call(receipt_body)
+assert first[0]==201 and len(first[1])==1 and first[2] is None,first
+second=receipt_call(receipt_body)
+assert second==(201,first[1],"true"),second
+assert receipt_call({**receipt_body,"confirmed":False})[0]==409
+assert receipt_call(receipt_body,"not-a-uuid")[0]==400
+assert len([t for t in request("GET","/api/trips") if t["origin"]=="QA receipt"])==1
+from pathlib import Path
+Path(os.environ.get("RUNNER_TEMP","."),"fleet-receipt-test.json").write_text(json.dumps({"key":receipt_key,"body":receipt_body,"response":first[1]}))
+print("PASS: durable batch replay, changed payload conflict and invalid UUID")

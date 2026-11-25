@@ -17,3 +17,5 @@ The upgrader checks expected V2 tables and queries mapped baseline columns befor
 The integration workflow builds pinned V2 commit 4287aef89861d1be7a0ab38de5c8253074cd402b, starts it with a disposable database, records fleet/Identity/audit through authenticated HTTP, verifies V3 refuses without opt-in, upgrades and reruns, compares preserved records, then runs the normal HTTP, concurrent batch, SignalR and restart checks. Both providers are in the matrix. No actual user database has been modified.
 
 For SQLite, use the [verified recovery CLI](database-recovery.md) before upgrade. SQL Server uses its native full backup and restore procedure.
+
+The receipt-enabled V3 revision adds BatchReceipts (one additional table/index). A previously initialized V3 database without this table must also use the explicit upgrade flag after backup and stopping writers. Existing operational tables are preserved. Fresh databases include receipts automatically. Reruns verify all four operational tables.

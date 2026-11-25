@@ -37,7 +37,7 @@ def inspect(path):
         # Fixed identifiers only; do not emit account records or secrets.
         return {"schema": "V3" if OPERATIONS <= names else "V2",
                 "counts": {table: db.execute('SELECT count(*) FROM "'+table+'"').fetchone()[0]
-                           for table in sorted(REQUIRED | (OPERATIONS & names))}}
+                           for table in sorted(REQUIRED | (OPERATIONS & names) | ({"BatchReceipts"} & names))}}
 
 def new_file(path):
     # Exclusive creation; never overwrite a target or follow a target symlink.

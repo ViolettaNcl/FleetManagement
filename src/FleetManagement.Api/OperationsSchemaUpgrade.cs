@@ -49,6 +49,7 @@ public static class OperationsSchemaUpgrade
                 await db.Database.ExecuteSqlRawAsync(SqliteReservations,ct);
             }
         }
+        if(!names.Contains("BatchReceipts"))await db.Database.ExecuteSqlRawAsync(sqlServer?SqlServerReceipts:SqliteReceipts,ct);
         await Verify(db,ct);
         await transaction.CommitAsync(ct);
     }
@@ -57,7 +58,24 @@ public static class OperationsSchemaUpgrade
         await db.MaintenanceEntries.AsNoTracking().Take(1).ToListAsync(ct);
         await db.DriverShifts.AsNoTracking().Take(1).ToListAsync(ct);
         await db.VehicleReservations.AsNoTracking().Take(1).ToListAsync(ct);
+        await db.BatchReceipts.AsNoTracking().Take(1).ToListAsync(ct);
     }
+    private const string SqliteReceipts="""
+        CREATE TABLE "BatchReceipts" (
+            "ActorId" TEXT NOT NULL, "Key" TEXT NOT NULL, "PayloadHash" TEXT NOT NULL,
+            "ResponseJson" TEXT NOT NULL, "CreatedUtc" TEXT NOT NULL,
+            PRIMARY KEY ("ActorId","Key")
+        );
+        CREATE INDEX "IX_BatchReceipts_CreatedUtc" ON "BatchReceipts" ("CreatedUtc");
+        """;
+    private const string SqlServerReceipts="""
+        CREATE TABLE [dbo].[BatchReceipts] (
+            [ActorId] nvarchar(450) NOT NULL, [Key] uniqueidentifier NOT NULL, [PayloadHash] nvarchar(64) NOT NULL,
+            [ResponseJson] nvarchar(max) NOT NULL, [CreatedUtc] datetime2 NOT NULL,
+            PRIMARY KEY ([ActorId],[Key])
+        );
+        CREATE INDEX [IX_BatchReceipts_CreatedUtc] ON [dbo].[BatchReceipts] ([CreatedUtc]);
+        """;
     private const string SqliteWork="""
         CREATE TABLE "MaintenanceEntries" (
             "Id" INTEGER NOT NULL PRIMARY KEY,

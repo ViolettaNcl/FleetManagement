@@ -1,3 +1,6 @@
+using System.Security.Claims;
+using System.Security.Cryptography;
+using System.Text.Json;
 using FleetManagement.Core;
 using Microsoft.EntityFrameworkCore;
 
@@ -28,8 +31,28 @@ public static class OperationsEndpoints
                 return Results.Ok(plans);
             }catch(ArgumentException ex){return Invalid(ex.Message);}
         }).RequireAuthorization("FleetWrite");
-        api.MapPost("/operations/batch/apply",(BatchApplyInput input,FleetDbContext db,FleetStore store,OperationsPolicy policy,CancellationToken ct)=>
-            store.Write(async data=>{
+        api.MapPost("/operations/batch/apply",async Task<IResult> (BatchApplyInput input,HttpContext context,FleetDbContext db,FleetStore store,OperationsPolicy policy,CancellationToken ct)=>{
+            var keyHeader=context.Request.Headers["Idempotency-Key"];
+            Guid? key=null;
+            if(keyHeader.Count>0){
+                if(keyHeader.Count!=1||!Guid.TryParseExact(keyHeader.ToString(),"D",out var parsed)||parsed==Guid.Empty)return Invalid("Idempotency-Key must be a nonempty UUID.");
+                key=parsed;
+            }
+            var actor=context.User.FindFirstValue(ClaimTypes.NameIdentifier);
+            if(string.IsNullOrEmpty(actor))return Results.Unauthorized();
+            var jsonOptions=new JsonSerializerOptions(JsonSerializerDefaults.Web);
+            var fingerprint=Convert.ToHexString(SHA256.HashData(JsonSerializer.SerializeToUtf8Bytes(input,jsonOptions)));
+            var replayed=false;
+            return await store.Write(async data=>{
+                if(key is Guid requestKey){
+                    var existing=await db.BatchReceipts.AsNoTracking().SingleOrDefaultAsync(r=>r.ActorId==actor&&r.Key==requestKey,ct);
+                    if(existing is not null){
+                        if(existing.PayloadHash!=fingerprint)return Results.Conflict(new{error="Idempotency key already used for a different batch."});
+                        replayed=true;context.Response.Headers["Idempotency-Replayed"]="true";
+                        return Results.Text(existing.ResponseJson,"application/json",statusCode:201);
+                    }
+                    if(await db.BatchReceipts.CountAsync(ct)>=50000)return Results.Conflict(new{error="Batch receipt limit reached. Contact the database operator."});
+                }
                 if(!input.Confirmed||input.Assignments is null||input.Assignments.Count is <1 or >BatchDispatch.MaxRequests||input.Assignments.Any(a=>a?.Request is null))
                     return Invalid("Explicit confirmation and 1–40 assignments required.");
                 var plan=new BatchPlan("Confirmed",input.Assignments.Select(a=>new BatchAssignment(a!.Request!.ToRequest(),a.VehicleId,a.DriverId)).ToArray(),[]);
@@ -38,10 +61,16 @@ public static class OperationsEndpoints
                 if(error is not null)return Results.Conflict(new{error});
                 var added=data.Trips.Skip(count).ToArray();
                 db.Trips.AddRange(added);
-                // EF Core commits all trips and audit rows in one SaveChanges.
+                if(key is Guid receiptKey){
+                    var response=JsonSerializer.Serialize(added,jsonOptions);
+                    if(response.Length>65536)return Invalid("Batch receipt exceeds storage limit.");
+                    db.BatchReceipts.Add(new BatchReceipt{ActorId=actor,Key=receiptKey,PayloadHash=fingerprint,ResponseJson=response,CreatedUtc=DateTime.UtcNow});
+                }
+                // Receipt, trips and audit commit together under the provider lock.
                 await db.SaveChangesAsync(ct);
                 return Results.Created("/api/trips",added);
-            },ct)).RequireAuthorization("FleetWrite");
+            },ct,()=>!replayed);
+        }).RequireAuthorization("FleetWrite");
         api.MapGet("/operations/revision",async (FleetDbContext db,CancellationToken ct)=>{
             var revision=await db.AuditEntries.MaxAsync(e=>(int?)e.Id,ct)??0;
             return Results.Ok(new{revision});

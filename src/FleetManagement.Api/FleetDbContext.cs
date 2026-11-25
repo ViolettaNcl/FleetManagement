@@ -15,6 +15,7 @@ public sealed class FleetDbContext(DbContextOptions<FleetDbContext> options, IHt
     public DbSet<MaintenanceEntry> MaintenanceEntries => Set<MaintenanceEntry>();
     public DbSet<DriverShift> DriverShifts => Set<DriverShift>();
     public DbSet<VehicleReservation> VehicleReservations => Set<VehicleReservation>();
+    public DbSet<BatchReceipt> BatchReceipts => Set<BatchReceipt>();
     public DbSet<AuditEntry> AuditEntries => Set<AuditEntry>();
 
     public override Task<int> SaveChangesAsync(bool acceptAllChangesOnSuccess, CancellationToken cancellationToken = default)
@@ -38,6 +39,13 @@ public sealed class FleetDbContext(DbContextOptions<FleetDbContext> options, IHt
     protected override void OnModelCreating(ModelBuilder model)
     {
         base.OnModelCreating(model);
+        var receipt=model.Entity<BatchReceipt>();
+        receipt.HasKey(r=>new{r.ActorId,r.Key});
+        receipt.Property(r=>r.ActorId).HasMaxLength(450);
+        receipt.Property(r=>r.Key).ValueGeneratedNever();
+        receipt.Property(r=>r.PayloadHash).HasMaxLength(64);
+        receipt.Property(r=>r.ResponseJson).HasMaxLength(65536);
+        receipt.HasIndex(r=>r.CreatedUtc);
         var audit = model.Entity<AuditEntry>();
         audit.Property(a => a.ActorId).HasMaxLength(450);
         audit.Property(a => a.EntityType).HasMaxLength(50);

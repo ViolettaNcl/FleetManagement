@@ -17,8 +17,8 @@ with tempfile.TemporaryDirectory() as temp:
     assert recovery.verify(bundle)==manifest
     assert recovery.restore(bundle,restored)["counts"]==manifest["counts"]
     with closing(sqlite3.connect(source)) as a, closing(sqlite3.connect(restored)) as b:
-        for table in ("Vehicles","Drivers","Trips","AuditEntries","AspNetUsers","AspNetRoles","AspNetUserRoles","MaintenanceEntries","DriverShifts","VehicleReservations"):
-            query='SELECT * FROM "'+table+'" ORDER BY 1'
+        for table in ("Vehicles","Drivers","Trips","AuditEntries","AspNetUsers","AspNetRoles","AspNetUserRoles","MaintenanceEntries","DriverShifts","VehicleReservations","BatchReceipts"):
+            query='SELECT * FROM "'+table+'" ORDER BY 1,2'
             assert a.execute(query).fetchall()==b.execute(query).fetchall(),table
     def reject(action):
         try: action()

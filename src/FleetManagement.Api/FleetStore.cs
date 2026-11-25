@@ -20,7 +20,7 @@ public sealed class FleetStore(FleetDbContext db, FleetWriteGate gate, IHubConte
         await db.Drivers.AsNoTracking().OrderBy(x=>x.Id).ToListAsync(ct),
         await db.Trips.AsNoTracking().OrderBy(x=>x.Id).ToListAsync(ct));
 
-    public async Task<IResult> Write(Func<FleetData,Task<IResult>> action, CancellationToken ct)
+    public async Task<IResult> Write(Func<FleetData,Task<IResult>> action, CancellationToken ct,Func<bool>? notify=null)
     {
         await gate.Semaphore.WaitAsync(ct);
         IResult result;
@@ -52,7 +52,7 @@ public sealed class FleetStore(FleetDbContext db, FleetWriteGate gate, IHubConte
         finally{gate.Semaphore.Release();}
         // Only notify after the outer transaction committed. Subscribers on
         // other processes are not notified without a SignalR backplane.
-        if(Success(result)){
+        if(Success(result)&&(notify?.Invoke()??true)){
             using var timeout=new CancellationTokenSource(TimeSpan.FromSeconds(3));
             try{await hub.Clients.All.SendAsync("FleetChanged",new FleetChanged(DateTimeOffset.UtcNow),timeout.Token);}
             catch(Exception ex){logger.LogWarning(ex,"Fleet change notification could not be delivered.");}

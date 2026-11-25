@@ -93,12 +93,12 @@
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
         if(!firstRender)return;
-        try { var json=await JS.InvokeAsync<string?>("localStorage.getItem",Key); if(!string.IsNullOrWhiteSpace(json)){var saved=JsonSerializer.Deserialize<Snapshot>(json); if(saved?.Data is not null && saved.Data.Vehicles is not null && saved.Data.Drivers is not null && saved.Data.Trips is not null){fleet=saved.Data;Now=saved.Now;start=Now.AddHours(1);end=Now.AddHours(2);}} }
+        try { var json=await JS.InvokeAsync<string?>("localStorage.getItem",Key); if(!string.IsNullOrWhiteSpace(json)){var saved=JsonSerializer.Deserialize(json, DemoJsonContext.Default.DemoSnapshot); if(saved?.Data is not null && saved.Data.Vehicles is not null && saved.Data.Drivers is not null && saved.Data.Trips is not null){fleet=saved.Data;Now=saved.Now;start=Now.AddHours(1);end=Now.AddHours(2);}} }
         catch (Exception) {storageMessage="Local storage is unavailable; changes are session-only.";}
         timer=new PeriodicTimer(TimeSpan.FromSeconds(1)); timerTask=RunClock(); StateHasChanged();
     }
     private async Task RunClock(){try{while(await timer!.WaitForNextTickAsync(cts.Token)){await InvokeAsync(()=>{if(playing){Now=Now.AddMinutes(2);StateHasChanged();}});}}catch(OperationCanceledException){}}
-    private async Task Persist(){try{await JS.InvokeVoidAsync("localStorage.setItem",Key,JsonSerializer.Serialize(new Snapshot(fleet,Now)));}catch(Exception){storageMessage="Unable to save locally; changes are session-only.";}}
+    private async Task Persist(){try{await JS.InvokeVoidAsync("localStorage.setItem",Key,JsonSerializer.Serialize(new DemoSnapshot(fleet,Now), DemoJsonContext.Default.DemoSnapshot));}catch(Exception){storageMessage="Unable to save locally; changes are session-only.";}}
     private void Navigate(string item){section=item;feedback="";if(item=="Dispatch"){if(!fleet.Vehicles.Any(v=>v.Id==vehicleId))vehicleId=fleet.Vehicles.FirstOrDefault()?.Id??0;if(!fleet.Drivers.Any(d=>d.Id==driverId))driverId=fleet.Drivers.FirstOrDefault()?.Id??0;}}
     private async Task ToggleSimulation(){playing=!playing;if(!playing)await Persist();}
     private async Task Advance(){Now=Now.AddMinutes(15);await Persist();}
@@ -125,6 +125,5 @@
     private RenderFragment TripTable()=> @<div class="tablewrap"><table><thead><tr><th>Trip</th><th>Route</th><th>Vehicle</th><th>Driver</th><th>Start</th><th>End</th><th>Distance</th><th>Status</th>@if(section=="Dispatch"){<th>Actions</th>}</tr></thead><tbody>
     @foreach(var t in fleet.Trips.OrderByDescending(t=>t.Start)){var status=FleetRules.TripStatus(t,Now);<tr><td>#@t.Id</td><td>@t.Origin → @t.Destination</td><td>@VehicleName(t.VehicleId)</td><td>@DriverName(t.DriverId)</td><td>@t.Start.ToString("dd MMM HH:mm")</td><td>@t.End.ToString("dd MMM HH:mm")</td><td>@t.Distance km</td><td><span class="pill @status.Replace(" ","").ToLowerInvariant()">@status</span></td>@if(section=="Dispatch"){<td>@if(status=="Scheduled"){<div class="actions"><button class="secondary" @onclick="()=>EditTrip(t)">Edit</button><button class="delete" @onclick="()=>DeleteTrip(t)">Delete</button></div>}else{<small>History</small>}</td>}</tr>}
     </tbody></table></div>;
-    private sealed record Snapshot(FleetData Data,DateTime Now);
     public async ValueTask DisposeAsync(){cts.Cancel();timer?.Dispose();if(timerTask is not null)await timerTask;cts.Dispose();}
 }

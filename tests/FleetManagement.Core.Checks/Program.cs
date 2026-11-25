@@ -163,4 +163,11 @@ Check(tinyTour.Visits[0].Arrival==5&&tinyTour.Visits[0].Start==20&&tinyTour.Retu
 Check(MultiVehicleDispatch.Compare(tiny with{Vehicles=[new(1,1)]})[2].Unassigned.Count==1,"multi dispatch impossible capacity");
 Check(MultiVehicleDispatch.Compare(tiny with{Orders=[tiny.Orders[0] with{Latest=3,Earliest=0} ]})[2].Unassigned.Count==1,"multi dispatch impossible deadline");
 Console.WriteLine($"Dispatch synthetic: baseline {plans[0].Assigned}/{plans[0].Distance:F1} km; insertion {plans[1].Assigned}/{plans[1].Distance:F1} km");
-Console.WriteLine("All 113 business rule checks passed.");
+var comparisons=ScenarioComparison.Compare(8,42,.2,.8,experiment.Model,eta.Model);
+Check(comparisons.Count==3,"what-if scenario count");
+Check(comparisons.All(r=>r.Arrived+r.BrokenDown+r.Unfinished==r.Vehicles),"what-if fleet accounting");
+Check(comparisons.All(r=>r.ElapsedMinutes<=DigitalTwin.MaxMinutes&&r.FuelLitres>=0&&r.DistanceKm>=0),"what-if bounded outcomes");
+Check(comparisons[2].BrokenDown==1,"what-if injected breakdown");
+Check(comparisons[0].FuelPer100Km is double a&&comparisons[1].FuelPer100Km is double b&&a<b,"what-if higher simulated fuel intensity");
+Check(comparisons.SequenceEqual(ScenarioComparison.Compare(8,42,.2,.8,experiment.Model,eta.Model)),"what-if reproducibility");
+Console.WriteLine("All 119 business rule checks passed.");

@@ -103,6 +103,11 @@ try {
   await page.getByLabel('Capacity per vehicle (units)').fill('30');
   await page.getByRole('button',{name:'Optimize fleet'}).click();
   await page.screenshot({path:'browser-results/multi-dispatch.png',fullPage:true});
+  await page.getByRole('button',{name:'What-if',exact:true}).click();
+  await page.getByRole('button',{name:'Compare scenarios',exact:true}).click();
+  await page.getByRole('heading',{name:'Scenario outcomes'}).waitFor();
+  await page.getByRole('row').filter({hasText:'Alternative + breakdown'}).waitFor();
+  await page.screenshot({path:'browser-results/what-if.png',fullPage:true});
   await page.setViewportSize({width:390,height:844});
   assert.equal(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth),true);
   await page.getByRole('button',{name:'Overview',exact:true}).click();

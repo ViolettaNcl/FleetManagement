@@ -16,6 +16,8 @@
 
 - Multi-vehicle dispatch: first feasible append and cheapest feasible insertion, capacity/time-window/shift constraints, transparent unassigned orders, route preview and Gantt timeline.
 
+- What-if lab: complete deterministic baseline, traffic alternative and breakdown scenario comparison, completion and fuel intensity reports.
+
 ## V2 baseline — portfolio edition
 
 ### Added

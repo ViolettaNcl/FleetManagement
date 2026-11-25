@@ -42,6 +42,10 @@ public static class OperationsEndpoints
                 await db.SaveChangesAsync(ct);
                 return Results.Created("/api/trips",added);
             },ct)).RequireAuthorization("FleetWrite");
+        api.MapGet("/operations/revision",async (FleetDbContext db,CancellationToken ct)=>{
+            var revision=await db.AuditEntries.MaxAsync(e=>(int?)e.Id,ct)??0;
+            return Results.Ok(new{revision});
+        });
         api.MapGet("/operations/policy",(OperationsPolicy policy)=>policy);
         api.MapGet("/operations/maintenance",async (FleetDbContext db,CancellationToken ct)=>await db.MaintenanceEntries.AsNoTracking().OrderBy(e=>e.Id).ToListAsync(ct));
         api.MapGet("/operations/shifts",async (FleetDbContext db,CancellationToken ct)=>await db.DriverShifts.AsNoTracking().OrderBy(e=>e.Id).ToListAsync(ct));

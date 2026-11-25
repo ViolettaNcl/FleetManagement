@@ -72,3 +72,5 @@ Connected browser CI checks actual Identity login and retry, work/shift/reservat
 Server finance V1 reuses the shared cost, budget and XLSX engines via authorized POST summary/excel routes and connected financial report tab. Integration covers Viewer, validation, recorded expense separation and workbook structure; browser checks report/download. No accounting claims or transactional snapshot.
 
 Connected dispatch includes confirmed single-trip creation and future edit, stale-record comparison, batch preview/apply and Viewer UI restrictions. API tests reject outdated expected record; browser tests actual trip and batch workflows.
+
+Connected revision watch: bounded ten-second polling of authorized audit watermark, change notice and manual refresh preserving draft inputs. Server hub remains available; this is polling, not browser SignalR push.

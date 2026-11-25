@@ -2,10 +2,11 @@
 const $=id=>document.getElementById(id);
 let token=null, generation=0, busy=false, currentPage="fleet";
 const editors=[$("work-form"),$("shift-form"),$("reservation-form"),$("trip-form")];
+let revision=null,revisionTimer=null,checkingRevision=false;
 let tripVersion=null,tripId=null,latestFleet=null,batchRequests=[],batchPlans=[],nextRequest=1;
 function status(text,error=false){$("status").textContent=text;$("status").classList.toggle("error",error);}
 function signOut(message="Signed out."){
-    token=null;generation++;busy=false;
+    token=null;generation++;busy=false;stopRevisionWatch();
     for(const button of document.querySelectorAll("button"))button.disabled=false;
     $("auth").hidden=false;$("workspace").hidden=true;$("logout").hidden=true;
     $("identity").textContent="";$("policy").textContent="";$("updated").textContent="";
@@ -43,6 +44,7 @@ function options(select,rows,label){const old=select.value;select.replaceChildre
 function tab(name){currentPage=name;for(const item of document.querySelectorAll("[data-page]"))item.hidden=item.dataset.page!==name;for(const button of document.querySelectorAll("[data-tab]"))button.setAttribute("aria-pressed",String(button.dataset.tab===name));}
 async function refresh(){
     const active=generation;
+    const checkpoint=await api("/api/operations/revision");
     const [me,fleet,work,shifts,reservations,policy]=await Promise.all([api("/api/auth/me"),api("/api/fleet"),api("/api/operations/maintenance"),api("/api/operations/shifts"),api("/api/operations/reservations"),api("/api/operations/policy")]);
     if(active!==generation||!token)throw Error("Session changed.");
     const admin=me.roles.includes("Admin"),canWrite=admin||me.roles.includes("Dispatcher");
@@ -67,7 +69,9 @@ async function refresh(){
     $("audit-tab").hidden=!admin;
     if(!admin&&currentPage==="audit")tab("fleet");
     $("updated").textContent="Last refreshed "+new Date().toLocaleString()+" · independent API reads, not a transactional snapshot.";
+    revision=checkpoint.revision;$("change-notice").hidden=true;
     $("auth").hidden=true;$("workspace").hidden=false;$("logout").hidden=false;
+    startRevisionWatch();
 }
 async function operation(action){if(busy)return;busy=true;const active=generation;for(const button of document.querySelectorAll("button:not(#logout)"))button.disabled=true;try{await action();}catch(e){if(active===generation)status(e.message||"Request failed.",true);}finally{if(active===generation){busy=false;for(const button of document.querySelectorAll("button"))button.disabled=false;}}}
 $("login").addEventListener("submit",event=>{event.preventDefault();const data=new FormData(event.currentTarget);event.currentTarget.elements.password.value="";operation(async()=>{const result=await api("/api/auth/login","POST",{email:data.get("email"),password:data.get("password")},false);token=result.accessToken;if(typeof token!=="string"){token=null;throw Error("Missing access token.");}try{await refresh();tab("fleet");status("Connected to local API.");}catch(e){if(token)signOut("Unable to load workspace. Sign in again.");throw e;}});});
@@ -128,3 +132,19 @@ function renderPlan(){const p=batchPlans[Number($("batch-strategy").value)];if(!
 $("batch-strategy").addEventListener("change",renderPlan);
 $("batch-apply").addEventListener("click",()=>{if(!$("batch-confirm").checked){status("Confirm the selected assignments first.",true);return;}operation(async()=>{const p=batchPlans[Number($("batch-strategy").value)];if(!p?.assigned.length)throw Error("No assigned requests.");const saved=await api("/api/operations/batch/apply","POST",{confirmed:true,assignments:p.assigned});const ids=new Set(p.assigned.map(a=>a.request.id));batchRequests=batchRequests.filter(r=>!ids.has(r.id));invalidateBatch();renderRequests();status("Applied "+saved.length+" trips. Refreshing…");try{await refresh();status("Applied "+saved.length+" trips and refreshed server data.");}catch{if(token)status("Batch saved; refresh failed. Do not resubmit.",true);}});});
 renderRequests();
+
+function stopRevisionWatch(){if(revisionTimer!==null)clearInterval(revisionTimer);revisionTimer=null;revision=null;checkingRevision=false;$("change-notice").hidden=true;$("connection-state").textContent="";}
+function startRevisionWatch(){if(revisionTimer!==null)return;$("connection-state").textContent="Change monitoring: every 10 seconds while this page is open.";revisionTimer=setInterval(checkRevision,10000);}
+async function checkRevision(){
+    if(!token||busy||checkingRevision||document.hidden)return;
+    const active=generation;checkingRevision=true;
+    try{
+        const result=await api("/api/operations/revision");
+        if(active!==generation||!token)return;
+        if(result.revision!==revision){$("change-notice").hidden=false;$("change-message").textContent="Server records changed. Refresh to review them; your current forms will not be overwritten automatically.";}
+        $("connection-state").textContent="Change monitoring active · "+new Date().toLocaleTimeString();
+    }catch(e){if(active===generation&&token)$("connection-state").textContent="Change monitoring temporarily unavailable. Use manual refresh.";}
+    finally{if(active===generation)checkingRevision=false;}
+}
+$("change-refresh").addEventListener("click",()=>operation(async()=>{await refresh();status("Records refreshed.");}));
+document.addEventListener("visibilitychange",()=>{if(!document.hidden)checkRevision();});

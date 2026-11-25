@@ -93,6 +93,14 @@ try{
     await page.getByRole("button",{name:"Apply batch",exact:true}).click();
     await page.getByRole("status").filter({hasText:"Applied 1 trips and refreshed"}).waitFor();
     await page.locator("#trips").getByRole("row").filter({hasText:"QA console batch"}).waitFor();
+    // A write from a second client must be detected without replacing a form draft.
+    await trip.getByLabel("Trip origin").fill("Unsaved draft");
+    const external=await api.post("/api/drivers",{data:{name:"External QA driver",license:"EXTERNAL-QA",experience:5},headers:{Authorization:"Bearer "+adminToken}});
+    assert.equal(external.status(),201);
+    await page.locator("#change-notice").waitFor({timeout:25000});
+    assert.equal(await trip.getByLabel("Trip origin").inputValue(),"Unsaved draft");
+    await page.getByRole("button",{name:"Review updated records"}).click();
+    await page.getByRole("status").filter({hasText:"Records refreshed."}).waitFor();
     await page.getByRole("button",{name:"Audit",exact:true}).click();
     await page.locator("#audit").getByText("MaintenanceEntry",{exact:true}).first().waitFor();
     assert.equal(await page.evaluate(()=>localStorage.length+sessionStorage.length),0);

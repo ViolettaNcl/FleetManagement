@@ -20,6 +20,11 @@ jobs:
       - uses: actions/setup-dotnet@v4
         with:
           dotnet-version: '10.0.x'
+      - uses: actions/checkout@v4
+        with:
+          ref: 4287aef89861d1be7a0ab38de5c8253074cd402b
+          path: v2-baseline
+      - run: dotnet build v2-baseline/src/FleetManagement.Api -c Release
       - run: dotnet build src/FleetManagement.Api -c Release
       - name: Test HTTP, Identity, audit and persistence (${{ matrix.provider }})
         shell: bash
@@ -51,7 +56,7 @@ jobs:
             export ConnectionStrings__Fleet="Server=127.0.0.1,1433;Database=FleetCi;User Id=sa;Password=$MSSQL_SA_PASSWORD;Encrypt=True;TrustServerCertificate=True"
           fi
           start_api() {
-            dotnet src/FleetManagement.Api/bin/Release/net10.0/FleetManagement.Api.dll --urls http://127.0.0.1:5095 > "$RUNNER_TEMP/fleet-api.log" 2>&1 &
+            dotnet "${api_dll:-src/FleetManagement.Api/bin/Release/net10.0/FleetManagement.Api.dll}" --urls http://127.0.0.1:5095 > "$RUNNER_TEMP/fleet-api.log" 2>&1 &
             pid=$!
             for i in $(seq 1 60); do
               if curl -fsS http://127.0.0.1:5095/health >/dev/null 2>&1; then return; fi
@@ -60,6 +65,25 @@ jobs:
             cat "$RUNNER_TEMP/fleet-api.log"
             return 1
           }
+          api_dll=v2-baseline/src/FleetManagement.Api/bin/Release/net10.0/FleetManagement.Api.dll
+          start_api
+          python3 tests/api/upgrade.py capture "$RUNNER_TEMP/v2-state.json"
+          kill "$pid"; wait "$pid" || true; unset pid api_dll
+          # V3 must refuse the old schema unless explicitly opted in.
+          set +e
+          timeout 20s dotnet src/FleetManagement.Api/bin/Release/net10.0/FleetManagement.Api.dll --urls http://127.0.0.1:5095 > "$RUNNER_TEMP/upgrade-guard.log" 2>&1
+          guard_status=$?
+          set -e
+          test "$guard_status" -ne 0 && test "$guard_status" -ne 124
+          grep -q "V3 operational schema missing or inaccessible" "$RUNNER_TEMP/upgrade-guard.log"
+          export Fleet__UpgradeV2Schema=true
+          start_api
+          python3 tests/api/upgrade.py compare "$RUNNER_TEMP/v2-state.json"
+          kill "$pid"; wait "$pid" || true; unset pid
+          # Explicit rerun is non-destructive and idempotent for known schema.
+          start_api
+          python3 tests/api/upgrade.py compare "$RUNNER_TEMP/v2-state.json"
+          kill "$pid"; wait "$pid" || true; unset pid Fleet__UpgradeV2Schema
           start_api
           python3 tests/api/smoke.py
           dotnet run --project tests/FleetManagement.Realtime.Checks -c Release

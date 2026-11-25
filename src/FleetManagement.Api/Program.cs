@@ -67,13 +67,18 @@ app.UseRateLimiter();
 app.UseAuthentication();
 app.UseAuthorization();
 
+if(builder.Configuration.GetValue<bool>("Fleet:UpgradeV2Schema")&&!builder.Configuration.GetValue<bool>("Fleet:InitializeDatabase"))
+    throw new InvalidOperationException("Fleet:UpgradeV2Schema requires Fleet:InitializeDatabase.");
 if(builder.Configuration.GetValue<bool>("Fleet:InitializeDatabase")){
     await using var scope=app.Services.CreateAsyncScope();
     var db=scope.ServiceProvider.GetRequiredService<FleetDbContext>();
-    await db.Database.EnsureCreatedAsync();
-    // EnsureCreated does not upgrade an existing V2 schema. Fail before seeding or changing identity.
-    try { await db.MaintenanceEntries.Take(1).ToListAsync();await db.DriverShifts.Take(1).ToListAsync();await db.VehicleReservations.Take(1).ToListAsync(); }
-    catch (System.Data.Common.DbException ex) { throw new InvalidOperationException("V3 operational schema missing or inaccessible. Keep existing database backed up; use a fresh V3 database until migrations are available.",ex); }
+    if(builder.Configuration.GetValue<bool>("Fleet:UpgradeV2Schema")){
+        await OperationsSchemaUpgrade.Run(db);
+        app.Logger.LogInformation("Operational schema upgrade verified. Disable Fleet:UpgradeV2Schema for normal startup.");
+    }else await db.Database.EnsureCreatedAsync();
+    // Fail before identity initialization or demo seeding on an incompatible schema.
+    try { await OperationsSchemaUpgrade.Verify(db); }
+    catch (System.Data.Common.DbException ex) { throw new InvalidOperationException("V3 operational schema missing or inaccessible. Back up the existing database; use the documented explicit upgrade or a fresh V3 database.",ex); }
     await IdentityEndpoints.Initialize(scope.ServiceProvider,builder.Configuration);
     if(builder.Configuration.GetValue<bool>("Fleet:SeedDemo") &&
         !await db.Vehicles.AnyAsync() && !await db.Drivers.AnyAsync() && !await db.Trips.AnyAsync()){

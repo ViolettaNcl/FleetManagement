@@ -1,0 +1,22 @@
+name: Windows launcher CI
+on:
+  workflow_dispatch:
+  push:
+    branches: [master, 'feature/**']
+    paths: ['src/FleetManagement.Api/**','src/FleetManagement.Core/**','tools/start-connected.ps1','tests/api/windows-launcher.ps1','.github/workflows/windows-launcher.yml']
+  pull_request:
+    paths: ['src/FleetManagement.Api/**','src/FleetManagement.Core/**','tools/start-connected.ps1','tests/api/windows-launcher.ps1','.github/workflows/windows-launcher.yml']
+permissions:
+  contents: read
+jobs:
+  launcher:
+    runs-on: windows-latest
+    timeout-minutes: 12
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '10.0.x'
+      - name: Exercise existing database launcher on Windows
+        shell: pwsh
+        run: ./tests/api/windows-launcher.ps1

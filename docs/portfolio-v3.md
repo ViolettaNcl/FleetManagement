@@ -27,3 +27,5 @@ Browser demo CI records a fresh synthetic Playwright context, showing the actual
 ## Release gates
 
 Review desktop and mobile screenshots from successful CI, verify all applicable workflows (including dependency inventory) on the intended release commit, and run the local launcher on Windows. The static Pages build and local API remain separate. Publication is an explicit owner decision; no merge or deployment is performed by this guide. See [release checklist](deployment.md), [security boundaries](security-review-v3.md) and [architecture](architecture.md).
+
+Windows launcher CI exercises the actual PowerShell launcher against an existing disposable SQLite database on Windows, including account login and full fleet comparison. The first-run secure password prompt still needs manual acceptance. CI never accesses a user's database.

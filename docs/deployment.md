@@ -19,7 +19,7 @@ Treat it as live only after the deployment succeeds and the URL is verified. The
 - [ ] Browser CI passes on the exact release commit, including Excel download and local persistence.
 - [ ] Both SQLite and SQL Server jobs pass on the exact release commit, including Identity, audit, upgrade, recovery (SQLite), concurrency and SignalR.
 - [ ] Connected workspace CI, ML registry CI and CodeQL pass on the exact release commit (dispatch manually if path filters excluded them).
-- [ ] Validate the local PowerShell launcher on Windows; verify existing V2 data is not upgraded implicitly.
+- [ ] Windows launcher CI passes (existing V3 database, login, data preservation); manually verify the fresh-database secure password prompt and ensure existing V2 data is not upgraded implicitly.
 - [ ] Review the modern NuGet advisory inventory and triage any reported advisories; independently check npm, legacy WPF and container/runtime packages.
 - [ ] Review the V3 security limitations and ensure no credentials, backup files or account data are in release artifacts.
 - [ ] Review the generated screenshots on desktop and mobile and the actual offline screen recording from the exact release commit.

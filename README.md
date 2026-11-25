@@ -23,7 +23,7 @@ The browser edition runs C# in WebAssembly, uses synthetic data, and requires no
 
 - [Latest browser builds and screenshots](https://github.com/ViolettaNcl/FleetManagement/actions/workflows/demo-ci.yml)
 - [How to run the demo and enable GitHub Pages](docs/deployment.md)
-- [Development pull request](https://github.com/ViolettaNcl/FleetManagement/pull/1)
+- [V3 development pull request](https://github.com/ViolettaNcl/FleetManagement/pull/2)
 
 ### Guided demo
 
@@ -47,6 +47,8 @@ The grouped V3 workspace separates operational records, tracking/reporting, simu
 | Geo Map | Replay synthetic regional journeys on bundled Natural Earth geometry with geofence history. |
 | Model Registry | Import local experiment manifests, compare reported ML metrics and inspect fingerprints. |
 | Data Quality | Inspect bounded numeric telemetry CSV, row errors, duplicates and label distribution. |
+| Cost Intelligence | Estimate fuel, maintenance and driver cost for completed trips; inspect clock-time occupancy. |
+| Demand Forecast | Compare seasonal baseline and weekday-trend regression on a chronological synthetic holdout. |
 | Analytics | Filter trips by departure date and download a genuine two-sheet Excel workbook. |
 
 Use **Reset demo** to restore the synthetic dataset. Changes stay in your browser.

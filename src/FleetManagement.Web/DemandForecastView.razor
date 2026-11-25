@@ -1,0 +1,27 @@
+<section class="panel"><div class="registerhead"><div><h2>Demand forecasting lab</h2><p class="muted">Synthetic daily order history with weekly seasonality and trend. Compare a repeated last-week baseline with a fitted weekday-and-trend regression. This is not a forecast of actual registered trips.</p></div><button @onclick="Run">Run forecast</button></div>
+<div class="formgrid"><label>Forecast seed<input type="number" @bind="seed"/></label><label>Forecast horizon (days)<input type="number" min="1" max="28" @bind="horizon"/></label></div>
+@if(error.Length>0){<p class="error" role="status">@error</p>}</section>
+@if(result is not null){
+    var e=result;
+    <div class="metrics"><div class="metric">Training days<strong>@e.TrainDays</strong></div><div class="metric">Holdout days<strong>@e.TestDays</strong></div><div class="metric">Seasonal baseline MAE<strong>@e.NaiveMae.ToString("F2")</strong></div><div class="metric">Trend model MAE<strong>@e.TrendMae.ToString("F2")</strong></div></div>
+    <section class="panel"><h2>Chronological holdout</h2><p class="muted">Both models fit only the first 84 days, then predict the next 28 without seeing their outcomes. MAE is orders per day.</p>
+        <svg viewBox="0 0 600 220" class="ml-chart" role="img" aria-label="Actual synthetic orders and holdout predictions"><line x1="20" x2="580" y1="195" y2="195" stroke="#D8CCEF"/><polyline points="@Points(e.Test,p=>p.Actual!.Value)" fill="none" stroke="#4B0082" stroke-width="2"/><polyline points="@Points(e.Test,p=>p.SeasonalNaive)" fill="none" stroke="#BA55A7" stroke-width="2" stroke-dasharray="5 4"/><polyline points="@Points(e.Test,p=>p.TrendWeekday)" fill="none" stroke="#287E83" stroke-width="2"/></svg><p class="muted">Dark purple: actual · dashed pink: seasonal baseline · teal: fitted regression. Common vertical scale starts at zero.</p>
+    </section>
+    <section class="panel"><h2>Future demand forecast</h2><p class="muted">Separate refit on all 112 observed synthetic days. Future labels are unknown; values are expected order counts, not guaranteed demand.</p>
+        <div class="reportbar"><div><strong>Seasonal baseline total</strong><span>@e.Future.Sum(p=>p.SeasonalNaive).ToString("F1") orders</span></div><div class="progress"><i style="@TotalWidth(e,false)"></i></div></div>
+        <div class="reportbar"><div><strong>Trend + weekday total</strong><span>@e.Future.Sum(p=>p.TrendWeekday).ToString("F1") orders</span></div><div class="progress"><i style="@TotalWidth(e,true)"></i></div></div>
+        <div class="tablewrap"><table><thead><tr><th>Future day</th><th>Seasonal naive</th><th>Trend + weekday</th></tr></thead><tbody>@foreach(var p in e.Future){<tr><td>@(p.Day+1)</td><td>@p.SeasonalNaive.ToString("F1")</td><td>@p.TrendWeekday.ToString("F1")</td></tr>}</tbody></table></div>
+    </section>
+}
+@code{
+    private int seed=42,horizon=14;
+    private string error="";
+    private DemandExperiment? result;
+    private void Run(){if(horizon is <1 or >28){error="Choose 1–28 days.";return;}error="";result=DemandForecast.Run(seed,horizon);}
+    private static string F(double value)=>value.ToString("F2",CultureInfo.InvariantCulture);
+    private static string Points(IReadOnlyList<ForecastPoint> rows,Func<ForecastPoint,double> selector){
+        var max=Math.Max(1,rows.Max(p=>Math.Max(p.Actual??0,Math.Max(p.SeasonalNaive,p.TrendWeekday))));
+        return string.Join(" ",rows.Select((p,i)=>F(20+560.0*i/Math.Max(1,rows.Count-1))+","+F(195-175*selector(p)/max)));
+    }
+    private static string TotalWidth(DemandExperiment e,bool trend){var a=e.Future.Sum(p=>p.SeasonalNaive);var b=e.Future.Sum(p=>p.TrendWeekday);return "width:"+F(100*(trend?b:a)/Math.Max(1,Math.Max(a,b)))+"%";}
+}

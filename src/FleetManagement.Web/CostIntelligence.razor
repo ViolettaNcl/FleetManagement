@@ -1,0 +1,37 @@
+<section class="panel">
+    <h2>Fuel &amp; cost intelligence</h2><p class="muted">Estimated operating costs from completed registered demo trips. All rates are editable assumptions in EUR, not invoices, real fuel measurements or live market prices.</p>
+    <div class="formgrid">
+        <label>Cost period from<input type="date" @bind="from"/></label><label>Cost period to<input type="date" @bind="to"/></label>
+        <label>Fuel intensity (L/100 km)<input type="number" step=".1" min="0" max="100" @bind="intensity"/></label>
+        <label>Fuel price (EUR/L)<input type="number" step=".01" min="0" max="100" @bind="price"/></label>
+        <label>Maintenance allowance (EUR/km)<input type="number" step=".01" min="0" max="100" @bind="maintenance"/></label>
+        <label>Driver rate (EUR/hour)<input type="number" step=".1" min="0" max="1000" @bind="driver"/></label>
+    </div>
+    <button class="secondary" @onclick="ResetRates">Reset assumptions</button>
+    @if(!Valid){<p class="error" role="status">Choose a valid date range and nonnegative rates within the input limits.</p>}
+</section>
+@if(Valid){
+    var report=FleetEconomics.Build(Fleet,Now,from,to,Assumptions);
+    <div class="metrics"><div class="metric">Estimated total<strong>@Money(report.Total)</strong></div><div class="metric">Completed distance<strong>@report.DistanceKm km</strong></div><div class="metric">Estimated fuel<strong>@report.FuelLitres.ToString("N1") L</strong></div><div class="metric">Cost per km<strong>@(report.CostPerKm is decimal c?Money(c):"—")</strong></div></div>
+    <div class="split"><section class="panel"><h2>Cost breakdown</h2>
+    @foreach(var item in new[]{("Fuel",report.FuelCost),("Maintenance allowance",report.MaintenanceCost),("Driver time",report.DriverCost)}){
+        <div class="reportbar"><div><strong>@item.Item1</strong><span>@Money(item.Item2)</span></div><div class="progress"><i style="@Width(item.Item2,report.Total)"></i></div></div>
+    }
+    <p class="muted">Excludes taxes, tolls, financing, depreciation, insurance and other fixed costs.</p></section>
+    <section class="panel"><h2>Recorded trip occupancy</h2><div class="metric">Fleet clock-time occupancy<strong>@(report.Utilization is double u?u.ToString("P1"):"—")</strong></div><p class="muted">Observed window: @report.ObservedHours.ToString("N1") hours. Union of trip intervals clipped to the selected period and demo clock, divided by all registered vehicles × observed calendar hours. Not staffed-shift utilization.</p></section></div>
+    <section class="panel"><h2>Vehicle cost estimates</h2><div class="tablewrap"><table><thead><tr><th>Vehicle</th><th>Completed km</th><th>Trip hours</th><th>Fuel (L)</th><th>Fuel EUR</th><th>Maintenance EUR</th><th>Driver EUR</th><th>Total EUR</th><th>EUR/km</th><th>Occupied hours</th></tr></thead><tbody>
+    @foreach(var row in report.Vehicles){<tr><td>@row.Plate</td><td>@row.DistanceKm</td><td>@row.TripHours.ToString("N1")</td><td>@row.FuelLitres.ToString("N1")</td><td>@row.FuelCost.ToString("N2")</td><td>@row.MaintenanceCost.ToString("N2")</td><td>@row.DriverCost.ToString("N2")</td><td>@row.Total.ToString("N2")</td><td>@(row.CostPerKm?.ToString("N2")??"—")</td><td>@row.OccupiedHours.ToString("N1")</td></tr>}
+    </tbody></table></div><p class="muted">Cost cohort: completed trips departing on selected inclusive dates. Full trip duration and distance count even if arrival is after the period. Occupancy uses overlapping intervals instead. Odometer and actual expenses are not inferred.</p></section>
+}
+@code{
+    [Parameter,EditorRequired] public FleetData Fleet{get;set;}=default!;
+    [Parameter] public DateTime Now{get;set;}
+    private DateTime from,to;
+    private decimal intensity=28,price=1.6m,maintenance=.15m,driver=18;
+    private CostAssumptions Assumptions=>new(intensity,price,maintenance,driver);
+    private bool Valid=>FleetReport.ValidRange(from,to)&&Assumptions.Valid;
+    protected override void OnInitialized(){from=Now.Date.AddDays(-29);to=Now.Date;}
+    private void ResetRates(){intensity=28;price=1.6m;maintenance=.15m;driver=18;}
+    private static string Money(decimal value)=>"€ "+value.ToString("N2");
+    private static string Width(decimal value,decimal total)=>"width:"+(total==0?0:100*value/total).ToString("F2",CultureInfo.InvariantCulture)+"%";
+}

@@ -30,6 +30,9 @@
 
 - Grouped responsive workspace navigation and command center with computed trip workload, maintenance readiness and today's calendar agenda.
 
+- Fuel and cost intelligence: editable illustrative EUR assumptions, completed-trip cost estimates, per-vehicle breakdown and overlap-safe observed calendar-hour occupancy.
+- Demand forecasting: synthetic daily order series, seasonal naive and weekday-trend regression, chronological holdout and separate future refit.
+
 ## V2 baseline — portfolio edition
 
 ### Added

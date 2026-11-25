@@ -45,6 +45,14 @@
     {
         <FleetRegister @key="section" Fleet="fleet" IsVehicles="@(section == "Vehicles")" Today="Now" Changed="Persist" OpenPassport="OpenPassport" />
     }
+    else if (section == "Cost Intelligence")
+    {
+        <CostIntelligence Fleet="fleet" Now="Now" />
+    }
+    else if (section == "Demand Forecast")
+    {
+        <DemandForecastView />
+    }
     else if (section == "Vehicle Passport")
     {
         <VehiclePassportView Fleet="fleet" Now="Now" @bind-SelectedId="passportId" Open="Navigate" EditTrip="EditTrip" />
@@ -149,9 +157,9 @@
 @code {
     private readonly (string Name,string[] Items)[] NavigationGroups = [
         ("Operations",["Overview","Vehicles","Drivers","Vehicle Passport","Dispatch","Calendar","Maintenance"]),
-        ("Tracking & reporting",["Tracking","Geo Map","Analytics","Assistant"]),
+        ("Tracking & reporting",["Tracking","Geo Map","Analytics","Cost Intelligence","Assistant"]),
         ("Simulation & optimization",["Optimization","Multi Dispatch","Digital Twin","What-if"]),
-        ("Machine learning",["Intelligence","Predictions","Model Registry","Data Quality"])
+        ("Machine learning",["Intelligence","Predictions","Demand Forecast","Model Registry","Data Quality"])
     ];
     private const string Key="fleetmanagement.demo.v1";
     private FleetData fleet=FleetRules.Sample(DateTime.Now);

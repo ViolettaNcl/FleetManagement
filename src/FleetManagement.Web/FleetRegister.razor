@@ -44,7 +44,7 @@
         <tbody>
         @foreach(var v in Vehicles)
         {
-            <tr @key="v.Id"><td>@v.Id</td><td>@v.Plate</td><td>@v.Model</td><td>@v.Mileage.ToString("N0") km</td><td>@v.LastService.ToString("dd MMM yyyy")</td><td><span class="pill @FleetRules.Assess(v,Today).Status.ToLowerInvariant()">@FleetRules.Assess(v,Today).Status</span></td><td><div class="actions"><button class="secondary" @onclick="()=>EditVehicle(v)">Edit</button><button class="delete" @onclick="()=>Remove(v.Id)">Delete</button></div></td></tr>
+            <tr @key="v.Id"><td>@v.Id</td><td>@v.Plate</td><td>@v.Model</td><td>@v.Mileage.ToString("N0") km</td><td>@v.LastService.ToString("dd MMM yyyy")</td><td><span class="pill @FleetRules.Assess(v,Today).Status.ToLowerInvariant()">@FleetRules.Assess(v,Today).Status</span></td><td><div class="actions"><button class="secondary" @onclick="()=>OpenPassport.InvokeAsync(v.Id)">Passport</button><button class="secondary" @onclick="()=>EditVehicle(v)">Edit</button><button class="delete" @onclick="()=>Remove(v.Id)">Delete</button></div></td></tr>
         }
         @if(!Vehicles.Any()){<tr><td colspan="7">No matching vehicles.</td></tr>}
         </tbody>
@@ -67,6 +67,7 @@
     [Parameter] public bool IsVehicles {get;set;}
     [Parameter] public DateTime Today {get;set;}
     [Parameter] public EventCallback Changed {get;set;}
+    [Parameter] public EventCallback<int> OpenPassport {get;set;}
     private string query="",sort="id",name="",plate="",license="",feedback="";
     private bool descending,editing,error;
     private int editId,mileage,serviceMileage,intervalKm=10000,intervalDays=180,experience;

@@ -24,6 +24,13 @@ try {
   await page.getByRole('row').filter({hasText:'QA-501'}).waitFor();
   await page.getByLabel('Search',{exact:true}).fill('');
   await page.screenshot({path:'browser-results/vehicles.png',fullPage:true});
+  await page.getByRole('row').filter({hasText:'FM-102'}).getByRole('button',{name:'Passport',exact:true}).click();
+  await page.getByRole('heading',{name:'Digital vehicle passport'}).waitFor();
+  await page.getByRole('heading',{name:'FM-102 · Mercedes Actros'}).waitFor();
+  await page.getByLabel('Passport vehicle').selectOption('3');
+  await page.getByRole('heading',{name:'FM-310 · MAN TGX'}).waitFor();
+  await page.getByLabel('Passport vehicle').selectOption('1');
+  await page.screenshot({path:'browser-results/vehicle-passport.png',fullPage:true});
   await page.getByRole('button',{name:'Dispatch',exact:true}).click();
   await page.getByRole('button',{name:'Suggest assignment'}).click();
   await page.getByRole('status').filter({hasText:'Suggested'}).waitFor();

@@ -26,6 +26,8 @@
 
 - Telemetry CSV quality inspector: strict schema, bounded local preview, missing/nonfinite/out-of-range fields, duplicate vehicle/day detection and label distribution.
 
+- Digital vehicle passport: linked register entry, latest service profile, completed distance, trip activity and filtered history with scheduled trip editing.
+
 ## V2 baseline — portfolio edition
 
 ### Added

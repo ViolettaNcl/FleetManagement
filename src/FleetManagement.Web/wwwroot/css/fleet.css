@@ -23,3 +23,5 @@
 
 /* Long schema strings and intrinsic grid/table widths must not expand the viewport. */
 .csv-header{display:block;max-width:100%;overflow-wrap:anywhere;white-space:normal;background:#F0F0FF;padding:10px;border-radius:6px;color:#483D8B}.panel,.metric,.split>*,.formgrid>*,.tablewrap{min-width:0}.tablewrap{max-width:100%}.split{grid-template-columns:minmax(0,2fr) minmax(0,1fr)}@media(max-width:800px){.split{grid-template-columns:minmax(0,1fr)}}
+
+.registry-details{overflow-wrap:anywhere}.metric strong{overflow-wrap:anywhere}

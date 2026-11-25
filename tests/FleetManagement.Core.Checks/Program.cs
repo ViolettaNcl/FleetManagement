@@ -205,4 +205,12 @@ bool RejectCsv(string value){try{TelemetryCsv.Inspect(value);return false;}catch
 Check(RejectCsv("wrong_header\n"),"CSV schema rejection");
 Check(RejectCsv(new string('x',TelemetryCsv.MaxBytes+1)),"CSV byte bound");
 Check(RejectCsv(TelemetryCsv.Header+"\n"+string.Concat(Enumerable.Repeat("1,0,84,2.1,13.6,0.3,1200,0\n",10001))),"CSV row bound");
-Console.WriteLine("All 146 business rule checks passed.");
+var passport=VehiclePassports.Build(fleet,1,now)!;
+Check(passport.Vehicle.Plate=="FM-102"&&passport.Trips.Count==2,"passport correct vehicle trips");
+Check(passport.CompletedTrips==1&&passport.CompletedDistance==112&&passport.ActiveTrips==1,"passport completed distance and activity");
+Check(passport.Trips.All(t=>t.Trip.VehicleId==1),"passport isolates vehicle");
+Check(passport.DistanceSinceService==6400,"passport service mileage");
+Check(passport.NextServiceDate==fleet.Vehicles[0].LastService.Date.AddDays(180),"passport service calendar deadline");
+Check(VehiclePassports.Build(fleet,999,now)==null,"passport unknown vehicle");
+Check(VehiclePassports.Build(fleet,3,now)!.Trips.Count==0,"passport empty trip history");
+Console.WriteLine("All 153 business rule checks passed.");

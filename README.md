@@ -30,6 +30,7 @@ The browser edition runs C# in WebAssembly, uses synthetic data, and requires no
 | Screen | What to try |
 | --- | --- |
 | Vehicles / Drivers | Add a record, search by registration or name, edit it, and observe duplicate validation. |
+| Vehicle Passport | Open a registered vehicle's trip history, latest service and upcoming assignments. |
 | Calendar | Browse day, week and month, filter vehicles and open scheduled trips. |
 | Dispatch | Suggest an available vehicle and driver; schedule a trip, then try a conflicting assignment. |
 | Tracking | Play the simulated clock and inspect trip progress on the route schematic. |

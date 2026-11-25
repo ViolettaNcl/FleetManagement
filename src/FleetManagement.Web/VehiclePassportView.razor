@@ -1,0 +1,24 @@
+<section class="panel"><div class="registerhead"><div><h2>Digital vehicle passport</h2><p class="muted">A unified view of a registered demo vehicle: current record, latest recorded service, trip history and upcoming assignments. Not a verified real vehicle history.</p></div><button class="secondary" @onclick='()=>Open.InvokeAsync("Vehicles")'>Back to vehicle register</button></div>
+@if(Fleet.Vehicles.Count>0){<label>Passport vehicle<select value="@SelectedId" @onchange="SelectVehicle">@foreach(var vehicle in Fleet.Vehicles.OrderBy(v=>v.Plate)){<option value="@vehicle.Id">@vehicle.Plate · @vehicle.Model</option>}</select></label>}
+else{<p>No vehicles in the register.</p>}</section>
+@if(VehiclePassports.Build(Fleet,SelectedId,Now) is VehiclePassport p){
+    <section class="panel"><div class="registerhead"><div><h2>@p.Vehicle.Plate · @p.Vehicle.Model</h2><p class="muted">Registered mileage and scheduled trip distances are independent demo fields.</p></div><span class="pill @p.Service.Status.ToLowerInvariant()">@p.Service.Status</span></div>
+    <div class="metrics"><div class="metric">Odometer<strong>@p.Vehicle.Mileage.ToString("N0") <small>km</small></strong></div><div class="metric">Completed trips<strong>@p.CompletedTrips</strong></div><div class="metric">Completed trip distance<strong>@p.CompletedDistance.ToString("N0") <small>km</small></strong></div><div class="metric">Upcoming trips<strong>@p.ScheduledTrips</strong></div></div>
+    </section>
+    <div class="split"><section class="panel"><h2>Maintenance profile</h2><dl class="registry-details"><dt>Last recorded service</dt><dd>@p.Vehicle.LastService.ToString("dd MMM yyyy")</dd><dt>Odometer at service</dt><dd>@p.Vehicle.LastServiceMileage.ToString("N0") km</dd><dt>Distance since service</dt><dd>@p.DistanceSinceService.ToString("N0") km</dd><dt>Remaining interval</dt><dd>@p.Service.RemainingKm.ToString("N0") km / @p.Service.RemainingDays days</dd><dt>Calendar deadline</dt><dd>@p.NextServiceDate.ToString("dd MMM yyyy")</dd></dl><p>@p.Service.Reason</p><button class="secondary" @onclick='()=>Open.InvokeAsync("Maintenance")'>Review maintenance</button><p class="muted">Only the latest recorded service is stored; earlier services cannot be reconstructed.</p></section>
+    <section class="panel"><h2>Trip activity</h2>@foreach(var status in new[]{"Completed","In transit","Scheduled"}){var count=p.Trips.Count(t=>t.Status==status);<div class="reportbar"><div><strong>@status</strong><span>@count</span></div><div class="progress"><i style="@Width(count,p.Trips.Count)"></i></div></div>}<button class="secondary" @onclick='()=>Open.InvokeAsync("Calendar")'>Open calendar</button></section></div>
+    <section class="panel"><h2>Vehicle trip history</h2><label>Trip status<select @bind="filter"><option>All</option><option>Completed</option><option>In transit</option><option>Scheduled</option></select></label>
+    <div class="tablewrap"><table><thead><tr><th>Trip</th><th>Route</th><th>Driver</th><th>Departure</th><th>Arrival</th><th>Distance</th><th>Status</th><th>Action</th></tr></thead><tbody>@foreach(var row in p.Trips.Where(t=>filter=="All"||t.Status==filter)){<tr><td>#@row.Trip.Id</td><td>@row.Trip.Origin → @row.Trip.Destination</td><td>@row.Driver</td><td>@row.Trip.Start.ToString("dd MMM HH:mm")</td><td>@row.Trip.End.ToString("dd MMM HH:mm")</td><td>@row.Trip.Distance km</td><td>@row.Status</td><td>@if(row.Status=="Scheduled"){<button class="secondary" @onclick="()=>EditTrip.InvokeAsync(row.Trip)">Edit trip</button>}</td></tr>}</tbody></table></div>
+    @if(!p.Trips.Any(t=>filter=="All"||t.Status==filter)){<p>No matching trips.</p>}</section>
+}
+@code{
+    [Parameter,EditorRequired] public FleetData Fleet{get;set;}=default!;
+    [Parameter] public DateTime Now{get;set;}
+    [Parameter] public int SelectedId{get;set;}
+    [Parameter] public EventCallback<int> SelectedIdChanged{get;set;}
+    [Parameter] public EventCallback<string> Open{get;set;}
+    [Parameter] public EventCallback<Trip> EditTrip{get;set;}
+    private string filter="All";
+    private async Task SelectVehicle(ChangeEventArgs e){if(int.TryParse(e.Value?.ToString(),out var id)){filter="All";await SelectedIdChanged.InvokeAsync(id);}}
+    private static string Width(int count,int total)=>"width:"+(total==0?0:100.0*count/total).ToString("F2",CultureInfo.InvariantCulture)+"%";
+}

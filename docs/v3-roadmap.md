@@ -38,3 +38,5 @@ ML.NET V1 adds a separate local .NET console trainer for FastTree classification
 Model Registry UI V1 accepts up to 10 schema-v1 synthetic manifests per selection, 64 KiB per file and 50 per session; checks basic metric ranges, confusion totals, and SHA-256 syntax. Displays reported model metrics and test fingerprint matches. No archive execution, signature verification or persistent browser storage. CI fixture is explicitly artificial and not an actual experiment.
 
 Data Quality V1 inspects strict, unquoted numeric CSV locally with 1 MiB / 10,000-row limits, demo feature bounds, unique accepted vehicle/day keys and binary labels. Shows counts, up to 50 errors and 20 valid rows. No actual training, correction, data upload or persistence. See data quality docs.
+
+Vehicle Passport V1 derives a read-only view from the shared register and current clock, links back to maintenance/calendar and scheduled-trip editing. Latest recorded service only; no invented historical work orders. Odometer and trip distances are independently maintained fields.

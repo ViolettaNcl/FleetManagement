@@ -23,7 +23,9 @@ services:
       Fleet__Provider: SqlServer
       Fleet__InitializeDatabase: "true"
       Fleet__SeedDemo: "true"
-      ConnectionStrings__Fleet: "Server=db;Database=FleetPortfolio;User Id=sa;Password=${MSSQL_SA_PASSWORD:?Set MSSQL_SA_PASSWORD};Encrypt=True;TrustServerCertificate=True"
+      Fleet__BootstrapAdminEmail: "${FLEET_ADMIN_EMAIL:-}"
+      Fleet__BootstrapAdminPassword: "${FLEET_ADMIN_PASSWORD:-}"
+      ConnectionStrings__Fleet: "Server=db;Database=FleetPortfolioV2;User Id=sa;Password=${MSSQL_SA_PASSWORD:?Set MSSQL_SA_PASSWORD};Encrypt=True;TrustServerCertificate=True"
     ports:
       - "127.0.0.1:5095:8080"
     depends_on:

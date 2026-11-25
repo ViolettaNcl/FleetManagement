@@ -22,6 +22,9 @@ jobs:
         run: |
           export Fleet__ApiKey="$(python3 -c 'import secrets; print(secrets.token_hex(32))')"
           echo "::add-mask::$Fleet__ApiKey"
+          export Fleet__BootstrapAdminEmail=admin@example.test
+          export Fleet__BootstrapAdminPassword="Admin-$(python3 -c 'import secrets; print(secrets.token_hex(24))')!aA"
+          echo "::add-mask::$Fleet__BootstrapAdminPassword"
           export Fleet__InitializeDatabase=true Fleet__SeedDemo=true Fleet__Provider=Sqlite
           export ConnectionStrings__Fleet="Data Source=$RUNNER_TEMP/fleet-test.db"
           start_api() {

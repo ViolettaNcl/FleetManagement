@@ -16,7 +16,7 @@ public static class FleetEndpoints
                 var v=input.ToVehicle(data.Vehicles.Select(x=>x.Id).DefaultIfEmpty().Max()+1);
                 if(VehicleError(data,v) is string error)return Invalid(error);
                 db.Vehicles.Add(v);await db.SaveChangesAsync(ct);return Results.Created($"/api/vehicles/{v.Id}",v);
-            },ct));
+            },ct)).RequireAuthorization("FleetWrite");
         api.MapGet("/vehicles/{id:int}", async Task<IResult> (int id,FleetDbContext db,CancellationToken ct)=>
             await db.Vehicles.AsNoTracking().SingleOrDefaultAsync(x=>x.Id==id,ct) is Vehicle v?Results.Ok(v):Results.NotFound());
         api.MapPut("/vehicles/{id:int}", (int id,VehicleInput input,FleetDbContext db,FleetStore store,CancellationToken ct)=>
@@ -24,19 +24,19 @@ public static class FleetEndpoints
                 if(!data.Vehicles.Any(x=>x.Id==id))return Results.NotFound();
                 var v=input.ToVehicle(id);if(VehicleError(data,v) is string error)return Invalid(error);
                 db.Vehicles.Update(v);await db.SaveChangesAsync(ct);return Results.Ok(v);
-            },ct));
+            },ct)).RequireAuthorization("FleetWrite");
         api.MapDelete("/vehicles/{id:int}", (int id,FleetDbContext db,FleetStore store,CancellationToken ct)=>
             store.Write(async data=>{
                 var v=data.Vehicles.FirstOrDefault(x=>x.Id==id);if(v is null)return Results.NotFound();
                 if(FleetRules.CanRemoveVehicle(data,id) is string error)return Conflict(error);
                 db.Vehicles.Remove(v);await db.SaveChangesAsync(ct);return Results.NoContent();
-            },ct));
+            },ct)).RequireAuthorization("FleetWrite");
         api.MapPost("/drivers", (DriverInput input,FleetDbContext db,FleetStore store,CancellationToken ct)=>
             store.Write(async data=>{
                 var d=input.ToDriver(data.Drivers.Select(x=>x.Id).DefaultIfEmpty().Max()+1);
                 if(DriverError(data,d) is string error)return Invalid(error);
                 db.Drivers.Add(d);await db.SaveChangesAsync(ct);return Results.Created($"/api/drivers/{d.Id}",d);
-            },ct));
+            },ct)).RequireAuthorization("FleetWrite");
         api.MapGet("/drivers/{id:int}", async Task<IResult> (int id,FleetDbContext db,CancellationToken ct)=>
             await db.Drivers.AsNoTracking().SingleOrDefaultAsync(x=>x.Id==id,ct) is Driver d?Results.Ok(d):Results.NotFound());
         api.MapPut("/drivers/{id:int}", (int id,DriverInput input,FleetDbContext db,FleetStore store,CancellationToken ct)=>
@@ -44,13 +44,13 @@ public static class FleetEndpoints
                 if(!data.Drivers.Any(x=>x.Id==id))return Results.NotFound();
                 var d=input.ToDriver(id);if(DriverError(data,d) is string error)return Invalid(error);
                 db.Drivers.Update(d);await db.SaveChangesAsync(ct);return Results.Ok(d);
-            },ct));
+            },ct)).RequireAuthorization("FleetWrite");
         api.MapDelete("/drivers/{id:int}", (int id,FleetDbContext db,FleetStore store,CancellationToken ct)=>
             store.Write(async data=>{
                 var d=data.Drivers.FirstOrDefault(x=>x.Id==id);if(d is null)return Results.NotFound();
                 if(FleetRules.CanRemoveDriver(data,id) is string error)return Conflict(error);
                 db.Drivers.Remove(d);await db.SaveChangesAsync(ct);return Results.NoContent();
-            },ct));
+            },ct)).RequireAuthorization("FleetWrite");
         api.MapGet("/trips/{id:int}", async Task<IResult> (int id,FleetDbContext db,CancellationToken ct)=>
             await db.Trips.AsNoTracking().SingleOrDefaultAsync(x=>x.Id==id,ct) is Trip t?Results.Ok(t):Results.NotFound());
         api.MapPost("/trips", (TripInput input,FleetDbContext db,FleetStore store,CancellationToken ct)=>
@@ -58,20 +58,20 @@ public static class FleetEndpoints
                 var t=input.ToTrip(data.Trips.Select(x=>x.Id).DefaultIfEmpty().Max()+1);
                 if(TripError(data,t) is string error)return Invalid(error);
                 db.Trips.Add(t);await db.SaveChangesAsync(ct);return Results.Created($"/api/trips/{t.Id}",t);
-            },ct));
+            },ct)).RequireAuthorization("FleetWrite");
         api.MapPut("/trips/{id:int}", (int id,TripInput input,FleetDbContext db,FleetStore store,CancellationToken ct)=>
             store.Write(async data=>{
                 if(!data.Trips.Any(x=>x.Id==id))return Results.NotFound();
                 if(FleetRules.CanChangeTrip(data,id,DateTime.UtcNow) is string invalid)return Conflict(invalid);
                 var t=input.ToTrip(id);if(TripError(data,t) is string error)return Invalid(error);
                 db.Trips.Update(t);await db.SaveChangesAsync(ct);return Results.Ok(t);
-            },ct));
+            },ct)).RequireAuthorization("FleetWrite");
         api.MapDelete("/trips/{id:int}", (int id,FleetDbContext db,FleetStore store,CancellationToken ct)=>
             store.Write(async data=>{
                 var t=data.Trips.FirstOrDefault(x=>x.Id==id);if(t is null)return Results.NotFound();
                 if(FleetRules.CanChangeTrip(data,id,DateTime.UtcNow) is string error)return Conflict(error);
                 db.Trips.Remove(t);await db.SaveChangesAsync(ct);return Results.NoContent();
-            },ct));
+            },ct)).RequireAuthorization("FleetWrite");
         api.MapGet("/dispatch/recommend", async Task<IResult> (DateTimeOffset start,DateTimeOffset end,FleetStore store,CancellationToken ct)=>{
             if(end<=start || start.UtcDateTime<=DateTime.UtcNow)return Invalid("Choose a future interval.");
             var a=FleetRules.Recommend(await store.Read(ct),start.UtcDateTime,end.UtcDateTime,start.UtcDateTime);
@@ -84,7 +84,7 @@ public static class FleetEndpoints
                 var v=data.Vehicles.FirstOrDefault(x=>x.Id==id);if(v is null)return Results.NotFound();
                 var updated=v with{LastService=DateTime.UtcNow,LastServiceMileage=v.Mileage};
                 db.Vehicles.Update(updated);await db.SaveChangesAsync(ct);return Results.Ok(updated);
-            },ct));
+            },ct)).RequireAuthorization("FleetWrite");
     }
 
     private static IResult Invalid(string message)=>Results.BadRequest(new{error=message});

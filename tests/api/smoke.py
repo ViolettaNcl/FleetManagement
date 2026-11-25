@@ -4,9 +4,10 @@ from datetime import datetime, timedelta, timezone
 
 BASE = "http://127.0.0.1:5095"
 KEY = os.environ["Fleet__ApiKey"]
-def request(method, path, data=None, status=200, authorized=True):
+def request(method, path, data=None, status=200, authorized=True, token=None):
     headers = {"Content-Type":"application/json"}
-    if authorized: headers["X-Fleet-Key"]=KEY
+    if token: headers["Authorization"]="Bearer "+token
+    elif authorized: headers["X-Fleet-Key"]=KEY
     req=urllib.request.Request(BASE+path,data=json.dumps(data).encode() if data is not None else None,headers=headers,method=method)
     try:
         with urllib.request.urlopen(req,timeout=15) as res:
@@ -18,7 +19,8 @@ def request(method, path, data=None, status=200, authorized=True):
 
 if "--verify-persistence" in sys.argv:
     assert any(v["plate"]=="QA-501" for v in request("GET","/api/vehicles"))
-    print("PASS: durable database after restart")
+    assert request("POST","/api/auth/login",{"email":os.environ["Fleet__BootstrapAdminEmail"],"password":os.environ["Fleet__BootstrapAdminPassword"]},authorized=False)["accessToken"]
+    print("PASS: durable database and Identity account after restart")
     sys.exit(0)
 
 now=datetime.now(timezone.utc)
@@ -48,3 +50,28 @@ request("POST","/api/vehicles/3/service")
 assert next(x for x in request("GET","/api/maintenance") if x["vehicleId"]==3)["assessment"]["status"]=="Healthy"
 assert request("GET",f"/api/vehicles/{v['id']}")["mileage"]==1200
 print("PASS: HTTP auth, OpenAPI, CRUD, validation, scheduling, maintenance and history protection")
+
+# Identity and role boundaries, through actual HTTP.
+def login(email,password):
+    return request("POST","/api/auth/login",{"email":email,"password":password},authorized=False)["accessToken"]
+admin=login(os.environ["Fleet__BootstrapAdminEmail"],os.environ["Fleet__BootstrapAdminPassword"])
+assert "Admin" in request("GET","/api/auth/me",token=admin)["roles"]
+request("GET","/api/admin/audit",status=403)
+viewer_password="Viewer-"+os.urandom(16).hex()+"!aA"
+dispatcher_password="Dispatch-"+os.urandom(16).hex()+"!aA"
+request("POST","/api/admin/users",{"email":"viewer@example.test","password":viewer_password,"role":"Viewer"},201,token=admin)
+request("POST","/api/admin/users",{"email":"dispatcher@example.test","password":dispatcher_password,"role":"Dispatcher"},201,token=admin)
+viewer=login("viewer@example.test",viewer_password)
+dispatcher=login("dispatcher@example.test",dispatcher_password)
+request("GET","/api/fleet",token=viewer)
+request("POST","/api/vehicles",{**vehicle,"plate":"VIEWER-501"},403,token=viewer)
+request("GET","/api/admin/audit",status=403,token=viewer)
+request("POST","/api/admin/users",{"email":"forbidden@example.test","password":viewer_password,"role":"Admin"},403,token=dispatcher)
+request("POST","/api/admin/users",{"email":"forbidden@example.test","password":viewer_password,"role":"Admin"},400,token=admin)
+created=request("POST","/api/vehicles",{**vehicle,"plate":"DISPATCH-501"},201,token=dispatcher)
+audit=request("GET","/api/admin/audit",token=admin)
+dispatcher_id=request("GET","/api/auth/me",token=dispatcher)["id"]
+assert any(a["entityId"]==created["id"] and a["entityType"]=="Vehicle" and a["action"]=="Added" and a["actorId"]==dispatcher_id for a in audit)
+assert not any("password" in str(a).lower() for a in audit)
+request("POST","/api/auth/login",{"email":"viewer@example.test","password":"wrong-password"},401,authorized=False)
+print("PASS: Identity bearer login, role restrictions, admin-only account creation and attributed audit")

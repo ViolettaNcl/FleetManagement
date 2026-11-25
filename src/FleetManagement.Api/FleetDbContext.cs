@@ -1,16 +1,45 @@
 using FleetManagement.Core;
+using Microsoft.AspNetCore.Identity;
+using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
+using System.Security.Claims;
 using Microsoft.EntityFrameworkCore;
 
 namespace FleetManagement.Api;
 
-public sealed class FleetDbContext(DbContextOptions<FleetDbContext> options) : DbContext(options)
+public sealed class FleetDbContext(DbContextOptions<FleetDbContext> options, IHttpContextAccessor http) : IdentityDbContext<IdentityUser>(options)
 {
     public DbSet<Vehicle> Vehicles => Set<Vehicle>();
     public DbSet<Driver> Drivers => Set<Driver>();
     public DbSet<Trip> Trips => Set<Trip>();
 
+    public DbSet<AuditEntry> AuditEntries => Set<AuditEntry>();
+
+    public override Task<int> SaveChangesAsync(bool acceptAllChangesOnSuccess, CancellationToken cancellationToken = default)
+    {
+        ChangeTracker.DetectChanges();
+        var actor = http.HttpContext?.User.FindFirstValue(ClaimTypes.NameIdentifier) ?? "system";
+        var entries = ChangeTracker.Entries()
+            .Where(e => e.Entity is Vehicle or Driver or Trip)
+            .Where(e => e.State is EntityState.Added or EntityState.Modified or EntityState.Deleted)
+            .Select(e => new AuditEntry {
+                ActorId = actor,
+                EntityType = e.Metadata.ClrType.Name,
+                EntityId = (int)e.Property("Id").CurrentValue!,
+                Action = e.State.ToString(),
+                OccurredUtc = DateTime.UtcNow
+            }).ToList();
+        AuditEntries.AddRange(entries);
+        return base.SaveChangesAsync(acceptAllChangesOnSuccess, cancellationToken);
+    }
+
     protected override void OnModelCreating(ModelBuilder model)
     {
+        base.OnModelCreating(model);
+        var audit = model.Entity<AuditEntry>();
+        audit.Property(a => a.ActorId).HasMaxLength(450);
+        audit.Property(a => a.EntityType).HasMaxLength(50);
+        audit.Property(a => a.Action).HasMaxLength(30);
+        audit.HasIndex(a => a.OccurredUtc);
         var vehicles=model.Entity<Vehicle>();
         vehicles.Property(v=>v.Id).ValueGeneratedNever();
         vehicles.Property(v=>v.Plate).HasMaxLength(40);

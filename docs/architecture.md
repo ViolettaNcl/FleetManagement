@@ -67,3 +67,33 @@ flowchart TD
 ```
 
 Neither UI automatically imports or synchronizes the other store. The ML trainer uses synthetic datasets and does not deploy models into the API. See [security review](security-review-v3.md), [database concurrency](database-concurrency.md), [recovery](database-recovery.md) and [performance](performance-testing.md).
+
+## Logical persistence model (V3)
+
+```mermaid
+erDiagram
+    VEHICLES ||--o{ TRIPS : assigned
+    DRIVERS ||--o{ TRIPS : assigned
+    VEHICLES ||--o{ MAINTENANCE_ENTRIES : history
+    VEHICLES ||--o{ VEHICLE_RESERVATIONS : blocks
+    DRIVERS ||--o{ DRIVER_SHIFTS : availability
+    ASPNET_USERS ||--o{ ASPNET_USER_ROLES : memberships
+    ASPNET_ROLES ||--o{ ASPNET_USER_ROLES : memberships
+    AUDIT_ENTRIES {
+      int Id PK
+      string ActorId
+      string EntityType
+      int EntityId
+      string Action
+      datetime OccurredUtc
+    }
+    BATCH_RECEIPTS {
+      string ActorId PK
+      uuid Key PK
+      string PayloadHash
+      string ResponseJson
+      datetime CreatedUtc
+    }
+```
+
+Audit actor/entity references and receipt actor IDs are logical references, not foreign keys: historical records survive deletion of operational entities. BatchReceipts also stores versioned ordinary fleet write receipts; see [receipt contract](batch-receipts.md). Current databases use explicit, verified additive upgrade from the known V2/V3 schemas, not a complete EF migration history. A future migration baseline requires provider-specific model snapshots, explicit operator adoption and tested preservation of all existing records; never run an initial create migration over an existing database.

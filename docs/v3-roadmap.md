@@ -130,3 +130,5 @@ Extended dependency review adds npm audit, exact historical WPF package advisory
 EF migration rehearsal scaffolds provider-specific InitialV3 + snapshots and SQL in disposable CI copies, applies twice to fresh databases, and exercises current API/Identity. Artifacts are candidates only; no implicit upgrade or history stamping of existing databases.
 
 Major remaining offline modules now have translated primary headings, forms, tables, explanatory text and canonical select values: route optimization, multi-dispatch, twin, what-if, geographic replay, finance, analytics, assistant and batch dispatch. Computed domain messages, generated labels/plots and workbook exports are still not fully localized; no claim of complete translation.
+
+Windows fresh launch acceptance uses an optional in-process SecureString parameter (normal prompt unchanged), actual fresh initialization, login, restart and exact fleet comparison. Expanded dependency triage records npm/WPF/NuGet zero reported findings and 24 low/medium unpatched Ubuntu image entries, not hidden. Both provider migration baseline jobs passed at 1a95c14.

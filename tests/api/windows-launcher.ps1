@@ -63,7 +63,7 @@ try {
     if ($before.vehicles.Count -ne 4) { throw "Unexpected seed records." }
     Stop-Child $process;$process=$null
     # Run the actual launcher non-interactively against the existing DB.
-    # Its fresh-db secure prompt remains a manual operator acceptance test.
+    # First-launch initialization is tested below using a SecureString; the actual terminal prompt is manual.
     $process=Start-Child "pwsh" @("-NoProfile","-NonInteractive","-File",$launcher,"-DatabasePath",$db,"-Port","5096")
     Wait-Api $process 5096
     $after=Read-Fleet 5096
@@ -71,8 +71,30 @@ try {
     $html=Invoke-WebRequest -Uri "http://127.0.0.1:5096/console" -TimeoutSec 10
     if ($html.StatusCode -ne 200 -or $html.Content -notmatch "Connected operations workspace") { throw "Connected workspace unavailable." }
     Write-Host "PASS: Windows launcher syntax, existing SQLite startup, account login and fleet preservation."
+    Stop-Child $process;$process=$null
+    $freshDb=Join-Path $temp "fresh database.db"
+    $wrapper=Join-Path $temp "first-run.ps1"
+    $env:FleetLauncherPath=$launcher
+    $env:FleetFreshDb=$freshDb
+    @'
+$ErrorActionPreference="Stop"
+$secret=ConvertTo-SecureString $env:Fleet__BootstrapAdminPassword -AsPlainText -Force
+try { & $env:FleetLauncherPath -DatabasePath $env:FleetFreshDb -Port 5097 -AdminEmail "windows-admin@example.test" -AdminPassword $secret }
+finally { $secret.Dispose() }
+'@ | Set-Content -LiteralPath $wrapper -Encoding utf8
+    $process=Start-Child "pwsh" @("-NoProfile","-NonInteractive","-File",$wrapper)
+    Wait-Api $process 5097
+    $freshFleet=Read-Fleet 5097
+    if ($freshFleet.vehicles.Count -ne 4 -or $freshFleet.drivers.Count -ne 4 -or $freshFleet.trips.Count -ne 4) { throw "Fresh launcher did not seed expected records." }
+    if (-not (Test-Path -LiteralPath $freshDb -PathType Leaf)) { throw "Fresh database missing." }
+    Stop-Child $process;$process=$null
+    $process=Start-Child "pwsh" @("-NoProfile","-NonInteractive","-File",$launcher,"-DatabasePath",$freshDb,"-Port","5098")
+    Wait-Api $process 5098
+    $reopened=Read-Fleet 5098
+    if (($freshFleet|ConvertTo-Json -Depth 20 -Compress) -ne ($reopened|ConvertTo-Json -Depth 20 -Compress)) { throw "Fresh DB changed during reopen." }
+    Write-Host "PASS: Windows launcher fresh SecureString initialization, first login, reopen and preservation."
 } finally {
     Stop-Child $process
     Remove-Item -LiteralPath $temp -Recurse -Force -ErrorAction SilentlyContinue
-    foreach ($name in @("Fleet__ApiKey","Fleet__BootstrapAdminPassword","Fleet__BootstrapAdminEmail","ConnectionStrings__Fleet")) { Remove-Item "Env:$name" -ErrorAction SilentlyContinue }
+    foreach ($name in @("Fleet__ApiKey","Fleet__BootstrapAdminPassword","Fleet__BootstrapAdminEmail","ConnectionStrings__Fleet","FleetLauncherPath","FleetFreshDb")) { Remove-Item "Env:$name" -ErrorAction SilentlyContinue }
 }

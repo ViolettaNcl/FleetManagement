@@ -3,7 +3,8 @@
 param(
     [string]$DatabasePath,
     [ValidateRange(1024,65535)][int]$Port = 5095,
-    [string]$AdminEmail = "admin@example.test"
+    [string]$AdminEmail = "admin@example.test",
+    [System.Security.SecureString]$AdminPassword
 )
 $ErrorActionPreference = "Stop"
 $root = Split-Path -Parent $PSScriptRoot
@@ -37,7 +38,7 @@ try {
     Remove-Item Env:Fleet__BootstrapAdminEmail,Env:Fleet__BootstrapAdminPassword -ErrorAction SilentlyContinue
     if ($fresh) {
         if ($AdminEmail -notmatch '^[^@\s]+@[^@\s]+\.[^@\s]+$') { throw "Enter a valid administrator email." }
-        $password = Read-Host "Choose a unique admin password (12+ characters, uppercase, lowercase, number, symbol)" -AsSecureString
+        $password = if ($null -ne $AdminPassword) { $AdminPassword.Copy() } else { Read-Host "Choose a unique admin password (12+ characters, uppercase, lowercase, number, symbol)" -AsSecureString }
         try {
             $plain = ConvertFrom-SecureString $password -AsPlainText
             if ($plain.Length -lt 12 -or $plain.Length -gt 512 -or $plain -cnotmatch '[A-Z]' -or $plain -cnotmatch '[a-z]' -or $plain -notmatch '\d' -or $plain -notmatch '[^a-zA-Z0-9]') {

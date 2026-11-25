@@ -79,6 +79,8 @@ public static class FleetEndpoints
             store.Write(async data=>{
                 if(!data.Trips.Any(x=>x.Id==id))return Results.NotFound();
                 if(FleetRules.CanChangeTrip(data,id,DateTime.UtcNow) is string invalid)return Conflict(invalid);
+                var current=data.Trips.Single(x=>x.Id==id);
+                if(input.Expected is not null&&!input.Expected.Matches(current))return Conflict("Trip changed since it was opened. Refresh and review it again.");
                 var t=input.ToTrip(id);if(await TripError(data,t,db,policy,ct) is string error)return Invalid(error);
                 db.Trips.Update(t);await db.SaveChangesAsync(ct);return Results.Ok(t);
             },ct)).RequireAuthorization("FleetWrite");
@@ -120,7 +122,12 @@ public sealed record DriverInput(string? Name,string? License,int Experience)
 {
     public Driver ToDriver(int id)=>new(id,(Name??"").Trim(),(License??"").Trim().ToUpperInvariant(),Experience);
 }
-public sealed record TripInput(int VehicleId,int DriverId,string? Origin,string? Destination,DateTimeOffset Start,DateTimeOffset End,int Distance)
+public sealed record TripInput(int VehicleId,int DriverId,string? Origin,string? Destination,DateTimeOffset Start,DateTimeOffset End,int Distance,TripVersion? Expected=null)
 {
     public Trip ToTrip(int id)=>new(id,VehicleId,DriverId,(Origin??"").Trim(),(Destination??"").Trim(),Start.UtcDateTime,End.UtcDateTime,Distance,-1);
+}
+
+public sealed record TripVersion(int VehicleId,int DriverId,string? Origin,string? Destination,DateTimeOffset Start,DateTimeOffset End,int Distance)
+{
+    public bool Matches(Trip t)=>VehicleId==t.VehicleId&&DriverId==t.DriverId&&Origin==t.Origin&&Destination==t.Destination&&Start.UtcDateTime==t.Start&&End.UtcDateTime==t.End&&Distance==t.Distance;
 }

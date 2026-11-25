@@ -163,3 +163,12 @@ with urllib.request.urlopen(req,timeout=15) as response:
         assert all(f"xl/worksheets/sheet{i}.xml" in z.namelist() for i in range(1,5))
         assert b"QA durable work" in z.read("xl/worksheets/sheet3.xml")
 print("PASS: authenticated server financial summary and four-sheet Excel")
+
+# Optional expected version protects connected trip editing from stale overwrites.
+editable=next(t for t in request("GET","/api/trips") if t["origin"]=="QA batch")
+expected={k:editable[k] for k in ("vehicleId","driverId","origin","destination","start","end","distance")}
+changed={**expected,"destination":"Updated hub","expected":expected}
+request("PUT",f"/api/trips/{editable['id']}",changed,200,token=dispatcher)
+request("PUT",f"/api/trips/{editable['id']}",{**changed,"destination":"Stale hub"},409,token=dispatcher)
+assert request("GET",f"/api/trips/{editable['id']}")["destination"]=="Updated hub"
+print("PASS: stale trip version rejected without overwriting latest edit")

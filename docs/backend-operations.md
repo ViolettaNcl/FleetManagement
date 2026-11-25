@@ -16,3 +16,5 @@ Dedicated Connected workspace CI launches a fresh SQLite API and exercises the a
 
 ## Server financial reporting
 POST /api/reports/finance/summary and /api/reports/finance/excel use the shared C# cost/budget calculations with inclusive UTC date range, rates, budget and fixed allowance. Both require FleetRead, including Viewer. The connected finance tab calculates and downloads a four-sheet workbook. Recorded work costs remain separate from allowances. Rates are user-entered estimates. No accounting or transactional read snapshot.
+
+Connected Trips now supports confirmed creation and future-trip editing with optional expected-record comparison under the write lock, plus session-local batch requests, preview and confirmed apply. The API returns 409 on an edited record mismatch. Legacy clients that omit expected remain compatible and do not receive lost-update protection. No automatic deletion or retry; server validates all assignments.

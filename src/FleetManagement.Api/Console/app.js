@@ -1,7 +1,8 @@
 "use strict";
 const $=id=>document.getElementById(id);
 let token=null, generation=0, busy=false, currentPage="fleet";
-const editors=[$("work-form"),$("shift-form"),$("reservation-form")];
+const editors=[$("work-form"),$("shift-form"),$("reservation-form"),$("trip-form")];
+let tripVersion=null,tripId=null,latestFleet=null,batchRequests=[],batchPlans=[],nextRequest=1;
 function status(text,error=false){$("status").textContent=text;$("status").classList.toggle("error",error);}
 function signOut(message="Signed out."){
     token=null;generation++;busy=false;
@@ -11,7 +12,7 @@ function signOut(message="Signed out."){
     for(const id of ["vehicles","drivers","trips","work","shifts","reservations","audit","finance-summary","finance-vehicles"])$(id).replaceChildren();
     for(const id of ["vehicles-count","drivers-count","trips-count","work-count"])$(id).textContent="—";
     for(const form of editors){form.reset();form.hidden=true;for(const select of form.querySelectorAll("select[name=vehicleId],select[name=driverId]"))select.replaceChildren();}
-    $("audit-tab").hidden=true;$("login").reset();status(message);
+    $("audit-tab").hidden=true;$("login").reset();latestFleet=null;resetTrip();clearBatch();$("batch-panel").hidden=true;status(message);
 }
 async function api(path,method="GET",body,authenticated=true,format="json"){
     const active=generation;
@@ -32,7 +33,7 @@ function table(id,columns,rows){
     for(const [label] of columns){const th=document.createElement("th");th.scope="col";th.textContent=label;tr.append(th);}
     head.append(tr);root.append(head);
     const body=document.createElement("tbody");
-    for(const row of rows){const r=document.createElement("tr");for(const [,get] of columns){const td=document.createElement("td");const value=get(row);td.textContent=value==null?"—":String(value);r.append(td);}body.append(r);}
+    for(const row of rows){const r=document.createElement("tr");for(const [,get] of columns){const td=document.createElement("td");const value=get(row);if(value instanceof Node)td.append(value);else td.textContent=value==null?"—":String(value);r.append(td);}body.append(r);}
     if(!rows.length){const r=document.createElement("tr"),td=document.createElement("td");td.colSpan=columns.length;td.textContent="No records.";r.append(td);body.append(r);}
     root.append(body);
 }
@@ -49,18 +50,20 @@ async function refresh(){
     if(active!==generation||!token)throw Error("Session changed.");
     $("identity").textContent=me.name+" · "+me.roles.join(", ");
     $("policy").textContent=policy.requireShifts?"Strict driver shifts enabled":"Driver shifts advisory";
+    latestFleet=fleet;
     const vehicles=fleet.vehicles,drivers=fleet.drivers;
     const vehicle=id=>vehicles.find(v=>v.id===id)?.plate??("#"+id);
     const driver=id=>drivers.find(d=>d.id===id)?.name??("#"+id);
     $("vehicles-count").textContent=vehicles.length;$("drivers-count").textContent=drivers.length;$("trips-count").textContent=fleet.trips.length;$("work-count").textContent=work.length;
     table("vehicles",[["Plate",text("plate")],["Model",text("model")],["Mileage (km)",text("mileage")],["Last service",r=>date(r.lastService)]],vehicles);
     table("drivers",[["Name",text("name")],["License",text("license")],["Experience",text("experience")]],drivers);
-    table("trips",[["Vehicle",r=>vehicle(r.vehicleId)],["Driver",r=>driver(r.driverId)],["Origin",text("origin")],["Destination",text("destination")],["Start",r=>date(r.start)],["End",r=>date(r.end)],["Distance",text("distance")]],fleet.trips);
+    table("trips",[["Vehicle",r=>vehicle(r.vehicleId)],["Driver",r=>driver(r.driverId)],["Origin",text("origin")],["Destination",text("destination")],["Start",r=>date(r.start)],["End",r=>date(r.end)],["Distance",text("distance")],...(canWrite?[["Action",t=>tripAction(t)]]:[])],fleet.trips);
     table("work",[["Vehicle",r=>vehicle(r.vehicleId)],["Work",text("kind")],["Recorded",r=>date(r.recordedAt)],["Mileage",text("mileage")],["Cost EUR",r=>r.costEur??"Unknown"],["Notes",text("notes")]],work);
     table("shifts",[["Driver",r=>driver(r.driverId)],["Start",r=>date(r.start)],["End",r=>date(r.end)]],shifts);
     table("reservations",[["Vehicle",r=>vehicle(r.vehicleId)],["Category",text("kind")],["Start",r=>date(r.start)],["End",r=>date(r.end)],["Notes",text("notes")]],reservations);
     table("audit",[["Time",r=>date(r.occurredUtc)],["Actor",text("actorId")],["Entity",text("entityType")],["ID",text("entityId")],["Action",text("action")]],audit);
     for(const form of editors){form.hidden=!canWrite;for(const select of form.querySelectorAll("select[name=vehicleId]"))options(select,vehicles,v=>v.plate);for(const select of form.querySelectorAll("select[name=driverId]"))options(select,drivers,d=>d.name);}
+    $("batch-panel").hidden=!canWrite;
     $("audit-tab").hidden=!admin;
     if(!admin&&currentPage==="audit")tab("fleet");
     $("updated").textContent="Last refreshed "+new Date().toLocaleString()+" · independent API reads, not a transactional snapshot.";
@@ -107,3 +110,21 @@ $("finance-export").addEventListener("click",()=>{if(!financeForm.reportValidity
     document.body.append(link);link.click();link.remove();setTimeout(()=>URL.revokeObjectURL(url),1000);
     status("Financial workbook downloaded.");
 });});
+
+const tripForm=$("trip-form"),batchForm=$("batch-form");
+function tripFields(d){return {vehicleId:Number(d.get("vehicleId")),driverId:Number(d.get("driverId")),origin:d.get("origin").trim(),destination:d.get("destination").trim(),start:utc(d.get("start")),end:utc(d.get("end")),distance:Number(d.get("distance"))};}
+function versionOf(t){return {vehicleId:t.vehicleId,driverId:t.driverId,origin:t.origin,destination:t.destination,start:t.start,end:t.end,distance:t.distance};}
+function resetTrip(){tripId=null;tripVersion=null;$("trip-form").reset();$("trip-heading").textContent="Create trip";$("trip-edit-status").textContent="";}
+function tripAction(t){if(new Date(t.start)<=new Date())return "History";const button=document.createElement("button");button.type="button";button.textContent="Edit trip";button.addEventListener("click",()=>{if(busy)return;tripId=t.id;tripVersion=versionOf(t);const e=tripForm.elements;for(const k of ["vehicleId","driverId","origin","destination","distance"])e[k].value=t[k];e.start.value=new Date(t.start).toISOString().slice(0,19);e.end.value=new Date(t.end).toISOString().slice(0,19);e.confirmed.checked=false;$("trip-heading").textContent="Edit trip #"+t.id;$("trip-edit-status").textContent="Review current values before saving. A changed original record is rejected.";tripForm.scrollIntoView({block:"nearest"});});return button;}
+$("trip-new").addEventListener("click",resetTrip);
+tripForm.addEventListener("submit",event=>{event.preventDefault();const d=new FormData(tripForm);if(!d.has("confirmed"))return;operation(async()=>{const body=tripFields(d);if(tripVersion)body.expected=tripVersion;await api(tripId===null?"/api/trips":"/api/trips/"+tripId,tripId===null?"POST":"PUT",body);resetTrip();status("Trip saved. Refreshing…");try{await refresh();status("Trip saved and server data refreshed.");}catch{if(token)status("Trip saved; refresh failed. Do not resubmit.",true);}});});
+function renderRequests(){table("batch-requests",[["Request",text("id")],["Origin",text("origin")],["Destination",text("destination")],["Start",r=>date(r.start)],["End",r=>date(r.end)],["Distance",text("distance")]],batchRequests);}
+function invalidateBatch(){batchPlans=[];$("batch-result").hidden=true;$("batch-confirm").checked=false;$("batch-assigned").replaceChildren();$("batch-unassigned").replaceChildren();$("batch-strategy").replaceChildren();$("batch-counts").textContent="";}
+function clearBatch(){batchRequests=[];nextRequest=1;batchForm.reset();invalidateBatch();renderRequests();}
+batchForm.addEventListener("submit",event=>{event.preventDefault();if(busy)return;if(batchRequests.length>=40){status("At most 40 requests.",true);return;}const d=new FormData(batchForm);const start=utc(d.get("start")),end=utc(d.get("end"));if(new Date(end)<=new Date(start)||new Date(start)<=new Date()){status("Choose a future positive interval.",true);return;}batchRequests.push({id:nextRequest++,origin:d.get("origin").trim(),destination:d.get("destination").trim(),start,end,distance:Number(d.get("distance"))});invalidateBatch();renderRequests();status("Request added.");});
+$("batch-clear").addEventListener("click",()=>{clearBatch();status("Pending requests cleared.");});
+$("batch-preview").addEventListener("click",()=>operation(async()=>{if(!batchRequests.length)throw Error("Add at least one request.");invalidateBatch();batchPlans=await api("/api/operations/batch/preview","POST",{requests:batchRequests});const select=$("batch-strategy");for(const [i,p] of batchPlans.entries()){const o=document.createElement("option");o.value=i;o.textContent=p.strategy+" ("+p.assigned.length+" assigned)";select.append(o);}select.value=String(batchPlans.length-1);renderPlan();status("Preview ready; server register unchanged.");}));
+function renderPlan(){const p=batchPlans[Number($("batch-strategy").value)];if(!p)return;$("batch-confirm").checked=false;$("batch-result").hidden=false;$("batch-counts").textContent=p.assigned.length+" assigned · "+p.unassigned.length+" pending";table("batch-assigned",[["Request",r=>r.request.id],["Route",r=>r.request.origin+" → "+r.request.destination],["Vehicle",r=>latestFleet?.vehicles.find(v=>v.id===r.vehicleId)?.plate??r.vehicleId],["Driver",r=>latestFleet?.drivers.find(v=>v.id===r.driverId)?.name??r.driverId]],p.assigned);table("batch-unassigned",[["Pending request",text("id")],["Origin",text("origin")],["Destination",text("destination")]],p.unassigned);}
+$("batch-strategy").addEventListener("change",renderPlan);
+$("batch-apply").addEventListener("click",()=>{if(!$("batch-confirm").checked){status("Confirm the selected assignments first.",true);return;}operation(async()=>{const p=batchPlans[Number($("batch-strategy").value)];if(!p?.assigned.length)throw Error("No assigned requests.");const saved=await api("/api/operations/batch/apply","POST",{confirmed:true,assignments:p.assigned});const ids=new Set(p.assigned.map(a=>a.request.id));batchRequests=batchRequests.filter(r=>!ids.has(r.id));invalidateBatch();renderRequests();status("Applied "+saved.length+" trips. Refreshing…");try{await refresh();status("Applied "+saved.length+" trips and refreshed server data.");}catch{if(token)status("Batch saved; refresh failed. Do not resubmit.",true);}});});
+renderRequests();

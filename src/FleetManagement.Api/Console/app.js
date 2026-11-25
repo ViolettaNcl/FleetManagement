@@ -8,12 +8,12 @@ function signOut(message="Signed out."){
     for(const button of document.querySelectorAll("button"))button.disabled=false;
     $("auth").hidden=false;$("workspace").hidden=true;$("logout").hidden=true;
     $("identity").textContent="";$("policy").textContent="";$("updated").textContent="";
-    for(const id of ["vehicles","drivers","trips","work","shifts","reservations","audit"])$(id).replaceChildren();
+    for(const id of ["vehicles","drivers","trips","work","shifts","reservations","audit","finance-summary","finance-vehicles"])$(id).replaceChildren();
     for(const id of ["vehicles-count","drivers-count","trips-count","work-count"])$(id).textContent="—";
     for(const form of editors){form.reset();form.hidden=true;for(const select of form.querySelectorAll("select[name=vehicleId],select[name=driverId]"))select.replaceChildren();}
     $("audit-tab").hidden=true;$("login").reset();status(message);
 }
-async function api(path,method="GET",body,authenticated=true){
+async function api(path,method="GET",body,authenticated=true,format="json"){
     const active=generation;
     const headers={"Accept":"application/json"};
     if(authenticated){if(!token)throw Error("Sign in again.");headers.Authorization="Bearer "+token;}
@@ -22,7 +22,7 @@ async function api(path,method="GET",body,authenticated=true){
     if(active!==generation)throw Error("Session changed.");
     if(response.status===401){if(authenticated)signOut("Session expired. Sign in again.");throw Error("Authentication failed.");}
     if(!response.ok){let detail;try{detail=await response.json();}catch{}throw Error(typeof detail?.error==="string"?detail.error:"Request failed (HTTP "+response.status+").");}
-    const result=response.status===204?null:await response.json();
+    const result=response.status===204?null:format==="blob"?await response.blob():await response.json();
     if(active!==generation)throw Error("Session changed.");
     return result;
 }
@@ -77,3 +77,33 @@ editor($("work-form"),"/api/operations/maintenance",d=>({vehicleId:Number(d.get(
 editor($("shift-form"),"/api/operations/shifts",d=>({driverId:Number(d.get("driverId")),start:utc(d.get("start")),end:utc(d.get("end"))}));
 editor($("reservation-form"),"/api/operations/reservations",d=>({vehicleId:Number(d.get("vehicleId")),kind:d.get("kind"),notes:d.get("notes"),start:utc(d.get("start")),end:utc(d.get("end"))}));
 tab("fleet");
+
+const financeForm=$("finance-form");
+const today=new Date().toISOString().slice(0,10);
+financeForm.elements.from.value=new Date(Date.now()-29*86400000).toISOString().slice(0,10);
+financeForm.elements.to.value=today;
+function financeInput(){
+    const d=new FormData(financeForm);
+    const n=key=>Number(d.get(key));
+    return {from:d.get("from"),to:d.get("to"),rates:{litresPer100Km:n("litresPer100Km"),fuelPrice:n("fuelPrice"),maintenancePerKm:n("maintenancePerKm"),driverPerHour:n("driverPerHour")},budget:n("budget"),fixedAllowance:n("fixedAllowance")};
+}
+const eur=value=>value==null?"—":new Intl.NumberFormat("en",{style:"currency",currency:"EUR"}).format(value);
+financeForm.addEventListener("submit",event=>{event.preventDefault();operation(async()=>{
+    const data=await api("/api/reports/finance/summary","POST",financeInput());
+    const actual=data.completedEstimate,plan=data.budgetProjection,journal=data.recordedMaintenance;
+    table("finance-summary",[["Metric",r=>r[0]],["Value",r=>r[1]]],[
+        ["Completed distance (km)",actual.distanceKm],["Completed-trip estimate",eur(actual.total)],["Cost per km",eur(actual.costPerKm)],
+        ["Recorded maintenance (separate)",eur(journal.recordedCost)],["Unknown work costs",journal.entries-journal.withCost],
+        ["Projected whole-period total",eur(plan.projectedTotal)],["Period budget",eur(plan.budget)],["Budget headroom",eur(plan.headroom)],["Calculated at",date(data.asOfUtc)]]);
+    table("finance-vehicles",[["Vehicle",text("plate")],["Distance (km)",text("distanceKm")],["Estimated cost",r=>eur(r.total)],["EUR/km",r=>eur(r.costPerKm)]],actual.vehicles);
+    status("Financial report calculated from server records.");
+});});
+financeForm.addEventListener("input",()=>{for(const id of ["finance-summary","finance-vehicles"])$(id).replaceChildren();});
+$("finance-export").addEventListener("click",()=>{if(!financeForm.reportValidity())return;operation(async()=>{
+    const input=financeInput();
+    const blob=await api("/api/reports/finance/excel","POST",input,true,"blob");
+    const url=URL.createObjectURL(blob);const link=document.createElement("a");
+    link.href=url;link.download="fleet-finance-"+input.from+"-"+input.to+".xlsx";
+    document.body.append(link);link.click();link.remove();setTimeout(()=>URL.revokeObjectURL(url),1000);
+    status("Financial workbook downloaded.");
+});});

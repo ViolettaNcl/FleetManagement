@@ -68,3 +68,5 @@ Provider-level write serialization now encloses all FleetStore writes in a trans
 Connected workspace V1 served by API at /console, same-origin Identity login, memory-only bearer, role-sensitive reads and confirmed maintenance/shift/reservation writes, restrictive CSP, safe text rendering. Independent offline Blazor demo remains unchanged. No full UI parity or SignalR integration.
 
 Connected browser CI checks actual Identity login and retry, work/shift/reservation forms, role-sensitive audit and read-only Viewer, safe literal DOM text, mobile layout and memory-only session. Session change guards reject stale responses.
+
+Server finance V1 reuses the shared cost, budget and XLSX engines via authorized POST summary/excel routes and connected financial report tab. Integration covers Viewer, validation, recorded expense separation and workbook structure; browser checks report/download. No accounting claims or transactional snapshot.

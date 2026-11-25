@@ -148,3 +148,18 @@ for path,content in (("/console",b"Connected operations workspace"),("/console/a
         assert response.headers["Cache-Control"]=="no-store"
         assert "frame-ancestors 'none'" in response.headers["Content-Security-Policy"]
 print("PASS: same-origin console assets and security headers")
+
+# Financial reports reuse the shared calculator, never combine recorded work and estimates.
+finance={"from":now.date().isoformat(),"to":(now+timedelta(days=8)).date().isoformat(),"rates":{"litresPer100Km":28,"fuelPrice":1.6,"maintenancePerKm":.15,"driverPerHour":18},"budget":5000,"fixedAllowance":500}
+request("POST","/api/reports/finance/summary",finance,401,authorized=False)
+request("POST","/api/reports/finance/summary",{**finance,"budget":-1},400,token=viewer)
+financial=request("POST","/api/reports/finance/summary",finance,token=viewer)
+assert financial["recordedMaintenance"]["recordedCost"]==125.5
+assert abs(financial["budgetProjection"]["headroom"]-(5000-financial["budgetProjection"]["projectedTotal"]))<1e-7
+assert financial["budgetProjection"]["projectedTotal"]>=financial["completedEstimate"]["total"]
+req=urllib.request.Request(BASE+"/api/reports/finance/excel",data=json.dumps(finance).encode(),headers={"Content-Type":"application/json","Authorization":"Bearer "+viewer})
+with urllib.request.urlopen(req,timeout=15) as response:
+    with zipfile.ZipFile(io.BytesIO(response.read())) as z:
+        assert all(f"xl/worksheets/sheet{i}.xml" in z.namelist() for i in range(1,5))
+        assert b"QA durable work" in z.read("xl/worksheets/sheet3.xml")
+print("PASS: authenticated server financial summary and four-sheet Excel")

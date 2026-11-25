@@ -30,7 +30,7 @@ try{
     await page.getByLabel("Password").fill(adminPassword);
     await page.getByRole("button",{name:"Sign in",exact:true}).click();
     await page.getByRole("heading",{name:"Operations overview"}).waitFor();
-    await page.locator("#vehicles-count").getByText("4",{exact:true}).waitFor();
+    assert.equal(await page.locator("#vehicles-count").innerText(),"4");
     await page.getByRole("button",{name:"Maintenance",exact:true}).click();
     await page.locator("#work-form").getByLabel("Vehicle").selectOption("3");
     await page.locator("#work-form").getByLabel("Category").selectOption("Repair");
@@ -75,6 +75,14 @@ try{
     await page.getByRole("button",{name:"Maintenance",exact:true}).click();
     assert.equal(await page.locator("#work-form").isVisible(),false);
     assert.equal(await page.locator("#audit-tab").isVisible(),false);
+    await page.getByRole("button",{name:"Financial reports",exact:true}).click();
+    await page.getByRole("button",{name:"Calculate financial report"}).click();
+    await page.locator("#finance-summary").getByText("Recorded maintenance (separate)",{exact:true}).waitFor();
+    const downloadPromise=page.waitForEvent("download");
+    await page.getByRole("button",{name:"Download financial Excel"}).click();
+    const download=await downloadPromise;
+    assert.match(download.suggestedFilename(),/^fleet-finance-.*\.xlsx$/);
+    await download.saveAs("browser-results/connected-finance.xlsx");
     await page.setViewportSize({width:390,height:844});
     assert.equal(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth),true);
     await page.screenshot({path:"browser-results/connected-viewer-mobile.png",fullPage:true});

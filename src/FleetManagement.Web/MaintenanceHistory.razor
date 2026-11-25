@@ -1,0 +1,13 @@
+<div class="metrics"><div class="metric">Work records<strong>@Entries.Count</strong></div><div class="metric">Known costs<strong>@Entries.Count(e=>e.CostEur.HasValue)</strong></div><div class="metric">Recorded expense<strong>€ @Entries.Sum(e=>e.CostEur??0).ToString("N2")</strong></div></div>
+@if(Entries.Count==0){<p class="muted">No journal entries. Existing last-service fields do not reconstruct earlier work records.</p>}
+else{
+<div class="tablewrap"><table><thead><tr><th>Record</th><th>Vehicle</th><th>Recorded at</th><th>Odometer</th><th>Work</th><th>Notes</th><th>Cost (EUR)</th></tr></thead><tbody>
+@foreach(var entry in Entries.OrderByDescending(e=>e.RecordedAt).ThenByDescending(e=>e.Id)){
+<tr><td>#@entry.Id</td><td>@(Fleet.Vehicles.FirstOrDefault(v=>v.Id==entry.VehicleId)?.Plate??"Unknown")</td><td>@entry.RecordedAt.ToString("dd MMM yyyy HH:mm")</td><td>@entry.Mileage km</td><td>@entry.Kind</td><td style="white-space:normal;overflow-wrap:anywhere;max-width:260px">@entry.Notes</td><td>@(entry.CostEur?.ToString("N2")??"Unknown")</td></tr>
+}
+</tbody></table></div>
+}
+@code{
+    [Parameter,EditorRequired] public FleetData Fleet{get;set;}=default!;
+    [Parameter,EditorRequired] public IReadOnlyList<MaintenanceEntry> Entries{get;set;}=[];
+}

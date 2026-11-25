@@ -43,11 +43,11 @@
     }
     else if (section == "Vehicles" || section == "Drivers")
     {
-        <FleetRegister @key="section" Fleet="fleet" IsVehicles="@(section == "Vehicles")" Today="Now" Changed="Persist" OpenPassport="OpenPassport" />
+        <FleetRegister @key="section" Fleet="fleet" IsVehicles="@(section == "Vehicles")" Today="Now" Changed="Persist" OpenPassport="OpenPassport" MaintenanceEntries="maintenanceEntries" />
     }
     else if (section == "Cost Intelligence")
     {
-        <CostIntelligence Fleet="fleet" Now="Now" />
+        <CostIntelligence Fleet="fleet" MaintenanceEntries="maintenanceEntries" Now="Now" />
     }
     else if (section == "Demand Forecast")
     {
@@ -55,7 +55,7 @@
     }
     else if (section == "Vehicle Passport")
     {
-        <VehiclePassportView Fleet="fleet" Now="Now" @bind-SelectedId="passportId" Open="Navigate" EditTrip="EditTrip" />
+        <VehiclePassportView Fleet="fleet" MaintenanceEntries="maintenanceEntries" Now="Now" @bind-SelectedId="passportId" Open="Navigate" EditTrip="EditTrip" />
     }
     else if (section == "Data Quality")
     {
@@ -149,7 +149,8 @@
         <section class="panel"><h2>Predictive maintenance · rule-based</h2><p class="muted">Explainable assessment based on service mileage and time intervals. Not a trained ML model or a safety certification.</p>
         <div class="tablewrap"><table><thead><tr><th>Vehicle</th><th>Remaining km</th><th>Remaining days</th><th>Health</th><th>Explanation</th><th>Action</th></tr></thead><tbody>
         @foreach(var v in fleet.Vehicles){var a=FleetRules.Assess(v,Now);<tr><td>@v.Plate · @v.Model</td><td>@a.RemainingKm.ToString("N0")</td><td>@a.RemainingDays</td><td><span class="pill @a.Status.ToLowerInvariant()">@a.Status</span></td><td>@a.Reason</td><td><button class="secondary" @onclick="()=>RecordService(v.Id)">Record service</button></td></tr>}
-        </tbody></table></div></section>
+        </tbody></table></div>@if(maintenanceFeedback.Length>0){<p role="status" class="notice">@maintenanceFeedback</p>}</section>
+        <MaintenanceJournalView Fleet="fleet" Entries="maintenanceEntries" Now="Now" Changed="Persist"/>
     }
     <footer class="footer">FleetManagement · WPF-inspired .NET WebAssembly demo · synthetic data only · <a href="https://github.com/ViolettaNcl/FleetManagement">Source repository</a></footer>
     </div>
@@ -163,6 +164,8 @@
     ];
     private const string Key="fleetmanagement.demo.v1";
     private FleetData fleet=FleetRules.Sample(DateTime.Now);
+    private List<MaintenanceEntry> maintenanceEntries=[];
+    private string maintenanceFeedback="";
     private string section="Overview",origin="North depot",destination="Central hub",feedback="",storageMessage="";
     private int passportId=1;
     private int distance=132,vehicleId=1,driverId=1,selectedTrip=101;
@@ -176,17 +179,17 @@
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
         if(!firstRender)return;
-        try { var json=await JS.InvokeAsync<string?>("localStorage.getItem",Key); if(!string.IsNullOrWhiteSpace(json)){var saved=JsonSerializer.Deserialize(json, DemoJsonContext.Default.DemoSnapshot); if(saved?.Data is not null && saved.Data.Vehicles is not null && saved.Data.Drivers is not null && saved.Data.Trips is not null){fleet=saved.Data;Now=saved.Now;start=Now.AddHours(1);end=Now.AddHours(2);}} }
+        try { var json=await JS.InvokeAsync<string?>("localStorage.getItem",Key); if(!string.IsNullOrWhiteSpace(json)){var saved=JsonSerializer.Deserialize(json, DemoJsonContext.Default.DemoSnapshot); if(saved?.Data is not null && saved.Data.Vehicles is not null && saved.Data.Drivers is not null && saved.Data.Trips is not null){fleet=saved.Data;maintenanceEntries=saved.MaintenanceEntries??[];Now=saved.Now;start=Now.AddHours(1);end=Now.AddHours(2);}} }
         catch (Exception) {storageMessage="Local storage is unavailable; changes are session-only.";}
         timer=new PeriodicTimer(TimeSpan.FromSeconds(1)); timerTask=RunClock(); StateHasChanged();
     }
     private async Task RunClock(){try{while(await timer!.WaitForNextTickAsync(cts.Token)){await InvokeAsync(()=>{if(playing){Now=Now.AddMinutes(2);StateHasChanged();}});}}catch(OperationCanceledException){}}
-    private async Task Persist(){try{await JS.InvokeVoidAsync("localStorage.setItem",Key,JsonSerializer.Serialize(new DemoSnapshot(fleet,Now), DemoJsonContext.Default.DemoSnapshot));}catch(Exception){storageMessage="Unable to save locally; changes are session-only.";}}
+    private async Task Persist(){try{await JS.InvokeVoidAsync("localStorage.setItem",Key,JsonSerializer.Serialize(new DemoSnapshot(fleet,Now,maintenanceEntries), DemoJsonContext.Default.DemoSnapshot));}catch(Exception){storageMessage="Unable to save locally; changes are session-only.";}}
     private void OpenPassport(int id){passportId=id;Navigate("Vehicle Passport");}
     private void Navigate(string item){if(item=="Vehicle Passport"&&!fleet.Vehicles.Any(v=>v.Id==passportId))passportId=fleet.Vehicles.FirstOrDefault()?.Id??0;section=item;feedback="";if(item=="Dispatch"){if(!fleet.Vehicles.Any(v=>v.Id==vehicleId))vehicleId=fleet.Vehicles.FirstOrDefault()?.Id??0;if(!fleet.Drivers.Any(d=>d.Id==driverId))driverId=fleet.Drivers.FirstOrDefault()?.Id??0;}}
     private async Task ToggleSimulation(){playing=!playing;if(!playing)await Persist();}
     private async Task Advance(){Now=Now.AddMinutes(15);await Persist();}
-    private async Task Reset(){if(!await JS.InvokeAsync<bool>("confirm","Reset all demo data?"))return;playing=false;Now=DateTime.Now;fleet=FleetRules.Sample(Now);start=Now.AddHours(1);end=Now.AddHours(2);vehicleId=driverId=1;selectedTrip=101;editingTripId=null;feedback="";await Persist();}
+    private async Task Reset(){if(!await JS.InvokeAsync<bool>("confirm","Reset all demo data?"))return;playing=false;Now=DateTime.Now;fleet=FleetRules.Sample(Now);maintenanceEntries.Clear();maintenanceFeedback="";start=Now.AddHours(1);end=Now.AddHours(2);vehicleId=driverId=1;selectedTrip=101;editingTripId=null;feedback="";await Persist();}
     private string VehicleName(int id)=>fleet.Vehicles.FirstOrDefault(v=>v.Id==id)?.Plate??"Unknown";
     private string DriverName(int id)=>fleet.Drivers.FirstOrDefault(d=>d.Id==id)?.Name??"Unknown";
     private void Recommend(){var a=FleetRules.Recommend(fleet,start,end,Now,editingTripId);isError=a is null;if(a is null){feedback="No available service-ready assignment for this interval.";return;}vehicleId=a.VehicleId;driverId=a.DriverId;feedback=$"Suggested {VehicleName(vehicleId)} and {DriverName(driverId)}.";}
@@ -205,7 +208,7 @@
         if(old is null)fleet.Trips.Add(trip);else fleet.Trips[fleet.Trips.FindIndex(t=>t.Id==id)]=trip;
         CancelEdit();feedback=$"Trip #{id} saved.";await Persist();
     }
-    private async Task RecordService(int id){var index=fleet.Vehicles.FindIndex(v=>v.Id==id);if(index<0)return;var v=fleet.Vehicles[index];fleet.Vehicles[index]=v with{LastService=Now,LastServiceMileage=v.Mileage};await Persist();}
+    private async Task RecordService(int id){var error=MaintenanceJournal.Record(fleet,maintenanceEntries,new(id,"Scheduled service","",null),Now);maintenanceFeedback=error??"Service recorded; cost unknown.";if(error is null)await Persist();}
     private (int X,int Y) Position(Trip t){var p=FleetRules.Progress(t,Now);var (x1,y1,x2,y2)=t.Track switch{0=>(110,55,300,160),1=>(65,165,535,105),_=>(300,160,420,285)};return ((int)(x1+(x2-x1)*p),(int)(y1+(y2-y1)*p));}
     private RenderFragment TripTable()=> @<div class="tablewrap"><table><thead><tr><th>Trip</th><th>Route</th><th>Vehicle</th><th>Driver</th><th>Start</th><th>End</th><th>Distance</th><th>Status</th>@if(section=="Dispatch"){<th>Actions</th>}</tr></thead><tbody>
     @foreach(var t in fleet.Trips.OrderByDescending(t=>t.Start)){var status=FleetRules.TripStatus(t,Now);<tr><td>#@t.Id</td><td>@t.Origin → @t.Destination</td><td>@VehicleName(t.VehicleId)</td><td>@DriverName(t.DriverId)</td><td>@t.Start.ToString("dd MMM HH:mm")</td><td>@t.End.ToString("dd MMM HH:mm")</td><td>@t.Distance km</td><td><span class="pill @status.Replace(" ","").ToLowerInvariant()">@status</span></td>@if(section=="Dispatch"){<td>@if(status=="Scheduled"){<div class="actions"><button class="secondary" @onclick="()=>EditTrip(t)">Edit</button><button class="delete" @onclick="()=>DeleteTrip(t)">Delete</button></div>}else{<small>History</small>}</td>}</tr>}

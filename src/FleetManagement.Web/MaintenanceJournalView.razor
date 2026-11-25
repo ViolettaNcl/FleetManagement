@@ -1,0 +1,26 @@
+<section class="panel"><h2>Maintenance work journal</h2><p class="muted">Append a completed demo work record at the current simulated time and odometer. Only scheduled service resets the service interval. Repair and inspection do not reset it. Costs are user-entered EUR amounts; leave blank if unknown.</p>
+<div class="formgrid">
+<label>Work vehicle<select @bind="vehicle"><option value="0">Select vehicle</option>@foreach(var v in Fleet.Vehicles.OrderBy(v=>v.Plate)){<option value="@v.Id">@v.Plate</option>}</select></label>
+<label>Work category<select @bind="kind"><option>Scheduled service</option><option>Repair</option><option>Inspection</option></select></label>
+<label>Recorded cost (EUR)<input type="number" min="0" max="1000000" step=".01" @bind="cost"/></label>
+<label>Work notes<input maxlength="500" @bind="notes"/></label>
+</div>
+<button @onclick="Save" disabled="@(Fleet.Vehicles.Count==0)">Add work record</button>
+@if(message.Length>0){<p role="status" class="@(failed?"error":"notice")">@message</p>}
+</section>
+<section class="panel"><h2>Recorded maintenance history</h2><label>History vehicle<select @bind="filter"><option value="0">All vehicles</option>@foreach(var v in Fleet.Vehicles.OrderBy(v=>v.Plate)){<option value="@v.Id">@v.Plate</option>}</select></label><MaintenanceHistory Fleet="Fleet" Entries="@(Entries.Where(e=>filter==0||e.VehicleId==filter).ToArray())"/><p class="muted">Recorded amounts exclude unknown costs. Journal entries are append-only in this demo; no historical invoices are implied.</p></section>
+@code{
+    [Parameter,EditorRequired] public FleetData Fleet{get;set;}=default!;
+    [Parameter,EditorRequired] public List<MaintenanceEntry> Entries{get;set;}=[];
+    [Parameter] public DateTime Now{get;set;}
+    [Parameter] public EventCallback Changed{get;set;}
+    private int vehicle,filter;
+    private string kind="Scheduled service",notes="",message="";
+    private decimal? cost;
+    private bool failed;
+    private async Task Save(){
+        var error=MaintenanceJournal.Record(Fleet,Entries,new(vehicle,kind,notes,cost),Now);
+        failed=error is not null;message=error??"Work record saved.";
+        if(!failed){notes="";cost=null;await Changed.InvokeAsync();}
+    }
+}

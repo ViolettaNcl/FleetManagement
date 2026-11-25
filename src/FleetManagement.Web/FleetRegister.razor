@@ -68,6 +68,7 @@
     [Parameter] public DateTime Today {get;set;}
     [Parameter] public EventCallback Changed {get;set;}
     [Parameter] public EventCallback<int> OpenPassport {get;set;}
+    [Parameter] public IReadOnlyList<MaintenanceEntry> MaintenanceEntries {get;set;}=[];
     private string query="",sort="id",name="",plate="",license="",feedback="";
     private bool descending,editing,error;
     private int editId,mileage,serviceMileage,intervalKm=10000,intervalDays=180,experience;
@@ -89,7 +90,12 @@
             var id=editId==0?Fleet.Vehicles.Select(v=>v.Id).DefaultIfEmpty().Max()+1:editId;
             var item=new Vehicle(id,plate.Trim(),name.Trim(),mileage,serviceMileage,serviceDate.Date,intervalKm,intervalDays);
             if(FleetRules.ValidateVehicle(Fleet,item,Today) is string invalid){Fail(invalid);return;}
-            var index=Fleet.Vehicles.FindIndex(v=>v.Id==id);if(index<0)Fleet.Vehicles.Add(item);else Fleet.Vehicles[index]=item;
+            var index=Fleet.Vehicles.FindIndex(v=>v.Id==id);if(index<0)Fleet.Vehicles.Add(item);else{
+                var before=Fleet.Vehicles[index];
+                if(MaintenanceJournal.ValidateVehicleEdit(before,item,MaintenanceEntries) is string historyError){Fail(historyError);return;}
+                if(item.LastService.Date==before.LastService.Date)item=item with{LastService=before.LastService};
+                Fleet.Vehicles[index]=item;
+            }
         }else{
             var id=editId==0?Fleet.Drivers.Select(d=>d.Id).DefaultIfEmpty().Max()+1:editId;
             var item=new Driver(id,name.Trim(),license.Trim(),experience);
@@ -99,7 +105,7 @@
         editing=false;error=false;feedback="Record saved.";await Changed.InvokeAsync();
     }
     private async Task Remove(int id){
-        var invalid=IsVehicles?FleetRules.CanRemoveVehicle(Fleet,id):FleetRules.CanRemoveDriver(Fleet,id);
+        var invalid=IsVehicles?(FleetRules.CanRemoveVehicle(Fleet,id)??MaintenanceJournal.CanRemove(id,MaintenanceEntries)):FleetRules.CanRemoveDriver(Fleet,id);
         if(invalid is not null){Fail(invalid);return;}
         if(!await JS.InvokeAsync<bool>("confirm","Delete this demo record?"))return;
         if(IsVehicles)Fleet.Vehicles.RemoveAll(v=>v.Id==id);else Fleet.Drivers.RemoveAll(d=>d.Id==id);

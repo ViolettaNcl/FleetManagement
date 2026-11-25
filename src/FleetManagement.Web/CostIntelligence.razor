@@ -19,6 +19,8 @@
     }
     <p class="muted">Excludes taxes, tolls, financing, depreciation, insurance and other fixed costs.</p></section>
     <section class="panel"><h2>Recorded trip occupancy</h2><div class="metric">Fleet clock-time occupancy<strong>@(report.Utilization is double u?u.ToString("P1"):"—")</strong></div><p class="muted">Observed window: @report.ObservedHours.ToString("N1") hours. Union of trip intervals clipped to the selected period and demo clock, divided by all registered vehicles × observed calendar hours. Not staffed-shift utilization.</p></section></div>
+    var journal=MaintenanceJournal.Totals(MaintenanceEntries,from,to);
+    <section class="panel"><h2>Recorded maintenance expenses</h2><div class="metrics"><div class="metric">Recorded costs<strong>@Money(journal.RecordedCost)</strong></div><div class="metric">Work entries<strong>@journal.Entries</strong></div><div class="metric">Unknown costs<strong>@(journal.Entries-journal.WithCost)</strong></div></div><p class="muted">Recorded work dates, not trip departure dates. These amounts are separate from the estimated maintenance allowance above and are not added to it.</p></section>
     <section class="panel"><h2>Vehicle cost estimates</h2><div class="tablewrap"><table><thead><tr><th>Vehicle</th><th>Completed km</th><th>Trip hours</th><th>Fuel (L)</th><th>Fuel EUR</th><th>Maintenance EUR</th><th>Driver EUR</th><th>Total EUR</th><th>EUR/km</th><th>Occupied hours</th></tr></thead><tbody>
     @foreach(var row in report.Vehicles){<tr><td>@row.Plate</td><td>@row.DistanceKm</td><td>@row.TripHours.ToString("N1")</td><td>@row.FuelLitres.ToString("N1")</td><td>@row.FuelCost.ToString("N2")</td><td>@row.MaintenanceCost.ToString("N2")</td><td>@row.DriverCost.ToString("N2")</td><td>@row.Total.ToString("N2")</td><td>@(row.CostPerKm?.ToString("N2")??"—")</td><td>@row.OccupiedHours.ToString("N1")</td></tr>}
     </tbody></table></div><p class="muted">Cost cohort: completed trips departing on selected inclusive dates. Full trip duration and distance count even if arrival is after the period. Occupancy uses overlapping intervals instead. Odometer and actual expenses are not inferred.</p></section>
@@ -26,6 +28,7 @@
 @code{
     [Parameter,EditorRequired] public FleetData Fleet{get;set;}=default!;
     [Parameter] public DateTime Now{get;set;}
+    [Parameter] public IReadOnlyList<MaintenanceEntry> MaintenanceEntries{get;set;}=[];
     private DateTime from,to;
     private decimal intensity=28,price=1.6m,maintenance=.15m,driver=18;
     private CostAssumptions Assumptions=>new(intensity,price,maintenance,driver);

@@ -33,6 +33,8 @@
 - Fuel and cost intelligence: editable illustrative EUR assumptions, completed-trip cost estimates, per-vehicle breakdown and overlap-safe observed calendar-hour occupancy.
 - Demand forecasting: synthetic daily order series, seasonal naive and weekday-trend regression, chronological holdout and separate future refit.
 
+- Persistent maintenance work journal with scheduled service, repair and inspection categories, optional recorded EUR expense, passport integration and separate financial totals. Legacy browser snapshots remain readable; no fabricated historical work.
+
 ## V2 baseline — portfolio edition
 
 ### Added

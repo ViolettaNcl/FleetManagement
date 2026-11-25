@@ -32,11 +32,11 @@ The grouped V3 workspace separates operational records, tracking/reporting, simu
 | Screen | What to try |
 | --- | --- |
 | Vehicles / Drivers | Add a record, search by registration or name, edit it, and observe duplicate validation. |
-| Vehicle Passport | Open a registered vehicle's trip history, latest service and upcoming assignments. |
+| Vehicle Passport | Open a registered vehicle's trip history, latest service, recorded maintenance work and upcoming assignments. |
 | Calendar | Browse day, week and month, filter vehicles and open scheduled trips. |
 | Dispatch | Suggest an available vehicle and driver; schedule a trip, then try a conflicting assignment. |
 | Tracking | Play the simulated clock and inspect trip progress on the route schematic. |
-| Maintenance | Compare service intervals and record a service to reset the maintenance assessment. |
+| Maintenance | Compare service intervals, record scheduled service, repair or inspection, and review persistent work history. |
 | Optimization | Compare original, nearest-neighbor and 2-opt tours on seeded stops. |
 | Intelligence | Train a local synthetic maintenance classifier and inspect held-out metrics and predictions. |
 | Predictions | Train an ETA regressor, compare errors and scan synthetic telemetry anomalies. |

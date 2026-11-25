@@ -1,0 +1,66 @@
+<section class="panel">
+    <div class="registerhead">
+        <div><h2>Fleet calendar</h2><p class="muted">Trip schedule and calendar-based service deadlines. Service deadlines are reminders, not reserved repair slots.</p></div>
+        <button @onclick="NewTrip">+ Plan trip</button>
+    </div>
+    <div class="actions calendar-toolbar">
+        <button class="secondary" aria-label="Previous period" @onclick="()=>Move(-1)">‹</button>
+        <button class="secondary" @onclick="Today">Today</button>
+        <button class="secondary" aria-label="Next period" @onclick="()=>Move(1)">›</button>
+        <strong>@Heading</strong>
+        <div class="actions">
+            @foreach(var v in Views){<button class="@(view==v?"":"secondary")" aria-pressed="@(view==v)" @onclick="()=>view=v">@v</button>}
+        </div>
+    </div>
+    <div class="actions registertools">
+        <label>Vehicle<select @bind="vehicleId"><option value="0">All vehicles</option>@foreach(var v in Fleet.Vehicles){<option value="@v.Id">@v.Plate</option>}</select></label>
+        <label>Event type<select @bind="kind"><option value="All">All events</option><option value="Trip">Trips</option><option value="Service due">Service deadlines</option></select></label>
+    </div>
+    @if(view!="Day")
+    {
+        <div class="calendar-scroll"><div class="calendar-grid @(view=="Month"?"month":"week")">
+            @foreach(var name in Weekdays){<div class="calendar-label">@name</div>}
+            @foreach(var date in Days)
+            {
+                var entries=Events(date);
+                <button class="calendar-day @(date==selected.Date?"selected":"") @(date.Month!=selected.Month&&view=="Month"?"outside":"")" aria-label="@date.ToString("yyyy-MM-dd")" aria-pressed="@(date==selected.Date)" @onclick="()=>selected=date">
+                    <span class="calendar-date">@date.Day</span>
+                    @foreach(var e in entries.Take(3)){<span class="calendar-chip @(e.Kind=="Trip"?"trip":"service")">@e.Title · @e.Kind</span>}
+                    @if(entries.Count>3){<small>+ @(entries.Count-3) more</small>}
+                </button>
+            }
+        </div></div>
+    }
+</section>
+<section class="panel">
+    <h2>Agenda · @selected.ToString("dddd, dd MMM yyyy")</h2>
+    @if(Events(selected).Count==0){<p class="muted">No matching events for this date.</p>}
+    @foreach(var entry in Events(selected))
+    {
+        <div class="agenda-row">
+            <span class="calendar-chip @(entry.Kind=="Trip"?"trip":"service")">@entry.Kind</span>
+            <div><strong>@entry.Title</strong><div class="muted">@entry.Detail</div><small>@(entry.Kind=="Trip"?entry.Start.ToString("dd MMM HH:mm")+" – "+entry.End.ToString("dd MMM HH:mm"):"All-day reminder")</small></div>
+            @if(entry.TripId is int id && Fleet.Trips.FirstOrDefault(t=>t.Id==id) is Trip trip && trip.Start>Now)
+            {<button class="secondary" @onclick="()=>EditTrip.InvokeAsync(trip)">Edit trip #@id</button>}
+        </div>
+    }
+</section>
+@code {
+    [Parameter, EditorRequired] public FleetData Fleet {get;set;}=default!;
+    [Parameter] public DateTime Now {get;set;}
+    [Parameter] public EventCallback<Trip> EditTrip {get;set;}
+    [Parameter] public EventCallback<DateTime> PlanTrip {get;set;}
+    private readonly string[] Views=["Day","Week","Month"];
+    private readonly string[] Weekdays=["Mon","Tue","Wed","Thu","Fri","Sat","Sun"];
+    private string view="Week",kind="All";
+    private int vehicleId;
+    private DateTime selected;
+    protected override void OnInitialized()=>selected=Now.Date;
+    private DateTime GridStart=>view=="Month"?FleetCalendar.WeekStart(new DateTime(selected.Year,selected.Month,1)):FleetCalendar.WeekStart(selected);
+    private IEnumerable<DateTime> Days=>Enumerable.Range(0,view=="Month"?42:7).Select(i=>GridStart.AddDays(i));
+    private string Heading=>view=="Month"?selected.ToString("MMMM yyyy"):view=="Day"?selected.ToString("dd MMM yyyy"):$"{GridStart:dd MMM} – {GridStart.AddDays(6):dd MMM yyyy}";
+    private IReadOnlyList<CalendarEntry> Events(DateTime date)=>FleetCalendar.Entries(Fleet,date.Date,date.Date.AddDays(1)).Where(e=>(vehicleId==0||e.VehicleId==vehicleId)&&(kind=="All"||e.Kind==kind)).ToList();
+    private void Move(int delta)=>selected=view=="Month"?selected.AddMonths(delta):selected.AddDays(delta*(view=="Week"?7:1));
+    private void Today()=>selected=Now.Date;
+    private Task NewTrip()=>PlanTrip.InvokeAsync(selected);
+}

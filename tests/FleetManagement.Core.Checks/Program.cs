@@ -56,4 +56,13 @@ using(var reader=new StreamReader(zip.GetEntry("xl/worksheets/sheet2.xml")!.Open
     var sheet=reader.ReadToEnd();
     Check(sheet.Contains("=1+1")&&sheet.Contains("inlineStr")&&!sheet.Contains("<f>")&&sheet.Contains("A&amp;B"),"xlsx text escaping and formula safety");
 }
-Console.WriteLine("All 41 business rule checks passed.");
+Check(FleetCalendar.WeekStart(now)==new DateTime(2026,11,23),"calendar Monday start");
+Check(FleetCalendar.WeekStart(new DateTime(2026,11,29))==new DateTime(2026,11,23),"calendar Sunday boundary");
+var events=FleetCalendar.Entries(fleet,now.Date,now.Date.AddDays(1));
+Check(events.Count(e=>e.Kind=="Trip")==4,"calendar includes today's trips");
+var service=FleetCalendar.Entries(fleet,now.Date.AddDays(19),now.Date.AddDays(22));
+Check(service.Any(e=>e.Kind=="Service due"&&e.VehicleId==2&&e.TripId==null),"calendar service deadline");
+Check(FleetCalendar.Entries(fleet,now.AddMinutes(60),now.AddMinutes(70)).All(e=>e.TripId!=101),"calendar excludes trip ending at interval start");
+var overnight=FleetRules.Sample(now);overnight.Trips.Add(new(200,1,1,"A","B",now.Date.AddHours(23),now.Date.AddDays(1).AddHours(2),30,-1));
+Check(FleetCalendar.Entries(overnight,now.Date.AddDays(1),now.Date.AddDays(2)).Any(e=>e.TripId==200),"calendar cross-midnight trip");
+Console.WriteLine("All 47 business rule checks passed.");

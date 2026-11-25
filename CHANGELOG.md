@@ -1,6 +1,10 @@
 # Changelog
 
-## Unreleased — portfolio edition
+## Unreleased — V3 intelligence development
+
+- Fleet calendar: day/week/month, vehicle/event filters, cross-midnight agenda, service date reminders and links to dispatch.
+
+## V2 baseline — portfolio edition
 
 ### Added
 - Modern .NET 10 shared C# core, Blazor WebAssembly demo and independent ASP.NET Core API.

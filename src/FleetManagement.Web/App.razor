@@ -36,6 +36,10 @@
     {
         <FleetRegister @key="section" Fleet="fleet" IsVehicles="@(section == "Vehicles")" Today="Now" Changed="Persist" />
     }
+    else if (section == "Calendar")
+    {
+        <FleetCalendarView Fleet="fleet" Now="Now" EditTrip="EditTrip" PlanTrip="PlanFromCalendar" />
+    }
     else if (section == "Analytics")
     {
         <FleetAnalytics Fleet="fleet" Now="Now" />
@@ -89,7 +93,7 @@
     <footer class="footer">FleetManagement · WPF-inspired .NET WebAssembly demo · synthetic data only · <a href="https://github.com/ViolettaNcl/FleetManagement">Source repository</a></footer>
 </main>
 @code {
-    private readonly string[] Sections = ["Overview","Vehicles","Drivers","Tracking","Dispatch","Maintenance","Analytics"];
+    private readonly string[] Sections = ["Overview","Vehicles","Drivers","Tracking","Dispatch","Calendar","Maintenance","Analytics"];
     private const string Key="fleetmanagement.demo.v1";
     private FleetData fleet=FleetRules.Sample(DateTime.Now);
     private string section="Overview",origin="North depot",destination="Central hub",feedback="",storageMessage="";
@@ -118,6 +122,7 @@
     private string DriverName(int id)=>fleet.Drivers.FirstOrDefault(d=>d.Id==id)?.Name??"Unknown";
     private void Recommend(){var a=FleetRules.Recommend(fleet,start,end,Now,editingTripId);isError=a is null;if(a is null){feedback="No available service-ready assignment for this interval.";return;}vehicleId=a.VehicleId;driverId=a.DriverId;feedback=$"Suggested {VehicleName(vehicleId)} and {DriverName(driverId)}.";}
     private void EditTrip(Trip trip){if(FleetRules.CanChangeTrip(fleet,trip.Id,Now) is string invalid){feedback=invalid;isError=true;return;}editingTripId=trip.Id;origin=trip.Origin;destination=trip.Destination;distance=trip.Distance;start=trip.Start;end=trip.End;vehicleId=trip.VehicleId;driverId=trip.DriverId;feedback="";section="Dispatch";}
+    private void PlanFromCalendar(DateTime date){CancelEdit();start=date.Date.AddHours(9);if(start<=Now)start=Now.AddHours(1);end=start.AddHours(1);Navigate("Dispatch");}
     private void CancelEdit(){editingTripId=null;origin="North depot";destination="Central hub";distance=132;start=Now.AddHours(1);end=Now.AddHours(2);feedback="";}
     private async Task DeleteTrip(Trip trip){if(FleetRules.CanChangeTrip(fleet,trip.Id,Now) is string invalid){feedback=invalid;isError=true;return;}if(!await JS.InvokeAsync<bool>("confirm",$"Delete scheduled trip #{trip.Id}?"))return;fleet.Trips.RemoveAll(t=>t.Id==trip.Id);if(editingTripId==trip.Id)CancelEdit();feedback=$"Trip #{trip.Id} deleted.";isError=false;await Persist();}
     private async Task SaveTrip(){

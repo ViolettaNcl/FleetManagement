@@ -30,6 +30,7 @@ The browser edition runs C# in WebAssembly, uses synthetic data, and requires no
 | Screen | What to try |
 | --- | --- |
 | Vehicles / Drivers | Add a record, search by registration or name, edit it, and observe duplicate validation. |
+| Calendar | Browse day, week and month, filter vehicles and open scheduled trips. |
 | Dispatch | Suggest an available vehicle and driver; schedule a trip, then try a conflicting assignment. |
 | Tracking | Play the simulated clock and inspect trip progress on the route schematic. |
 | Maintenance | Compare service intervals and record a service to reset the maintenance assessment. |
@@ -94,7 +95,7 @@ FleetManagement.Tests/      Original desktop tests (legacy)
 
 ## Validation and project boundaries
 
-The CI workflows are the source of truth for the latest test outcomes. Earlier revisions have passed both SQLite and SQL Server HTTP/Identity/audit/restart checks and browser smoke tests. Latest reports and realtime changes must pass their own CI runs before release. CI screenshots and published static builds are available as workflow artifacts.
+The CI workflows are the source of truth for the latest test outcomes. Earlier revisions have passed both SQLite and SQL Server HTTP/Identity/audit/restart checks and browser smoke tests. The V2 baseline passed browser, API and CodeQL checks. V3 changes are under development and must pass their own CI before release. CI screenshots and published static builds are available as workflow artifacts.
 
 The browser demo has synthetic data, local simulation rather than real GPS, and deterministic service interval rules rather than a trained ML model. The local API is a portfolio implementation, not a hardened production service; schema migrations, multi-instance scheduling concurrency, account lifecycle, and durable events remain future work. The legacy WPF app has known security and test limitations.
 

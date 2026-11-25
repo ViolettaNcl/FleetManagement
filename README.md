@@ -124,3 +124,7 @@ The browser demo has synthetic data, local simulation rather than real GPS, and 
 ## Original project documentation
 
 The original Russian requirements, UML diagrams, SQL scripts and user/developer guides are preserved. See [README.ru.md](README.ru.md) for the complete index.
+
+### Integrated batch dispatch
+
+Create trip requests in Batch Dispatch, compare two assignment heuristics, review the proposed subset, then explicitly apply. Assigned trips enter the shared register/calendar; pending requests stay in the session. See [batch dispatch](docs/batch-dispatch.md).

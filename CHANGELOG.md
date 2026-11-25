@@ -58,3 +58,5 @@
 - No confirmed public Pages deployment yet.
 - Tracking is simulated, maintenance is rule-based, and browser data is synthetic.
 - No production deployment, legacy database migration, or multi-instance scheduling guarantees.
+
+- Integrated batch dispatch: fixed trip requests, two greedy resource assignment strategies, read-only preview and all-or-nothing validation of the explicitly confirmed assigned subset.

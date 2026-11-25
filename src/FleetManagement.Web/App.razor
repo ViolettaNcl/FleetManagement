@@ -45,6 +45,10 @@
     {
         <FleetRegister @key="section" Fleet="fleet" IsVehicles="@(section == "Vehicles")" Today="Now" Changed="Persist" OpenPassport="OpenPassport" MaintenanceEntries="maintenanceEntries" Shifts="driverShifts" Reservations="vehicleReservations" />
     }
+    else if (section == "Batch Dispatch")
+    {
+        <BatchDispatchView Fleet="fleet" Now="Now" Shifts="driverShifts" Reservations="vehicleReservations" Enforce="requireShifts" Changed="Persist" Open="Navigate"/>
+    }
     else if (section == "Resource Planning")
     {
         <ResourcePlanner Fleet="fleet" Shifts="driverShifts" Now="Now" Enforce="requireShifts" EnforceChanged="SetRequireShifts" Changed="Persist" Open="Navigate"/>
@@ -162,7 +166,7 @@
 </main>
 @code {
     private readonly (string Name,string[] Items)[] NavigationGroups = [
-        ("Operations",["Overview","Vehicles","Drivers","Vehicle Passport","Dispatch","Calendar","Resource Planning","Maintenance"]),
+        ("Operations",["Overview","Vehicles","Drivers","Vehicle Passport","Dispatch","Batch Dispatch","Calendar","Resource Planning","Maintenance"]),
         ("Tracking & reporting",["Tracking","Geo Map","Analytics","Cost Intelligence","Assistant"]),
         ("Simulation & optimization",["Optimization","Multi Dispatch","Digital Twin","What-if"]),
         ("Machine learning",["Intelligence","Predictions","Demand Forecast","Model Registry","Data Quality"])

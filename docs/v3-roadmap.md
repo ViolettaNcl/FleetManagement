@@ -78,3 +78,5 @@ Connected revision watch: bounded ten-second polling of authorized audit waterma
 Connected EN/RU localization first pass covers static shell/forms, table headers and common client messages while preserving canonical API values. Browser smoke switches languages and verifies selected work category unchanged. Server errors and offline Blazor still English.
 
 Connected fleet register supports confirmed vehicle/driver creation, local text search of fleet/trip/work/audit tables, and future shift/reservation cancellation after explicit confirmation. Existing server validation, history constraints and role enforcement remain authoritative. Register edits/deletes still API-only. Searches cover the records already loaded into the browser, not paginated database search.
+
+Read-only performance smoke runs 120 local HTTP reads with eight workers on each disposable database provider and stores aggregate p50/p95/max/throughput JSON as CI artifacts. No real workload or production SLA claim.

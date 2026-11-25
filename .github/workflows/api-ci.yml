@@ -104,7 +104,13 @@ jobs:
           wait "$pid" || true
           start_api
           python3 tests/api/smoke.py --verify-persistence
+          python3 tests/api/performance.py "$RUNNER_TEMP/fleet-performance.json"
           if [ "$Fleet__Provider" = "Sqlite" ]; then
             kill "$pid"; wait "$pid" || true; unset pid
             python3 tests/api/recovery.py "$RUNNER_TEMP/fleet-test.db"
           fi
+      - uses: actions/upload-artifact@v4
+        with:
+          name: fleet-performance-${{ matrix.provider }}
+          path: ${{ runner.temp }}/fleet-performance.json
+          if-no-files-found: error

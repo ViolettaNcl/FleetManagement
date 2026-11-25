@@ -132,3 +132,7 @@ Create trip requests in Batch Dispatch, compare two assignment heuristics, revie
 ### Local connected workspace (V3)
 
 With the local API running, open http://127.0.0.1:5095/console and sign in using your existing Identity account. Read registered fleet and operational history, record completed work and create shifts/reservations with an authorized role. Offline GitHub Pages demo remains independent. See [backend operations](docs/backend-operations.md), [database recovery](docs/database-recovery.md) and [database concurrency](docs/database-concurrency.md).
+
+### Performance checks
+
+The backend provider matrix includes a bounded read-only concurrency smoke and aggregate timing artifacts. See [performance testing](docs/performance-testing.md). Measurements are for the small disposable test dataset, not production fleet capacity.

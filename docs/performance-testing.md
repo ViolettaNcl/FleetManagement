@@ -1,0 +1,7 @@
+# Performance smoke test
+
+The provider integration matrix runs a bounded read-only HTTP concurrency test on the disposable seeded local API after functional and restart checks. Eight workers make 120 requests (24 for each of five read endpoints) after one warmup per endpoint. Every request must return HTTP 200 and a JSON object or list within the request timeout. The report records p50, nearest-rank p95, max latency and aggregate throughput. Each provider uploads only aggregate timing data to its own CI artifact. No payloads, tokens, account records or database files are included.
+
+This is a reproducible small-data regression smoke, not a production benchmark. GitHub runner resource allocation varies; there is no fixed latency SLA or claimed production capacity. Never aim this script at external systems: it deliberately uses the loopback CI address and local automation key. Larger-scale testing should use a separate generated dataset, explicit resource budgets, representative mix, warmup, repeated runs, and measured CPU/memory/database query plans.
+
+The connected workspace now detects changes through a lightweight authenticated revision endpoint instead of polling the full register. Full refresh remains an explicit user action to avoid overwriting drafts. Operational writes remain serialized by the provider lock to preserve scheduling correctness; the read-only benchmark does not measure mutation throughput.

@@ -20,6 +20,10 @@ The Windows launcher requires PowerShell 7 and .NET 10 SDK, not an external API 
 5. Open connected workspace locally: sign in with a test account, show server dashboard, edit a future trip, export finance XLSX, then demonstrate read-only Viewer. Avoid recording passwords or private account details.
 6. Show successful exact-commit CI, database upgrade/restore tests and provider concurrency results. Do not imply real-world model accuracy, production readiness, or live GPS.
 
+## Automated silent screen recording
+
+Browser demo CI records a fresh synthetic Playwright context, showing the actual overview, theme, vehicle passport, calendar, dispatch, route optimizer, model evaluation, drift/retraining and digital twin. Download the `fleetmanagement-portfolio-tour` artifact from a successful exact-commit Browser demo CI run (WebM; MP4 when FFmpeg is available). This is an actual browser recording, not a mockup. It has no narration, credentials or connected data. Review the video before sending it to a recruiter.
+
 ## Release gates
 
-Review desktop and mobile screenshots from successful CI, verify all five workflows on the intended release commit, and run the local launcher on Windows. The static Pages build and local API remain separate. Publication is an explicit owner decision; no merge or deployment is performed by this guide. See [release checklist](deployment.md), [security boundaries](security-review-v3.md) and [architecture](architecture.md).
+Review desktop and mobile screenshots from successful CI, verify all applicable workflows (including dependency inventory) on the intended release commit, and run the local launcher on Windows. The static Pages build and local API remain separate. Publication is an explicit owner decision; no merge or deployment is performed by this guide. See [release checklist](deployment.md), [security boundaries](security-review-v3.md) and [architecture](architecture.md).

@@ -37,6 +37,16 @@ jobs:
           server=$!
           trap 'kill "$server" || true' EXIT
           node tests/browser/smoke.mjs
+          node tests/browser/portfolio-tour.mjs
+          if command -v ffmpeg >/dev/null; then
+            ffmpeg -hide_banner -loglevel error -y -i portfolio-video/fleetmanagement-v3-tour.webm -c:v libx264 -pix_fmt yuv420p -movflags +faststart portfolio-video/fleetmanagement-v3-tour.mp4
+          fi
+      - name: Upload actual portfolio tour
+        uses: actions/upload-artifact@v4
+        with:
+          name: fleetmanagement-portfolio-tour
+          path: portfolio-video
+          if-no-files-found: error
       - name: Upload browser screenshots
         if: always()
         uses: actions/upload-artifact@v4

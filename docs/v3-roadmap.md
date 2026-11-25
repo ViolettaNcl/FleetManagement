@@ -108,3 +108,5 @@ Connected SignalR notification subscriber uses authenticated JSON Long Polling, 
 On-demand retraining review compares three fixed logistic training lengths on a separate validation cohort and reports selected versus incumbent performance on a distinct final synthetic cohort. No real data, automated promotion or deployment.
 
 Server record IDs use retained audit high-water marks under the provider lock, including batch-created trips, with HTTP regressions for delete/recreate. No audit pruning; dedicated sequence migration remains a future design if audit retention is introduced.
+
+Browser CI records an actual silent Playwright tour on fresh synthetic data (WebM, MP4 if FFmpeg available), and uploads video alongside existing screenshots. Exact-commit release review remains mandatory; no publication, generated mockups or user data.

@@ -22,7 +22,7 @@ Treat it as live only after the deployment succeeds and the URL is verified. The
 - [ ] Validate the local PowerShell launcher on Windows; verify existing V2 data is not upgraded implicitly.
 - [ ] Review the modern NuGet advisory inventory and triage any reported advisories; independently check npm, legacy WPF and container/runtime packages.
 - [ ] Review the V3 security limitations and ensure no credentials, backup files or account data are in release artifacts.
-- [ ] Review the generated screenshots on desktop and mobile.
+- [ ] Review the generated screenshots on desktop and mobile and the actual offline screen recording from the exact release commit.
 - [ ] Review security boundaries and the pull request.
 - [ ] Enable Pages and merge the reviewed change.
 - [ ] Confirm the deployment status and open the actual public URL in a fresh browser.

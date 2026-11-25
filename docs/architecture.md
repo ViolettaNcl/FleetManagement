@@ -48,7 +48,7 @@ The operational and financial reports use standard Office Open XML with two and 
 
 ## Remaining technical debt
 
-V2-to-V3 additive schema upgrade and SQLite recovery are implemented; full versioned EF migration history and legacy WPF import remain open. Full account lifecycle/revocation, distributed SignalR notifications, durable idempotency, production observability and complete UI parity are future work. Legacy WPF security and legacy tests remain unresolved. See SECURITY.md and the backend guide.
+V2-to-V3 additive schema upgrade and SQLite recovery are implemented; full versioned EF migration history and legacy WPF import remain open. Staff role changes and HTTP session revocation, durable batch receipts and a narrow SignalR Long Polling subscriber are implemented. Full account lifecycle, distributed SignalR, idempotency for other operations, production observability and complete UI parity remain open. Legacy WPF security and legacy tests remain unresolved. See SECURITY.md and the backend guide.
 
 ## V3 component boundaries
 
@@ -61,7 +61,7 @@ flowchart TD
   A --> T[Provider transaction and audit]
   T --> S[(SQLite or SQL Server)]
   A --> H[SignalR local notifications]
-  U -->|Revision polling| A
+  U -->|SignalR long polling and revision fallback| A
   M[ML.NET local trainer] --> C
   M --> R[Local model registry artifacts]
 ```

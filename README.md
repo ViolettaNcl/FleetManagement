@@ -21,7 +21,7 @@
 
 The browser edition runs C# in WebAssembly, uses synthetic data, and requires no backend, account, API key, or paid hosting. The GitHub Pages deployment is prepared but not yet verified live.
 
-- [Latest browser builds and screenshots](https://github.com/ViolettaNcl/FleetManagement/actions/workflows/demo-ci.yml)
+- [Latest browser builds, screenshots and actual screen-recorded portfolio tour](https://github.com/ViolettaNcl/FleetManagement/actions/workflows/demo-ci.yml)
 - [How to run the demo and enable GitHub Pages](docs/deployment.md)
 - [V3 development pull request](https://github.com/ViolettaNcl/FleetManagement/pull/2)
 
@@ -53,6 +53,10 @@ The grouped V3 workspace includes an English/Russian navigation and overview swi
 | Analytics | Filter trips by departure date and download a genuine two-sheet Excel workbook. |
 
 Use **Reset demo** to restore the synthetic dataset. Changes stay in your browser.
+
+## Release candidate preview
+
+The Browser demo CI artifact `fleetmanagement-portfolio-tour` records the real synthetic offline application (WebM, optional MP4), including ML and optimization labs. See [portfolio walkthrough](docs/portfolio-v3.md). The connected API is not deployed publicly. Release acceptance requires successful exact-commit checks and manual review; no release tag or Pages deployment is implied.
 
 ## Local ML.NET training
 

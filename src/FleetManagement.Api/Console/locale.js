@@ -1,5 +1,9 @@
 "use strict";
 const translations={
+"SignalR connecting…":"Подключение SignalR…",
+"SignalR connected":"SignalR подключён",
+"SignalR unavailable · revision polling remains active":"SignalR недоступен · проверка версии данных продолжается",
+
 "Dark theme":"Тёмная тема",
 "Find section":"Найти раздел",
 

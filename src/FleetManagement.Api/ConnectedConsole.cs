@@ -6,6 +6,7 @@ public static class ConnectedConsole
     {
         app.MapGet("/console",(HttpContext context)=>Asset(context,"index.html","text/html; charset=utf-8"));
         app.MapGet("/console/locale.js",(HttpContext context)=>Asset(context,"locale.js","text/javascript; charset=utf-8"));
+        app.MapGet("/console/realtime.js",(HttpContext context)=>Asset(context,"realtime.js","text/javascript; charset=utf-8"));
         app.MapGet("/console/app.js",(HttpContext context)=>Asset(context,"app.js","text/javascript; charset=utf-8"));
         app.MapGet("/console/style.css",(HttpContext context)=>Asset(context,"style.css","text/css; charset=utf-8"));
     }

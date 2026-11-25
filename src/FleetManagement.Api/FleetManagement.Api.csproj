@@ -10,6 +10,7 @@
   <ItemGroup>
     <EmbeddedResource Include="Console/index.html" LogicalName="Fleet.Console.index.html" />
     <EmbeddedResource Include="Console/locale.js" LogicalName="Fleet.Console.locale.js" />
+    <EmbeddedResource Include="Console/realtime.js" LogicalName="Fleet.Console.realtime.js" />
     <EmbeddedResource Include="Console/app.js" LogicalName="Fleet.Console.app.js" />
     <EmbeddedResource Include="Console/style.css" LogicalName="Fleet.Console.style.css" />
   </ItemGroup>

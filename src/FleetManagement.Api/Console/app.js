@@ -3,7 +3,7 @@ const $=id=>document.getElementById(id);
 let token=null, generation=0, busy=false, currentPage="fleet";
 const editors=[$("work-form"),$("shift-form"),$("reservation-form"),$("trip-form"),$("vehicle-form"),$("driver-form")];
 let registerEdits={vehicles:null,drivers:null},accountsOffset=0,accountsTotal=0;
-let revision=null,revisionTimer=null,checkingRevision=false;
+let revision=null,revisionTimer=null,checkingRevision=false,stopRealtime=null;
 let pendingBatch=null;
 let tripVersion=null,tripId=null,latestFleet=null,batchRequests=[],batchPlans=[],nextRequest=1;
 function status(text,error=false){uiText($("status"),text);$("status").classList.toggle("error",error);}
@@ -147,8 +147,10 @@ $("batch-apply").addEventListener("click",()=>{if(!$("batch-confirm").checked){s
     pendingBatch=null;uiText($("batch-receipt-status"),"");const ids=new Set(p.assigned.map(a=>a.request.id));batchRequests=batchRequests.filter(r=>!ids.has(r.id));invalidateBatch();renderRequests();status("Applied "+saved.length+" trips. Refreshing…");try{await refresh();status("Applied "+saved.length+" trips and refreshed server data.");}catch{if(token)status("Batch saved; refresh failed. Do not resubmit.",true);}});});
 renderRequests();
 
-function stopRevisionWatch(){if(revisionTimer!==null)clearInterval(revisionTimer);revisionTimer=null;revision=null;checkingRevision=false;$("change-notice").hidden=true;uiText($("connection-state"),"");}
-function startRevisionWatch(){if(revisionTimer!==null)return;uiText($("connection-state"),"Change monitoring: every 10 seconds while this page is open.");revisionTimer=setInterval(checkRevision,10000);}
+function stopRevisionWatch(){if(stopRealtime){stopRealtime();stopRealtime=null;}uiText($("realtime-state"),"");if(revisionTimer!==null)clearInterval(revisionTimer);revisionTimer=null;revision=null;checkingRevision=false;$("change-notice").hidden=true;uiText($("connection-state"),"");}
+function startRevisionWatch(){if(revisionTimer!==null)return;uiText($("connection-state"),"Change monitoring: every 10 seconds while this page is open.");revisionTimer=setInterval(checkRevision,10000);
+    const active=generation;stopRealtime=startFleetRealtime({bearer:token,onState:value=>{if(active===generation&&token)uiText($("realtime-state"),value);},onChanged:()=>{if(active===generation&&token)checkRevision();},onUnauthorized:()=>{if(active===generation&&token)signOut("Session expired. Sign in again.");}});
+}
 async function checkRevision(){
     if(!token||busy||checkingRevision||document.hidden)return;
     const active=generation;checkingRevision=true;

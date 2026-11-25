@@ -166,6 +166,7 @@ try{
     await page.unroute("**/api/operations/batch/apply");
     await page.locator("#trips").getByRole("row").filter({hasText:"QA console batch"}).waitFor();
     assert.equal(await page.locator("#trips").getByRole("row").filter({hasText:"QA console batch"}).count(),1);
+    await page.getByText("SignalR connected",{exact:true}).waitFor({timeout:30000});
     // A write from a second client must be detected without replacing a form draft.
     await trip.getByLabel("Trip origin").fill("Unsaved draft");
     const external=await api.post("/api/drivers",{data:{name:"External QA driver",license:"EXTERNAL-QA",experience:5},headers:{Authorization:"Bearer "+adminToken}});

@@ -107,7 +107,7 @@ if(builder.Configuration.GetValue<bool>("Fleet:InitializeDatabase")){
 ConnectedConsole.Map(app);
 app.MapGet("/health",()=>Results.Ok(new { status="ok" }));
 app.MapOpenApi().RequireAuthorization("FleetRead");
-app.MapHub<FleetHub>("/hubs/fleet",options=>options.CloseOnAuthenticationExpiration=true).RequireAuthorization("FleetRead");
+app.MapHub<FleetHub>("/hubs/fleet",options=>{options.CloseOnAuthenticationExpiration=true;options.LongPolling.PollTimeout=TimeSpan.FromSeconds(20);}).RequireAuthorization("FleetRead");
 var api=app.MapGroup("/api").RequireAuthorization("FleetRead");
 FleetEndpoints.Map(api);
 FinancialEndpoints.Map(api);

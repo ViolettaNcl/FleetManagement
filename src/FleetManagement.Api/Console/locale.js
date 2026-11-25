@@ -1,5 +1,18 @@
 "use strict";
 const translations={
+"Revoke all my sessions":"Отозвать все мои сеансы",
+"Staff roles can be changed and sessions revoked. Administrator roles and passwords cannot be changed here.":"Роли сотрудников можно изменять, сеансы отзывать. Роли администраторов и пароли здесь не изменяются.",
+"Resolve the previous batch submission before changing its payload.":"Сначала выясните результат предыдущей отправки пакета.",
+"Revoke all your sessions, including this one?":"Отозвать все ваши сеансы, включая текущий?",
+"All your sessions revoked.":"Все ваши сеансы отозваны.",
+"Revoke sessions":"Отозвать сеансы",
+"Revoke this staff member's sessions?":"Отозвать сеансы сотрудника?",
+"Staff sessions revoked.":"Сеансы сотрудника отозваны.",
+"Change to Viewer":"Назначить наблюдателем",
+"Change to Dispatcher":"Назначить диспетчером",
+"Change staff role and revoke existing sessions?":"Изменить роль сотрудника и отозвать его сеансы?",
+"Staff role changed; existing sessions revoked.":"Роль изменена, прежние сеансы отозваны.",
+
 "Server unavailable or request timed out. Refresh to retry.":"Сервер недоступен или истекло время ожидания. Обновите данные для повторной попытки.",
 "Request outcome unknown. Check server records before resubmitting.":"Результат запроса неизвестен. Проверьте записи сервера перед повторной отправкой.",
 

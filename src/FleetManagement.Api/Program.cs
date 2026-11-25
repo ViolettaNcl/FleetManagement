@@ -70,6 +70,18 @@ app.Use(async (context,next)=>{
 app.UseRouting();
 app.UseRateLimiter();
 app.UseAuthentication();
+// Identity bearer tickets are short-lived, but role changes and explicit revocation
+// must also invalidate tickets before their expiry on subsequent HTTP requests.
+app.Use(async (context,next)=>{
+    if(context.User.Identity?.IsAuthenticated==true&&!context.User.IsInRole("Automation")
+       &&!context.Request.Path.Equals(new PathString("/api/auth/login"))){
+        var signIn=context.RequestServices.GetRequiredService<SignInManager<IdentityUser>>();
+        if(await signIn.ValidateSecurityStampAsync(context.User) is null){
+            context.Response.StatusCode=401;return;
+        }
+    }
+    await next();
+});
 app.UseAuthorization();
 
 if(builder.Configuration.GetValue<bool>("Fleet:UpgradeV2Schema")&&!builder.Configuration.GetValue<bool>("Fleet:InitializeDatabase"))

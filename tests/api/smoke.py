@@ -249,3 +249,24 @@ assert len([t for t in request("GET","/api/trips") if t["origin"]=="QA receipt"]
 from pathlib import Path
 Path(os.environ.get("RUNNER_TEMP","."),"fleet-receipt-test.json").write_text(json.dumps({"key":receipt_key,"body":receipt_body,"response":first[1]}))
 print("PASS: durable batch replay, changed payload conflict and invalid UUID")
+
+# Role updates and explicit revocation invalidate previously issued bearer tickets.
+session_email="session-qa@example.test"
+session_password="Session!aA1234567890"
+staff=request("POST","/api/admin/users",{"email":session_email,"password":session_password,"role":"Viewer"},201,token=admin)
+def staff_login():
+    return request("POST","/api/auth/login",{"email":session_email,"password":session_password},authorized=False)["accessToken"]
+staff_token=staff_login()
+request("PUT",f"/api/admin/users/{staff['id']}/role",{"expectedRole":"Viewer","role":"Dispatcher"},403,token=staff_token)
+request("PUT",f"/api/admin/users/{staff['id']}/role",{"expectedRole":"Viewer","role":"Dispatcher"},204,token=admin)
+request("GET","/api/auth/me",status=401,token=staff_token)
+request("PUT",f"/api/admin/users/{staff['id']}/role",{"expectedRole":"Viewer","role":"Dispatcher"},409,token=admin)
+staff_token=staff_login()
+assert request("GET","/api/auth/me",token=staff_token)["roles"]==["Dispatcher"]
+request("POST",f"/api/admin/users/{staff['id']}/revoke-sessions",status=204,token=admin)
+request("GET","/api/auth/me",status=401,token=staff_token)
+staff_token=staff_login()
+request("POST","/api/auth/revoke-sessions",status=204,token=staff_token)
+request("GET","/api/auth/me",status=401,token=staff_token)
+request("POST","/api/auth/revoke-sessions",status=403)
+print("PASS: staff role change, stale role protection and session revocation")

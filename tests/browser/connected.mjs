@@ -165,6 +165,10 @@ try{
     await account.getByRole("button",{name:"Create user account"}).click();
     await page.locator("#accounts").getByText("new-dispatcher@example.test",{exact:true}).waitFor();
     assert.equal(await account.getByLabel("Initial password").inputValue(),"");
+    const staffRow=page.locator("#accounts").getByRole("row").filter({hasText:"new-dispatcher@example.test"});
+    page.once("dialog",d=>d.accept());
+    await staffRow.getByRole("button",{name:"Change to Viewer"}).click();
+    await staffRow.getByRole("button",{name:"Change to Dispatcher"}).waitFor();
     await page.getByRole("button",{name:"Audit",exact:true}).click();
     await page.locator("#audit").getByText("MaintenanceEntry",{exact:true}).first().waitFor();
     assert.equal(await page.evaluate(()=>localStorage.length+sessionStorage.length),0);

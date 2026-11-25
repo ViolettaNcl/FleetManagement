@@ -4,21 +4,22 @@ let token=null, generation=0, busy=false, currentPage="fleet";
 const editors=[$("work-form"),$("shift-form"),$("reservation-form"),$("trip-form"),$("vehicle-form"),$("driver-form")];
 let registerEdits={vehicles:null,drivers:null},accountsOffset=0,accountsTotal=0;
 let revision=null,revisionTimer=null,checkingRevision=false;
+let pendingBatch=null;
 let tripVersion=null,tripId=null,latestFleet=null,batchRequests=[],batchPlans=[],nextRequest=1;
 function status(text,error=false){uiText($("status"),text);$("status").classList.toggle("error",error);}
 function signOut(message="Signed out."){
     token=null;generation++;busy=false;stopRevisionWatch();
     for(const button of document.querySelectorAll("button"))button.disabled=false;
-    $("auth").hidden=false;$("workspace").hidden=true;$("logout").hidden=true;
+    $("auth").hidden=false;$("workspace").hidden=true;$("logout").hidden=true;$("revoke-self").hidden=true;pendingBatch=null;$("batch-receipt-status").textContent="";
     $("identity").textContent="";uiText($("policy"),"");uiText($("updated"),"");
     for(const id of ["vehicles","drivers","trips","work","shifts","reservations","audit","finance-summary","finance-vehicles","accounts","overview-alerts","calendar-events"])$(id).replaceChildren();
     for(const id of ["vehicles-count","drivers-count","trips-count","work-count"])$(id).textContent="—";
     for(const form of editors){form.reset();form.hidden=true;for(const select of form.querySelectorAll("select[name=vehicleId],select[name=driverId]"))select.replaceChildren();}
     $("audit-tab").hidden=true;$("accounts-tab").hidden=true;$("account-form").reset();accountsOffset=0;accountsTotal=0;$("accounts-page").textContent="";clearDashboard();resetRegister("vehicles");resetRegister("drivers");$("login").reset();latestFleet=null;for(const filter of document.querySelectorAll("[data-filter]"))filter.value="";resetTrip();clearBatch();$("batch-panel").hidden=true;status(message);
 }
-async function api(path,method="GET",body,authenticated=true,format="json"){
+async function api(path,method="GET",body,authenticated=true,format="json",extraHeaders={}){
     const active=generation;
-    const headers={"Accept":"application/json"};
+    const headers={"Accept":"application/json",...extraHeaders};
     if(authenticated){if(!token)throw Error("Sign in again.");headers.Authorization="Bearer "+token;}
     if(body!==undefined)headers["Content-Type"]="application/json";
     let response;
@@ -26,7 +27,7 @@ async function api(path,method="GET",body,authenticated=true,format="json"){
     catch{throw Error(method==="GET"?"Server unavailable or request timed out. Refresh to retry.":"Request outcome unknown. Check server records before resubmitting.");}
     if(active!==generation)throw Error("Session changed.");
     if(response.status===401){if(authenticated)signOut("Session expired. Sign in again.");throw Error("Authentication failed.");}
-    if(!response.ok){let detail;try{detail=await response.json();}catch{}throw Error(typeof detail?.error==="string"?detail.error:Array.isArray(detail?.errors)?detail.errors.filter(x=>typeof x==="string").join("; "):"Request failed (HTTP "+response.status+").");}
+    if(!response.ok){let detail;try{detail=await response.json();}catch{}const error=Error(typeof detail?.error==="string"?detail.error:Array.isArray(detail?.errors)?detail.errors.filter(x=>typeof x==="string").join("; "):"Request failed (HTTP "+response.status+").");error.httpStatus=response.status;throw error;}
     const result=response.status===204?null:format==="blob"?await response.blob():await response.json();
     if(active!==generation)throw Error("Session changed.");
     return result;
@@ -76,7 +77,7 @@ async function refresh(){
     if(!admin&&["audit","accounts"].includes(currentPage))tab("fleet");
     uiText($("updated"),"Last refreshed "+new Date().toLocaleString()+" · independent API reads, not a transactional snapshot.");
     revision=checkpoint.revision;$("change-notice").hidden=true;
-    $("auth").hidden=true;$("workspace").hidden=false;$("logout").hidden=false;
+    $("auth").hidden=true;$("workspace").hidden=false;$("logout").hidden=false;$("revoke-self").hidden=false;
     startRevisionWatch();
 }
 async function operation(action){if(busy)return;busy=true;const active=generation;for(const button of document.querySelectorAll("button:not(#logout)"))button.disabled=true;try{await action();}catch(e){if(active===generation)status(e.message||"Request failed.",true);}finally{if(active===generation){busy=false;for(const button of document.querySelectorAll("button"))button.disabled=false;}}}
@@ -131,12 +132,19 @@ tripForm.addEventListener("submit",event=>{event.preventDefault();const d=new Fo
 function renderRequests(){table("batch-requests",[["Request",text("id")],["Origin",text("origin")],["Destination",text("destination")],["Start",r=>date(r.start)],["End",r=>date(r.end)],["Distance",text("distance")]],batchRequests);}
 function invalidateBatch(){batchPlans=[];$("batch-result").hidden=true;$("batch-confirm").checked=false;$("batch-assigned").replaceChildren();$("batch-unassigned").replaceChildren();$("batch-strategy").replaceChildren();uiText($("batch-counts"),"");}
 function clearBatch(){batchRequests=[];nextRequest=1;batchForm.reset();invalidateBatch();renderRequests();}
-batchForm.addEventListener("submit",event=>{event.preventDefault();if(busy)return;if(batchRequests.length>=40){status("At most 40 requests.",true);return;}const d=new FormData(batchForm);const start=utc(d.get("start")),end=utc(d.get("end"));if(new Date(end)<=new Date(start)||new Date(start)<=new Date()){status("Choose a future positive interval.",true);return;}batchRequests.push({id:nextRequest++,origin:d.get("origin").trim(),destination:d.get("destination").trim(),start,end,distance:Number(d.get("distance"))});invalidateBatch();renderRequests();status("Request added.");});
-$("batch-clear").addEventListener("click",()=>{clearBatch();status("Pending requests cleared.");});
-$("batch-preview").addEventListener("click",()=>operation(async()=>{if(!batchRequests.length)throw Error("Add at least one request.");invalidateBatch();batchPlans=await api("/api/operations/batch/preview","POST",{requests:batchRequests});const select=$("batch-strategy");for(const [i,p] of batchPlans.entries()){const o=document.createElement("option");o.value=i;o.textContent=p.strategy+" ("+p.assigned.length+" assigned)";select.append(o);}select.value=String(batchPlans.length-1);renderPlan();status("Preview ready; server register unchanged.");}));
+batchForm.addEventListener("submit",event=>{event.preventDefault();if(busy)return;if(pendingBatch){status("Resolve the previous batch submission before changing its payload.",true);return;}if(batchRequests.length>=40){status("At most 40 requests.",true);return;}const d=new FormData(batchForm);const start=utc(d.get("start")),end=utc(d.get("end"));if(new Date(end)<=new Date(start)||new Date(start)<=new Date()){status("Choose a future positive interval.",true);return;}batchRequests.push({id:nextRequest++,origin:d.get("origin").trim(),destination:d.get("destination").trim(),start,end,distance:Number(d.get("distance"))});invalidateBatch();renderRequests();status("Request added.");});
+$("batch-clear").addEventListener("click",()=>{if(pendingBatch){status("Resolve the previous batch submission before changing its payload.",true);return;}clearBatch();status("Pending requests cleared.");});
+$("batch-preview").addEventListener("click",()=>operation(async()=>{if(pendingBatch)throw Error("Resolve the previous batch submission before changing its payload.");if(!batchRequests.length)throw Error("Add at least one request.");invalidateBatch();batchPlans=await api("/api/operations/batch/preview","POST",{requests:batchRequests});const select=$("batch-strategy");for(const [i,p] of batchPlans.entries()){const o=document.createElement("option");o.value=i;o.textContent=p.strategy+" ("+p.assigned.length+" assigned)";select.append(o);}select.value=String(batchPlans.length-1);renderPlan();status("Preview ready; server register unchanged.");}));
 function renderPlan(){const p=batchPlans[Number($("batch-strategy").value)];if(!p)return;$("batch-confirm").checked=false;$("batch-result").hidden=false;uiText($("batch-counts"),p.assigned.length+" assigned · "+p.unassigned.length+" pending");table("batch-assigned",[["Request",r=>r.request.id],["Route",r=>r.request.origin+" → "+r.request.destination],["Vehicle",r=>latestFleet?.vehicles.find(v=>v.id===r.vehicleId)?.plate??r.vehicleId],["Driver",r=>latestFleet?.drivers.find(v=>v.id===r.driverId)?.name??r.driverId]],p.assigned);table("batch-unassigned",[["Pending request",text("id")],["Origin",text("origin")],["Destination",text("destination")]],p.unassigned);}
 $("batch-strategy").addEventListener("change",renderPlan);
-$("batch-apply").addEventListener("click",()=>{if(!$("batch-confirm").checked){status("Confirm the selected assignments first.",true);return;}operation(async()=>{const p=batchPlans[Number($("batch-strategy").value)];if(!p?.assigned.length)throw Error("No assigned requests.");const saved=await api("/api/operations/batch/apply","POST",{confirmed:true,assignments:p.assigned});const ids=new Set(p.assigned.map(a=>a.request.id));batchRequests=batchRequests.filter(r=>!ids.has(r.id));invalidateBatch();renderRequests();status("Applied "+saved.length+" trips. Refreshing…");try{await refresh();status("Applied "+saved.length+" trips and refreshed server data.");}catch{if(token)status("Batch saved; refresh failed. Do not resubmit.",true);}});});
+$("batch-apply").addEventListener("click",()=>{if(!$("batch-confirm").checked){status("Confirm the selected assignments first.",true);return;}operation(async()=>{const p=batchPlans[Number($("batch-strategy").value)];if(!p?.assigned.length)throw Error("No assigned requests.");const body={confirmed:true,assignments:p.assigned};const serialized=JSON.stringify(body);
+    if(pendingBatch&&pendingBatch.serialized!==serialized)throw Error("Resolve the previous batch submission before changing its payload.");
+    if(!pendingBatch)pendingBatch={key:crypto.randomUUID(),serialized,body};
+    uiText($("batch-receipt-status"),"Submission UUID: "+pendingBatch.key);
+    let saved;
+    try{saved=await api("/api/operations/batch/apply","POST",pendingBatch.body,true,"json",{"Idempotency-Key":pendingBatch.key});}
+    catch(e){if(e.httpStatus===400||e.httpStatus===409){pendingBatch=null;uiText($("batch-receipt-status"),"");}throw e;}
+    pendingBatch=null;uiText($("batch-receipt-status"),"");const ids=new Set(p.assigned.map(a=>a.request.id));batchRequests=batchRequests.filter(r=>!ids.has(r.id));invalidateBatch();renderRequests();status("Applied "+saved.length+" trips. Refreshing…");try{await refresh();status("Applied "+saved.length+" trips and refreshed server data.");}catch{if(token)status("Batch saved; refresh failed. Do not resubmit.",true);}});});
 renderRequests();
 
 function stopRevisionWatch(){if(revisionTimer!==null)clearInterval(revisionTimer);revisionTimer=null;revision=null;checkingRevision=false;$("change-notice").hidden=true;uiText($("connection-state"),"");}
@@ -184,7 +192,7 @@ for(const [kind,c] of Object.entries(registerConfig)){
 async function loadAccounts(){
     const result=await api("/api/admin/users?offset="+accountsOffset+"&limit=50");
     accountsTotal=result.total;accountsOffset=result.offset;
-    table("accounts",[["Email",text("email")],["Roles",r=>r.roles.join(", ")],["Locked",r=>r.locked?"Yes":"No"]],result.accounts);
+    table("accounts",[["Email",text("email")],["Roles",r=>r.roles.join(", ")],["Locked",r=>r.locked?"Yes":"No"],["Action",r=>accountActions(r)]],result.accounts);
     $("accounts-page").textContent=(accountsTotal===0?0:accountsOffset+1)+"–"+Math.min(accountsOffset+50,accountsTotal)+" / "+accountsTotal;
 }
 $("accounts-tab").addEventListener("click",()=>operation(loadAccounts));
@@ -223,3 +231,14 @@ document.querySelector('[data-tab="overview"]').addEventListener("click",()=>ope
 document.querySelector('[data-tab="calendar"]').addEventListener("click",()=>operation(loadCalendar));
 calendarForm.addEventListener("submit",e=>{e.preventDefault();operation(loadCalendar);});
 $("calendar-filter").addEventListener("change",renderCalendar);
+
+$("revoke-self").addEventListener("click",()=>{if(!window.confirm(translate("Revoke all your sessions, including this one?")))return;operation(async()=>{await api("/api/auth/revoke-sessions","POST");signOut("All your sessions revoked.");});});
+function accountActions(account){
+    const wrapper=document.createElement("div");wrapper.className="report-actions";
+    if(account.roles.length!==1||!["Viewer","Dispatcher"].includes(account.roles[0]))return wrapper;
+    const revoke=document.createElement("button");revoke.type="button";uiText(revoke,"Revoke sessions");
+    revoke.addEventListener("click",()=>{if(!window.confirm(translate("Revoke this staff member's sessions?")))return;operation(async()=>{await api("/api/admin/users/"+encodeURIComponent(account.id)+"/revoke-sessions","POST");status("Staff sessions revoked.");await loadAccounts();});});
+    const role=document.createElement("button");role.type="button";const next=account.roles[0]==="Viewer"?"Dispatcher":"Viewer";uiText(role,next==="Viewer"?"Change to Viewer":"Change to Dispatcher");
+    role.addEventListener("click",()=>{if(!window.confirm(translate("Change staff role and revoke existing sessions?")))return;operation(async()=>{await api("/api/admin/users/"+encodeURIComponent(account.id)+"/role","PUT",{expectedRole:account.roles[0],role:next});status("Staff role changed; existing sessions revoked.");await loadAccounts();});});
+    wrapper.append(role,revoke);return wrapper;
+}

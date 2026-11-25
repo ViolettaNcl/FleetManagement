@@ -1,3 +1,4 @@
+using System.Security.Claims;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 
@@ -47,6 +48,37 @@ public static class IdentityEndpoints
             roles=context.User.FindAll(System.Security.Claims.ClaimTypes.Role).Select(c=>c.Value)
         }));
 
+        api.MapPost("/auth/revoke-sessions",async Task<IResult> (HttpContext context,UserManager<IdentityUser> users)=>{
+            if(context.User.IsInRole("Automation"))return Results.Forbid();
+            var user=await users.GetUserAsync(context.User);if(user is null)return Results.Unauthorized();
+            var result=await users.UpdateSecurityStampAsync(user);
+            return result.Succeeded?Results.NoContent():Results.Conflict(new{error="Unable to revoke sessions; retry after signing in."});
+        });
+
+        api.MapPost("/admin/users/{id}/revoke-sessions",async Task<IResult> (string id,UserManager<IdentityUser> users)=>{
+            var user=await users.FindByIdAsync(id);if(user is null)return Results.NotFound();
+            if(await users.IsInRoleAsync(user,"Admin"))return Results.BadRequest(new{error="Administrator accounts must revoke their own sessions."});
+            var result=await users.UpdateSecurityStampAsync(user);
+            return result.Succeeded?Results.NoContent():Results.Conflict(new{error="Account changed; refresh and retry."});
+        }).RequireAuthorization("FleetAdmin");
+
+        api.MapPut("/admin/users/{id}/role",async Task<IResult> (string id,ChangeRoleInput input,UserManager<IdentityUser> users,FleetDbContext db)=>{
+            if(input.Role is not ("Dispatcher" or "Viewer")||input.ExpectedRole is not ("Dispatcher" or "Viewer"))
+                return Results.BadRequest(new{error="Provide existing and desired staff roles."});
+            await using var tx=await db.Database.BeginTransactionAsync();
+            var user=await users.FindByIdAsync(id);if(user is null)return Results.NotFound();
+            var roles=await users.GetRolesAsync(user);
+            if(roles.Count!=1||roles[0]=="Admin")return Results.BadRequest(new{error="Only single-role staff accounts can be changed."});
+            if(roles[0]!=input.ExpectedRole)return Results.Conflict(new{error="Account role changed. Refresh and review again."});
+            if(roles[0]==input.Role)return Results.NoContent();
+            if(!(await users.RemoveFromRoleAsync(user,roles[0])).Succeeded||
+               !(await users.AddToRoleAsync(user,input.Role)).Succeeded||
+               !(await users.UpdateSecurityStampAsync(user)).Succeeded)
+                return Results.Conflict(new{error="Account changed; no role change committed."});
+            await tx.CommitAsync();
+            return Results.NoContent();
+        }).RequireAuthorization("FleetAdmin");
+
         api.MapGet("/admin/users",async Task<IResult> (FleetDbContext db,int? offset,int? limit,CancellationToken ct)=>{
             var skip=Math.Clamp(offset??0,0,1000000);var take=Math.Clamp(limit??50,1,100);
             var accounts=await db.Users.AsNoTracking().OrderBy(u=>u.Email).ThenBy(u=>u.Id).Skip(skip).Take(take).Select(u=>new{u.Id,u.Email,u.LockoutEnd}).ToListAsync(ct);
@@ -82,3 +114,5 @@ public static class IdentityEndpoints
 }
 public sealed record LoginInput(string? Email,string? Password);
 public sealed record CreateUserInput(string? Email,string? Password,string? Role);
+
+public sealed record ChangeRoleInput(string? ExpectedRole,string? Role);

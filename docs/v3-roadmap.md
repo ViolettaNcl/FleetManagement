@@ -92,3 +92,5 @@ Offline demo EN/RU first pass adds localized navigation, header and command-cent
 Portfolio V3 guide, release checklist and PowerShell 7 local connected launcher use a separate ignored database path, random process-scoped automation key, interactive bootstrap only for fresh database, no implicit upgrade. Launcher Windows runtime verification remains required.
 
 Durable batch receipts: actor-scoped UUID + SHA-256 typed payload, immutable success response committed alongside trips/audit, replay after restart without duplicate notification, changed payload rejection, explicit schema upgrade for old V3. API tests cover replay and restart.
+
+Identity lifecycle: server security stamp checks for authenticated HTTP, own-session revocation, admin staff revocation and transactional Viewer/Dispatcher changes with expected role. Browser batch idempotency retries preserve UUID and body in session. Existing connections/in-flight requests not forcibly terminated.

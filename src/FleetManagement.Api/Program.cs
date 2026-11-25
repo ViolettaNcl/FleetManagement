@@ -96,6 +96,15 @@ if(builder.Configuration.GetValue<bool>("Fleet:InitializeDatabase")){
     // Fail before identity initialization or demo seeding on an incompatible schema.
     try { await OperationsSchemaUpgrade.Verify(db); }
     catch (System.Data.Common.DbException ex) { throw new InvalidOperationException("V3 operational schema missing or inaccessible. Back up the existing database; use the documented explicit upgrade or a fresh V3 database.",ex); }
+    if(db.Database.IsSqlite()){
+        await db.Database.OpenConnectionAsync();
+        try{
+            var actual=db.Database.GetDbConnection().ServerVersion;
+            if(!Version.TryParse(actual,out var sqliteVersion)||sqliteVersion<new Version(3,50,2))
+                throw new InvalidOperationException("SQLite native library must be at least 3.50.2.");
+            app.Logger.LogInformation("Verified native SQLite version {Version}.",actual);
+        }finally{await db.Database.CloseConnectionAsync();}
+    }
     await IdentityEndpoints.Initialize(scope.ServiceProvider,builder.Configuration);
     if(builder.Configuration.GetValue<bool>("Fleet:SeedDemo") &&
         !await db.Vehicles.AnyAsync() && !await db.Drivers.AnyAsync() && !await db.Trips.AnyAsync()){

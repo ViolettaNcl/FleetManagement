@@ -112,3 +112,5 @@ Server record IDs use retained audit high-water marks under the provider lock, i
 Browser CI records an actual silent Playwright tour on fresh synthetic data (WebM, MP4 if FFmpeg available), and uploads video alongside existing screenshots. Exact-commit release review remains mandatory; no publication, generated mockups or user data.
 
 Windows launcher CI parses the actual PowerShell script and starts it against an existing disposable V3 SQLite database with a path containing spaces. Checks existing Identity login, preserved fleet and console access. First-run secure password prompt remains manual.
+
+Dependency triage reviewed actual NuGet inventory and pins patched OpenAPI, SQLite native library, PKCS, and SignalR client packages. Native SQLite initialization verifies >=3.50.2. No suppression; functional/advisory rerun required.

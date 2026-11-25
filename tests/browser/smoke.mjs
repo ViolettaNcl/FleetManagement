@@ -9,6 +9,13 @@ try {
   await page.goto('http://127.0.0.1:8080/FleetManagement/');
   await page.getByRole('button',{name:'Vehicles',exact:true}).waitFor({timeout:90000});
   await mkdir('browser-results',{recursive:true});
+  await page.getByRole('button',{name:'Dark theme',exact:true}).click();
+  assert.equal(await page.locator('.demo-shell.dark-theme').count(),1);
+  await page.screenshot({path:'browser-results/overview-dark.png',fullPage:true});
+  await page.getByRole('button',{name:'Dark theme',exact:true}).click();
+  await page.getByLabel('Find section',{exact:true}).fill('Model Drift');
+  assert.equal(await page.getByRole('button',{name:'Vehicles',exact:true}).count(),0);
+  await page.getByLabel('Find section',{exact:true}).fill('');
   await page.getByLabel('Language',{exact:true}).selectOption('ru');
   await page.getByRole('button',{name:'Автомобили',exact:true}).waitFor();
   await page.getByRole('heading',{name:'Загрузка рейсами'}).waitFor();

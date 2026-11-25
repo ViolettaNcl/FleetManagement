@@ -1,5 +1,8 @@
 "use strict";
 const translations={
+"Dark theme":"Тёмная тема",
+"Find section":"Найти раздел",
+
 "Revoke all my sessions":"Отозвать все мои сеансы",
 "Staff roles can be changed and sessions revoked. Administrator roles and passwords cannot be changed here.":"Роли сотрудников можно изменять, сеансы отзывать. Роли администраторов и пароли здесь не изменяются.",
 "Resolve the previous batch submission before changing its payload.":"Сначала выясните результат предыдущей отправки пакета.",

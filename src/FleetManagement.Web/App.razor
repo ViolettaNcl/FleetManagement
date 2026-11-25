@@ -2,17 +2,19 @@
 @implements IAsyncDisposable
 @inject IJSRuntime JS
 
+<div class="demo-shell @(darkTheme?"dark-theme":"")">
 <header lang="@language">
     <div class="brand"><img class="brandicon" src="favicon.svg" alt="" /><div><h1>FleetManagement</h1><small>@T("Fleet operations • interactive portfolio")</small></div></div>
-    <div class="actions"><label class="demo-language">@T("Language") <select @bind="language" aria-label="@T("Language")"><option value="en">English</option><option value="ru">Русский</option></select></label><span class="pill">@T("Demo mode · local data")</span><button class="secondary" @onclick="Reset">@T("Reset demo")</button></div>
+    <div class="actions"><button class="secondary" aria-pressed="@(darkTheme?"true":"false")" @onclick="()=>darkTheme=!darkTheme">@T("Dark theme")</button><label class="demo-language">@T("Language") <select @bind="language" aria-label="@T("Language")"><option value="en">English</option><option value="ru">Русский</option></select></label><span class="pill">@T("Demo mode · local data")</span><button class="secondary" @onclick="Reset">@T("Reset demo")</button></div>
 </header>
 <main lang="@language">
     <nav class="fleet-sidebar" aria-label="@T("Fleet sections")">
-        @foreach(var group in NavigationGroups)
+        <label class="nav-search">@T("Find section")<input type="search" @bind="navQuery" @bind:event="oninput" placeholder="@T("Search modules")"/></label>
+        @foreach(var group in NavigationGroups.Where(g=>g.Items.Any(MatchesSection)))
         {
             <div class="nav-group">
                 <h2>@T(group.Name)</h2>
-                @foreach(var item in group.Items)
+                @foreach(var item in group.Items.Where(MatchesSection))
                 {
                     <button class="@(section == item ? "active" : "")" aria-pressed="@(section == item ? "true" : "false")" @onclick="() => Navigate(item)">@T(item)</button>
                 }
@@ -170,7 +172,11 @@
     <footer class="footer">FleetManagement · WPF-inspired .NET WebAssembly demo · synthetic data only · <a href="https://github.com/ViolettaNcl/FleetManagement">Source repository</a></footer>
     </div>
 </main>
+</div>
 @code {
+    private bool darkTheme;
+    private string navQuery="";
+    private bool MatchesSection(string item)=>string.IsNullOrWhiteSpace(navQuery)||item.Contains(navQuery.Trim(),StringComparison.OrdinalIgnoreCase)||T(item).Contains(navQuery.Trim(),StringComparison.OrdinalIgnoreCase);
     private string language="en";
     private string T(string value)=>DemoLocale.Text(value,language=="ru");
     private readonly (string Name,string[] Items)[] NavigationGroups = [

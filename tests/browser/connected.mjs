@@ -34,6 +34,13 @@ try{
     await page.locator("#login").getByLabel("Password",{exact:true}).fill(adminPassword);
     await page.getByRole("button",{name:"Sign in",exact:true}).click();
     await page.getByRole("heading",{name:"Operations overview"}).waitFor();
+    await page.getByRole("button",{name:"Dark theme",exact:true}).click();
+    assert.equal(await page.locator("body.dark-theme").count(),1);
+    await page.screenshot({path:"browser-results/connected-dark.png",fullPage:true});
+    await page.getByRole("button",{name:"Dark theme",exact:true}).click();
+    await page.getByLabel("Find section",{exact:true}).fill("Calendar");
+    assert.equal(await page.getByRole("button",{name:"Fleet register",exact:true}).isVisible(),false);
+    await page.getByLabel("Find section",{exact:true}).fill("");
     assert.equal(await page.locator("#vehicles-count").innerText(),"4");
     await page.getByRole("button",{name:"Dashboard",exact:true}).click();
     await page.locator("#trip-bars progress").first().waitFor();

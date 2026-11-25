@@ -100,3 +100,5 @@ Offline localization expanded to register forms, calendar filters and dispatch l
 CI extends upgrade coverage through pinned pre-receipt V3, adds actual browser lost-response/retry test, and modern NuGet advisory inventory workflow. Advisory scan reports known issues without automatic upgrades; incomplete source data fails the scan. No complete supply-chain security guarantee.
 
 Model Drift Lab compares synthetic reference and independent held-out feature windows using reference quantile PSI with smoothing, injected covariate shifts and mean model output. Control versus shifted window isolates the injected changes; no actual labels, production drift, or automatic retraining/promotion.
+
+Both workspaces now offer a session-local dark theme and navigation filter, with matching lavender palette, focus styles and browser tests. This is a theme pass, not a comprehensive visual/accessibility audit of every laboratory chart.

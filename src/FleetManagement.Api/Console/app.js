@@ -8,7 +8,7 @@ let pendingBatch=null;
 let tripVersion=null,tripId=null,latestFleet=null,batchRequests=[],batchPlans=[],nextRequest=1;
 function status(text,error=false){uiText($("status"),text);$("status").classList.toggle("error",error);}
 function signOut(message="Signed out."){
-    token=null;generation++;busy=false;stopRevisionWatch();
+    token=null;generation++;busy=false;stopRevisionWatch();$("section-search").value="";for(const button of document.querySelectorAll("[data-tab]"))button.classList.remove("section-filtered");
     for(const button of document.querySelectorAll("button"))button.disabled=false;
     $("auth").hidden=false;$("workspace").hidden=true;$("logout").hidden=true;$("revoke-self").hidden=true;pendingBatch=null;$("batch-receipt-status").textContent="";
     $("identity").textContent="";uiText($("policy"),"");uiText($("updated"),"");
@@ -242,3 +242,6 @@ function accountActions(account){
     role.addEventListener("click",()=>{if(!window.confirm(translate("Change staff role and revoke existing sessions?")))return;operation(async()=>{await api("/api/admin/users/"+encodeURIComponent(account.id)+"/role","PUT",{expectedRole:account.roles[0],role:next});status("Staff role changed; existing sessions revoked.");await loadAccounts();});});
     wrapper.append(role,revoke);return wrapper;
 }
+
+$("theme-toggle").addEventListener("click",()=>{const dark=document.body.classList.toggle("dark-theme");$("theme-toggle").setAttribute("aria-pressed",String(dark));});
+$("section-search").addEventListener("input",()=>{const query=$("section-search").value.trim().toLocaleLowerCase();for(const button of document.querySelectorAll("[data-tab]")){button.classList.toggle("section-filtered",!!query&&!button.textContent.toLocaleLowerCase().includes(query)&&!button.dataset.tab.includes(query));}});

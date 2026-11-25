@@ -39,3 +39,6 @@ node_modules/
 browser-results/
 publish/
 preview/
+
+# Generated local model artifacts
+model-registry/

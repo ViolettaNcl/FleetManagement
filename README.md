@@ -9,8 +9,8 @@
     <a href="docs/architecture.md">Architecture</a>
   </p>
   <p>
-    <a href="https://github.com/ViolettaNcl/FleetManagement/actions/workflows/demo-ci.yml"><img alt="Browser CI" src="https://github.com/ViolettaNcl/FleetManagement/actions/workflows/demo-ci.yml/badge.svg?branch=feature%2Ffleetops-v2"></a>
-    <a href="https://github.com/ViolettaNcl/FleetManagement/actions/workflows/api-ci.yml"><img alt="Backend CI" src="https://github.com/ViolettaNcl/FleetManagement/actions/workflows/api-ci.yml/badge.svg?branch=feature%2Ffleetops-v2"></a>
+    <a href="https://github.com/ViolettaNcl/FleetManagement/actions/workflows/demo-ci.yml"><img alt="Browser CI" src="https://github.com/ViolettaNcl/FleetManagement/actions/workflows/demo-ci.yml/badge.svg?branch=feature%2Ffleetops-v3"></a>
+    <a href="https://github.com/ViolettaNcl/FleetManagement/actions/workflows/api-ci.yml"><img alt="Backend CI" src="https://github.com/ViolettaNcl/FleetManagement/actions/workflows/api-ci.yml/badge.svg?branch=feature%2Ffleetops-v3"></a>
     <img alt=".NET 10" src="https://img.shields.io/badge/.NET-10_LTS-6A5ACD">
     <img alt="C#" src="https://img.shields.io/badge/C%23-Blazor%20%7C%20ASP.NET_Core-9370DB">
     <img alt="SQL Server and SQLite" src="https://img.shields.io/badge/EF_Core-SQL_Server_%7C_SQLite-4B0082">
@@ -45,6 +45,10 @@ The browser edition runs C# in WebAssembly, uses synthetic data, and requires no
 | Analytics | Filter trips by departure date and download a genuine two-sheet Excel workbook. |
 
 Use **Reset demo** to restore the synthetic dataset. Changes stay in your browser.
+
+## Local ML.NET training
+
+Run `dotnet run --project tools/FleetManagement.ModelTrainer -c Release -- model-registry 42` to train FastTree binary and regression models, compare with the existing C# baselines on identical held-out data, and create a local versioned experiment registry. See [ML trainer and model registry](docs/model-registry.md). The browser remains independent of ML.NET native training and does not load these archives automatically.
 
 ## Engineering highlights
 

@@ -93,3 +93,7 @@ cd путь\к\проекту\FleetManagement
 - [Скрипт базы данных](./FleetManagment/Документы/script.sql)
 
 
+
+## ML.NET и реестр моделей V3
+
+Локальный тренер FastTree сравнивает классификацию и регрессию с собственными C#-моделями на одинаковых тестовых выборках. Запуск: `dotnet run --project tools/FleetManagement.ModelTrainer -c Release -- model-registry 42`. [Документация](docs/model-registry.md). Только синтетические данные; браузерное демо остаётся автономным.

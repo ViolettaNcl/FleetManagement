@@ -20,6 +20,8 @@
 
 - Geographic tracking lab: bundled Natural Earth country geometry, approximate city coordinates, great-circle distance, replay controls, geofence entry/exit history.
 
+- Local ML.NET FastTree trainer for maintenance and ETA, paired held-out evaluation, model save/reload verification, versioned manifest and SHA-256 fingerprints, dedicated CI artifacts.
+
 ## V2 baseline — portfolio edition
 
 ### Added

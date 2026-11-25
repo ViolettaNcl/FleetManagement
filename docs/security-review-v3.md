@@ -36,3 +36,5 @@ Actual report: npm 0 findings; 17 declared historical WPF packages, 0 OSV adviso
 
 ## CodeQL remediation candidate — PR #2
 GitHub Advanced Security reported two high-severity user-controlled sensitive-method bypass alerts in FleetStore.cs at 61d445b. The candidate removes the headerless alternate write path, requires an actor for all receipt writes, and stores the effective key in the same transaction for ordinary and batch writes. HTTP regressions cover absent/invalid keys, unauthorized writes and replay with server-generated UUIDs. No alerts dismissed and no rules disabled. Exact-commit CI and the separate GitHub Advanced Security CodeQL results check must confirm remediation. The release gate checks that result independently of the analysis workflow.
+
+Receipt capacity is now observable through the administrator-only aggregate endpoint. The 40,000/47,500 thresholds are operational warning levels, not automatic deletion; retained keys protect historical replay. See [receipt retention policy](batch-receipts.md#operational-retention-policy).

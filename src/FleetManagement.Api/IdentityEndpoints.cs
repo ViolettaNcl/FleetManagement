@@ -103,6 +103,16 @@ public static class IdentityEndpoints
             return Results.Created("/api/admin/users",new{id=user.Id,email=user.Email,role=input.Role});
         }).RequireAuthorization("FleetAdmin");
 
+        // Aggregate operational metadata only. Never disclose actor IDs, keys or response bodies.
+        api.MapGet("/admin/receipt-capacity",async (FleetDbContext db,CancellationToken ct)=>{
+            var count=await db.BatchReceipts.CountAsync(ct);
+            var oldest=await db.BatchReceipts.MinAsync(x=>(DateTime?)x.CreatedUtc,ct);
+            var newest=await db.BatchReceipts.MaxAsync(x=>(DateTime?)x.CreatedUtc,ct);
+            return Results.Ok(new{count,capacity=ReceiptPolicy.Capacity,remaining=Math.Max(0,ReceiptPolicy.Capacity-count),
+                warningThreshold=ReceiptPolicy.WarningThreshold,criticalThreshold=ReceiptPolicy.CriticalThreshold,
+                pressure=ReceiptPolicy.Pressure(count),oldestUtc=oldest,newestUtc=newest,automaticExpiry=false});
+        }).RequireAuthorization("FleetAdmin");
+
         api.MapGet("/admin/audit",async (FleetDbContext db,int? limit,CancellationToken ct)=>
             await db.AuditEntries.AsNoTracking().OrderByDescending(a=>a.Id).Take(Math.Clamp(limit??100,1,500)).ToListAsync(ct))
             .RequireAuthorization("FleetAdmin");

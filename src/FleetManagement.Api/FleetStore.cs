@@ -90,7 +90,7 @@ public sealed class FleetStore(FleetDbContext db, FleetWriteGate gate, IHubConte
                 if(saved.Location is not null)context.Response.Headers.Location=saved.Location;
                 return saved.Status==204?Results.NoContent():Results.Json(saved.Body,statusCode:saved.Status);
             }
-            if(await db.BatchReceipts.CountAsync(ct)>=50000)return Results.Conflict(new{error="Receipt limit reached. Contact the database operator."});
+            if(await db.BatchReceipts.CountAsync(ct)>=ReceiptPolicy.Capacity)return Results.Conflict(new{error="Receipt limit reached. Contact the database operator."});
             var result=await action(data);
             if(!Success(result))return result;
             var status=((IStatusCodeHttpResult)result).StatusCode!.Value;

@@ -73,6 +73,13 @@ def login(email,password):
     return request("POST","/api/auth/login",{"email":email,"password":password},authorized=False)["accessToken"]
 admin=login(os.environ["Fleet__BootstrapAdminEmail"],os.environ["Fleet__BootstrapAdminPassword"])
 assert "Admin" in request("GET","/api/auth/me",token=admin)["roles"]
+capacity_before=request("GET","/api/admin/receipt-capacity",token=admin)
+assert capacity_before["capacity"]==50000 and capacity_before["count"]>0
+assert capacity_before["remaining"]==50000-capacity_before["count"]
+assert capacity_before["automaticExpiry"] is False and capacity_before["pressure"]=="Healthy"
+assert capacity_before["oldestUtc"] and capacity_before["newestUtc"]
+request("GET","/api/admin/receipt-capacity",status=401,authorized=False)
+request("GET","/api/admin/receipt-capacity",status=403)
 request("GET","/api/admin/audit",status=403)
 viewer_password="Viewer-"+os.urandom(16).hex()+"!aA"
 dispatcher_password="Dispatch-"+os.urandom(16).hex()+"!aA"
@@ -335,9 +342,12 @@ def write_receipt(method,path,body,key,token=None):
 ordinary_key=str(uuid.uuid4())
 ordinary_path="/api/drivers"
 ordinary_body={"name":"QA ordinary receipt","license":"QA-ORD-RECEIPT","experience":3}
+receipt_count=request("GET","/api/admin/receipt-capacity",token=admin)["count"]
+request("GET","/api/admin/receipt-capacity",status=403,token=viewer)
 ordinary=write_receipt("POST",ordinary_path,ordinary_body,ordinary_key)
 assert ordinary[0]==201 and ordinary[2] is None
 assert write_receipt("POST",ordinary_path,ordinary_body,ordinary_key)==(201,ordinary[1],"true",ordinary[3])
+assert request("GET","/api/admin/receipt-capacity",token=admin)["count"]==receipt_count+1
 assert write_receipt("POST",ordinary_path,{**ordinary_body,"experience":4},ordinary_key)[0]==409
 assert write_receipt("POST","/api/operations/maintenance",{"vehicleId":3,"kind":"Repair"},ordinary_key)[0]==409
 assert write_receipt("POST",ordinary_path,ordinary_body,str(uuid.uuid4()),viewer)[0]==403

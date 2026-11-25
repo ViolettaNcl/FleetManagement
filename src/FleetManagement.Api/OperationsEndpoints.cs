@@ -50,7 +50,7 @@ public static class OperationsEndpoints
                     replayed=true;context.Response.Headers["Idempotency-Replayed"]="true";
                     return Results.Text(existing.ResponseJson,"application/json",statusCode:201);
                 }
-                if(await db.BatchReceipts.CountAsync(ct)>=50000)return Results.Conflict(new{error="Batch receipt limit reached. Contact the database operator."});
+                if(await db.BatchReceipts.CountAsync(ct)>=ReceiptPolicy.Capacity)return Results.Conflict(new{error="Batch receipt limit reached. Contact the database operator."});
                 if(!input.Confirmed||input.Assignments is null||input.Assignments.Count is <1 or >BatchDispatch.MaxRequests||input.Assignments.Any(a=>a?.Request is null))
                     return Invalid("Explicit confirmation and 1–40 assignments required.");
                 var plan=new BatchPlan("Confirmed",input.Assignments.Select(a=>new BatchAssignment(a!.Request!.ToRequest(),a.VehicleId,a.DriverId)).ToArray(),[]);

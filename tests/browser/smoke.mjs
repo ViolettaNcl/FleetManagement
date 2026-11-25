@@ -75,6 +75,14 @@ try {
   await page.getByRole('button',{name:'Run anomaly scan'}).click();
   await page.getByRole('heading',{name:'Anomaly score timeline'}).waitFor();
   await page.screenshot({path:'browser-results/predictions.png',fullPage:true});
+  await page.getByRole('button',{name:'Digital Twin',exact:true}).click();
+  await page.getByRole('button',{name:'Initialize scenario'}).click();
+  await page.getByRole('heading',{name:'Fleet movement'}).waitFor();
+  for(let i=0;i<3;i++) await page.getByRole('button',{name:'+ 5 minutes',exact:true}).click();
+  assert.equal(await page.getByTestId('twin-minute').innerText(),'Minute 15');
+  await page.getByRole('heading',{name:'Scenario event log'}).waitFor();
+  await page.getByRole('button',{name:'+ 60 minutes',exact:true}).click();
+  await page.screenshot({path:'browser-results/digital-twin.png',fullPage:true});
   await page.setViewportSize({width:390,height:844});
   await page.getByRole('button',{name:'Overview',exact:true}).click();
   await page.screenshot({path:'browser-results/mobile.png',fullPage:true});

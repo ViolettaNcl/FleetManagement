@@ -1,0 +1,59 @@
+@implements IAsyncDisposable
+<section class="panel">
+    <div class="registerhead"><div><h2>Fleet digital twin</h2><p class="muted">A separate synthetic fleet sandbox. Trained maintenance and ETA models score simulated readings; no live GPS, road network, or real mechanical diagnosis.</p></div><button @onclick="StartScenario">Initialize scenario</button></div>
+    <div class="formgrid">
+        <label>Virtual vehicles<input type="number" min="4" max="24" @bind="count"/></label>
+        <label>Simulation seed<input type="number" @bind="seed"/></label>
+        <label>Traffic intensity (0–1)<input type="number" step=".1" min="0" max="1" @bind="traffic"/></label>
+        <label>Incident<select @bind="incident"><option>None</option><option>Overheat</option><option>Breakdown</option><option>Signal loss</option></select></label>
+        <label>Incident vehicle<input type="number" min="1" max="@count" @bind="incidentVehicle"/></label>
+    </div>
+    <p class="muted">Incident begins at simulated minute 15; signal loss recovers at minute 45. Settings apply on initialization. The sandbox does not change fleet registers.</p>
+    @if(message.Length>0){<p role="status" class="notice">@message</p>}
+</section>
+@if(twin is not null){
+    var s=twin;
+    <section class="panel"><div class="registerhead"><h2>Simulation controls</h2><strong data-testid="twin-minute">Minute @s.Minute</strong></div>
+        <div class="actions"><button disabled="@(s.Finished)" @onclick="Toggle">@(playing?"Pause":"Play")</button><button class="secondary" disabled="@(playing||s.Finished)" @onclick="Step">+ 5 minutes</button><button class="secondary" disabled="@(playing||s.Finished)" @onclick="AdvanceHour">+ 60 minutes</button><span class="pill">@(s.Finished?"Finished":playing?"Running":"Paused")</span></div>
+        <p class="muted">Playback advances five simulated minutes every 500 ms, up to 12 hours.</p>
+    </section>
+    <div class="metrics"><div class="metric">En route<strong>@s.Vehicles.Count(v=>v.Status=="En route")</strong></div><div class="metric">Arrived<strong>@s.Vehicles.Count(v=>v.Status=="Arrived")</strong></div><div class="metric">Incidents<strong>@s.Vehicles.Count(v=>v.Status is "Breakdown" or "Offline")</strong></div><div class="metric">Fuel used<strong>@s.Vehicles.Sum(v=>v.FuelLitres).ToString("F1") L</strong></div></div>
+    <div class="split"><section class="panel"><h2>Fleet movement</h2><svg class="map route-lab-map" viewBox="0 0 600 340" role="img" aria-label="Synthetic vehicle progress along parallel corridors">
+        @foreach(var v in s.Vehicles){<line x1="40" x2="560" y1="@F(v.Y)" y2="@F(v.Y)" stroke="#D8CCEF" stroke-dasharray="4 3"/><circle cx="@F(v.X)" cy="@F(v.Y)" r="@(selected==v.Id?8:5)" fill="@Color(v)" stroke="white" stroke-width="1.5"><title>@v.Plate: @v.Status</title></circle>}
+        </svg><p class="muted">Ground-truth simulated route progress, including offline vehicles; offline sensor readings are stale. Not geographic tracking.</p></section>
+        <section class="panel"><h2>Vehicle inspection</h2><label>Vehicle<select @bind="selected">@foreach(var v in s.Vehicles){<option value="@v.Id">@v.Plate</option>}</select></label>
+        @{var v=s.Vehicles.Single(v=>v.Id==selected);}
+        <p><span class="pill">@v.Status</span></p><dl class="twin-details"><dt>Progress</dt><dd>@((v.TravelledKm/v.DistanceKm).ToString("P1"))</dd><dt>Speed (simulation)</dt><dd>@v.SpeedKmh.ToString("F1") km/h</dd><dt>Temperature</dt><dd>@v.Temperature.ToString("F1") °C</dd><dt>Vibration</dt><dd>@v.Vibration.ToString("F2") mm/s</dd><dt>Battery</dt><dd>@v.Voltage.ToString("F2") V</dd><dt>Learned risk</dt><dd>@v.Risk.ToString("P1")</dd><dt>Anomaly score</dt><dd>@v.AnomalyScore.ToString("F2") σ</dd><dt>Estimated remaining</dt><dd>@(v.EtaMinutes is double remaining?remaining.ToString("F0")+" min":"Unavailable")</dd></dl>
+        </section></div>
+    <section class="panel"><h2>Sensor history</h2><p class="muted">Temperature in °C and experimental maintenance probability (%). Separate scales. Offline readings remain stale.</p>
+        <div class="split"><div><h3>Temperature</h3><svg class="ml-chart" viewBox="0 0 320 160" role="img" aria-label="Simulated temperature history"><line x1="20" x2="300" y1="140" y2="140" stroke="#D8CCEF"/><polyline points="@HistoryPoints(s,false)" fill="none" stroke="#BA55A7" stroke-width="2.5"/></svg></div><div><h3>Maintenance risk</h3><svg class="ml-chart" viewBox="0 0 320 160" role="img" aria-label="Experimental maintenance risk history"><line x1="20" x2="300" y1="140" y2="140" stroke="#D8CCEF"/><polyline points="@HistoryPoints(s,true)" fill="none" stroke="#6A5ACD" stroke-width="2.5"/></svg></div></div>
+    </section>
+    <section class="panel"><h2>Fleet status register</h2><div class="tablewrap"><table><thead><tr><th>Vehicle</th><th>Status</th><th>Distance</th><th>Fuel</th><th>Risk</th><th>Anomaly</th><th>ETA</th></tr></thead><tbody>@foreach(var v in s.Vehicles){<tr><td><button class="secondary" @onclick="()=>selected=v.Id">@v.Plate</button></td><td>@v.Status</td><td>@v.TravelledKm.ToString("F1") / @v.DistanceKm km</td><td>@v.FuelLitres.ToString("F1") L</td><td>@v.Risk.ToString("P1")</td><td>@v.AnomalyScore.ToString("F1")</td><td>@(v.EtaMinutes is double m?m.ToString("F0")+" min":"—")</td></tr>}</tbody></table></div></section>
+    <section class="panel"><h2>Scenario event log</h2>@if(s.Events.Count==0){<p class="muted">No state changes or threshold crossings yet.</p>}<div class="tablewrap"><table><thead><tr><th>Minute</th><th>Vehicle</th><th>Event</th><th>Detail</th></tr></thead><tbody>@foreach(var e in s.Events.Reverse().Take(30)){<tr><td>@e.Minute</td><td>DT-@e.VehicleId.ToString("000")</td><td>@e.Kind</td><td>@e.Detail</td></tr>}</tbody></table></div></section>
+}
+@code{
+    private int count=8,seed=42,incidentVehicle=1,selected=1;
+    private double traffic=.4;
+    private string incident="Overheat",message="";
+    private DigitalTwin? twin;
+    private LogisticMaintenanceModel? maintenance;
+    private EtaModel? eta;
+    private bool playing;
+    private readonly CancellationTokenSource cts=new();
+    private Task? loop;
+    private void StartScenario(){
+        var config=new TwinConfig(count,seed,traffic,incident=="None"?0:incidentVehicle,incident);
+        if(!config.Valid||(incident!="None"&&incidentVehicle<1)){message="Choose 4–24 vehicles, traffic 0–1 and an existing incident vehicle.";return;}
+        playing=false;maintenance??=MaintenanceLearning.Train().Model;eta??=EtaLearning.Train().Model;
+        twin=new DigitalTwin(config,maintenance,eta);selected=1;message="Scenario initialized. Models trained on synthetic datasets.";
+        loop??=RunClock();
+    }
+    private async Task RunClock(){using var timer=new PeriodicTimer(TimeSpan.FromMilliseconds(500));try{while(await timer.WaitForNextTickAsync(cts.Token)){await InvokeAsync(()=>{if(playing){Step();StateHasChanged();}});}}catch(OperationCanceledException){}}
+    private void Toggle(){if(twin is not null&&!twin.Finished)playing=!playing;}
+    private void Step(){twin?.Step();if(twin?.Finished==true)playing=false;}
+    private void AdvanceHour(){for(int i=0;i<12;i++)Step();}
+    private static string F(double x)=>x.ToString("F2",CultureInfo.InvariantCulture);
+    private static string Color(TwinVehicle v)=>v.Status switch{"Breakdown"=>"#B04470","Offline"=>"#8A839B","Arrived"=>"#43896B",_=>v.Risk>=.7?"#BA55A7":"#6A5ACD"};
+    private string HistoryPoints(DigitalTwin s,bool risk)=>string.Join(" ",s.History(selected).Select(p=>F(20+280.0*p.Minute/Math.Max(5,s.Minute))+","+F(140-120*Math.Clamp(risk?p.Risk:(p.Temperature-60)/70,0,1))));
+    public async ValueTask DisposeAsync(){playing=false;cts.Cancel();if(loop is not null)await loop;cts.Dispose();}
+}

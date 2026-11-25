@@ -10,3 +10,5 @@
 .route-lab-map{max-height:500px;width:100%;display:block;margin-top:12px}
 
 .confusion{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:5px;font-size:13px;align-items:center;text-align:center}.confusion div{padding:12px 3px;border-radius:6px;background:#F5DDF0;color:#762262}.confusion .correct{background:#E5DEFA;color:#4B0082}.ml-chart{width:100%;max-height:260px}.ml-risk{margin:16px 0}.ml-risk .progress{margin-top:10px;height:12px}
+
+.twin-details{display:grid;grid-template-columns:1fr auto;gap:8px 12px;align-items:center;font-size:14px}.twin-details dt{color:#665D78}.twin-details dd{margin:0;font-weight:600;text-align:right;color:#4B0082}

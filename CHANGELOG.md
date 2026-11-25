@@ -35,6 +35,8 @@
 
 - Persistent maintenance work journal with scheduled service, repair and inspection categories, optional recorded EUR expense, passport integration and separate financial totals. Legacy browser snapshots remain readable; no fabricated historical work.
 
+- Driver resource planning: persisted explicit shift windows, day timeline, optional strict dispatch coverage, conflict/deletion guards and assistant alerts for uncovered assignments.
+
 ## V2 baseline — portfolio edition
 
 ### Added

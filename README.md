@@ -33,6 +33,7 @@ The grouped V3 workspace separates operational records, tracking/reporting, simu
 | --- | --- |
 | Vehicles / Drivers | Add a record, search by registration or name, edit it, and observe duplicate validation. |
 | Vehicle Passport | Open a registered vehicle's trip history, latest service, recorded maintenance work and upcoming assignments. |
+| Resource Planning | Register driver shifts, inspect daily assignments and optionally enforce shift coverage during dispatch. |
 | Calendar | Browse day, week and month, filter vehicles and open scheduled trips. |
 | Dispatch | Suggest an available vehicle and driver; schedule a trip, then try a conflicting assignment. |
 | Tracking | Play the simulated clock and inspect trip progress on the route schematic. |

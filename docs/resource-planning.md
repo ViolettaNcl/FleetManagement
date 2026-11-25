@@ -1,0 +1,6 @@
+# Driver resource planning
+Register explicit future driver shifts, up to 24 hours each, maximum 5,000 records. Same-driver overlaps are rejected; adjacent shifts allowed, but a trip must fit one continuous shift when strict mode is enabled. Cross-midnight windows appear on both day timelines. Only future shifts can be removed, and strict mode protects a shift covering an assigned trip. Driver deletion with shift history is blocked.
+
+Compatibility mode is default for older and fresh snapshots. In this mode shifts are informational. Strict mode persists in the same local browser snapshot, requires coverage for newly created or edited trips, and constrains recommendations in Dispatch and Assistant. Existing uncovered active or future trips remain unchanged, appear in the resource planner and become assistant alerts. Disabling strict mode intentionally restores previous assignment rules. No automatic rescheduling or cancellation. All clock values use the demo clock, not actual driver's timezone.
+
+This is resource availability, not legal driving-hour compliance or proof of fitness. No break/rest enforcement, shift recurrence, payroll, time zone conversion, vehicle work-order reservations or server integration. The synthetic multi-dispatch lab remains separate.

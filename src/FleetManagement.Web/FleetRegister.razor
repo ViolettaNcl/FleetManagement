@@ -69,6 +69,7 @@
     [Parameter] public EventCallback Changed {get;set;}
     [Parameter] public EventCallback<int> OpenPassport {get;set;}
     [Parameter] public IReadOnlyList<MaintenanceEntry> MaintenanceEntries {get;set;}=[];
+    [Parameter] public IReadOnlyList<DriverShift> Shifts {get;set;}=[];
     private string query="",sort="id",name="",plate="",license="",feedback="";
     private bool descending,editing,error;
     private int editId,mileage,serviceMileage,intervalKm=10000,intervalDays=180,experience;
@@ -105,7 +106,7 @@
         editing=false;error=false;feedback="Record saved.";await Changed.InvokeAsync();
     }
     private async Task Remove(int id){
-        var invalid=IsVehicles?(FleetRules.CanRemoveVehicle(Fleet,id)??MaintenanceJournal.CanRemove(id,MaintenanceEntries)):FleetRules.CanRemoveDriver(Fleet,id);
+        var invalid=IsVehicles?(FleetRules.CanRemoveVehicle(Fleet,id)??MaintenanceJournal.CanRemove(id,MaintenanceEntries)):(FleetRules.CanRemoveDriver(Fleet,id)??ResourcePlanning.CanRemoveDriver(id,Shifts));
         if(invalid is not null){Fail(invalid);return;}
         if(!await JS.InvokeAsync<bool>("confirm","Delete this demo record?"))return;
         if(IsVehicles)Fleet.Vehicles.RemoveAll(v=>v.Id==id);else Fleet.Drivers.RemoveAll(d=>d.Id==id);

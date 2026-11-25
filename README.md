@@ -38,6 +38,7 @@ The browser edition runs C# in WebAssembly, uses synthetic data, and requires no
 | Intelligence | Train a local synthetic maintenance classifier and inspect held-out metrics and predictions. |
 | Predictions | Train an ETA regressor, compare errors and scan synthetic telemetry anomalies. |
 | Digital Twin | Initialize a seeded virtual fleet, inject incidents and inspect live synthetic ML scores. |
+| Assistant | Review explainable service and dispatch alerts with an offline fixed-intent expert system. |
 | Analytics | Filter trips by departure date and download a genuine two-sheet Excel workbook. |
 
 Use **Reset demo** to restore the synthetic dataset. Changes stay in your browser.

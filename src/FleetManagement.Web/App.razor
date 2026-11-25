@@ -30,11 +30,16 @@
             <button class="secondary" @onclick='() => Navigate("Tracking")'><strong>03 · Track</strong><small>Advance the simulated clock.</small></button>
             <button class="secondary" @onclick='() => Navigate("Analytics")'><strong>04 · Report</strong><small>Export an Excel workbook.</small></button>
         </div></section>
+        <section class="panel"><div class="registerhead"><div><h2>Intelligent alerts</h2><p class="muted">Live rule-based review of current demo records.</p></div><button class="secondary" @onclick='()=>Navigate("Assistant")'>Open alert center</button></div><FleetAlertList Alerts="@(FleetAdvisor.Assess(fleet,Now).Take(3).ToArray())" Open="Navigate"/></section>
         <section class="panel"><h2>Recent trips</h2>@TripTable()</section>
     }
     else if (section == "Vehicles" || section == "Drivers")
     {
         <FleetRegister @key="section" Fleet="fleet" IsVehicles="@(section == "Vehicles")" Today="Now" Changed="Persist" />
+    }
+    else if (section == "Assistant")
+    {
+        <FleetAssistant Fleet="fleet" Now="Now" Open="Navigate" />
     }
     else if (section == "Digital Twin")
     {
@@ -109,7 +114,7 @@
     <footer class="footer">FleetManagement · WPF-inspired .NET WebAssembly demo · synthetic data only · <a href="https://github.com/ViolettaNcl/FleetManagement">Source repository</a></footer>
 </main>
 @code {
-    private readonly string[] Sections = ["Overview","Vehicles","Drivers","Tracking","Dispatch","Calendar","Maintenance","Analytics","Optimization","Intelligence","Predictions","Digital Twin"];
+    private readonly string[] Sections = ["Overview","Vehicles","Drivers","Tracking","Dispatch","Calendar","Maintenance","Analytics","Optimization","Intelligence","Predictions","Digital Twin","Assistant"];
     private const string Key="fleetmanagement.demo.v1";
     private FleetData fleet=FleetRules.Sample(DateTime.Now);
     private string section="Overview",origin="North depot",destination="Central hub",feedback="",storageMessage="";

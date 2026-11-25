@@ -12,6 +12,8 @@
 
 - Digital Twin Lab: bounded seeded fleet simulation, playback, traffic, fuel, incidents, telemetry history and actual local maintenance/ETA inference.
 
+- Fleet Intelligence Assistant and Smart Alert Center: deterministic evidence-linked recommendations, three supported intents, severity filters and separate Digital Twin alerts.
+
 ## V2 baseline — portfolio edition
 
 ### Added

@@ -83,6 +83,15 @@ try {
   await page.getByRole('heading',{name:'Scenario event log'}).waitFor();
   await page.getByRole('button',{name:'+ 60 minutes',exact:true}).click();
   await page.screenshot({path:'browser-results/digital-twin.png',fullPage:true});
+  await page.getByRole('heading',{name:'Simulation intelligence alerts'}).waitFor();
+  await page.getByRole('button',{name:'Assistant',exact:true}).click();
+  await page.getByRole('button',{name:'Maintenance review',exact:true}).click();
+  await page.getByRole('status').filter({hasText:'Maintenance review'}).waitFor();
+  await page.getByLabel('Ask a supported question').fill('unknown request');
+  await page.getByRole('button',{name:'Ask assistant',exact:true}).click();
+  await page.getByRole('heading',{name:'Supported questions'}).waitFor();
+  await page.getByLabel('Severity').selectOption('High');
+  await page.screenshot({path:'browser-results/assistant.png',fullPage:true});
   await page.setViewportSize({width:390,height:844});
   await page.getByRole('button',{name:'Overview',exact:true}).click();
   await page.screenshot({path:'browser-results/mobile.png',fullPage:true});

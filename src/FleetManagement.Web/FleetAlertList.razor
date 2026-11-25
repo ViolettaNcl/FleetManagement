@@ -1,0 +1,16 @@
+@if(Alerts.Count==0){<p class="muted">No matching alerts. This does not certify vehicle safety.</p>}
+else{
+    <div class="advisor-list">
+    @foreach(var item in Alerts){
+        <article class="advisor-alert">
+            <div><span class="pill @(item.Severity=="High"?"due":"soon")">@item.Severity</span> <strong>@item.Subject · @item.Title</strong></div>
+            <p>@item.Evidence</p><p class="muted">@item.Recommendation</p>
+            @if(Open.HasDelegate){<button class="secondary" @onclick="()=>Open.InvokeAsync(item.Destination)">Open @item.Destination</button>}
+        </article>
+    }
+    </div>
+}
+@code{
+    [Parameter,EditorRequired] public IReadOnlyList<FleetAlert> Alerts{get;set;}=[];
+    [Parameter] public EventCallback<string> Open{get;set;}
+}

@@ -200,7 +200,7 @@ assert len(overview["departures"])==7
 calendar=request("GET",f"/api/operations/calendar?from={now.date().isoformat()}&days=14",token=viewer)
 assert calendar["days"]==14
 assert {"Trip","Shift","Reservation"} <= {e["kind"] for e in calendar["entries"]}
-request("GET",f"/api/operations/calendar?from={now.date().isoformat()}&days=32",400,token=viewer)
+request("GET",f"/api/operations/calendar?from={now.date().isoformat()}&days=32",status=400,token=viewer)
 request("GET","/api/operations/overview",status=401,authorized=False)
 print("PASS: server dashboard counts and bounded calendar events")
 

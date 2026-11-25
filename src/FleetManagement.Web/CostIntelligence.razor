@@ -10,7 +10,7 @@
         <label>@T("Driver rate (EUR/hour)")<input type="number" step=".1" min="0" max="1000" @bind="driver"/></label>
     </div>
     <div class="actions"><button class="secondary" @onclick="ResetRates">@T("Reset assumptions")</button><button @onclick="Export" disabled="@(!Valid)">@T("Export financial Excel (.xlsx)")</button></div>
-    @if(exportMessage.Length>0){<p role="status" class="notice">@exportMessage</p>}
+    @if(exportMessage.Length>0){<p role="status" class="notice">@T(exportMessage)</p>}
     <h3>@T("Budget assumptions for selected period")</h3><div class="formgrid"><label>@T("Period budget (EUR)")<input type="number" min="0" max="1000000000" step=".01" @bind="budget"/></label><label>@T("Fixed cost allowance (EUR)")<input type="number" min="0" max="1000000000" step=".01" @bind="fixedAllowance"/></label></div>
     @if(!Valid){<p class="error" role="status">@T("Choose a valid date range and nonnegative rates within the input limits.")</p>}
 </section>
@@ -50,7 +50,7 @@
     private bool Valid=>FleetReport.ValidRange(from,to)&&Assumptions.Valid&&budget is >=0 and <=1000000000&&fixedAllowance is >=0 and <=1000000000;
     protected override void OnInitialized(){from=Now.Date.AddDays(-29);to=Now.Date;}
     private void ResetRates(){intensity=28;price=1.6m;maintenance=.15m;driver=18;budget=5000;fixedAllowance=500;exportMessage="";}
-    private async Task Export(){if(!Valid)return;try{var bytes=FleetReport.ExportFinanceXlsx(Fleet,Now,from,to,Assumptions,budget,fixedAllowance,MaintenanceEntries);await JS.InvokeVoidAsync("fleetDownload",Convert.ToBase64String(bytes),$"fleet-finance-{from:yyyy-MM-dd}-{to:yyyy-MM-dd}.xlsx");exportMessage="Financial workbook generated.";}catch(JSException){exportMessage="Unable to download the workbook in this browser.";}}
+    private async Task Export(){if(!Valid)return;try{var bytes=FleetReport.ExportFinanceXlsx(Fleet,Now,from,to,Assumptions,budget,fixedAllowance,MaintenanceEntries,Russian);await JS.InvokeVoidAsync("fleetDownload",Convert.ToBase64String(bytes),$"fleet-finance-{from:yyyy-MM-dd}-{to:yyyy-MM-dd}.xlsx");exportMessage="Financial workbook generated.";}catch(JSException){exportMessage="Unable to download the workbook in this browser.";}}
     private static string Money(decimal value)=>"€ "+value.ToString("N2");
     private static string Width(decimal value,decimal total)=>"width:"+(total==0?0:100*value/total).ToString("F2",CultureInfo.InvariantCulture)+"%";
 }

@@ -275,7 +275,19 @@ Check(budgetPlan.ProjectedTotal==budgetPlan.FuelCost+budgetPlan.MaintenanceAllow
 Check(budgetPlan.Headroom==1000-budgetPlan.ProjectedTotal,"budget headroom");
 Check(FleetBudget.Build(new([],[],[]),now,now.Date,now.Date,new(25,2,.1m,10),10,20).Headroom==-10,"budget fixed allowance and overspend");
 var financeEntries=new List<MaintenanceEntry>{new(1,3,now,110800,"Repair","=1+1",125.50m),new(2,3,now,110800,"Inspection","Unknown cost",null)};
+using(var localized=new MemoryStream(FleetReport.ExportXlsx(malicious,now,now,true)))
+using(var localizedZip=new System.IO.Compression.ZipArchive(localized,System.IO.Compression.ZipArchiveMode.Read)){
+    string Part(string name){using var reader=new StreamReader(localizedZip.GetEntry(name)!.Open());return reader.ReadToEnd();}
+    Check(Part("xl/workbook.xml").Contains("Сводка")&&Part("xl/worksheets/sheet1.xml").Contains("Показатель"),"Russian workbook labels");
+    var sheet=Part("xl/worksheets/sheet2.xml");
+    Check(sheet.Contains("=1+1")&&sheet.Contains("A&amp;B")&&!sheet.Contains("<f>"),"localized export preserves literal user text");
+}
 var financeBytes=FleetReport.ExportFinanceXlsx(fleet,now,now.Date,now.Date,new(25,2,.1m,10),1000,100,financeEntries);
+using(var ruFinance=new MemoryStream(FleetReport.ExportFinanceXlsx(fleet,now,now.Date,now.Date,new(25,2,.1m,10),1000,100,financeEntries,true)))
+using(var ruZip=new System.IO.Compression.ZipArchive(ruFinance,System.IO.Compression.ZipArchiveMode.Read)){
+    using var reader=new StreamReader(ruZip.GetEntry("xl/worksheets/sheet4.xml")!.Open());
+    Check(reader.ReadToEnd().Contains("Остаток бюджета"),"Russian finance workbook budget labels");
+}
 using(var financeStream=new MemoryStream(financeBytes))
 using(var financeZip=new System.IO.Compression.ZipArchive(financeStream,System.IO.Compression.ZipArchiveMode.Read)){
     string FinancePart(string path){using var reader=new StreamReader(financeZip.GetEntry(path)!.Open());return reader.ReadToEnd();}

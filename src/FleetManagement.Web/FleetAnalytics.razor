@@ -34,7 +34,7 @@
         </section>
     </div>
     <section class="panel"><h2>@T("Vehicle performance")</h2><div class="tablewrap"><table><thead><tr><th>@T("Registration")</th><th>@T("Model")</th><th>@T("Trips")</th><th>@T("Completed")</th><th>@T("Completed distance")</th><th>@T("Service")</th></tr></thead><tbody>
-        @foreach(var row in data.VehicleRows){<tr><td>@row.Registration</td><td>@row.Model</td><td>@row.Trips</td><td>@row.CompletedTrips</td><td>@row.CompletedDistanceKm km</td><td><span class="pill @row.ServiceStatus.ToLowerInvariant()">@row.ServiceStatus</span></td></tr>}
+        @foreach(var row in data.VehicleRows){<tr><td>@row.Registration</td><td>@row.Model</td><td>@row.Trips</td><td>@row.CompletedTrips</td><td>@row.CompletedDistanceKm km</td><td><span class="pill @row.ServiceStatus.ToLowerInvariant()">@T(row.ServiceStatus)</span></td></tr>}
     </tbody></table></div></section>
 }
 @code{
@@ -51,7 +51,7 @@
     private async Task Export(){
         if(!Valid)return;
         try{
-            var bytes=FleetReport.ExportXlsx(FleetReport.Build(Fleet,Now,from,to),from,to);
+            var bytes=FleetReport.ExportXlsx(FleetReport.Build(Fleet,Now,from,to),from,to,Russian);
             await JS.InvokeVoidAsync("fleetDownload",Convert.ToBase64String(bytes),$"fleet-report-{from:yyyy-MM-dd}-{to:yyyy-MM-dd}.xlsx");
             feedback="Excel workbook generated.";
         }catch(JSException){feedback="Unable to download the workbook in this browser.";}

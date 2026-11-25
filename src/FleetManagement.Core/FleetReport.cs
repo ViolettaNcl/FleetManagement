@@ -31,22 +31,24 @@ public static partial class FleetReport
 
     // Small dependency-free Open XML workbook. User text is always an inline
     // string, never a spreadsheet formula, including text beginning with '='.
-    public static byte[] ExportXlsx(FleetSummary summary,DateTime from,DateTime to)
+    public static byte[] ExportXlsx(FleetSummary summary,DateTime from,DateTime to,bool russian=false)
     {
         using var output=new MemoryStream();
         using(var zip=new ZipArchive(output,ZipArchiveMode.Create,true))
         {
             Write(zip,"[Content_Types].xml","""<?xml version="1.0" encoding="UTF-8"?><Types xmlns="http://schemas.openxmlformats.org/package/2006/content-types"><Default Extension="rels" ContentType="application/vnd.openxmlformats-package.relationships+xml"/><Default Extension="xml" ContentType="application/xml"/><Override PartName="/xl/workbook.xml" ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet.main+xml"/><Override PartName="/xl/worksheets/sheet1.xml" ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.worksheet+xml"/><Override PartName="/xl/worksheets/sheet2.xml" ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.worksheet+xml"/></Types>""");
             Write(zip,"_rels/.rels","""<?xml version="1.0" encoding="UTF-8"?><Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships"><Relationship Id="rId1" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/officeDocument" Target="xl/workbook.xml"/></Relationships>""");
-            Write(zip,"xl/workbook.xml","""<?xml version="1.0" encoding="UTF-8"?><workbook xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main" xmlns:r="http://schemas.openxmlformats.org/officeDocument/2006/relationships"><sheets><sheet name="Summary" sheetId="1" r:id="rId1"/><sheet name="Vehicles" sheetId="2" r:id="rId2"/></sheets></workbook>""");
+            var workbook="""<?xml version="1.0" encoding="UTF-8"?><workbook xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main" xmlns:r="http://schemas.openxmlformats.org/officeDocument/2006/relationships"><sheets><sheet name="Summary" sheetId="1" r:id="rId1"/><sheet name="Vehicles" sheetId="2" r:id="rId2"/></sheets></workbook>""";
+            if(russian)workbook=workbook.Replace("name=\"Summary\"","name=\"Сводка\"").Replace("name=\"Vehicles\"","name=\"Автомобили\"");
+            Write(zip,"xl/workbook.xml",workbook);
             Write(zip,"xl/_rels/workbook.xml.rels","""<?xml version="1.0" encoding="UTF-8"?><Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships"><Relationship Id="rId1" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/worksheet" Target="worksheets/sheet1.xml"/><Relationship Id="rId2" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/worksheet" Target="worksheets/sheet2.xml"/></Relationships>""");
             Sheet(zip,"xl/worksheets/sheet1.xml",new object[][]{
                 ["Metric","Value"],["From",from.ToString("yyyy-MM-dd",CultureInfo.InvariantCulture)],["To",to.ToString("yyyy-MM-dd",CultureInfo.InvariantCulture)],
                 ["Vehicles",summary.Vehicles],["Drivers",summary.Drivers],["Trips",summary.Trips],["Completed",summary.Completed],["Active",summary.Active],["Scheduled",summary.Scheduled],
                 ["Completed distance (km)",summary.CompletedDistanceKm],["All trip distance (km)",summary.PlannedDistanceKm],["Service due",summary.ServiceDue],["Service soon",summary.ServiceSoon]
-            });
-            var rows=new List<object[]>{new object[]{"Registration","Model","Trips","Completed","Completed distance (km)","Service status"}};
-            rows.AddRange(summary.VehicleRows.Select(v=>new object[]{v.Registration,v.Model,v.Trips,v.CompletedTrips,v.CompletedDistanceKm,v.ServiceStatus}));
+            }.Select(row=>row[0] is string label&&label=="Metric"?ReportLocale.Labels(row,russian):ReportLocale.Metric(row,russian)));
+            var rows=new List<object[]>{ReportLocale.Labels(new object[]{"Registration","Model","Trips","Completed","Completed distance (km)","Service status"},russian)};
+            rows.AddRange(summary.VehicleRows.Select(v=>new object[]{v.Registration,v.Model,v.Trips,v.CompletedTrips,v.CompletedDistanceKm,ReportLocale.Text(v.ServiceStatus,russian)}));
             Sheet(zip,"xl/worksheets/sheet2.xml",rows);
         }
         return output.ToArray();

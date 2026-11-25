@@ -4,7 +4,7 @@ using System.IO.Compression;
 namespace FleetManagement.Core;
 public static partial class FleetReport
 {
-    public static byte[] ExportFinanceXlsx(FleetData fleet,DateTime now,DateTime from,DateTime to,CostAssumptions rates,decimal budget,decimal fixedAllowance,IReadOnlyList<MaintenanceEntry> entries)
+    public static byte[] ExportFinanceXlsx(FleetData fleet,DateTime now,DateTime from,DateTime to,CostAssumptions rates,decimal budget,decimal fixedAllowance,IReadOnlyList<MaintenanceEntry> entries,bool russian=false)
     {
         var actual=FleetEconomics.Build(fleet,now,from,to,rates);
         var plan=FleetBudget.Build(fleet,now,from,to,rates,budget,fixedAllowance);
@@ -28,7 +28,20 @@ public static partial class FleetReport
             new object[]{"Metric","Value"},new object[]{"All registered trips departing in period",plan.Trips},new object[]{"Completed",plan.Completed},new object[]{"In transit",plan.Active},new object[]{"Scheduled",plan.Scheduled},new object[]{"Planned km",plan.DistanceKm},new object[]{"Trip hours",plan.TripHours},new object[]{"Fuel litres",plan.FuelLitres},new object[]{"Fuel cost",plan.FuelCost},new object[]{"Maintenance allowance",plan.MaintenanceAllowance},new object[]{"Driver cost",plan.DriverCost},new object[]{"Fixed allowance for period",plan.FixedAllowance},new object[]{"Projected total",plan.ProjectedTotal},new object[]{"Budget",plan.Budget},new object[]{"Budget headroom",plan.Headroom},
             new object[]{"Scope","All registered trips in departure cohort; includes future assignments, no unregistered demand. Not an invoice or actual cash forecast."}
         };
+        if(russian){
+            // Summary/budget contain only controlled metric labels; scope text is controlled too.
+            for(int i=0;i<summary.Count;i++)summary[i]=i==0||i==summary.Count-1?ReportLocale.Labels(summary[i],true):ReportLocale.Metric(summary[i],true);
+            for(int i=0;i<planning.Count;i++)planning[i]=i==0||i==planning.Count-1?ReportLocale.Labels(planning[i],true):ReportLocale.Metric(planning[i],true);
+            vehicles[0]=ReportLocale.Labels(vehicles[0],true);
+            work[0]=ReportLocale.Labels(work[0],true);
+            // Do not translate registration, model or free-form notes.
+            for(int i=1;i<work.Count;i++){
+                work[i][4]=ReportLocale.Text((string)work[i][4],true);
+                work[i][7]=ReportLocale.Text((string)work[i][7],true);
+            }
+        }
         (string Name,List<object[]> Rows)[] sheets=[("Summary",summary),("Vehicle Costs",vehicles),("Maintenance Journal",work),("Budget",planning)];
+        if(russian)sheets=sheets.Select(s=>(ReportLocale.Text(s.Name,true),s.Rows)).ToArray();
         using var output=new MemoryStream();
         using(var zip=new ZipArchive(output,ZipArchiveMode.Create,true)){
             const string typePrefix="application/vnd.openxmlformats-officedocument.spreadsheetml.";

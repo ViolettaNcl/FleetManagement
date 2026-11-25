@@ -277,6 +277,10 @@ try {
   await page.locator('input[type=file]').setInputFiles('tests/ml/fixture-manifest.json');
   await page.getByRole('heading',{name:'Experiment provenance'}).waitFor();
   assert.equal(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth),true,'Registry must fit the mobile viewport');
+  await page.getByRole('button',{name:'Assistant',exact:true}).click();
+  await page.getByRole('button',{name:'Maintenance review',exact:true}).click();
+  await page.getByRole('heading',{name:'Maintenance review',exact:true}).waitFor();
+  assert.equal(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth),true,'Assistant must fit the mobile viewport');
   await page.getByRole('button',{name:'Overview',exact:true}).click();
   await page.screenshot({path:'browser-results/mobile.png',fullPage:true});
   assert.equal(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth),true);

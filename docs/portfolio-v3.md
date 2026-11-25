@@ -31,3 +31,5 @@ Review desktop and mobile screenshots from successful CI, verify all applicable 
 Windows launcher CI exercises the actual PowerShell launcher against an existing disposable SQLite database on Windows, including account login and full fleet comparison. The first-run secure password prompt still needs manual acceptance. CI never accesses a user's database.
 
 The launcher accepts an optional `-AdminPassword` SecureString for noninteractive programmatic acceptance tests (never pass plaintext on the command line). The normal first-run path still uses Read-Host -AsSecureString. Windows CI tests clean database initialization through the real launcher, then restarts without credentials supplied and compares the preserved fleet. Manual interaction with the actual secure prompt still needs review.
+
+Browser CI now validates actual WebM and MP4 deliverables with ffprobe and complete FFmpeg decoding, verifies required PNG signatures/dimensions, and publishes media-validation.json with hashes and durations. Mobile smoke also exercises the assistant. This is technical media acceptance, not manual editorial review of every frame. Review the video before sharing it.

@@ -39,3 +39,5 @@ Review the additional dependency inventory (npm, historical WPF declarations and
 The backend migration-baseline jobs must pass for both providers. Their artifacts are fresh-database candidates only; do not apply them to existing databases. Existing V3 adoption into EF history remains a separate operator-reviewed change.
 
 Windows launcher CI includes both fresh SecureString initialization and existing database restart. The actual interactive secure prompt remains a manual check. Never pass a plaintext password on the command line.
+
+Review media-validation.json and schema-parity.json from the intended candidate. The automated media check verifies actual video decodability and selected screenshot dimensions; schema parity never authorizes EF history adoption on an existing database. Receipt pressure can be monitored through the Admin-only /api/admin/receipt-capacity endpoint. No purge or implicit upgrade is performed.

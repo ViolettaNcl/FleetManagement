@@ -69,7 +69,9 @@ ef="$work/tools/dotnet-ef"
 cp -R "$work/src/FleetManagement.Api/Migrations" "$out/"
 export FLEET_SCHEMA_LEFT="$ConnectionStrings__Fleet"
 export Fleet__InitializeDatabase=true Fleet__SeedDemo=true Fleet__UpgradeV2Schema=false
-dotnet run --project "$proj" --no-launch-profile --urls http://127.0.0.1:5095 > "$work/server.log" 2>&1 &
+dotnet build "$proj" -c Release
+dll="$work/src/FleetManagement.Api/bin/Release/net10.0/FleetManagement.Api.dll"
+dotnet "$dll" --urls http://127.0.0.1:5095 > "$work/server.log" 2>&1 &
 pid=$!
 ready=false
 for i in $(seq 1 90); do
@@ -101,7 +103,7 @@ else
     export ConnectionStrings__Fleet="${ConnectionStrings__Fleet/Database=FleetFreshMigrationCi;/Database=FleetEnsureCreatedCi;}"
 fi
 export FLEET_SCHEMA_RIGHT="$ConnectionStrings__Fleet"
-dotnet run --project "$proj" --no-launch-profile --urls http://127.0.0.1:5095 > "$work/ensure-server.log" 2>&1 &
+dotnet "$dll" --urls http://127.0.0.1:5095 > "$work/ensure-server.log" 2>&1 &
 pid=$!
 ready=false
 for i in $(seq 1 90); do

@@ -22,7 +22,7 @@ var matches=missing.Length==0&&unexpected.Length==0;
 await File.WriteAllTextAsync(args[0],JsonSerializer.Serialize(new{
     schema=1,provider,catalogMatches=matches,referenceEntries=reference.Count,candidateEntries=candidate.Count,
     missing,unexpected,historyAdoptionApproved=false,
-    limitations="Catalog comparison only; excludes EF history, permissions, data, provider-specific features not queried and SQLite table check expressions. Never stamps migration history."
+    limitations="Catalog comparison only; excludes EF history/lock metadata, permissions, data, provider-specific features not queried and SQLite table check expressions. Never stamps migration history."
 },new JsonSerializerOptions{WriteIndented=true}));
 Console.WriteLine($"Schema catalog matches: {matches}; reference {reference.Count}, candidate {candidate.Count}; history adoption not approved.");
 return matches||args.Length==2?0:1;
@@ -56,7 +56,7 @@ async Task<HashSet<string>> Read(string connection)
         foreach(var row in await Query(sql,name))result.Add(JsonSerializer.Serialize(new[]{kind,name??""}.Concat(row)));
     }
     if(provider=="Sqlite"){
-        var tables=await Query("SELECT name FROM sqlite_schema WHERE type='table' AND name NOT LIKE 'sqlite_%' AND name<>'__EFMigrationsHistory'");
+        var tables=await Query("SELECT name FROM sqlite_schema WHERE type='table' AND name NOT LIKE 'sqlite_%' AND name NOT IN ('__EFMigrationsHistory','__EFMigrationsLock')");
         foreach(var table in tables){
             var name=table[0];result.Add(JsonSerializer.Serialize(new[]{"table",name}));
             await Add("column","SELECT cid,name,type,[notnull],dflt_value,pk,hidden FROM pragma_table_xinfo($name)",name);

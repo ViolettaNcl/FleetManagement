@@ -96,3 +96,5 @@ Durable batch receipts: actor-scoped UUID + SHA-256 typed payload, immutable suc
 Identity lifecycle: server security stamp checks for authenticated HTTP, own-session revocation, admin staff revocation and transactional Viewer/Dispatcher changes with expected role. Browser batch idempotency retries preserve UUID and body in session. Existing connections/in-flight requests not forcibly terminated.
 
 Offline localization expanded to register forms, calendar filters and dispatch labels. Added deterministic core-scale smoke with 120 vehicles, 120 drivers, 3,600 historical trips and 40 simultaneous requests; checks preview, assignment uniqueness, apply and calendar. Timing is informational only.
+
+CI extends upgrade coverage through pinned pre-receipt V3, adds actual browser lost-response/retry test, and modern NuGet advisory inventory workflow. Advisory scan reports known issues without automatic upgrades; incomplete source data fails the scan. No complete supply-chain security guarantee.

@@ -1,0 +1,26 @@
+name: Modern dependency inventory
+on:
+  workflow_dispatch:
+  push:
+    branches: [master, 'feature/**']
+    paths: ['src/**/*.csproj','tools/**/*.csproj','tests/**/*.csproj','.github/workflows/dependency-review.yml','tools/dependency_inventory.py']
+  pull_request:
+    paths: ['src/**/*.csproj','tools/**/*.csproj','tests/**/*.csproj','.github/workflows/dependency-review.yml','tools/dependency_inventory.py']
+permissions:
+  contents: read
+jobs:
+  inventory:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '10.0.x'
+      - name: Query NuGet advisory data for modern projects
+        run: python3 tools/dependency_inventory.py "${{ runner.temp }}/dependency-inventory"
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: modern-nuget-advisory-inventory
+          path: ${{ runner.temp }}/dependency-inventory
+          if-no-files-found: error

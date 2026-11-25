@@ -144,9 +144,21 @@ try{
     await batch.getByRole("button",{name:"Preview assignments"}).click();
     await page.getByRole("status").filter({hasText:"Preview ready"}).waitFor();
     await page.getByLabel("Confirm selected assignments").check();
+    // Commit the first request on the actual API, then simulate lost network response.
+    const seenKeys=[];
+    await page.route("**/api/operations/batch/apply",async route=>{
+        seenKeys.push(route.request().headers()["idempotency-key"]);
+        if(seenKeys.length===1){const response=await route.fetch();assert.equal(response.status(),201);await route.abort("failed");}
+        else {const response=await route.fetch();assert.equal(response.status(),201);assert.equal(response.headers()["idempotency-replayed"],"true");await route.fulfill({response});}
+    });
+    await page.getByRole("button",{name:"Apply batch",exact:true}).click();
+    await page.getByRole("status").filter({hasText:"Request outcome unknown"}).waitFor();
     await page.getByRole("button",{name:"Apply batch",exact:true}).click();
     await page.getByRole("status").filter({hasText:"Applied 1 trips and refreshed"}).waitFor();
+    assert.equal(seenKeys.length,2);assert.ok(seenKeys[0]);assert.equal(seenKeys[0],seenKeys[1]);
+    await page.unroute("**/api/operations/batch/apply");
     await page.locator("#trips").getByRole("row").filter({hasText:"QA console batch"}).waitFor();
+    assert.equal(await page.locator("#trips").getByRole("row").filter({hasText:"QA console batch"}).count(),1);
     // A write from a second client must be detected without replacing a form draft.
     await trip.getByLabel("Trip origin").fill("Unsaved draft");
     const external=await api.post("/api/drivers",{data:{name:"External QA driver",license:"EXTERNAL-QA",experience:5},headers:{Authorization:"Bearer "+adminToken}});

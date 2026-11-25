@@ -24,6 +24,11 @@ jobs:
         with:
           ref: 4287aef89861d1be7a0ab38de5c8253074cd402b
           path: v2-baseline
+      - uses: actions/checkout@v4
+        with:
+          ref: 9250eccc57f4606c6fce88a15d5acb531f25699b
+          path: v3-baseline
+      - run: dotnet build v3-baseline/src/FleetManagement.Api -c Release
       - run: dotnet build v2-baseline/src/FleetManagement.Api -c Release
       - run: dotnet build src/FleetManagement.Api -c Release
       - name: Test HTTP, Identity, audit and persistence (${{ matrix.provider }})
@@ -79,6 +84,11 @@ jobs:
           test "$guard_status" -ne 0 && test "$guard_status" -ne 124
           grep -q "V3 operational schema missing or inaccessible" "$RUNNER_TEMP/upgrade-guard.log"
           export Fleet__UpgradeV2Schema=true
+          # Exercise upgrade from the actual pre-receipt V3 schema as well.
+          api_dll=v3-baseline/src/FleetManagement.Api/bin/Release/net10.0/FleetManagement.Api.dll
+          start_api
+          python3 tests/api/upgrade.py compare "$RUNNER_TEMP/v2-state.json"
+          kill "$pid"; wait "$pid" || true; unset pid api_dll
           start_api
           python3 tests/api/upgrade.py compare "$RUNNER_TEMP/v2-state.json"
           kill "$pid"; wait "$pid" || true; unset pid

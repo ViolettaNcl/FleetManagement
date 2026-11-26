@@ -71,6 +71,14 @@ Check(points.SequenceEqual(RouteOptimizer.Generate(20,42)),"route reproducible s
 Check(routes.All(r=>r.Stops.Count==points.Count+1&&r.Stops[0]==points[0]&&r.Stops[^1]==points[0]),"route closed at depot");
 Check(routes.All(r=>r.Stops.SkipLast(1).Select(s=>s.Id).Order().SequenceEqual(points.Select(s=>s.Id).Order())),"route visits same stops exactly once");
 Check(routes[2].DistanceKm<=Math.Min(routes[0].DistanceKm,routes[1].DistanceKm)+1e-8,"2-opt never worsens seed tour");
+Check(routes.Count==4&&routes[3].DistanceKm<=routes[2].DistanceKm+1e-8,"multi-start never worsens single-start");
+for(int routeSeed=0;routeSeed<5;routeSeed++){
+    var small=RouteOptimizer.Generate(9,routeSeed);var candidates=RouteOptimizer.Compare(small);
+    Check(candidates.Count==5&&candidates[^1].DistanceKm<=candidates.Take(4).Min(r=>r.DistanceKm)+1e-8,"exact optimum bounds heuristics");
+    Check(candidates.All(r=>r.Stops.SkipLast(1).Select(v=>v.Id).Order().SequenceEqual(small.Select(v=>v.Id).Order())),"all route strategies visit each stop once");
+}
+var square=RouteOptimizer.Compare([new(0,"Depot",0,0),new(1,"A",1,1),new(2,"B",0,1),new(3,"C",1,0)]);
+Check(Math.Abs(square[^1].DistanceKm-4)<1e-8,"Held–Karp exact unit square");
 Check(routes.All(r=>Math.Abs(r.DistanceKm-RouteOptimizer.Length(r.Stops))<1e-8),"route distance recomputation");
 Check(Math.Abs(RouteOptimizer.Distance(new(1,"A",0,0),new(2,"B",3,4))-5)<1e-8,"Euclidean distance");
 Check(RouteOptimizer.Compare([new(0,"Depot",0,0),new(1,"Stop",3,4)]).All(r=>r.DistanceKm==10),"two-stop round trip");

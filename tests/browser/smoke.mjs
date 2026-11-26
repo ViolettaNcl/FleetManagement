@@ -123,6 +123,10 @@ try {
   await page.getByRole('button',{name:'Calculate routes'}).click();
   await page.getByRole('button',{name:'Nearest neighbor',exact:true}).click();
   await page.getByRole('button',{name:'2-opt',exact:true}).click();
+  await page.getByRole('button',{name:'Multi-start 2-opt',exact:true}).click();
+  await page.getByLabel('Delivery stops').fill('8');
+  await page.getByRole('button',{name:'Calculate routes'}).click();
+  await page.getByRole('button',{name:'Exact (Held–Karp)',exact:true}).click();
   await page.screenshot({path:'browser-results/optimization.png',fullPage:true});
   await page.getByRole('button',{name:'Intelligence',exact:true}).click();
   await page.getByRole('button',{name:'Train model'}).click();

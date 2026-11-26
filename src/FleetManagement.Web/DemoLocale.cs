@@ -645,6 +645,15 @@ internal static class DemoLocale
         ["What needs attention?"]="Что требует внимания?",
         ["Financial workbook generated."]="Финансовый отчёт сформирован.",
         ["Unable to download the workbook in this browser."]="Не удалось загрузить отчёт в этом браузере.",
+        ["Compare closed tours on the same seeded synthetic coordinates. Distances are Euclidean kilometres, not road travel or traffic predictions."]="Сравните замкнутые маршруты по одним синтетическим координатам. Расстояния евклидовы, не дорожные и не прогноз трафика.",
+        ["Multi-start 2-opt improves or matches the single-start tour. Held–Karp gives the exact minimum for at most 11 delivery stops. No capacity or delivery windows."]="Многозапусковый 2-opt не хуже одиночного. Held–Karp находит точный минимум для не более 11 остановок доставки. Без ограничений вместимости и временных окон.",
+        ["Original"]="Исходный",
+        ["Nearest neighbor"]="Ближайший сосед",
+        ["Multi-start 2-opt"]="Многозапусковый 2-opt",
+        ["Exact (Held–Karp)"]="Точный (Held–Karp)",
+        ["Tour order"]="Порядок остановок",
+        ["Depot"]="Депо",
+        ["Choose between 3 and 49 delivery stops."]="Выберите от 3 до 49 остановок доставки.",
     };
     public static string Text(string value,bool russian)=>russian&&Russian.TryGetValue(value,out var translated)?translated:value;
 }

@@ -19,7 +19,7 @@
     </section>
     <section class="panel agenda-panel"><div class="registerhead"><div><h2>@T("Today's agenda")</h2><p class="muted">@T("Trips, vehicle reservations and date-based service reminders.")</p></div><button class="secondary" @onclick='()=>Open.InvokeAsync("Calendar")'>@T("Full calendar")</button></div>
         @{var entries=FleetCalendar.Entries(Fleet,Now.Date,Now.Date.AddDays(1),Reservations);}
-        <div class="agenda-date"><strong>@Now.ToString("dd")</strong><div><span>@Now.ToString("MMMM yyyy",Russian?CultureInfo.GetCultureInfo("ru-RU"):CultureInfo.GetCultureInfo("en-US"))</span><small>@entries.Count @T("Scheduled events")</small></div></div>
+        <div class="agenda-date"><strong>@Now.ToString("dd")</strong><div><span>@Now.ToString("MM / yyyy",CultureInfo.InvariantCulture)</span><small>@entries.Count @T("Scheduled events")</small></div></div>
         @if(entries.Count==0){<p class="empty-state">@T("No events today.")</p>}
         @foreach(var entry in entries.Take(6)){
             <div class="command-event"><span class="calendar-chip @(entry.Kind=="Trip"?"trip":"service")">@(entry.Kind=="Service due"?T("Service due"):entry.Start.ToString("HH:mm"))</span><div><strong>@entry.Title · @T(entry.Kind)</strong><p class="muted">@T(entry.Detail)</p></div></div>

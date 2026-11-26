@@ -30,6 +30,8 @@ try {
   assert.ok(response?.ok(),'Preview HTTP response failed');
   assert.equal(new URL(page.url()).origin,new URL(url).origin);
   await page.getByRole('heading',{name:'Operations overview',exact:true}).waitFor({timeout:90000});
+  await page.getByTestId('build-revision').waitFor();
+  assert.equal(await page.getByTestId('build-revision').innerText(),revision.slice(0,7));
   assert.equal(await page.locator('.dashboard-kpis .metric-action').count(),4);
   await page.locator('.workload-donut').waitFor();
   await page.locator('.simulation-showcase').waitFor();

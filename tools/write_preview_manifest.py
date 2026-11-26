@@ -15,3 +15,6 @@ artwork = json.loads((root / "assets" / "neon" / "manifest.json").read_text(enco
 (root / "preview-build.json").write_text(json.dumps({
     "schema": 1, "revision": sha, "mode": "synthetic-browser-demo", "artworkMode": artwork["mode"], "artworkArchive": artwork["archiveSha256"]
 }) + "\n", encoding="utf-8")
+
+# Match the visible workspace build identifier to the actual Pages artifact.
+(root / "js" / "build-info.js").write_text("window.fleetBuildRevision=()=>" + json.dumps(sha) + ";\n", encoding="utf-8")

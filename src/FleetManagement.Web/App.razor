@@ -25,7 +25,7 @@
         }
     </nav>
     <div class="fleet-content" id="fleet-content" tabindex="-1" @ref="contentRoot">
-    <div class="workspace-breadcrumb"><span>@T("Fleet workspace")</span><span aria-hidden="true">/</span><strong>@T(section)</strong><span class="workspace-clock">@T("Simulation time") · @Now.ToString("HH:mm")</span></div>
+    <div class="workspace-breadcrumb"><span>@T("Fleet workspace")</span><span aria-hidden="true">/</span><strong>@T(section)</strong><span class="workspace-clock">@T("Simulation time") · @Now.ToString("HH:mm")</span>@if(buildRevision.Length==7){<span class="build-revision" title="Published source revision" data-testid="build-revision">@buildRevision</span>}</div>
     @if(language=="ru"){<p class="localization-note">@T("Some technical labels and generated records remain in English.")</p>}
     @if (!string.IsNullOrEmpty(storageMessage)) { <p class="notice">@T(storageMessage)</p> }
     @if(ModuleBanner(section) is var banner && banner.Art.Length>0){
@@ -238,7 +238,7 @@
         var matches=NavigationGroups.SelectMany(g=>g.Items).Where(MatchesSection).ToArray();
         if(matches.Length==1){Navigate(matches[0]);navQuery="";}
     }
-    private string language="en";
+    private string language="en",buildRevision="";
     private string T(string value)=>DemoLocale.Text(value,language=="ru");
     private readonly (string Name,string[] Items)[] NavigationGroups = [
         ("Operations",["Overview","Vehicles","Drivers","Vehicle Passport","Dispatch","Batch Dispatch","Calendar","Resource Planning","Maintenance"]),
@@ -268,6 +268,7 @@
         if(focusSearch){focusSearch=false;try{await navInput.FocusAsync();}catch(JSException){}}
         if(focusContent){focusContent=false;try{await contentRoot.FocusAsync();}catch(JSException){}}
         if(!firstRender)return;
+        try{var revision=await JS.InvokeAsync<string?>("fleetBuildRevision");if(revision is not null&&revision.Length==40&&revision.All(Uri.IsHexDigit))buildRevision=revision[..7];}catch(JSException){}
         try{
             darkTheme=await JS.InvokeAsync<string?>("localStorage.getItem",ThemeKey)!="light";
             language=await JS.InvokeAsync<string?>("localStorage.getItem",LanguageKey)=="ru"?"ru":"en";

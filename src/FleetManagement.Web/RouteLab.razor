@@ -10,7 +10,7 @@
     <div class="metrics route-metrics">
         <div class="metric">@T("Original distance")<strong>@original.ToString("F1") <small>km</small></strong></div>
         <div class="metric">@T("Selected distance")<strong>@active.DistanceKm.ToString("F1") <small>km</small></strong></div>
-        <div class="metric">@T("Savings vs original")<strong class="metric-positive">@Savings(active,original).ToString("F1")%</strong></div>
+        <div class="metric">@T("Savings vs original")<strong class="@(Savings(active,original)>=0?"metric-positive":"metric-negative")">@Savings(active,original).ToString("F1")%</strong></div>
         <div class="metric">@T("Delivery stops")<strong>@(active.Stops.Count-2)</strong></div>
     </div>
     <section class="panel"><h2>@T("Algorithm comparison")</h2><div class="tablewrap"><table><thead><tr><th>@T("Algorithm")</th><th>@T("Distance")</th><th>@T("Savings vs original")</th><th>@T("2-opt swaps")</th></tr></thead><tbody>

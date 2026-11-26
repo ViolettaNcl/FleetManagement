@@ -24,6 +24,9 @@ for section in (m, e):
     assert path.is_file() and zipfile.is_zipfile(path)
     assert hashlib.sha256(path.read_bytes()).hexdigest() == section["artifact"]["sha256"]
 assert m["fastForestReloadVerified"] is True
+calibration = m["fastForestCalibration"]
+assert calibration["method"] == "Platt" and calibration["rows"] == 720 and calibration["vehicles"] == 12
+assert len(calibration["sha256"]) == 64 and calibration["sha256"] not in (m["trainSha256"], m["testSha256"])
 forest_path = run / m["fastForestArtifact"]["file"]
 assert forest_path.is_file() and zipfile.is_zipfile(forest_path)
 assert hashlib.sha256(forest_path.read_bytes()).hexdigest() == m["fastForestArtifact"]["sha256"]

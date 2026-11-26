@@ -42,11 +42,17 @@ try{
         LabelColumnName="Label",FeatureColumnName="Features",NumberOfLeaves=16,NumberOfTrees=100,
         MinimumExampleCountPerLeaf=20,NumberOfThreads=1
     }).Fit(trainView);
+    // ML.NET 5.0 FastForest emits Score without Probability in the CI runtime.
+    // Fit a Platt calibration transformer using a THIRD vehicle-disjoint cohort.
+    var forestCalibration=MaintenanceLearning.Generate(unchecked(seed^0x73A5),2000,12,60);
+    var calibrationView=ml.Data.LoadFromEnumerable(forestCalibration.Select((r,i)=>MaintenanceRow.From(r,i)));
+    var calibrator=ml.BinaryClassification.Calibrators.Platt().Fit(forest.Transform(calibrationView));
+    var calibratedForest=new TransformerChain<ITransformer>(new ITransformer[]{forest,calibrator});
     var forestPath=Path.Combine(pending,"maintenance-fastforest.zip");
-    ml.Model.Save(forest,trainView.Schema,forestPath);
+    ml.Model.Save(calibratedForest,trainView.Schema,forestPath);
     var forestLoaded=ml.Model.Load(forestPath,out _);
     var forestScores=Probabilities(forestLoaded);
-    CheckReload(Probabilities(forest),forestScores);
+    CheckReload(Probabilities(calibratedForest),forestScores);
     var forestMetrics=MaintenanceLearning.Evaluate(test,r=>forestScores[(r.VehicleId-1000)*60+r.Day]);
     var forestRanking=RankingEvaluation.Evaluate(test.Select(r=>(forestScores[(r.VehicleId-1000)*60+r.Day],r.FailureWithin7Days)));
     Console.WriteLine($"FastForest held-out F1={forestMetrics.F1:F3}, Brier={forestMetrics.Brier:F3}, ROC-AUC={forestRanking.RocAuc:F3}");
@@ -111,6 +117,7 @@ try{
             baseline=maintenance.Baseline,logistic=maintenance.Test,fastTree=fastMetrics,fastForest=forestMetrics,
             fastForestArtifact=new{file="maintenance-fastforest.zip",sha256=FileHash(forestPath)},fastForestReloadVerified=true,
             fastForestSettings=new{leaves=16,trees=100,minExamplesPerLeaf=20,threads=1},fastForestRanking=forestRanking,
+            fastForestCalibration=new{method="Platt",rows=forestCalibration.Count,vehicles=12,sha256=Fingerprint(forestCalibration)},
             settings=new{leaves=16,trees=100,minExamplesPerLeaf=20,learningRate=.1,threads=1},
             artifact=new{file="maintenance-fasttree.zip",sha256=FileHash(binaryPath)},reloadVerified=true
         },

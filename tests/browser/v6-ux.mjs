@@ -32,9 +32,11 @@ try{
  await page.waitForFunction(()=>localStorage.getItem('fleetmanagement.preferences.navigation.v6')==='all');
  assert.equal(await nav.locator('.nav-group button').count(),26);
  await page.reload();await mode.getByRole('button',{name:'All tools',exact:true,pressed:true}).waitFor({timeout:90000});
+ await page.addScriptTag({path:axePath});
  assert.equal(await nav.locator('.nav-group button').count(),26);
  await mode.getByRole('button',{name:'Essentials',exact:true}).click();
  await nav.getByRole('button',{name:'Overview',exact:true}).click();
+ assert.equal(await page.locator('.simulation-showcase').count(),0);
  await page.locator('.guided-start').getByRole('button',{name:/Add a vehicle/}).click();
  await page.getByRole('heading',{name:'New record',exact:true}).waitFor();
  await page.getByLabel('Registration',{exact:true}).fill('GUIDED-DRAFT');

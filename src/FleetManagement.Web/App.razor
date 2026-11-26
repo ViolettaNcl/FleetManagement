@@ -250,7 +250,7 @@
     </div>
 <div class="v4-bottom-nav" role="navigation" aria-label="@T("Mobile navigation")">
 @foreach(var tab in MobileTabs){<button class="secondary @(section==tab.Section?"mobile-active":"")" aria-label="@T("Mobile "+tab.Label)" aria-current="@(section==tab.Section?"page":null)" @onclick="()=>Navigate(tab.Section)"><WorkspaceIcon Name="@tab.Section"/><span>@T(tab.Label)</span></button>}
-<button class="secondary" aria-label="@T("Mobile More")" aria-expanded="@(mobileNav?"true":"false")" @onclick="ToggleMobileMenu"><span aria-hidden="true">☰</span><span>@T("More")</span></button></div>
+<button class="secondary" aria-label="@T("Mobile More")" aria-controls="workspace-nav" aria-expanded="@(mobileNav?"true":"false")" @onclick="ToggleMobileMenu"><span aria-hidden="true">☰</span><span>@T("More")</span></button></div>
 </main>
 </div>
 @code {
@@ -258,7 +258,7 @@
     private const string NavigationModeKey="fleetmanagement.preferences.navigation.v6";
     private string navigationMode="essentials";
     private bool VisibleNavigationItem(string item)=>MatchesSection(item)&&(navigationMode=="all"||!string.IsNullOrWhiteSpace(navQuery)||WorkspaceGuides.IsEssential(item)||item==section);
-    private async Task SetNavigationMode(string? mode){if(mode is not ("essentials" or "all")||navigationMode==mode)return;navigationMode=mode;await PersistPreferences();}
+    private async Task SetNavigationMode(string? mode){if(mode is not ("essentials" or "all")||navigationMode==mode)return;navigationMode=mode;if(!dashboardCustomized){dashboardPreset=mode=="all"?"full":"operations";dashboardPanels=PanelsForPreset(dashboardPreset);}await PersistPreferences();}
     private static readonly (string Key,string Icon,string Title,string Description)[] GuidedTasks=[("vehicle","Vehicles","Add a vehicle","Register a truck or other fleet vehicle."),("driver","Drivers","Add a driver","Create a driver profile."),("trip","Dispatch","Create a trip","Choose the route, time and assignment."),("maintenance","Maintenance","Check maintenance","See which vehicles need service."),("report","Analytics","Prepare a report","Review activity or export a report."),("alerts","Assistant","Review current alerts","Open warnings and suggested actions.")];
     private string themeMode="dark",newRecordSection="",visualMode="premium",workspaceDensity="comfortable";private int recordAction;
     private bool historyReady,writeHistory,quickActionsExpanded,recentDirty;
@@ -270,7 +270,7 @@
     private static readonly (string Key,string Label)[] DashboardPanels=[("trips","Recent trips"),("simulation","Interactive fleet visualization"),("intelligence","Explore intelligence"),("guide","Try a guided scenario"),("artwork","Design gallery")];
     private HashSet<string> dashboardPanels=PanelsForPreset("operations");
     private string dashboardPreset="operations";
-    private bool compactDashboard,dashboardSettingsOpen;
+    private bool compactDashboard,dashboardSettingsOpen,dashboardCustomized;
     private static HashSet<string> PanelsForPreset(string preset)=>new(preset switch{
         "operations"=>new[]{"trips"},"intelligence"=>new[]{"simulation","intelligence"},_=>DashboardPanels.Select(p=>p.Key).ToArray()
     },StringComparer.Ordinal);
@@ -288,10 +288,11 @@
         await SaveDashboardPreferences();
     }
     private async Task ResetDashboardPreferences(){
-        dashboardPreset="full";dashboardPanels=PanelsForPreset("full");compactDashboard=false;
+        dashboardPreset=navigationMode=="all"?"full":"operations";dashboardPanels=PanelsForPreset(dashboardPreset);compactDashboard=false;
         await SaveDashboardPreferences();
     }
     private async Task SaveDashboardPreferences(){
+        dashboardCustomized=true;
         try{
             await JS.InvokeVoidAsync("localStorage.setItem",DashboardKey,dashboardPreset+";"+(compactDashboard?"1":"0")+";"+string.Join("|",DashboardPanels.Where(p=>dashboardPanels.Contains(p.Key)).Select(p=>p.Key)));
         }catch(JSException){storageMessage="Unable to save locally; changes are session-only.";}
@@ -302,7 +303,7 @@
         if(parts.Length!=3||parts[0] is not ("full" or "operations" or "intelligence" or "custom")||parts[1] is not ("0" or "1"))return;
         var requested=parts[2].Split('|',StringSplitOptions.RemoveEmptyEntries);
         if(requested.Any(key=>!DashboardPanels.Any(p=>p.Key==key)))return;
-        dashboardPreset=parts[0];compactDashboard=parts[1]=="1";
+        dashboardCustomized=true;dashboardPreset=parts[0];compactDashboard=parts[1]=="1";
         dashboardPanels=dashboardPreset=="custom"?new HashSet<string>(requested,StringComparer.Ordinal):PanelsForPreset(dashboardPreset);
     }
     private async Task ToggleSidebar(){

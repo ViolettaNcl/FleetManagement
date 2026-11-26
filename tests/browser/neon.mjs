@@ -77,6 +77,10 @@ try{
   await page.getByRole('button',{name:'Overview',exact:true}).click();
   await page.locator('.scene-stage[data-renderer="webgl"]').waitFor();
   await page.setViewportSize({width:320,height:760});
+  await page.evaluate(()=>window.scrollTo(0,0));
+  assert.ok(await page.locator('.workspace-header').evaluate(el=>el.getBoundingClientRect().height<=150),'Mobile toolbar must not consume the viewport');
+  for(const name of ['Quick search','Light theme','Workspace alerts','Reset demo'])assert.ok(await page.getByRole('button',{name,exact:true}).isVisible());
+  await page.screenshot({path:'browser-results/workspace-mobile-header.png',fullPage:false});
   await page.locator('.mobile-nav-toggle').click();
   await page.locator('#workspace-nav').getByRole('button',{name:'Vehicles',exact:true}).click();
   await page.getByRole('heading',{name:'Vehicle register',exact:true}).waitFor();

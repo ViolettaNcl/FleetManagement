@@ -4,3 +4,5 @@ The public browser workspace is data-first: compact header and module intros, li
 The Pages build writes the exact source SHA into a small local script. The visible seven-character revision in the breadcrumb is verified by the public browser smoke test; development builds omit the label rather than inventing a revision.
 
 Next refinement fixes the exact accessible name of the service-status select (previous browser smoke timeout). Adds searchable/filterable dispatch, operational alert shortcut, bounded actual-data trip-period analytics, keyboard assistant input, compact status controls, keyboard-scrollable registers and clearer record identifiers. Tests cover filter results and chart totals, not only selectors.
+
+Screenshot review of the previous CI build revealed that mobile header wrapping consumed substantial screen space. The toolbar now has an icon-first single control row, a distinct local-demo status line and unchanged accessible button names. Added 320px toolbar height assertion and screenshot. Desktop tables and navigation use slightly larger type.

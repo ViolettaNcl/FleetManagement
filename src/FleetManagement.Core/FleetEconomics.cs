@@ -28,8 +28,9 @@ public static class FleetEconomics
         var begin=from.Date;var end=to.Date.AddDays(1);
         var observedEnd=now<end?now:end;
         var hours=Math.Max(0,(observedEnd-begin).TotalHours);
+        var byVehicle=fleet.Trips.ToLookup(t=>t.VehicleId);
         var rows=fleet.Vehicles.OrderBy(v=>v.Plate).Select(vehicle=>{
-            var own=fleet.Trips.Where(t=>t.VehicleId==vehicle.Id).ToArray();
+            var own=byVehicle[vehicle.Id].ToArray();
             // Cost cohort is completed trips departing inside the requested days.
             var done=own.Where(t=>t.Start>=begin&&t.Start<end&&t.End<=now&&t.End>t.Start).ToArray();
             long distance=done.Sum(t=>(long)t.Distance);

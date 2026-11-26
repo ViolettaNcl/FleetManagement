@@ -20,8 +20,9 @@ public static partial class FleetReport
         // Report cohort is trips starting within the inclusive date range.
         var trips=data.Trips.Where(t=>t.Start>=from.Date && t.Start<until).ToList();
         var completed=trips.Where(t=>t.End<=now).ToList();
+        var byVehicle=trips.ToLookup(t=>t.VehicleId);
         var rows=data.Vehicles.OrderBy(v=>v.Plate).Select(v=>{
-            var own=trips.Where(t=>t.VehicleId==v.Id).ToList();
+            var own=byVehicle[v.Id].ToList();
             var done=own.Where(t=>t.End<=now).ToList();
             return new VehicleReportRow(v.Plate,v.Model,own.Count,done.Count,done.Sum(t=>(long)t.Distance),FleetRules.Assess(v,now).Status);
         }).ToList();
@@ -38,9 +39,10 @@ public static partial class FleetReport
         int days=(to.Date-from.Date).Days+1;
         int size=(days+11)/12;
         var periods=new List<TripPeriod>();
+        var byPeriod=data.Trips.Where(t=>t.Start>=from.Date&&t.Start<to.Date.AddDays(1)).ToLookup(t=>(t.Start.Date-from.Date).Days/size);
         for(int offset=0;offset<days;offset+=size){
             var start=from.Date.AddDays(offset);var end=from.Date.AddDays(Math.Min(offset+size,days));
-            var trips=data.Trips.Where(t=>t.Start>=start&&t.Start<end).ToArray();
+            var trips=byPeriod[offset/size].ToArray();
             var completed=trips.Where(t=>t.End<=now).ToArray();
             periods.Add(new(start,end.AddDays(-1),trips.Length,completed.Length,completed.Sum(t=>(long)t.Distance)));
         }

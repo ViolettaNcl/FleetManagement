@@ -4,7 +4,8 @@ FleetManagement V3 — portable Windows x64 demo
 2. Double-click FleetManagement.Demo.exe.
 3. The app opens your default browser. Keep the console open; Ctrl+C stops it.
 4. No .NET SDK, Python, credentials, external API or database required.
-5. The demo uses synthetic records and browser storage. It is NOT the connected API.
+5. The default address is http://127.0.0.1:5185/; keep this port for the same browser storage. If occupied, close the other instance or use --port 5186 (separate storage).
+   The demo uses synthetic records and browser storage. It is NOT the connected API.
 6. Delete the extracted folder to remove the executable. Browser storage is separate.
 7. This is an unsigned development artifact, not a signed Windows installer. Verify the
    originating GitHub Actions run before opening. No administrator privileges required.

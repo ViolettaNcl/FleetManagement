@@ -39,7 +39,7 @@ jobs:
               if ($line) { $url = $line.Substring(9); break }
               Start-Sleep -Milliseconds 500
             }
-            if (!$url) { throw 'No loopback URL' }
+            if ($url -ne 'http://127.0.0.1:5185') { throw 'Expected stable loopback URL' }
             $response = Invoke-WebRequest "$url/"
             if ($response.StatusCode -ne 200 -or $response.Content -notmatch 'FleetManagement') { throw 'Index unavailable' }
             $wasm = Get-ChildItem "$root/wwwroot/_framework" -Filter '*.wasm' -File | Select-Object -First 1

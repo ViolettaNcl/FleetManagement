@@ -5,7 +5,7 @@
 <div class="demo-shell @(darkTheme?"dark-theme":"")">
 <header lang="@language">
     <div class="brand"><img class="brandicon" src="favicon.svg" alt="" /><div><h1>FleetManagement</h1><small>@T("Fleet operations • interactive portfolio")</small></div></div>
-    <div class="actions"><button class="secondary" aria-pressed="@(darkTheme?"true":"false")" @onclick="()=>darkTheme=!darkTheme">@T("Dark theme")</button><label class="demo-language">@T("Language") <select @bind="language" aria-label="@T("Language")"><option value="en">English</option><option value="ru">Русский</option></select></label><span class="pill">@T("Demo mode · local data")</span><button class="secondary" @onclick="Reset">@T("Reset demo")</button></div>
+    <div class="actions"><button class="secondary" aria-pressed="@(darkTheme?"true":"false")" @onclick="ToggleTheme">@T("Dark theme")</button><label class="demo-language">@T("Language") <select @bind="language" @bind:after="PersistPreferences" aria-label="@T("Language")"><option value="en">English</option><option value="ru">Русский</option></select></label><span class="pill">@T("Demo mode · local data")</span><button class="secondary" @onclick="Reset">@T("Reset demo")</button></div>
 </header>
 <main lang="@language">
     <nav class="fleet-sidebar" aria-label="@T("Fleet sections")">
@@ -175,6 +175,14 @@
 </div>
 @code {
     private bool darkTheme;
+    private const string ThemeKey="fleetmanagement.preferences.theme", LanguageKey="fleetmanagement.preferences.language";
+    private async Task ToggleTheme(){darkTheme=!darkTheme;await PersistPreferences();}
+    private async Task PersistPreferences(){
+        try{
+            await JS.InvokeVoidAsync("localStorage.setItem",ThemeKey,darkTheme?"dark":"light");
+            await JS.InvokeVoidAsync("localStorage.setItem",LanguageKey,language=="ru"?"ru":"en");
+        }catch(JSException){storageMessage="Unable to save locally; changes are session-only.";}
+    }
     private string navQuery="";
     private bool MatchesSection(string item)=>string.IsNullOrWhiteSpace(navQuery)||item.Contains(navQuery.Trim(),StringComparison.OrdinalIgnoreCase)||T(item).Contains(navQuery.Trim(),StringComparison.OrdinalIgnoreCase);
     private void SearchKey(KeyboardEventArgs e){
@@ -211,6 +219,10 @@
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
         if(!firstRender)return;
+        try{
+            darkTheme=await JS.InvokeAsync<string?>("localStorage.getItem",ThemeKey)=="dark";
+            language=await JS.InvokeAsync<string?>("localStorage.getItem",LanguageKey)=="ru"?"ru":"en";
+        }catch(JSException){storageMessage="Local storage is unavailable; changes are session-only.";}
         try { var json=await JS.InvokeAsync<string?>("localStorage.getItem",Key); if(!string.IsNullOrWhiteSpace(json)){var saved=JsonSerializer.Deserialize(json, DemoJsonContext.Default.DemoSnapshot); if(saved?.Data is not null && saved.Data.Vehicles is not null && saved.Data.Drivers is not null && saved.Data.Trips is not null){fleet=saved.Data;maintenanceEntries=saved.MaintenanceEntries??[];driverShifts=saved.DriverShifts??[];requireShifts=saved.RequireShifts;vehicleReservations=saved.VehicleReservations??[];Now=saved.Now;start=Now.AddHours(1);end=Now.AddHours(2);}} }
         catch (Exception) {storageMessage="Local storage is unavailable; changes are session-only.";}
         timer=new PeriodicTimer(TimeSpan.FromSeconds(1)); timerTask=RunClock(); StateHasChanged();

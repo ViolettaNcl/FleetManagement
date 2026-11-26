@@ -12,6 +12,8 @@ try {
   await page.getByRole('button',{name:'Dark theme',exact:true}).click();
   assert.equal(await page.locator('.demo-shell.dark-theme').count(),1);
   await page.screenshot({path:'browser-results/overview-dark.png',fullPage:true});
+  await page.reload();
+  await page.locator('.demo-shell.dark-theme').waitFor();
   await page.getByRole('button',{name:'Dark theme',exact:true}).click();
   await page.getByLabel('Find section',{exact:true}).fill('Model Drift');
   assert.equal(await page.getByRole('button',{name:'Vehicles',exact:true}).count(),0);
@@ -19,6 +21,8 @@ try {
   await page.getByRole('button',{name:'Model Drift',exact:true,pressed:true}).waitFor();
   await page.getByRole('button',{name:'Overview',exact:true}).click();
   await page.getByLabel('Language',{exact:true}).selectOption('ru');
+  await page.getByRole('button',{name:'Автомобили',exact:true}).waitFor();
+  await page.reload();
   await page.getByRole('button',{name:'Автомобили',exact:true}).waitFor();
   await page.getByRole('heading',{name:'Загрузка рейсами'}).waitFor();
   await page.getByRole('button',{name:'Автомобили',exact:true}).click();

@@ -49,8 +49,7 @@ try{
   await demo.getByRole('heading',{name:'Operations overview',exact:true}).waitFor({timeout:90000});
   const startup=Date.now()-began;
   assert.equal(await demo.locator('meta[name=robots]').getAttribute('content'),'noindex,follow');
-  await demo.evaluate(()=>navigator.serviceWorker.ready);
-  await demo.waitForFunction(()=>!!navigator.serviceWorker.controller,{timeout:90000});
+  await demo.waitForFunction(()=>!!navigator.serviceWorker.controller,null,{timeout:90000});
   const cached=await demo.evaluate(async()=>{const names=await caches.keys();return names.filter(x=>x.startsWith('fleet-public-demo:')).length;});
   assert.equal(cached,1);
   await context.setOffline(true);

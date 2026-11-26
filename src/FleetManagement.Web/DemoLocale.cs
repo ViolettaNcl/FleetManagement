@@ -868,6 +868,11 @@ internal static class DemoLocale
         ["Home"]="Главная",
         ["Fleet"]="Автопарк",
         ["More"]="Ещё",
+        ["Rows per page"]="Строк на странице",
+        ["Page"]="Страница",
+        ["Previous page"]="Предыдущая страница",
+        ["Next page"]="Следующая страница",
+        ["years"]="лет",
     };
     public static string Text(string value,bool russian)=>russian&&Russian.TryGetValue(value,out var translated)?translated:value;
 }

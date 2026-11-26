@@ -58,7 +58,8 @@ try {
   await page.getByLabel('Язык',{exact:true}).selectOption('en');
   await page.getByRole('heading',{name:'Fleet workload'}).waitFor();
   await page.getByRole('heading',{name:"Today's agenda"}).waitFor();
-  assert.equal(await page.locator('.nav-group').count(),4);
+  assert.equal(await page.locator('.nav-group').count(),5);
+  assert.ok(await page.locator('#workspace-nav').getByRole('button',{name:'Help & settings',exact:true}).isVisible());
   await page.screenshot({path:'browser-results/overview.png',fullPage:true});
   await page.getByRole('button',{name:'Vehicles',exact:true}).click();
   await page.getByRole('button',{name:'+ Add vehicle',exact:true}).click();

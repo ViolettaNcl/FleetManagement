@@ -19,6 +19,8 @@ try{
   await page.getByRole('heading',{name:'Intelligent dispatch planner',exact:true}).waitFor({timeout:90000});
   await page.goBack();
   await page.getByRole('heading',{name:'Vehicle register',exact:true}).waitFor();
+  await page.getByLabel('Rows per page',{exact:true}).selectOption('5');
+  assert.equal(await page.getByRole('button',{name:'Previous page',exact:true}).isDisabled(),true);
   await page.locator('.v4-context-actions').getByRole('button',{name:'Help & settings',exact:true}).click();
   await page.getByRole('heading',{name:'Help & settings',exact:true}).waitFor();
   await page.getByLabel('Appearance',{exact:true}).selectOption('system');
@@ -34,6 +36,10 @@ try{
     if([320,768,1440].includes(width))await page.screenshot({path:'browser-results/v4-overview-'+width+'.png',fullPage:true});
   }
   await page.setViewportSize({width:390,height:844});
+  await page.getByRole('button',{name:'Mobile Fleet',exact:true}).click();
+  await page.locator('.register-cards .register-record').first().waitFor();
+  assert.equal(await page.locator('.register-table').isVisible(),false);
+  assert.ok(await page.locator('.register-cards .register-record').first().getByRole('button',{name:'Passport',exact:true}).isVisible());
   await page.getByRole('button',{name:'Mobile Trips',exact:true}).click();
   await page.getByRole('heading',{name:'Intelligent dispatch planner',exact:true}).waitFor();
   await page.getByRole('button',{name:'Mobile More',exact:true}).click();

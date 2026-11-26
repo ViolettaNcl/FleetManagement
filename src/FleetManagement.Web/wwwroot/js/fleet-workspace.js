@@ -14,3 +14,12 @@ window.fleetPrefersDark=()=>fleetSystemTheme.matches;
 window.fleetInitNavigation=ref=>{window.fleetDisposeNavigation();fleetNavRef=ref;addEventListener('popstate',fleetPop);fleetSystemTheme.addEventListener('change',fleetTheme);return fleetModuleFromUrl();};
 window.fleetSetModule=module=>{const url=new URL(location.href);if(module==='Overview')url.searchParams.delete('module');else url.searchParams.set('module',module);if(url.href!==location.href)history.pushState(null,'',url);};
 window.fleetDisposeNavigation=()=>{removeEventListener('popstate',fleetPop);fleetSystemTheme.removeEventListener('change',fleetTheme);fleetNavRef=null;};
+
+// Consume a one-time language handoff while preserving module and other URL state.
+window.fleetConsumeLanguage=()=>{
+  const url=new URL(location.href),lang=url.searchParams.get('lang');
+  if(lang!=='en'&&lang!=='ru')return null;
+  url.searchParams.delete('lang');
+  history.replaceState(history.state,'',url);
+  return lang;
+};

@@ -2,7 +2,6 @@ name: Connected workspace CI
 on:
   push:
     branches: [master, 'feature/**']
-    paths: ['src/FleetManagement.Api/**','src/FleetManagement.Core/**','tests/browser/connected.mjs','tests/browser/package.json','.github/workflows/connected-ci.yml']
   pull_request:
     paths: ['src/FleetManagement.Api/**','src/FleetManagement.Core/**','tests/browser/connected.mjs','tests/browser/package.json','.github/workflows/connected-ci.yml']
   workflow_dispatch:

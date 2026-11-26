@@ -3,7 +3,6 @@ on:
   workflow_dispatch:
   push:
     branches: [master, 'feature/**']
-    paths: ['src/FleetManagement.Api/**','src/FleetManagement.Core/**','tools/start-connected.ps1','tests/api/windows-launcher.ps1','.github/workflows/windows-launcher.yml']
   pull_request:
     paths: ['src/FleetManagement.Api/**','src/FleetManagement.Core/**','tools/start-connected.ps1','tests/api/windows-launcher.ps1','.github/workflows/windows-launcher.yml']
 permissions:

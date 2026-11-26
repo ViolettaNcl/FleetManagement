@@ -3,7 +3,6 @@ on:
   workflow_dispatch:
   push:
     branches: [master, 'feature/**']
-    paths: ['src/**/*.csproj','tools/**/*.csproj','tests/**/*.csproj','.github/workflows/dependency-review.yml','tools/dependency_inventory.py','tools/legacy_inventory.py','tests/browser/package.json','tests/browser/package-lock.json','src/FleetManagement.Api/Dockerfile','src/FleetManagement.Api/**','src/FleetManagement.Core/**']
   pull_request:
     paths: ['src/**/*.csproj','tools/**/*.csproj','tests/**/*.csproj','.github/workflows/dependency-review.yml','tools/dependency_inventory.py','tools/legacy_inventory.py','tests/browser/package.json','tests/browser/package-lock.json','src/FleetManagement.Api/Dockerfile','src/FleetManagement.Api/**','src/FleetManagement.Core/**']
 permissions:

@@ -35,10 +35,12 @@
         }
         </div></div>
     </section>
+    <PeriodComparisonView Russian="Russian" Comparison="@FleetReport.ComparePrevious(Fleet,Now,from,to)"/>
     <div class="split">
-        <section class="panel"><h2>@T("Distance by vehicle")</h2><p class="muted">@T("Completed trips only · km")</p>
-            @foreach(var row in data.VehicleRows){
-                <div class="reportbar"><div><strong>@row.Registration</strong><span>@row.CompletedDistanceKm.ToString("N0") km</span></div><div class="progress"><i style="@BarStyle(row.CompletedDistanceKm,data.VehicleRows.Max(r=>r.CompletedDistanceKm))"></i></div></div>
+        <section class="panel"><h2>@T("Distance by vehicle")</h2><p class="muted">@T("Completed trips only · km") · @T("Top 10 vehicles")</p>
+            @{var maximumDistance=data.VehicleRows.Select(r=>r.CompletedDistanceKm).DefaultIfEmpty(0).Max();}
+            @foreach(var row in data.VehicleRows.OrderByDescending(v=>v.CompletedDistanceKm).ThenBy(v=>v.Registration,StringComparer.Ordinal).Take(10)){
+                <div class="reportbar"><div><strong>@row.Registration</strong><span>@row.CompletedDistanceKm.ToString("N0") km</span></div><div class="progress"><i style="@BarStyle(row.CompletedDistanceKm,maximumDistance)"></i></div></div>
             }
             @if(data.VehicleRows.Count==0){<p>@T("No vehicles registered.")</p>}
         </section>

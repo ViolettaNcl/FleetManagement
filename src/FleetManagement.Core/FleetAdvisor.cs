@@ -18,6 +18,7 @@ public static class FleetAdvisor
             "Within both service intervals"=>"В пределах обоих интервалов ТО",
             _=>reason}:reason;
         var alerts=new List<FleetAlert>();
+        var vehiclesById=fleet.Vehicles.ToLookup(v=>v.Id);
         foreach(var v in fleet.Vehicles.OrderBy(v=>v.Id)){
             var service=FleetRules.Assess(v,now);
             if(service.Status is "Due" or "Soon"){
@@ -29,14 +30,14 @@ public static class FleetAdvisor
             }
         }
         foreach(var trip in fleet.Trips.Where(t=>t.Start>now&&t.Start<=now.AddHours(24)).OrderBy(t=>t.Id)){
-            var v=fleet.Vehicles.FirstOrDefault(v=>v.Id==trip.VehicleId);
+            var v=vehiclesById[trip.VehicleId].FirstOrDefault();
             if(v is not null&&FleetRules.Assess(v,trip.Start).Status=="Due")
                 alerts.Add(new($"dispatch:{trip.Id}","High",L($"Trip #{trip.Id}",$"Рейс №{trip.Id}"),L("Scheduled with service-due vehicle","Назначен автомобиль с просроченным ТО"),
                     L($"{v.Plate}; departure {trip.Start:yyyy-MM-dd HH:mm} ({clockLabel}).",$"{v.Plate}; отправление {trip.Start:yyyy-MM-dd HH:mm} ({(clockLabel=="demo time"?"время демо":clockLabel)})."),
                     L("Review the vehicle and consider a different available assignment. No changes are made automatically.","Проверьте автомобиль и рассмотрите другое доступное назначение. Автоматических изменений нет."),"Dispatch"));
         }
         foreach(var r in (reservations??[]).Where(r=>r.End>now&&r.Start<=now.AddHours(24))){
-            var plate=fleet.Vehicles.FirstOrDefault(v=>v.Id==r.VehicleId)?.Plate??L("Unknown","Неизвестно");
+            var plate=vehiclesById[r.VehicleId].FirstOrDefault()?.Plate??L("Unknown","Неизвестно");
             var kind=russian?r.Kind switch{"Scheduled service"=>"Плановое ТО","Repair"=>"Ремонт","Inspection"=>"Осмотр","Unavailable"=>"Недоступен",_=>r.Kind}:r.Kind;
             alerts.Add(new($"reservation:{r.Id}","Medium",plate,L("Vehicle reserved","Автомобиль зарезервирован"),
                 $"{kind}; {r.Start:yyyy-MM-dd HH:mm} – {r.End:yyyy-MM-dd HH:mm}.",

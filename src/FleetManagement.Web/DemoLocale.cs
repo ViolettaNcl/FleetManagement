@@ -993,6 +993,23 @@ internal static class DemoLocale
         ["Input interval"]="Интервал входного значения",
         ["Score at lower input"]="Оценка на нижней границе",
         ["Score at higher input"]="Оценка на верхней границе",
+        ["Report sort order"]="Сортировка отчёта",
+        ["Most trips"]="По количеству рейсов",
+        ["Longest completed distance"]="По завершённому пробегу",
+        ["Service urgency"]="По срочности ТО",
+        ["Previous report page"]="Предыдущая страница отчёта",
+        ["Next report page"]="Следующая страница отчёта",
+        ["Comparative analytics"]="Сравнительная аналитика",
+        ["Compare previous period"]="Сравнение с предыдущим периодом",
+        ["Compare equal adjacent departure-date cohorts at the same simulation clock. Completion is not a historical snapshot."]="Сравнение равных соседних периодов по дате отправления на один момент симуляции. Статус завершения не является историческим снимком.",
+        ["Previous period falls outside the supported date range."]="Предыдущий период выходит за допустимые даты.",
+        ["Current period"]="Текущий период",
+        ["Change vs previous"]="Изменение к предыдущему",
+        ["No comparable baseline"]="Нет базы для сравнения",
+        ["Completion share"]="Доля завершённых",
+        ["Zero previous values have no percentage change. Future departures may be included in the selected cohort."]="При нулевой базе процентное изменение не рассчитывается. Выбранный период может включать будущие отправления.",
+        ["Top 10 vehicles"]="Топ-10 автомобилей",
+        ["Review queue evidence"]="Основания для проверки",
     };
     public static string Text(string value,bool russian)=>russian&&Russian.TryGetValue(value,out var translated)?translated:value;
 }

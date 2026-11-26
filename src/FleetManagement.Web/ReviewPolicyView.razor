@@ -2,7 +2,7 @@
 @inject IJSRuntime JS
 <section class="panel suite-panel" aria-labelledby="review-policy-title">
     <div class="suite-heading"><div><span class="suite-kicker">@T("Automation preview")</span><h2 id="review-policy-title">@T("Operational review rules")</h2><p class="muted">@T("Configure a local escalation preview using current rule-based alerts. No messages are sent, records changed or critical alerts hidden.")</p></div><button class="secondary" @onclick="Save" disabled="@(!Policy.Valid)">@T("Save review settings")</button></div>
-    <div class="formgrid"><label>@T("High alert threshold")<input type="number" min="1" max="100" @bind="high"/></label><label>@T("Medium alert threshold")<input type="number" min="1" max="100" @bind="medium"/></label><label class="dashboard-check"><input type="checkbox" @bind="includeMedium"/><span>@T("Include medium alerts in queue")</span></label></div>
+    <div class="formgrid"><label>@T("High alert threshold")<input type="number" min="1" max="100" @bind="high" @bind:after="ClearFeedback"/></label><label>@T("Medium alert threshold")<input type="number" min="1" max="100" @bind="medium" @bind:after="ClearFeedback"/></label><label class="dashboard-check"><input type="checkbox" @bind="includeMedium" @bind:after="ClearFeedback"/><span>@T("Include medium alerts in queue")</span></label></div>
     @if(!Policy.Valid){<p class="error" role="status">@T("Choose alert thresholds between 1 and 100.")</p>}
     else{
         var preview=ReviewAutomation.Preview(Alerts,Policy);
@@ -11,6 +11,9 @@
         <div class="suite-review-list">@foreach(var group in preview.Queue.GroupBy(a=>a.Destination)){
             <button class="secondary" @onclick="()=>Open.InvokeAsync(group.Key)"><span>@T(group.Key)</span><strong>@group.Count()</strong></button>
         }</div>
+        <details class="suite-queue-details"><summary>@T("Review queue evidence") (@preview.Queue.Count)</summary>
+            <FleetAlertList Russian="Russian" Alerts="preview.Queue" Open="Open"/>
+        </details>
         <p class="muted">@T("Queue counts include every high alert regardless of the medium-alert setting. Rules are evaluated only in the open demo.")</p>
     }
     @if(feedback.Length>0){<p class="notice" role="status">@T(feedback)</p>}
@@ -23,6 +26,7 @@
     private int high=1,medium=3;
     private bool includeMedium=true;
     private string feedback="";
+    private void ClearFeedback()=>feedback="";
     private ReviewPolicy Policy=>new(high,medium,includeMedium);
     private string T(string value)=>DemoLocale.Text(value,Russian);
     protected override async Task OnAfterRenderAsync(bool firstRender){

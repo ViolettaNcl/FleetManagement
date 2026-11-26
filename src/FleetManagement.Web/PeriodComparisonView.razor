@@ -1,0 +1,28 @@
+@using FleetManagement.Web
+<section class="panel suite-panel" aria-labelledby="period-comparison-title">
+    <div class="suite-heading"><div><span class="suite-kicker">@T("Comparative analytics")</span><h2 id="period-comparison-title">@T("Compare previous period")</h2><p class="muted">@T("Compare equal adjacent departure-date cohorts at the same simulation clock. Completion is not a historical snapshot.")</p></div></div>
+    @if(Comparison is null){<p class="muted">@T("Previous period falls outside the supported date range.")</p>}
+    else{
+        var current=Comparison.Current;var previous=Comparison.Previous;
+        <div class="suite-period-dates"><span><strong>@T("Current period")</strong> @current.From.ToString("yyyy-MM-dd") – @current.To.ToString("yyyy-MM-dd")</span><span><strong>@T("Previous period")</strong> @previous.From.ToString("yyyy-MM-dd") – @previous.To.ToString("yyyy-MM-dd")</span></div>
+        <div class="period-comparison-grid">
+        @foreach(var metric in new[]{("Trips",(long)current.Trips,(long)previous.Trips,""),("Completed",(long)current.Completed,(long)previous.Completed,""),("Completed distance",current.CompletedKm,previous.CompletedKm," km")}){
+            var max=Math.Max(metric.Item2,metric.Item3);
+            var change=PeriodComparison.Change(metric.Item2,metric.Item3);
+            <div class="period-comparison-card">
+                <h3>@T(metric.Item1)</h3><strong>@metric.Item2.ToString("N0")@metric.Item4</strong>
+                <span class="muted">@T("Change vs previous"): @(change is double d?d.ToString("+0.0%;-0.0%;0.0%"):T("No comparable baseline"))</span>
+                <div class="period-bar-label"><span>@T("Current period")</span><span>@metric.Item2.ToString("N0")</span></div><div class="progress"><i style="@Width(metric.Item2,max)"></i></div>
+                <div class="period-bar-label"><span>@T("Previous period")</span><span>@metric.Item3.ToString("N0")</span></div><div class="progress"><i class="period-previous" style="@Width(metric.Item3,max)"></i></div>
+            </div>
+        }
+        </div>
+        <p class="muted">@T("Completion share"): @(current.CompletionRate?.ToString("P1")??"—") / @(previous.CompletionRate?.ToString("P1")??"—"). @T("Zero previous values have no percentage change. Future departures may be included in the selected cohort.")</p>
+    }
+</section>
+@code{
+    [Parameter] public bool Russian{get;set;}
+    [Parameter] public PeriodComparison? Comparison{get;set;}
+    private string T(string value)=>DemoLocale.Text(value,Russian);
+    private static string Width(long value,long max)=>"width:"+(max==0?0:100.0*value/max).ToString("F2",CultureInfo.InvariantCulture)+"%";
+}

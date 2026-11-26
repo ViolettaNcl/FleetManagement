@@ -3,9 +3,9 @@ using System.IO.Compression;
 
 namespace FleetManagement.Core;
 
-public sealed record VehicleReportOptions(string Service,string Query,int MinimumTrips,bool Model,bool Counts,bool Distance,bool ServiceColumn)
+public sealed record VehicleReportOptions(string Service,string Query,int MinimumTrips,bool Model,bool Counts,bool Distance,bool ServiceColumn,string Sort="Registration")
 {
-    public bool Valid=>(Service is "All" or "Healthy" or "Soon" or "Due") && Query.Length<=100 && MinimumTrips is >=0 and <=100000;
+    public bool Valid=>(Service is "All" or "Healthy" or "Soon" or "Due") && (Sort is "Registration" or "Trips" or "Distance" or "Service") && Query is not null && Query.Length<=100 && MinimumTrips is >=0 and <=100000;
 }
 public static partial class FleetReport
 {
@@ -13,8 +13,15 @@ public static partial class FleetReport
     {
         if(!options.Valid)throw new ArgumentException("Invalid report options.");
         var query=options.Query.Trim();
-        return summary.VehicleRows.Where(v=>(options.Service=="All"||v.ServiceStatus==options.Service)
-            &&v.Trips>=options.MinimumTrips&&(query.Length==0||v.Registration.Contains(query,StringComparison.OrdinalIgnoreCase)||v.Model.Contains(query,StringComparison.OrdinalIgnoreCase))).ToArray();
+        var rows=summary.VehicleRows.Where(v=>(options.Service=="All"||v.ServiceStatus==options.Service)
+            &&v.Trips>=options.MinimumTrips&&(query.Length==0||v.Registration.Contains(query,StringComparison.OrdinalIgnoreCase)||v.Model.Contains(query,StringComparison.OrdinalIgnoreCase)));
+        IOrderedEnumerable<VehicleReportRow> ordered=options.Sort switch{
+            "Trips"=>rows.OrderByDescending(v=>v.Trips),
+            "Distance"=>rows.OrderByDescending(v=>v.CompletedDistanceKm),
+            "Service"=>rows.OrderBy(v=>v.ServiceStatus switch{"Due"=>0,"Soon"=>1,"Healthy"=>2,_=>3}),
+            _=>rows.OrderBy(v=>v.Registration,StringComparer.OrdinalIgnoreCase)
+        };
+        return ordered.ThenBy(v=>v.Registration,StringComparer.Ordinal).ToArray();
     }
     public static byte[] ExportVehicleXlsx(FleetSummary summary,DateTime from,DateTime to,VehicleReportOptions options,bool russian=false)
     {

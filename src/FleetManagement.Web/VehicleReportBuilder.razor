@@ -2,7 +2,7 @@
 @inject IJSRuntime JS
 <section class="panel suite-panel" aria-labelledby="report-builder-title">
     <div class="suite-heading"><div><span class="suite-kicker">@T("Custom reporting")</span><h2 id="report-builder-title">@T("Vehicle report builder")</h2><p class="muted">@T("Filter the current date cohort and select export columns. Registration is always included. Preview and workbook use identical filters.")</p></div><button @onclick="Export" disabled="@(!Options.Valid)">@T("Export custom Excel")</button></div>
-    <div class="formgrid"><label>@T("Report service status")<select @bind="service"><option value="All">@T("All")</option><option value="Healthy">@T("Healthy")</option><option value="Soon">@T("Soon")</option><option value="Due">@T("Due")</option></select></label><label>@T("Report vehicle search")<input type="search" maxlength="100" @bind="query" @bind:event="oninput"/></label><label>@T("Minimum trips")<input type="number" min="0" max="100000" @bind="minimum"/></label></div>
+    <div class="formgrid"><label>@T("Report service status")<select aria-label="@T("Report service status")" @bind="service" @bind:after="ResetPage"><option value="All">@T("All")</option><option value="Healthy">@T("Healthy")</option><option value="Soon">@T("Soon")</option><option value="Due">@T("Due")</option></select></label><label>@T("Report vehicle search")<input type="search" aria-label="@T("Report vehicle search")" maxlength="100" @bind="query" @bind:event="oninput" @bind:after="ResetPage"/></label><label>@T("Minimum trips")<input type="number" aria-label="@T("Minimum trips")" min="0" max="100000" @bind="minimum" @bind:after="ResetPage"/></label><label>@T("Report sort order")<select aria-label="@T("Report sort order")" @bind="sort" @bind:after="ResetPage"><option value="Registration">@T("Registration")</option><option value="Trips">@T("Most trips")</option><option value="Distance">@T("Longest completed distance")</option><option value="Service">@T("Service urgency")</option></select></label></div>
     <fieldset class="suite-fieldset"><legend>@T("Export columns")</legend>
         <label class="dashboard-check"><input type="checkbox" @bind="model"/><span>@T("Model")</span></label>
         <label class="dashboard-check"><input type="checkbox" @bind="counts"/><span>@T("Trip counts")</span></label>
@@ -12,10 +12,12 @@
     @if(!Options.Valid){<p class="error" role="status">@T("Invalid report options.")</p>}
     else{
         var rows=FleetReport.FilterVehicles(Summary,Options);
-        <p class="muted" role="status" data-testid="custom-report-count">@rows.Count / @Summary.VehicleRows.Count @T("vehicles in report") · @T("Preview up to 25 rows")</p>
+        var pages=Math.Max(1,(rows.Count+PageSize-1)/PageSize);var shownPage=Math.Min(page,pages-1);
+        <p class="muted" role="status" data-testid="custom-report-count">@rows.Count / @Summary.VehicleRows.Count @T("vehicles in report") · @T("Page") @(shownPage+1) / @pages</p>
         <div class="tablewrap" tabindex="0" role="region" aria-label="@T("Custom report preview")"><table><thead><tr><th>@T("Registration")</th>@if(model){<th>@T("Model")</th>}@if(counts){<th>@T("Trips")</th><th>@T("Completed")</th>}@if(distance){<th>@T("Completed distance")</th>}@if(serviceColumn){<th>@T("Service status")</th>}</tr></thead><tbody>
-        @foreach(var row in rows.Take(25)){<tr><td>@row.Registration</td>@if(model){<td>@row.Model</td>}@if(counts){<td>@row.Trips</td><td>@row.CompletedTrips</td>}@if(distance){<td>@row.CompletedDistanceKm km</td>}@if(serviceColumn){<td>@T(row.ServiceStatus)</td>}</tr>}
+        @foreach(var row in rows.Skip(shownPage*PageSize).Take(PageSize)){<tr><td>@row.Registration</td>@if(model){<td>@row.Model</td>}@if(counts){<td>@row.Trips</td><td>@row.CompletedTrips</td>}@if(distance){<td>@row.CompletedDistanceKm km</td>}@if(serviceColumn){<td>@T(row.ServiceStatus)</td>}</tr>}
         </tbody></table></div>
+        <div class="suite-pagination"><button class="secondary" disabled="@(shownPage==0)" @onclick="()=>page=Math.Max(0,shownPage-1)">@T("Previous report page")</button><span>@(rows.Count==0?0:shownPage*PageSize+1) – @Math.Min(rows.Count,(shownPage+1)*PageSize) / @rows.Count</span><button class="secondary" disabled="@(shownPage>=pages-1)" @onclick="()=>page=shownPage+1">@T("Next report page")</button></div>
         @if(rows.Count==0){<p class="muted">@T("No matching vehicles.")</p>}
     }
     @if(feedback.Length>0){<p class="notice" role="status">@T(feedback)</p>}
@@ -27,9 +29,12 @@
     [Parameter] public DateTime To{get;set;}
     private string T(string value)=>DemoLocale.Text(value,Russian);
     private string service="All",query="",feedback="";
-    private int minimum;
+    private int minimum,page;
+    private const int PageSize=25;
+    private string sort="Registration";
+    private void ResetPage()=>page=0;
     private bool model=true,counts=true,distance=true,serviceColumn=true;
-    private VehicleReportOptions Options=>new(service,query,minimum,model,counts,distance,serviceColumn);
+    private VehicleReportOptions Options=>new(service,query,minimum,model,counts,distance,serviceColumn,sort);
     private async Task Export(){
         if(!Options.Valid)return;
         try{var bytes=FleetReport.ExportVehicleXlsx(Summary,From,To,Options,Russian);await JS.InvokeVoidAsync("fleetDownload",Convert.ToBase64String(bytes),$"fleet-custom-{From:yyyy-MM-dd}-{To:yyyy-MM-dd}.xlsx");feedback="Custom workbook generated.";}

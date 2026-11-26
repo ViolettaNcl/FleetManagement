@@ -178,3 +178,23 @@
 @media(prefers-reduced-motion:reduce){
  .demo-shell :is(.metric-action,.capability-card,.suite-review-list button,.suite-panel .progress>i){transition:none!important;transform:none!important}
 }
+
+
+/* V5.1: comparative analytics, report navigation and evidence disclosure. */
+.suite-period-dates{display:flex;flex-wrap:wrap;gap:8px 18px;font-size:12px;color:var(--muted);margin:8px 0 16px}
+.suite-period-dates span{display:flex;flex-wrap:wrap;gap:4px 8px;min-width:0}
+.suite-period-dates strong{color:var(--ink)}
+.period-comparison-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(210px,100%),1fr));gap:10px}
+.period-comparison-card{display:grid;gap:7px;min-width:0;padding:14px;background:var(--surface-2);border:1px solid var(--line);border-radius:11px}
+.period-comparison-card h3{margin:0;font-size:13px;font-weight:650}
+.period-comparison-card>strong{font-size:clamp(23px,3vw,30px);letter-spacing:-.03em;line-height:1.2}
+.period-comparison-card>.muted{font-size:12px}
+.period-bar-label{display:flex;justify-content:space-between;gap:8px;font-size:12px}
+.period-comparison-card .progress{height:6px;margin:0 0 4px}
+.demo-shell .period-comparison-card .period-previous{background:var(--chart-cyan)}
+.suite-pagination{display:flex;flex-wrap:wrap;justify-content:flex-end;align-items:center;gap:8px;margin-top:12px;font-size:12px;color:var(--muted)}
+.demo-shell .suite-pagination button{min-height:44px;white-space:normal}
+.suite-queue-details{border:1px solid var(--line);border-radius:10px;padding:10px 12px;margin:14px 0}
+.suite-queue-details summary{cursor:pointer;min-height:32px;font-weight:650}
+.suite-queue-details summary:focus-visible{outline:2px solid var(--focus);outline-offset:3px}
+@media(max-width:480px){.suite-pagination{justify-content:space-between}.suite-pagination span{order:-1;flex:1 1 100%;text-align:center}.suite-pagination button{flex:1 1 0;min-width:0}.period-comparison-card{padding:10px}}

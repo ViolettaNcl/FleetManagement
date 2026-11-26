@@ -1084,6 +1084,18 @@ internal static class DemoLocale
         ["Highest isolation scores"]="Наибольшие оценки изоляции",
         ["Flagged"]="Отмечено",
         ["Isolation scores are not calibrated failure probabilities. Neither detector is certified on real telemetry."]="Оценки изоляции не являются вероятностями поломки. Ни один детектор не сертифицирован на реальной телеметрии.",
+        ["Workspace visual style"]="Визуальный стиль рабочего пространства",
+        ["Premium Violet"]="Премиальный фиолетовый",
+        ["Classic workspace"]="Классический вид",
+        ["Workspace density"]="Плотность интерфейса",
+        ["Comfortable"]="Комфортная",
+        ["Compact"]="Компактная",
+        ["Vehicle visualization"]="Визуализация транспорта",
+        ["3D inspection companion"]="Дополнительный 3D-осмотр",
+        ["The 3D truck is an illustrative model, not a reconstruction of the selected virtual vehicle. The adjacent values are from its simulated scenario."]="3D-грузовик — иллюстративная модель, а не реконструкция выбранного виртуального автомобиля. Соседние показатели рассчитаны в его сценарии симуляции.",
+        ["Open 3D view"]="Открыть 3D-вид",
+        ["Close 3D view"]="Закрыть 3D-вид",
+        ["Sensor readings are stale."]="Показания датчиков устарели.",
     };
     public static string Text(string value,bool russian)=>russian&&Russian.TryGetValue(value,out var translated)?translated:value;
 }

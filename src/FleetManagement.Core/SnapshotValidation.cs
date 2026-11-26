@@ -6,7 +6,7 @@ public static class SnapshotValidation
     public const int MaxBytes=4*1024*1024,MaxVehicles=2000,MaxDrivers=2000,MaxTrips=20000;
     private static bool Id(int id)=>id>0&&id<int.MaxValue-100000;
     private static bool Date(DateTime value)=>value.Year is >=1900 and <=9900;
-    private static bool Text(string? value,int max,bool required=true)=>value is not null&&value.Length<=max&&(!required||!string.IsNullOrWhiteSpace(value))&&!value.Any(char.IsControl);
+    private static bool Text(string? value,int max,bool required=true)=>value is not null&&value.Length<=max&&(!required||!string.IsNullOrWhiteSpace(value))&&!value.Any(c=>char.IsControl(c)&&(required||c is not ('\n' or '\r' or '\t')));
     private static bool Unique<T>(IEnumerable<T> rows,Func<T,int> id)=>rows.Select(id).Distinct().Count()==rows.Count();
     private static bool Overlap<T>(IEnumerable<T> rows,Func<T,int> key,Func<T,DateTime> start,Func<T,DateTime> end)
     {

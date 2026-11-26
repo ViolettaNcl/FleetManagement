@@ -66,3 +66,8 @@
 .loading-track i{display:block;width:35%;height:100%;background:linear-gradient(90deg,#a78bfa,#67e8f9);border-radius:99px;animation:boot-motion 1.5s ease-in-out infinite alternate}
 @keyframes boot-motion{from{transform:translateX(0)}to{transform:translateX(185%)}}
 @media(prefers-reduced-motion:reduce){.loading-track i{animation:none;width:100%}}
+
+.startup-skeleton{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:9px;width:min(280px,80vw);margin-top:16px}
+.startup-skeleton i{height:28px;border-radius:8px;background:#a78bfa22;border:1px solid #a78bfa38}
+@media(prefers-reduced-motion:no-preference){.startup-skeleton i{animation:fleet-skeleton 1.4s ease-in-out infinite alternate}.startup-skeleton i:nth-child(2){animation-delay:.15s}.startup-skeleton i:nth-child(3){animation-delay:.3s}}
+@keyframes fleet-skeleton{from{opacity:.5}to{opacity:1}}

@@ -216,3 +216,65 @@
 .demo-shell .assistant-intents button{min-height:44px;white-space:normal;max-width:100%;text-align:left}
 .demo-shell .assistant-intents button[aria-pressed=true]{border-color:var(--accent);box-shadow:inset 0 0 0 1px var(--accent)}
 @media(max-width:600px){.demo-shell .assistant-intents button{flex:1 1 140px;min-width:0}}
+
+
+/* V6 visual system: premium option shared across every browser workspace module.
+   Preserve existing semantic foreground tokens and classic mode. */
+.demo-shell.premium-workspace{
+ --bg:#f4f3fa;--surface:#fff;--surface-2:#f8f6fc;--line:#dcd8e9;--ink:#21263a;--muted:#586176;
+ --shadow:0 6px 24px #29224a0b,0 1px 3px #29224a08;
+ background:radial-gradient(ellipse at 82% 0,#e9e3fa 0,transparent 32rem),var(--bg);
+}
+.demo-shell.premium-workspace.dark-theme{
+ --bg:#10101c;--surface:#1a1b29;--surface-2:#222436;--line:#39374c;--ink:#edf0fa;--muted:#b3bace;
+ --shadow:0 6px 24px #08061040,0 1px 3px #08061035;
+ background:radial-gradient(ellipse at 84% 0,#26213e 0,transparent 36rem),var(--bg);
+}
+.demo-shell.premium-workspace .workspace-header{
+ background:var(--surface);box-shadow:0 3px 14px #2019360d;border-bottom-color:var(--line)
+}
+.demo-shell.premium-workspace .brandicon{border-radius:11px;box-shadow:0 0 0 1px var(--line),0 4px 12px #7754bd38}
+.demo-shell.premium-workspace .fleet-sidebar{background:var(--surface);border-right-color:var(--line)}
+.demo-shell.premium-workspace .nav-group button.active{border-left:3px solid var(--accent)}
+.demo-shell.premium-workspace .nav-group button:not(.active):not(:disabled):hover{background:var(--surface-2)}
+.demo-shell.premium-workspace .workspace-breadcrumb{padding:10px 12px;background:var(--surface);border:1px solid var(--line);border-radius:12px;box-shadow:var(--shadow)}
+.demo-shell.premium-workspace .workspace-clock{font-variant-numeric:tabular-nums}
+.demo-shell.premium-workspace .module-intro{min-height:110px;border-radius:15px;padding:20px 24px;background-position:center right;box-shadow:0 9px 26px #17112626}
+.demo-shell.premium-workspace .neon-hero{min-height:220px;border-radius:18px;padding:28px 30px;background-position:center 45%;box-shadow:0 10px 32px #1a14382c}
+.demo-shell.premium-workspace .neon-hero h2{font-size:clamp(28px,3.2vw,42px)}
+.demo-shell.premium-workspace .panel,.demo-shell.premium-workspace .metric{border-radius:15px}
+.demo-shell.premium-workspace .panel h2{font-size:clamp(18px,1.6vw,22px);font-weight:700}
+.demo-shell.premium-workspace .dashboard-kpis .metric{border-top:3px solid var(--accent);min-height:122px}
+.demo-shell.premium-workspace .dashboard-kpis .metric strong{font-variant-numeric:tabular-nums}
+.demo-shell.premium-workspace .tablewrap{border-radius:11px;border:1px solid var(--line)}
+.demo-shell.premium-workspace tbody tr:nth-child(even){background:var(--surface-2)}
+.demo-shell.premium-workspace tbody tr:hover{background:var(--surface-2);outline:1px solid var(--line);outline-offset:-1px}
+.demo-shell.premium-workspace .register-record{box-shadow:var(--shadow);border-radius:13px}
+.demo-shell.premium-workspace .capability-card{border-radius:14px;overflow:hidden}
+.demo-shell.premium-workspace .capability-copy{padding:15px}
+.demo-shell.premium-workspace .advisor-alert{border-radius:11px}
+.demo-shell.premium-workspace :is(.notice,.error){border-radius:10px;overflow-wrap:anywhere}
+.demo-shell.premium-workspace :is(button,input,select,textarea):focus-visible{outline:2px solid var(--focus);outline-offset:2px}
+.demo-shell.workspace-dense .fleet-content>.panel{padding:12px;margin-bottom:12px}
+.demo-shell.workspace-dense .fleet-content .tablewrap td,.demo-shell.workspace-dense .fleet-content .tablewrap th{padding-block:7px}
+.demo-shell.workspace-dense .fleet-content .metrics{gap:8px}
+.demo-shell.workspace-dense .fleet-content .metric{padding:10px}
+.cluster-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(185px,100%),1fr));gap:10px;margin:12px 0}
+.cluster-grid p{margin:0;font-size:12px}
+.snapshot-file-label{display:block;margin:10px 0 4px}
+.demo-shell input[type=file]{max-width:100%;width:100%;min-width:0;padding:8px}
+.demo-shell input[type=file]::file-selector-button{border:1px solid var(--line);background:var(--surface-2);color:var(--ink);border-radius:7px;padding:8px;margin-right:8px;cursor:pointer}
+@media(min-width:1001px) and (prefers-reduced-motion:no-preference){
+ .demo-shell.premium-workspace .nav-group button,.demo-shell.premium-workspace .metric-action,.demo-shell.premium-workspace .capability-card{transition:background-color .18s ease,border-color .18s ease,box-shadow .18s ease,transform .18s ease}
+ .demo-shell.premium-workspace .capability-card:hover{box-shadow:0 10px 25px #21143c2b}
+}
+@media(max-width:720px){
+ .demo-shell.premium-workspace .workspace-breadcrumb{padding:8px;gap:6px}
+ .demo-shell.premium-workspace .module-intro{min-height:0;padding:16px;background-position:65% center}
+ .demo-shell.premium-workspace .neon-hero{min-height:0;padding:18px;border-radius:15px}
+ .demo-shell.premium-workspace .neon-hero h2{font-size:29px}
+ .demo-shell.premium-workspace .dashboard-kpis .metric{min-height:108px;padding:10px}
+ .demo-shell.premium-workspace .panel{border-radius:13px}
+ .demo-shell.premium-workspace .registertools button,.demo-shell.premium-workspace .hero-actions button,.demo-shell.premium-workspace .register-pagination button{min-height:44px}
+ .demo-shell.workspace-dense .fleet-content>.panel{padding:12px}
+}

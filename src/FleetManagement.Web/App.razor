@@ -3,7 +3,7 @@
 @inject IJSRuntime JS
 
 @{var currentAlerts=FleetAdvisor.Assess(fleet,Now,driverShifts,requireShifts,vehicleReservations,russian:language=="ru");}
-<div class="demo-shell v4-shell @(darkTheme?"dark-theme":"") @(collapsed?"sidebar-collapsed":"") @(compactDashboard&&section=="Overview"?"dashboard-compact":"")">
+<div class="demo-shell v4-shell @(darkTheme?"dark-theme":"") @(collapsed?"sidebar-collapsed":"") @(compactDashboard&&section=="Overview"?"dashboard-compact":"") @(visualMode=="premium"?"premium-workspace":"") @(workspaceDensity=="compact"?"workspace-dense":"")">
 <a class="skip-workspace" href="#fleet-content">@T("Skip to content")</a>
 <header class="workspace-header" lang="@language">
     <div class="brand"><img class="brandicon" src="favicon.svg" alt="" /><div><h1>FleetManagement</h1><small>@T("Fleet operations workspace")</small></div></div>
@@ -107,7 +107,7 @@
     }
     else if(section=="Help & settings"){
         <section class="panel v4-help"><h2>@T("Help & settings")</h2><p class="muted">@T("Choose a workflow. Demo records stay in this browser; no live GPS or private server data is connected.")</p>
-        <div class="formgrid"><label>@T("Appearance")<select aria-label="@T("Appearance")" @bind="themeMode" @bind:after="ApplyTheme"><option value="dark">@T("Dark")</option><option value="light">@T("Light")</option><option value="system">@T("System")</option></select></label></div>
+        <div class="formgrid"><label>@T("Appearance")<select aria-label="@T("Appearance")" @bind="themeMode" @bind:after="ApplyTheme"><option value="dark">@T("Dark")</option><option value="light">@T("Light")</option><option value="system">@T("System")</option></select></label><label>@T("Workspace visual style")<select aria-label="@T("Workspace visual style")" @bind="visualMode" @bind:after="PersistPreferences"><option value="premium">@T("Premium Violet")</option><option value="classic">@T("Classic workspace")</option></select></label><label>@T("Workspace density")<select aria-label="@T("Workspace density")" @bind="workspaceDensity" @bind:after="PersistPreferences"><option value="comfortable">@T("Comfortable")</option><option value="compact">@T("Compact")</option></select></label></div>
         <div class="help-grid">@foreach(var h in HelpItems){<button class="secondary" @onclick="()=>Navigate(h.Section)"><strong>@T(h.Section)</strong><small>@T(h.Description)</small></button>}</div>
         <p class="muted">@T("Use Ctrl+K to search modules. On mobile, use the bottom navigation or More.")</p>
         </section>
@@ -243,7 +243,7 @@
 </div>
 @code {
     private bool darkTheme=true,mobileNav,focusSearch,focusContent,collapsed;
-    private string themeMode="dark",newRecordSection="";private int recordAction;
+    private string themeMode="dark",newRecordSection="",visualMode="premium",workspaceDensity="comfortable";private int recordAction;
     private bool historyReady,writeHistory,quickActionsExpanded,recentDirty;
     private List<string> favorites=[],recent=[];
     private const string FavoritesKey="fleetmanagement.preferences.favorites.v4", RecentKey="fleetmanagement.preferences.recent.v4";
@@ -336,12 +336,14 @@
         ("Drivers",fleet.Drivers.Count,"Registered drivers","Drivers","blue"),
         ("In transit",fleet.Trips.Count(t=>FleetRules.TripStatus(t,Now)=="In transit"),"Active trips","Tracking","cyan"),
         ("Service due",fleet.Vehicles.Count(v=>FleetRules.Assess(v,Now).Status=="Due"),"Review required","Maintenance","attention")];
-    private const string ThemeKey="fleetmanagement.preferences.theme.neon", LanguageKey="fleetmanagement.preferences.language";
+    private const string ThemeKey="fleetmanagement.preferences.theme.neon", LanguageKey="fleetmanagement.preferences.language", VisualKey="fleetmanagement.preferences.visual.v6", DensityKey="fleetmanagement.preferences.density.v6";
     private async Task ToggleTheme(){darkTheme=!darkTheme;themeMode=darkTheme?"dark":"light";await PersistPreferences();}
     private async Task PersistPreferences(){
         try{
             await JS.InvokeVoidAsync("localStorage.setItem",ThemeKey,themeMode);
             await JS.InvokeVoidAsync("localStorage.setItem",LanguageKey,language=="ru"?"ru":"en");
+            await JS.InvokeVoidAsync("localStorage.setItem",VisualKey,visualMode=="classic"?"classic":"premium");
+            await JS.InvokeVoidAsync("localStorage.setItem",DensityKey,workspaceDensity=="compact"?"compact":"comfortable");
         }catch(JSException){storageMessage="Unable to save locally; changes are session-only.";}
     }
     private string navQuery="";
@@ -426,6 +428,8 @@
         try{
             themeMode=await JS.InvokeAsync<string?>("localStorage.getItem",ThemeKey)??"dark";if(themeMode!="light"&&themeMode!="dark"&&themeMode!="system")themeMode="dark";darkTheme=themeMode=="dark"||(themeMode=="system"&&await JS.InvokeAsync<bool>("fleetPrefersDark"));
             language=await JS.InvokeAsync<string?>("localStorage.getItem",LanguageKey)=="ru"?"ru":"en";
+            visualMode=await JS.InvokeAsync<string?>("localStorage.getItem",VisualKey)=="classic"?"classic":"premium";
+            workspaceDensity=await JS.InvokeAsync<string?>("localStorage.getItem",DensityKey)=="compact"?"compact":"comfortable";
             LoadDashboardPreferences(await JS.InvokeAsync<string?>("localStorage.getItem",DashboardKey));
             collapsed=await JS.InvokeAsync<string?>("localStorage.getItem",SidebarKey)=="1";
             favorites=ReadModulePreference(await JS.InvokeAsync<string?>("localStorage.getItem",FavoritesKey),8);
@@ -449,10 +453,13 @@
             snapshotFeedback="Demo JSON generated.";
         }catch(JSException){snapshotFeedback="Unable to download the demo snapshot.";}
     }
-    private async Task<bool> RestoreSnapshot(DemoSnapshot snapshot){
-        if(SnapshotValidation.Check(snapshot.Data,snapshot.Now,snapshot.MaintenanceEntries,snapshot.DriverShifts,snapshot.VehicleReservations) is not null)return false;
+    private Task<bool> RestoreSnapshot(DemoSnapshot snapshot){
+        return Task.FromResult(ApplySnapshot(snapshot));
+    }
+    private bool ApplySnapshot(DemoSnapshot snapshot){
+        if(section!="Help & settings"||SnapshotValidation.Check(snapshot.Data,snapshot.Now,snapshot.MaintenanceEntries,snapshot.DriverShifts,snapshot.VehicleReservations) is not null)return false;
         // Save before replacing any in-memory records; failed/quota storage writes leave the workspace intact.
-        try{await JS.InvokeVoidAsync("localStorage.setItem",Key,JsonSerializer.Serialize(snapshot,DemoJsonContext.Default.DemoSnapshot));}
+        try{if(JS is IJSInProcessRuntime local)local.InvokeVoid("localStorage.setItem",Key,JsonSerializer.Serialize(snapshot,DemoJsonContext.Default.DemoSnapshot));else return false;}
         catch(JSException){return false;}
         playing=false;fleet=snapshot.Data;Now=snapshot.Now;
         maintenanceEntries=snapshot.MaintenanceEntries??[];driverShifts=snapshot.DriverShifts??[];

@@ -5,6 +5,7 @@
 - Default Essentials navigation with ten everyday modules, all-tool search, persistent expert mode, task-first overview, section-specific bilingual guidance and next-step actions.
 - Preserve saved dashboard preferences, expert mode, advanced modules and data; move destructive reset into Help & settings in Essentials.
 - Mobile single-column navigation, larger touch controls, no automatic search keyboard on ordinary menu open; new guided-mode regression and axe tests alongside full expert coverage.
+- Three grouped trip-planning steps, missing-resource shortcuts, unsaved-draft indicators and keyboard focus on the register editor; mobile editor actions and compact task cards.
 
 ## Unreleased — V6.0 RC2 release hardening
 

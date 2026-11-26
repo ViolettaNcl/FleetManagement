@@ -12,11 +12,11 @@
         <button class="secondary" @onclick="ToggleSort">@T(descending ? "Descending ↓" : "Ascending ↑")</button>
     </div>
     <div class="register-result-bar"><span aria-live="polite">@(IsVehicles?Vehicles.Count():Drivers.Count()) / @(IsVehicles?Fleet.Vehicles.Count:Fleet.Drivers.Count) @T("Records shown")</span><button class="secondary" @onclick="ClearFilters" disabled="@(query.Length==0&&healthFilter.Length==0&&sort=="id"&&!descending)">@T("Clear filters")</button></div>
-    @if (feedback.Length > 0) { <p role="@(error?"alert":"status")" class="@(error ? "error" : "notice")">@T(feedback)</p> }
+    @if (feedback.Length > 0 && !editing) { <p role="@(error?"alert":"status")" class="@(error ? "error" : "notice")">@T(feedback)</p> }
     @if (editing)
     {
         <div class="editor" aria-labelledby="record-editor-heading">
-            <h3 id="record-editor-heading">@(editId == 0 ? T("New record") : $"{T("Edit")} #{editId}")</h3>
+            <h3 id="record-editor-heading" tabindex="-1" @ref="editorHeading">@(editId == 0 ? T("New record") : $"{T("Edit")} #{editId}")</h3>
             @if (IsVehicles)
             {
                 <div class="formgrid">
@@ -37,6 +37,8 @@
                     <label>@T("Experience (years)")<input type="number" min="0" max="70" @bind="experience" /></label>
                 </div>
             }
+            @if(HasUnsavedChanges){<p class="muted">@T("Unsaved record changes")</p>}
+            @if(feedback.Length>0){<p role="@(error?"alert":"status")" class="@(error?"error":"notice")">@T(feedback)</p>}
             <div class="actions editor-actions"><button @onclick="Save" disabled="@saving">@T("Save record")</button><button class="secondary" @onclick="Cancel">@T("Cancel")</button></div>
         </div>
     }
@@ -96,7 +98,9 @@
     [Parameter] public IReadOnlyList<DriverShift> Shifts {get;set;}=[];
     [Parameter] public IReadOnlyList<VehicleReservation> Reservations {get;set;}=[];
     private string query="",healthFilter="",sort="id",name="",plate="",license="",feedback="";
-    private bool descending,editing,error,saving;
+    private bool descending,editing,error,saving,focusEditor;
+    private ElementReference editorHeading;
+    protected override async Task OnAfterRenderAsync(bool firstRender){if(!focusEditor||!editing)return;focusEditor=false;try{await editorHeading.FocusAsync();}catch(JSException){}}
     private (string Name,string Plate,string License,int Mileage,int ServiceMileage,int IntervalKm,int IntervalDays,int Experience,DateTime Date) baseline;
     private (string,string,string,int,int,int,int,int,DateTime) Snapshot()=> (name,plate,license,mileage,serviceMileage,intervalKm,intervalDays,experience,serviceDate);
     public bool HasUnsavedChanges=>editing&&Snapshot()!=baseline;
@@ -120,7 +124,7 @@
         get { var rows=Fleet.Drivers.Where(d=>Match(d.Name)||Match(d.License)||Match(d.Id.ToString()));var ordered=sort switch{"name"=>rows.OrderBy(d=>d.Name),"metric"=>rows.OrderBy(d=>d.Experience),_=>rows.OrderBy(d=>d.Id)};return descending?ordered.Reverse():ordered; }
     }
     private void NewRecord(){if(!CanDiscard())return;InitializeRecord();}
-    private void InitializeRecord(){editing=true;editId=0;name=plate=license=feedback="";mileage=serviceMileage=experience=0;intervalKm=10000;intervalDays=180;serviceDate=Today.Date;Capture();}
+    private void InitializeRecord(){editing=true;focusEditor=true;error=false;editId=0;name=plate=license=feedback="";mileage=serviceMileage=experience=0;intervalKm=10000;intervalDays=180;serviceDate=Today.Date;Capture();}
     private void EditVehicle(Vehicle v){if(!CanDiscard())return;InitializeRecord();editId=v.Id;name=v.Model;plate=v.Plate;mileage=v.Mileage;serviceMileage=v.LastServiceMileage;serviceDate=v.LastService;intervalKm=v.ServiceIntervalKm;intervalDays=v.ServiceIntervalDays;Capture();}
     private void EditDriver(Driver d){if(!CanDiscard())return;InitializeRecord();editId=d.Id;name=d.Name;license=d.License;experience=d.Experience;Capture();}
     private void Cancel(){if(!CanDiscard())return;editing=false;feedback="";}

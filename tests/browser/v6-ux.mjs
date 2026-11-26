@@ -44,6 +44,19 @@ try{
  page.once('dialog',d=>d.accept());
  await nav.getByRole('button',{name:'Overview',exact:true}).click();
  await page.locator('.guided-start').waitFor();
+ await page.locator('.guided-start').getByRole('button',{name:/Create a trip/}).click();
+ await page.getByRole('heading',{name:'Intelligent dispatch planner',exact:true}).waitFor();
+ assert.equal(await page.locator('.trip-form-step').count(),3);
+ await page.getByLabel('Origin',{exact:true}).fill('GUIDED-ROUTE');
+ await page.getByText('Unsaved trip changes',{exact:true}).waitFor();
+ page.once('dialog',d=>d.accept());
+ await page.getByRole('button',{name:'Cancel',exact:true}).click();
+ // The existing draft confirmation still applies.
+ await page.locator('.trip-form-step').first().waitFor();
+ await page.getByLabel('Origin',{exact:true}).fill('North depot');
+ page.once('dialog',d=>d.accept());
+ await nav.getByRole('button',{name:'Overview',exact:true}).click();
+ await page.locator('.guided-start').waitFor();
  for(const width of [320,360,390,480,768,1024,1440]){
    await page.setViewportSize({width,height:844});
    assert.ok(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth),'Guided home overflow '+width);

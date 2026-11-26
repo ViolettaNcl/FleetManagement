@@ -341,3 +341,26 @@
 .demo-shell.guided-workspace .neon-hero h2{font-size:clamp(24px,3vw,34px)}
 .guided-section-name{display:block;color:var(--ink);font-size:15px}
 @media(max-width:720px){.demo-shell.guided-workspace .neon-hero{min-height:0;padding:16px}.demo-shell.guided-workspace .neon-hero h2{font-size:26px}}
+
+.demo-shell .trip-form-step{min-width:0;border:1px solid var(--line);border-radius:11px;padding:12px 14px;margin:12px 0;background:var(--surface-2)}
+.trip-form-step legend{font-weight:700;color:var(--ink);font-size:13px;padding:0 6px}
+.trip-form-step p{margin:0 0 8px}
+.demo-shell .trip-form-step .formgrid{margin:0;gap:12px}
+.demo-shell .trip-form-step select{width:100%;min-width:0;text-overflow:ellipsis}
+.demo-shell .trip-editor-actions{margin-top:16px}
+#record-editor-heading{scroll-margin-top:85px}
+@media(min-width:360px) and (max-width:720px){
+ .demo-shell .guided-task-grid{grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}
+ .demo-shell .guided-task{display:grid;grid-template-columns:28px minmax(0,1fr);align-content:start;align-items:start;gap:7px;min-height:110px;padding:10px}
+ .guided-task-icon{width:28px;height:28px;border-radius:8px}
+ .guided-task-arrow{display:none}
+ .guided-task strong{font-size:13px}
+ .guided-task small{font-size:11px}
+}
+@media(max-width:720px){
+ .demo-shell .trip-form-step{padding:10px;overflow:visible}
+ .demo-shell .trip-form-step .formgrid{grid-template-columns:minmax(0,1fr)}
+ .demo-shell .trip-editor-actions,.demo-shell .editor-actions{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(126px,100%),1fr));gap:8px}
+ .demo-shell .trip-editor-actions button,.demo-shell .editor-actions button{min-height:44px;white-space:normal}
+ #record-editor-heading{scroll-margin-top:14px}
+}

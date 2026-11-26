@@ -1297,6 +1297,13 @@ internal static class DemoLocale
         ["Back up your demo before resetting or replacing data."]="Сохраните копию перед сбросом или заменой.",
         ["Return to overview"]="Вернуться к обзору",
         ["Section guide"]="Помощь по разделу",
+        ["1. Route"]="1. Маршрут",
+        ["2. Schedule"]="2. Расписание",
+        ["3. Vehicle and driver"]="3. Автомобиль и водитель",
+        ["Use Suggest assignment to fill an available pair automatically."]="Нажмите «Предложить назначение», чтобы подобрать доступную пару автоматически.",
+        ["Add at least one vehicle and driver before creating a trip."]="Перед созданием рейса добавьте хотя бы один автомобиль и водителя.",
+        ["Unsaved trip changes"]="Есть несохранённые изменения рейса",
+        ["Unsaved record changes"]="Есть несохранённые изменения записи",
     };
     public static string Text(string value,bool russian)=>russian&&Russian.TryGetValue(value,out var translated)?translated:value;
 }

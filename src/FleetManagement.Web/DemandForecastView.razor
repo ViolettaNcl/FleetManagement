@@ -11,7 +11,7 @@
     <section class="panel"><h2>@T("Future demand forecast")</h2><p class="muted">@T("Separate refit on all 112 observed synthetic days. Future labels are unknown; values are expected order counts, not guaranteed demand.")</p>
         <div class="reportbar"><div><strong>@T("Seasonal baseline total")</strong><span>@e.Future.Sum(p=>p.SeasonalNaive).ToString("F1") orders</span></div><div class="progress"><i style="@TotalWidth(e,false)"></i></div></div>
         <div class="reportbar"><div><strong>@T("Trend + weekday total")</strong><span>@e.Future.Sum(p=>p.TrendWeekday).ToString("F1") orders</span></div><div class="progress"><i style="@TotalWidth(e,true)"></i></div></div>
-        <div class="tablewrap"><table><thead><tr><th>@T("Future day")</th><th>@T("Seasonal naive")</th><th>@T("Trend + weekday")</th></tr></thead><tbody>@foreach(var p in e.Future){<tr><td>@(p.Day+1)</td><td>@p.SeasonalNaive.ToString("F1")</td><td>@p.TrendWeekday.ToString("F1")</td></tr>}</tbody></table></div>
+        <div class="tablewrap" role="region" tabindex="0" aria-label="@T("Demand forecast")"><table><thead><tr><th>@T("Future day")</th><th>@T("Seasonal naive")</th><th>@T("Trend + weekday")</th></tr></thead><tbody>@foreach(var p in e.Future){<tr><td>@(p.Day+1)</td><td>@p.SeasonalNaive.ToString("F1")</td><td>@p.TrendWeekday.ToString("F1")</td></tr>}</tbody></table></div>
     </section>
 }
 @code{

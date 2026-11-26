@@ -29,6 +29,8 @@ try{
    await page.setViewportSize({width:390,height:844});await page.evaluate(()=>window.scrollTo(0,0));
    await page.screenshot({path:'browser-results/v4-modules/'+slug+'-mobile.png'});
    const layout=await page.evaluate(()=>({viewport:innerWidth,document:document.documentElement.scrollWidth,offenders:[...document.querySelectorAll("body *")].filter(el=>{const r=el.getBoundingClientRect();return r.width>0&&r.right>innerWidth+1&&getComputedStyle(el).position!=="fixed";}).slice(0,15).map(el=>({tag:el.tagName,className:String(el.className).slice(0,120),right:Math.round(el.getBoundingClientRect().right)}))}));
+   const darkMobileFindings=await page.evaluate(async()=>{const r=await axe.run({runOnly:{type:'tag',values:['wcag2a','wcag2aa','wcag21a','wcag21aa','wcag22aa']}});return r.violations.map(v=>({id:v.id,nodes:v.nodes.map(n=>n.target)}));});
+   themeAudit.push({module,theme:'dark',viewport:layout.viewport,document:layout.document,findings:darkMobileFindings});
    const layouts=[layout];
    for(const width of [320,480,768,1024,1280,1920,2560]){
      await page.setViewportSize({width,height:844});
@@ -55,10 +57,10 @@ try{
      themeAudit.push({module,theme:'light',...audit});
    }
  }
- await writeFile('browser-results/v6-light-accessibility.json',JSON.stringify({scope:'Automated checks only',states:themeAudit},null,2));
+ await writeFile('browser-results/v6-theme-accessibility.json',JSON.stringify({scope:'Automated checks only',states:themeAudit},null,2));
  await writeFile('browser-results/v4-accessibility.json',JSON.stringify({scope:'Automated checks; full manual WCAG evaluation not claimed',modules:result,errors},null,2));
  assert.deepEqual(errors,[]);
- assert.deepEqual(themeAudit.filter(x=>x.document>x.viewport||x.findings.length),[],'Light-theme desktop/mobile accessibility or overflow');
+ assert.deepEqual(themeAudit.filter(x=>x.document>x.viewport||x.findings.length),[],'Dark/light desktop/mobile accessibility or overflow');
  const overflow=result.flatMap(x=>x.layouts.filter(l=>l.document>l.viewport).map(layout=>({module:x.module,layout})));
  assert.deepEqual(overflow,[],'Module responsive overflow');
  assert.deepEqual(result.flatMap(x=>x.findings.map(f=>({module:x.module,rule:f.id,nodes:f.nodes.map(n=>n.target)}))),[],'Automated accessibility violations on audited module states');

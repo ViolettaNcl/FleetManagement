@@ -1170,6 +1170,15 @@ internal static class DemoLocale
         ["Download the unreadable original before explicitly restoring a valid snapshot or resetting. The fallback demo is not saved while recovery is required."]="Скачайте нечитаемый оригинал перед восстановлением корректного снимка или сбросом. Резервное демо не сохраняется до завершения восстановления.",
         ["Download unreadable stored JSON"]="Скачать нечитаемый сохранённый JSON",
         ["Demo snapshot exceeds the supported local save limit; export records before closing."]="Размер снимка превышает лимит локального сохранения; экспортируйте данные перед закрытием.",
+        ["Trip history"]="История рейсов",
+        ["Uncovered trips"]="Рейсы вне смены",
+        ["Maintenance history"]="История обслуживания",
+        ["Accepted rows"]="Принятые строки",
+        ["Demand forecast"]="Прогноз спроса",
+        ["Feature drift"]="Дрейф признаков",
+        ["Scenario comparison"]="Сравнение сценариев",
+        ["Driver shift timeline"]="Временная шкала смен водителей",
+        ["Delivery timeline"]="Временная шкала доставки",
     };
     public static string Text(string value,bool russian)=>russian&&Russian.TryGetValue(value,out var translated)?translated:value;
 }

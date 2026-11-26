@@ -6,7 +6,7 @@
 <label>@T("Batch departure")<input type="datetime-local" @bind="start"/></label><label>@T("Batch arrival")<input type="datetime-local" @bind="end"/></label><label>@T("Batch distance (km)")<input type="number" min="1" max="10000" @bind="distance"/></label>
 </div><div class="actions"><button @onclick="Add">@T("Add trip request")</button><button class="secondary" disabled="@(requests.Count==0)" @onclick="Preview">@T("Compare assignments")</button></div>
 @if(message.Length>0){<p role="status" class="@(failed?"error":"notice")">@T(message)</p>}</section>
-<section class="panel"><h2>@T("Pending trip requests")</h2><div class="tablewrap"><table><thead><tr><th>@T("Request")</th><th>@T("Route")</th><th>@T("Departure")</th><th>@T("Arrival")</th><th>@T("Distance")</th><th>@T("Action")</th></tr></thead><tbody>
+<section class="panel"><h2>@T("Pending trip requests")</h2><div class="tablewrap" role="region" tabindex="0" aria-label="@T("Pending trip requests")"><table><thead><tr><th>@T("Request")</th><th>@T("Route")</th><th>@T("Departure")</th><th>@T("Arrival")</th><th>@T("Distance")</th><th>@T("Action")</th></tr></thead><tbody>
 @foreach(var item in requests){<tr><td>#@item.Id</td><td>@item.Origin → @item.Destination</td><td>@item.Start.ToString("dd MMM HH:mm")</td><td>@item.End.ToString("dd MMM HH:mm")</td><td>@item.Distance km</td><td><button class="delete" @onclick="()=>Remove(item)">@T("Remove request")</button></td></tr>}
 </tbody></table></div>@if(requests.Count==0){<p>@T("No pending requests.")</p>}</section>
 @if(plans.Count>0){
@@ -14,7 +14,7 @@
     <section class="panel"><h2>@T("Assignment preview")</h2><p class="muted">@T("Two deterministic greedy strategies. Recommendation maximizes assigned requests among these candidates (ties favor earliest start). Not a globally optimal schedule.")</p>
     <div class="actions">@for(int i=0;i<plans.Count;i++){var index=i;<button class="@(selected==index?"":"secondary")" @onclick="()=>Select(index)">@plans[index].Strategy (@plans[index].Assigned.Count / @requests.Count)</button>}</div>
     <div class="metrics"><div class="metric">@T("Assigned")<strong>@plan.Assigned.Count</strong></div><div class="metric">@T("Unassigned")<strong>@plan.Unassigned.Count</strong></div></div>
-    <div class="tablewrap"><table><thead><tr><th>@T("Request")</th><th>@T("Route")</th><th>@T("Vehicle")</th><th>@T("Driver")</th><th>@T("Departure")</th><th>@T("Arrival")</th></tr></thead><tbody>
+    <div class="tablewrap" role="region" tabindex="0" aria-label="@T("Assigned trips")"><table><thead><tr><th>@T("Request")</th><th>@T("Route")</th><th>@T("Vehicle")</th><th>@T("Driver")</th><th>@T("Departure")</th><th>@T("Arrival")</th></tr></thead><tbody>
     @foreach(var a in plan.Assigned){<tr><td>#@a.Request.Id</td><td>@a.Request.Origin → @a.Request.Destination</td><td>@Vehicle(a.VehicleId)</td><td>@Driver(a.DriverId)</td><td>@a.Request.Start.ToString("dd MMM HH:mm")</td><td>@a.Request.End.ToString("dd MMM HH:mm")</td></tr>}
     </tbody></table></div>
     <h3>@T("Unassigned requests")</h3>

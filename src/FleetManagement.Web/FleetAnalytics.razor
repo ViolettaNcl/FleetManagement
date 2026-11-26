@@ -51,7 +51,7 @@
             <p class="muted">@T("Service due"): @data.ServiceDue · @T("Service soon"): @data.ServiceSoon</p>
         </section>
     </div>
-    <section class="panel"><h2>@T("Vehicle performance")</h2><div class="tablewrap"><table><thead><tr><th>@T("Registration")</th><th>@T("Model")</th><th>@T("Trips")</th><th>@T("Completed")</th><th>@T("Completed distance")</th><th>@T("Service")</th></tr></thead><tbody>
+    <section class="panel"><h2>@T("Vehicle performance")</h2><div class="tablewrap" role="region" tabindex="0" aria-label="@T("Vehicle performance")"><table><thead><tr><th>@T("Registration")</th><th>@T("Model")</th><th>@T("Trips")</th><th>@T("Completed")</th><th>@T("Completed distance")</th><th>@T("Service")</th></tr></thead><tbody>
         @foreach(var row in data.VehicleRows){<tr><td>@row.Registration</td><td>@row.Model</td><td>@row.Trips</td><td>@row.CompletedTrips</td><td>@row.CompletedDistanceKm km</td><td><span class="pill @row.ServiceStatus.ToLowerInvariant()">@T(row.ServiceStatus)</span></td></tr>}
     </tbody></table></div></section>
     <VehicleReportBuilder Russian="Russian" Summary="data" From="from" To="to" Now="Now"/>

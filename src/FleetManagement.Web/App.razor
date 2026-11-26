@@ -230,7 +230,7 @@
     else if(section=="Maintenance")
     {
         <section class="panel"><h2>@T("Predictive maintenance · rule-based")</h2><p class="muted">@T("Explainable assessment based on service mileage and time intervals. Not a trained ML model or a safety certification.")</p>
-        <div class="tablewrap"><table><thead><tr><th>@T("Vehicle")</th><th>@T("Remaining km")</th><th>@T("Remaining days")</th><th>@T("Health")</th><th>@T("Explanation")</th><th>@T("Action")</th></tr></thead><tbody>
+        <div class="tablewrap" role="region" tabindex="0" aria-label="@T("Maintenance readiness")"><table><thead><tr><th>@T("Vehicle")</th><th>@T("Remaining km")</th><th>@T("Remaining days")</th><th>@T("Health")</th><th>@T("Explanation")</th><th>@T("Action")</th></tr></thead><tbody>
         @foreach(var v in fleet.Vehicles){var a=FleetRules.Assess(v,Now);<tr><td>@v.Plate · @v.Model</td><td>@a.RemainingKm.ToString("N0")</td><td>@a.RemainingDays</td><td><span class="pill @a.Status.ToLowerInvariant()">@T(a.Status)</span></td><td>@T(a.Reason)</td><td><button class="secondary" @onclick="()=>RecordService(v.Id)">@T("Record service")</button></td></tr>}
         </tbody></table></div>@if(maintenanceFeedback.Length>0){<p role="status" class="notice">@T(maintenanceFeedback)</p>}</section>
         <VehicleReservationView Russian="@(language=="ru")" Fleet="fleet" Reservations="vehicleReservations" Now="Now" Changed="Persist" Open="Navigate"/>

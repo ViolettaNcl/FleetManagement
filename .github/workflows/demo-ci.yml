@@ -57,6 +57,9 @@ jobs:
           rm -rf preview/FleetManagement
           python3 tools/build_public_site.py publish/wwwroot preview/FleetManagement
           FLEET_PREVIEW_URL=http://127.0.0.1:8080/FleetManagement/ node tests/browser/seo-pwa.mjs
+          node tests/browser/v4-audit.mjs
+          # Local lab audit, not field Core Web Vitals. Pinned CLI used only in CI.
+          CHROME_PATH="$(node --input-type=module -e 'import {chromium} from "./tests/browser/node_modules/playwright/index.mjs";console.log(chromium.executablePath())')" npx --yes lighthouse@13.6.0 http://127.0.0.1:8080/FleetManagement/ --chrome-flags="--headless --no-sandbox" --output=json --output-path=browser-results/lighthouse-public.json --only-categories=performance,accessibility,best-practices,seo --quiet
       - name: Upload packaged V4 website
         if: always()
         uses: actions/upload-artifact@v4

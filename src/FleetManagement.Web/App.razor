@@ -12,7 +12,9 @@
     <button class="mobile-nav-toggle secondary" aria-expanded="@(mobileNav?"true":"false")" aria-controls="workspace-nav" @onclick="ToggleMobileMenu"><span aria-hidden="true">☰</span> @T("Modules") · @T(section)</button>
     <nav id="workspace-nav" class="fleet-sidebar @(mobileNav?"nav-open":"")" aria-label="@T("Fleet sections")">
         <div class="nav-eyebrow">@T("Workspace")<button class="secondary sidebar-collapse" @onclick="()=>collapsed=!collapsed" aria-label="@T(collapsed?"Expand sidebar":"Collapse sidebar")" title="@T(collapsed?"Expand sidebar":"Collapse sidebar")">@(collapsed?"»":"«")</button></div><label class="nav-search">@T("Find section")<input @ref="navInput" type="search" @bind="navQuery" @bind:event="oninput" placeholder="@T("Search modules")" aria-label="@T("Find section")" aria-describedby="nav-hint" @onkeydown="SearchKey"/><small id="nav-hint">@T("Enter to open a single match; Escape clears search.")</small></label>
-        @if(!NavigationGroups.SelectMany(g=>g.Items).Any(MatchesSection)){<div class="nav-empty"><p>@T("No matching modules")</p><button class="secondary" @onclick="()=>navQuery=string.Empty">@T("Clear search")</button></div>}
+        @if(!string.IsNullOrWhiteSpace(navQuery)){<div class="v4-search-actions">@foreach(var action in QuickActions.Where(a=>MatchesSection(a.Label))){<button class="secondary" @onclick="()=>RunQuickAction(action.Key)">@T(action.Label)</button>}</div>}
+        @if(string.IsNullOrWhiteSpace(navQuery)&&!collapsed){<div class="nav-quick-access">@if(favorites.Count>0){<small>@T("Favorites")</small>@foreach(var item in favorites){<button aria-label="@($"{T("Favorite")}: {T(item)}")" @onclick="()=>Navigate(item)"><WorkspaceIcon Name="@item"/><span>@T(item)</span></button>}}@if(recent.Count>0){<small>@T("Recent modules")</small>@foreach(var item in recent.Take(3)){<button aria-label="@($"{T("Recent")}: {T(item)}")" @onclick="()=>Navigate(item)"><WorkspaceIcon Name="@item"/><span>@T(item)</span></button>}}</div>}
+        @if(!NavigationGroups.SelectMany(g=>g.Items).Any(MatchesSection)&&!QuickActions.Any(a=>MatchesSection(a.Label))){<div class="nav-empty"><p>@T("No matching modules")</p><button class="secondary" @onclick="()=>navQuery=string.Empty">@T("Clear search")</button></div>}
         @foreach(var group in NavigationGroups.Where(g=>g.Items.Any(MatchesSection)))
         {
             <div class="nav-group">
@@ -25,7 +27,7 @@
         }
     </nav>
     <div class="fleet-content" id="fleet-content" tabindex="-1" @ref="contentRoot">
-    <div class="workspace-breadcrumb"><span>@T("Fleet workspace")</span><span aria-hidden="true">/</span><strong>@T(section)</strong><span class="workspace-clock">@T("Simulation time") · @Now.ToString("HH:mm")</span>@if(buildRevision.Length==7){<span class="build-revision" title="Published source revision" data-testid="build-revision">@buildRevision</span>}</div>
+    <div class="workspace-breadcrumb"><span>@T("Fleet workspace")</span><span aria-hidden="true">/</span><strong>@T(section)</strong><button class="secondary favorite-action" aria-label="@T(favorites.Contains(section)?"Remove favorite":"Add favorite")" aria-pressed="@(favorites.Contains(section)?"true":"false")" @onclick="ToggleFavorite">@(favorites.Contains(section)?"★":"☆")</button><span class="workspace-clock">@T("Simulation time") · @Now.ToString("HH:mm")</span>@if(buildRevision.Length==7){<span class="build-revision" title="Published source revision" data-testid="build-revision">@buildRevision</span>}</div>
     <div class="v4-context-actions"><button @onclick="NewTripAction">@T("+ New trip")</button><button class="secondary" @onclick='()=>NewRecordAction("Vehicles")'>@T("Register vehicle")</button><button class="secondary" @onclick='()=>NewRecordAction("Drivers")'>@T("Register driver")</button><button class="secondary" @onclick='()=>Navigate("Help & settings")'>@T("Help & settings")</button></div>
     @if(language=="ru"){<p class="localization-note">@T("Some technical labels and generated records remain in English.")</p>}
     @if (!string.IsNullOrEmpty(storageMessage)) { <p class="notice">@T(storageMessage)</p> }
@@ -211,6 +213,11 @@
     private bool darkTheme=true,mobileNav,focusSearch,focusContent,collapsed;
     private string themeMode="dark",newRecordSection="";private int recordAction;
     private bool historyReady,writeHistory;
+    private List<string> favorites=[],recent=[];
+    private const string FavoritesKey="fleetmanagement.preferences.favorites.v4";
+    private static readonly (string Key,string Label)[] QuickActions=[("trip","+ New trip"),("vehicle","Register vehicle"),("driver","Register driver"),("report","Export reports"),("maintenance","Review maintenance"),("alerts","Open alert center")];
+    private void RunQuickAction(string key){switch(key){case "trip":NewTripAction();break;case "vehicle":NewRecordAction("Vehicles");break;case "driver":NewRecordAction("Drivers");break;case "report":Navigate("Analytics");break;case "maintenance":Navigate("Maintenance");break;case "alerts":Navigate("Assistant");break;}}
+    private async Task ToggleFavorite(){if(!favorites.Remove(section)){if(favorites.Count>=8)favorites.RemoveAt(0);favorites.Add(section);}try{await JS.InvokeVoidAsync("localStorage.setItem",FavoritesKey,string.Join("|",favorites));}catch(JSException){storageMessage="Unable to save locally; changes are session-only.";}}
     private DotNetObjectReference<App>? self;
     private static readonly (string Section,string Label)[] MobileTabs=[("Overview","Home"),("Vehicles","Fleet"),("Dispatch","Trips"),("Assistant","Alerts")];
     private static readonly (string Section,string Description)[] HelpItems=[("Vehicles","Register and review vehicles."),("Drivers","Register drivers."),("Dispatch","Plan a trip and validate assignments."),("Maintenance","Review service intervals."),("Tracking","Advance simulated time."),("Optimization","Compare routing algorithms."),("Analytics","Review and export reports."),("Data Quality","Inspect and train on a validated CSV.")];
@@ -258,7 +265,7 @@
         if(e.Key=="Escape"){navQuery="";return;}
         if(e.Key!="Enter"||string.IsNullOrWhiteSpace(navQuery))return;
         var matches=NavigationGroups.SelectMany(g=>g.Items).Where(MatchesSection).ToArray();
-        if(matches.Length==1){Navigate(matches[0]);navQuery="";}
+        var actions=QuickActions.Where(a=>MatchesSection(a.Label)).ToArray();if(matches.Length==1&&actions.Length==0){Navigate(matches[0]);navQuery="";}else if(matches.Length==0&&actions.Length==1){RunQuickAction(actions[0].Key);navQuery="";}
     }
     private string language="en",buildRevision="";
     private string T(string value)=>DemoLocale.Text(value,language=="ru");
@@ -295,6 +302,7 @@
         try{
             themeMode=await JS.InvokeAsync<string?>("localStorage.getItem",ThemeKey)??"dark";if(themeMode!="light"&&themeMode!="dark"&&themeMode!="system")themeMode="dark";darkTheme=themeMode=="dark"||(themeMode=="system"&&await JS.InvokeAsync<bool>("fleetPrefersDark"));
             language=await JS.InvokeAsync<string?>("localStorage.getItem",LanguageKey)=="ru"?"ru":"en";
+            var storedFavorites=await JS.InvokeAsync<string?>("localStorage.getItem",FavoritesKey);favorites=(storedFavorites??"").Split('|',StringSplitOptions.RemoveEmptyEntries).Where(x=>NavigationGroups.SelectMany(g=>g.Items).Contains(x)).Distinct().Take(8).ToList();
         }catch(JSException){storageMessage="Local storage is unavailable; changes are session-only.";}
         try { var json=await JS.InvokeAsync<string?>("localStorage.getItem",Key); if(!string.IsNullOrWhiteSpace(json)){var saved=JsonSerializer.Deserialize(json, DemoJsonContext.Default.DemoSnapshot); if(saved?.Data is not null && saved.Data.Vehicles is not null && saved.Data.Drivers is not null && saved.Data.Trips is not null){fleet=saved.Data;maintenanceEntries=saved.MaintenanceEntries??[];driverShifts=saved.DriverShifts??[];requireShifts=saved.RequireShifts;vehicleReservations=saved.VehicleReservations??[];Now=saved.Now;start=Now.AddHours(1);end=Now.AddHours(2);}} }
         catch (Exception) {storageMessage="Local storage is unavailable; changes are session-only.";}
@@ -304,7 +312,7 @@
     private async Task RunClock(){try{while(await timer!.WaitForNextTickAsync(cts.Token)){await InvokeAsync(()=>{if(playing){Now=Now.AddMinutes(2);StateHasChanged();}});}}catch(OperationCanceledException){}}
     private async Task Persist(){try{await JS.InvokeVoidAsync("localStorage.setItem",Key,JsonSerializer.Serialize(new DemoSnapshot(fleet,Now,maintenanceEntries,driverShifts,requireShifts,vehicleReservations), DemoJsonContext.Default.DemoSnapshot));}catch(Exception){storageMessage="Unable to save locally; changes are session-only.";}}
     private void OpenPassport(int id){passportId=id;Navigate("Vehicle Passport");}
-    private void Navigate(string item){if(section!=item){newRecordSection="";writeHistory=true;}mobileNav=false;navQuery="";focusContent=true;if(item=="Vehicle Passport"&&!fleet.Vehicles.Any(v=>v.Id==passportId))passportId=fleet.Vehicles.FirstOrDefault()?.Id??0;section=item;feedback="";if(item=="Dispatch"){if(!fleet.Vehicles.Any(v=>v.Id==vehicleId))vehicleId=fleet.Vehicles.FirstOrDefault()?.Id??0;if(!fleet.Drivers.Any(d=>d.Id==driverId))driverId=fleet.Drivers.FirstOrDefault()?.Id??0;}}
+    private void Navigate(string item){if(section!=item){newRecordSection="";writeHistory=true;recent.Remove(item);recent.Insert(0,item);if(recent.Count>5)recent.RemoveAt(5);}mobileNav=false;navQuery="";focusContent=true;if(item=="Vehicle Passport"&&!fleet.Vehicles.Any(v=>v.Id==passportId))passportId=fleet.Vehicles.FirstOrDefault()?.Id??0;section=item;feedback="";if(item=="Dispatch"){if(!fleet.Vehicles.Any(v=>v.Id==vehicleId))vehicleId=fleet.Vehicles.FirstOrDefault()?.Id??0;if(!fleet.Drivers.Any(d=>d.Id==driverId))driverId=fleet.Drivers.FirstOrDefault()?.Id??0;}}
     private async Task ToggleSimulation(){playing=!playing;if(!playing)await Persist();}
     private async Task Advance(){Now=Now.AddMinutes(15);await Persist();}
     private async Task Reset(){if(!await JS.InvokeAsync<bool>("confirm",T("Reset all demo data?")))return;ClearTripFilters();playing=false;Now=DateTime.Now;fleet=FleetRules.Sample(Now);maintenanceEntries.Clear();driverShifts.Clear();vehicleReservations.Clear();requireShifts=false;maintenanceFeedback="";start=Now.AddHours(1);end=Now.AddHours(2);vehicleId=driverId=1;selectedTrip=101;editingTripId=null;feedback="";await Persist();}

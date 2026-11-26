@@ -1,1 +1,11 @@
-{"name":"fleetmanagement-browser-checks","private":true,"type":"module","dependencies":{"playwright":"1.56.1"}}
+{
+  "name": "fleetmanagement-browser-checks",
+  "private": true,
+  "type": "module",
+  "dependencies": {
+    "playwright": "1.56.1"
+  },
+  "devDependencies": {
+    "axe-core": "4.14.1"
+  }
+}

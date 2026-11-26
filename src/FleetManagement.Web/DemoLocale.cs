@@ -873,6 +873,13 @@ internal static class DemoLocale
         ["Previous page"]="Предыдущая страница",
         ["Next page"]="Следующая страница",
         ["years"]="лет",
+        ["Favorites"]="Избранное",
+        ["Favorite"]="Избранное",
+        ["Recent modules"]="Недавние разделы",
+        ["Recent"]="Недавнее",
+        ["Add favorite"]="Добавить в избранное",
+        ["Remove favorite"]="Убрать из избранного",
+        ["Export reports"]="Экспорт отчётов",
     };
     public static string Text(string value,bool russian)=>russian&&Russian.TryGetValue(value,out var translated)?translated:value;
 }

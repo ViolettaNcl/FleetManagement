@@ -41,6 +41,12 @@ try{
     records.push({url,title,description,htmlBytes:(await response.body()).length,...performance});
   }
   await staticContext.close();
+  const a11y=await browser.newPage({viewport:{width:390,height:844}});
+  await a11y.goto(root);
+  await a11y.addScriptTag({path:new URL('./node_modules/axe-core/axe.min.js',import.meta.url).pathname});
+  const publicAudit=await a11y.evaluate(async()=>{const r=await axe.run({runOnly:{type:'tag',values:['wcag2a','wcag2aa','wcag21a','wcag21aa','wcag22aa']}});return r.violations.map(v=>({id:v.id,impact:v.impact,nodes:v.nodes.map(n=>n.target)}));});
+  assert.deepEqual(publicAudit,[],'Public landing accessibility violations');
+  await a11y.close();
   const context=await browser.newContext({viewport:{width:390,height:844},isMobile:true,hasTouch:true,serviceWorkers:'allow'});
   const demo=await context.newPage();const errors=[];demo.on('pageerror',e=>errors.push(e.message));
   const manifest=await (await context.request.get(root+'app/manifest.webmanifest')).json();

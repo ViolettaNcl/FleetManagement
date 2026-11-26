@@ -890,6 +890,7 @@ internal static class DemoLocale
         ["Calendar dates"]="Даты календаря",
         ["Events"]="События",
         ["More events"]="других событий",
+        ["Discard unsaved changes?"]="Отменить несохранённые изменения?",
     };
     public static string Text(string value,bool russian)=>russian&&Russian.TryGetValue(value,out var translated)?translated:value;
 }

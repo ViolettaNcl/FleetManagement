@@ -12,16 +12,16 @@
         <button class="secondary" @onclick="ToggleSort">@T(descending ? "Descending ↓" : "Ascending ↑")</button>
     </div>
     <div class="register-result-bar"><span aria-live="polite">@(IsVehicles?Vehicles.Count():Drivers.Count()) / @(IsVehicles?Fleet.Vehicles.Count:Fleet.Drivers.Count) @T("Records shown")</span><button class="secondary" @onclick="ClearFilters" disabled="@(query.Length==0&&healthFilter.Length==0&&sort=="id"&&!descending)">@T("Clear filters")</button></div>
-    @if (feedback.Length > 0) { <p role="status" class="@(error ? "error" : "notice")">@T(feedback)</p> }
+    @if (feedback.Length > 0) { <p role="@(error?"alert":"status")" class="@(error ? "error" : "notice")">@T(feedback)</p> }
     @if (editing)
     {
-        <div class="editor">
-            <h3>@(editId == 0 ? T("New record") : $"{T("Edit")} #{editId}")</h3>
+        <div class="editor" aria-labelledby="record-editor-heading">
+            <h3 id="record-editor-heading">@(editId == 0 ? T("New record") : $"{T("Edit")} #{editId}")</h3>
             @if (IsVehicles)
             {
                 <div class="formgrid">
-                    <label>@T("Registration")<input @bind="plate" maxlength="40" /></label>
-                    <label>@T("Model")<input @bind="name" maxlength="100" /></label>
+                    <label>@T("Registration")<input @bind="plate" @bind:event="oninput" maxlength="40" /></label>
+                    <label>@T("Model")<input @bind="name" @bind:event="oninput" maxlength="100" /></label>
                     <label>@T("Current mileage (km)")<input type="number" min="0" @bind="mileage" /></label>
                     <label>@T("Last service mileage (km)")<input type="number" min="0" @bind="serviceMileage" /></label>
                     <label>@T("Last service date")<input type="date" @bind="serviceDate" /></label>
@@ -32,12 +32,12 @@
             else
             {
                 <div class="formgrid">
-                    <label>@T("Full name")<input @bind="name" maxlength="100" /></label>
-                    <label>@T("License number")<input @bind="license" maxlength="50" /></label>
+                    <label>@T("Full name")<input @bind="name" @bind:event="oninput" maxlength="100" /></label>
+                    <label>@T("License number")<input @bind="license" @bind:event="oninput" maxlength="50" /></label>
                     <label>@T("Experience (years)")<input type="number" min="0" max="70" @bind="experience" /></label>
                 </div>
             }
-            <div class="actions"><button @onclick="Save">@T("Save record")</button><button class="secondary" @onclick="Cancel">@T("Cancel")</button></div>
+            <div class="actions editor-actions"><button @onclick="Save" disabled="@saving">@T("Save record")</button><button class="secondary" @onclick="Cancel">@T("Cancel")</button></div>
         </div>
     }
     <div class="tablewrap register-table" tabindex="0" role="region" aria-label="@T(IsVehicles?"Vehicle register":"Driver register")"><table>
@@ -96,7 +96,12 @@
     [Parameter] public IReadOnlyList<DriverShift> Shifts {get;set;}=[];
     [Parameter] public IReadOnlyList<VehicleReservation> Reservations {get;set;}=[];
     private string query="",healthFilter="",sort="id",name="",plate="",license="",feedback="";
-    private bool descending,editing,error;
+    private bool descending,editing,error,saving;
+    private (string Name,string Plate,string License,int Mileage,int ServiceMileage,int IntervalKm,int IntervalDays,int Experience,DateTime Date) baseline;
+    private (string,string,string,int,int,int,int,int,DateTime) Snapshot()=> (name,plate,license,mileage,serviceMileage,intervalKm,intervalDays,experience,serviceDate);
+    public bool HasUnsavedChanges=>editing&&Snapshot()!=baseline;
+    public bool CanDiscard()=>!HasUnsavedChanges||(JS is IJSInProcessRuntime local&&local.Invoke<bool>("confirm",T("Discard unsaved changes?")));
+    private void Capture()=>baseline=Snapshot();
     private int editId,mileage,serviceMileage,intervalKm=10000,intervalDays=180,experience;
     private DateTime serviceDate=DateTime.Today;
     private int pageIndex,pageSize=10;
@@ -114,12 +119,14 @@
     private IEnumerable<Driver> Drivers {
         get { var rows=Fleet.Drivers.Where(d=>Match(d.Name)||Match(d.License)||Match(d.Id.ToString()));var ordered=sort switch{"name"=>rows.OrderBy(d=>d.Name),"metric"=>rows.OrderBy(d=>d.Experience),_=>rows.OrderBy(d=>d.Id)};return descending?ordered.Reverse():ordered; }
     }
-    private void NewRecord(){editing=true;editId=0;name=plate=license=feedback="";mileage=serviceMileage=experience=0;intervalKm=10000;intervalDays=180;serviceDate=Today.Date;}
-    private void EditVehicle(Vehicle v){NewRecord();editId=v.Id;name=v.Model;plate=v.Plate;mileage=v.Mileage;serviceMileage=v.LastServiceMileage;serviceDate=v.LastService;intervalKm=v.ServiceIntervalKm;intervalDays=v.ServiceIntervalDays;}
-    private void EditDriver(Driver d){NewRecord();editId=d.Id;name=d.Name;license=d.License;experience=d.Experience;}
-    private void Cancel(){editing=false;feedback="";}
+    private void NewRecord(){if(!CanDiscard())return;InitializeRecord();}
+    private void InitializeRecord(){editing=true;editId=0;name=plate=license=feedback="";mileage=serviceMileage=experience=0;intervalKm=10000;intervalDays=180;serviceDate=Today.Date;Capture();}
+    private void EditVehicle(Vehicle v){if(!CanDiscard())return;InitializeRecord();editId=v.Id;name=v.Model;plate=v.Plate;mileage=v.Mileage;serviceMileage=v.LastServiceMileage;serviceDate=v.LastService;intervalKm=v.ServiceIntervalKm;intervalDays=v.ServiceIntervalDays;Capture();}
+    private void EditDriver(Driver d){if(!CanDiscard())return;InitializeRecord();editId=d.Id;name=d.Name;license=d.License;experience=d.Experience;Capture();}
+    private void Cancel(){if(!CanDiscard())return;editing=false;feedback="";}
     private void Fail(string message){feedback=message;error=true;}
-    private async Task Save(){
+    private async Task Save(){if(saving)return;saving=true;try{await SaveCore();}finally{saving=false;}}
+    private async Task SaveCore(){
         if(IsVehicles){
             var id=editId==0?Fleet.Vehicles.Select(v=>v.Id).DefaultIfEmpty().Max()+1:editId;
             var item=new Vehicle(id,plate.Trim(),name.Trim(),mileage,serviceMileage,serviceDate.Date,intervalKm,intervalDays);

@@ -12,6 +12,11 @@ try{
   await page.getByRole('button',{name:'Expand sidebar',exact:true}).click();
   await page.locator('.v4-context-actions').getByRole('button',{name:'Register vehicle',exact:true}).click();
   await page.getByRole('heading',{name:'New record',exact:true}).waitFor();
+  await page.getByLabel('Registration',{exact:true}).fill('DRAFT-QA');
+  page.once('dialog',d=>d.dismiss());
+  await page.locator('.v4-context-actions').getByRole('button',{name:'+ New trip',exact:true}).click();
+  assert.equal(await page.getByLabel('Registration',{exact:true}).inputValue(),'DRAFT-QA');
+  page.once('dialog',d=>d.accept());
   await page.locator('.v4-context-actions').getByRole('button',{name:'+ New trip',exact:true}).click();
   await page.getByRole('heading',{name:'Intelligent dispatch planner',exact:true}).waitFor();
   await page.waitForURL(/module=Dispatch/);

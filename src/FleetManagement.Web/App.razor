@@ -12,9 +12,10 @@
 <main lang="@language" class="workspace-layout">
     <button class="mobile-nav-toggle secondary" aria-expanded="@(mobileNav?"true":"false")" aria-controls="workspace-nav" @onclick="ToggleMobileMenu"><span aria-hidden="true">☰</span> @T("Modules") · @T(section)</button>
     <nav id="workspace-nav" class="fleet-sidebar @(mobileNav?"nav-open":"")" aria-label="@T("Fleet sections")">
-        <div class="nav-eyebrow">@T("Workspace")<button class="secondary sidebar-collapse" @onclick="ToggleSidebar" aria-label="@T(collapsed?"Expand sidebar":"Collapse sidebar")" title="@T(collapsed?"Expand sidebar":"Collapse sidebar")">@(collapsed?"»":"«")</button></div><label class="nav-search">@T("Find section")<input @ref="navInput" type="search" @bind="navQuery" @bind:event="oninput" placeholder="@T("Search modules")" aria-label="@T("Find section")" aria-describedby="nav-hint" @onkeydown="SearchKey"/><small id="nav-hint">@T("Enter to open a single match; Escape clears search.")</small></label>
+        <div class="nav-eyebrow">@T("Workspace")<button class="secondary sidebar-collapse" @onclick="ToggleSidebar" aria-label="@T(collapsed?"Expand sidebar":"Collapse sidebar")" title="@T(collapsed?"Expand sidebar":"Collapse sidebar")">@(collapsed?"»":"«")</button></div><label class="nav-search">@T("Find section")<input @ref="navInput" type="search" @bind="navQuery" @bind:event="oninput" placeholder="@T("Search modules")" aria-label="@T("Find section")" aria-describedby="nav-hint" @onkeydown="SearchKey"/><small id="nav-hint">@T("Enter to open a single match; Escape clears search.") @T("Use arrow keys to browse results.")</small></label>
+        @if(!string.IsNullOrWhiteSpace(navQuery)){<p class="nav-search-count" role="status">@T("Matching commands"): @SearchMatchCount</p>}
         @if(!string.IsNullOrWhiteSpace(navQuery)){<div class="v4-search-actions">@foreach(var action in QuickActions.Where(a=>MatchesSection(a.Label))){<button class="secondary" @onclick="()=>RunQuickAction(action.Key)">@T(action.Label)</button>}</div>}
-        @if(string.IsNullOrWhiteSpace(navQuery)&&!collapsed){<div class="nav-quick-access">@if(favorites.Count>0){<small>@T("Favorites")</small>@foreach(var item in favorites){<button aria-label="@($"{T("Favorite")}: {T(item)}")" @onclick="()=>Navigate(item)"><WorkspaceIcon Name="@item"/><span>@T(item)</span></button>}}@if(recent.Count>0){<small>@T("Recent modules")</small>@foreach(var item in recent.Take(3)){<button aria-label="@($"{T("Recent")}: {T(item)}")" @onclick="()=>Navigate(item)"><WorkspaceIcon Name="@item"/><span>@T(item)</span></button>}}</div>}
+        @if(string.IsNullOrWhiteSpace(navQuery)&&!collapsed){<div class="nav-quick-access">@if(favorites.Count>0){<small>@T("Favorites")</small>@foreach(var item in favorites){<button aria-label="@($"{T("Favorite")}: {T(item)}")" @onclick="()=>Navigate(item)"><WorkspaceIcon Name="@item"/><span>@T(item)</span></button>}}@if(recent.Count>0){<div class="recent-nav-heading"><small>@T("Recent modules")</small><button class="secondary" @onclick="ClearRecent">@T("Clear recent")</button></div>@foreach(var item in recent.Take(3)){<button aria-label="@($"{T("Recent")}: {T(item)}")" @onclick="()=>Navigate(item)"><WorkspaceIcon Name="@item"/><span>@T(item)</span></button>}}</div>}
         @if(!NavigationGroups.SelectMany(g=>g.Items).Any(MatchesSection)&&!QuickActions.Any(a=>MatchesSection(a.Label))){<div class="nav-empty"><p>@T("No matching modules")</p><button class="secondary" @onclick="()=>navQuery=string.Empty">@T("Clear search")</button></div>}
         @foreach(var group in NavigationGroups.Where(g=>g.Items.Any(MatchesSection)))
         {
@@ -241,9 +242,11 @@
 @code {
     private bool darkTheme=true,mobileNav,focusSearch,focusContent,collapsed;
     private string themeMode="dark",newRecordSection="";private int recordAction;
-    private bool historyReady,writeHistory,quickActionsExpanded;
+    private bool historyReady,writeHistory,quickActionsExpanded,recentDirty;
     private List<string> favorites=[],recent=[];
-    private const string FavoritesKey="fleetmanagement.preferences.favorites.v4";
+    private const string FavoritesKey="fleetmanagement.preferences.favorites.v4", RecentKey="fleetmanagement.preferences.recent.v4";
+    private void ClearRecent(){recent.Clear();recentDirty=true;}
+    private List<string> ReadModulePreference(string? stored,int limit)=>(stored??"").Length>2048?[]:(stored??"").Split('|',StringSplitOptions.RemoveEmptyEntries).Where(x=>NavigationGroups.SelectMany(g=>g.Items).Contains(x)).Distinct().Take(limit).ToList();
     private const string DashboardKey="fleetmanagement.preferences.dashboard.v4", SidebarKey="fleetmanagement.preferences.sidebar.v4";
     private static readonly (string Key,string Label)[] DashboardPanels=[("trips","Recent trips"),("simulation","Interactive fleet visualization"),("intelligence","Explore intelligence"),("guide","Try a guided scenario"),("artwork","Design gallery")];
     private HashSet<string> dashboardPanels=new(DashboardPanels.Select(p=>p.Key),StringComparer.Ordinal);
@@ -340,6 +343,7 @@
         }catch(JSException){storageMessage="Unable to save locally; changes are session-only.";}
     }
     private string navQuery="";
+    private int SearchMatchCount=>NavigationGroups.SelectMany(g=>g.Items).Count(MatchesSection)+QuickActions.Count(a=>MatchesSection(a.Label));
     private bool MatchesSection(string item)=>string.IsNullOrWhiteSpace(navQuery)||item.Contains(navQuery.Trim(),StringComparison.OrdinalIgnoreCase)||T(item).Contains(navQuery.Trim(),StringComparison.OrdinalIgnoreCase);
     private void SearchKey(KeyboardEventArgs e){
         if(e.Key=="Escape"){navQuery="";return;}
@@ -378,6 +382,7 @@
     private Task? timerTask;
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
+        if(recentDirty){recentDirty=false;try{await JS.InvokeVoidAsync("localStorage.setItem",RecentKey,string.Join("|",recent));}catch(JSException){storageMessage="Unable to save locally; changes are session-only.";StateHasChanged();}}
         if(writeHistory&&historyReady){writeHistory=false;try{await JS.InvokeVoidAsync("fleetSetModule",section);}catch(JSException){}}
         if(focusSearch){focusSearch=false;try{await navInput.FocusAsync();}catch(JSException){}}
         if(focusContent){focusContent=false;try{await contentRoot.FocusAsync();}catch(JSException){}}
@@ -388,7 +393,8 @@
             language=await JS.InvokeAsync<string?>("localStorage.getItem",LanguageKey)=="ru"?"ru":"en";
             LoadDashboardPreferences(await JS.InvokeAsync<string?>("localStorage.getItem",DashboardKey));
             collapsed=await JS.InvokeAsync<string?>("localStorage.getItem",SidebarKey)=="1";
-            var storedFavorites=await JS.InvokeAsync<string?>("localStorage.getItem",FavoritesKey);favorites=(storedFavorites??"").Split('|',StringSplitOptions.RemoveEmptyEntries).Where(x=>NavigationGroups.SelectMany(g=>g.Items).Contains(x)).Distinct().Take(8).ToList();
+            favorites=ReadModulePreference(await JS.InvokeAsync<string?>("localStorage.getItem",FavoritesKey),8);
+            recent=ReadModulePreference(await JS.InvokeAsync<string?>("localStorage.getItem",RecentKey),5);
         }catch(JSException){storageMessage="Local storage is unavailable; changes are session-only.";}
         try{
             var incomingLanguage=await JS.InvokeAsync<string?>("fleetConsumeLanguage");
@@ -403,7 +409,7 @@
     private async Task Persist(){try{await JS.InvokeVoidAsync("localStorage.setItem",Key,JsonSerializer.Serialize(new DemoSnapshot(fleet,Now,maintenanceEntries,driverShifts,requireShifts,vehicleReservations), DemoJsonContext.Default.DemoSnapshot));}catch(Exception){storageMessage="Unable to save locally; changes are session-only.";}}
     private void OpenPassport(int id){passportId=id;Navigate("Vehicle Passport");}
     private void Navigate(string item){if(section!=item){if(!CanLeaveRegister()||!CanDiscardTrip())return;if(section=="Dispatch")CancelEdit();}NavigateCore(item);}
-    private void NavigateCore(string item){if(section!=item){newRecordSection="";writeHistory=true;recent.Remove(item);recent.Insert(0,item);if(recent.Count>5)recent.RemoveAt(5);}mobileNav=false;quickActionsExpanded=false;navQuery="";focusContent=true;if(item=="Vehicle Passport"&&!fleet.Vehicles.Any(v=>v.Id==passportId))passportId=fleet.Vehicles.FirstOrDefault()?.Id??0;section=item;feedback="";if(item=="Dispatch"){if(!fleet.Vehicles.Any(v=>v.Id==vehicleId))vehicleId=fleet.Vehicles.FirstOrDefault()?.Id??0;if(!fleet.Drivers.Any(d=>d.Id==driverId))driverId=fleet.Drivers.FirstOrDefault()?.Id??0;}}
+    private void NavigateCore(string item){if(section!=item){newRecordSection="";writeHistory=true;recent.Remove(item);recent.Insert(0,item);if(recent.Count>5)recent.RemoveAt(5);recentDirty=true;}mobileNav=false;quickActionsExpanded=false;navQuery="";focusContent=true;if(item=="Vehicle Passport"&&!fleet.Vehicles.Any(v=>v.Id==passportId))passportId=fleet.Vehicles.FirstOrDefault()?.Id??0;section=item;feedback="";if(item=="Dispatch"){if(!fleet.Vehicles.Any(v=>v.Id==vehicleId))vehicleId=fleet.Vehicles.FirstOrDefault()?.Id??0;if(!fleet.Drivers.Any(d=>d.Id==driverId))driverId=fleet.Drivers.FirstOrDefault()?.Id??0;}}
     private async Task ToggleSimulation(){playing=!playing;if(!playing)await Persist();}
     private async Task Advance(){Now=Now.AddMinutes(15);await Persist();}
     private async Task Reset(){if(!await JS.InvokeAsync<bool>("confirm",T("Reset all demo data?")))return;ClearTripFilters();recordAction++;newRecordSection="";playing=false;Now=DateTime.Now;fleet=FleetRules.Sample(Now);maintenanceEntries.Clear();driverShifts.Clear();vehicleReservations.Clear();requireShifts=false;maintenanceFeedback="";start=Now.AddHours(1);end=Now.AddHours(2);vehicleId=driverId=1;selectedTrip=101;editingTripId=null;tripDirty=false;feedback="";await Persist();}

@@ -14,3 +14,15 @@ FleetManagement V3 — portable Windows x64 demo
 Приложение откроется в браузере; не закрывайте консоль до завершения.
 Для остановки нажмите Ctrl+C. Это автономное демо, не серверная версия.
 Архив не подписан и не является MSI-установщиком.
+
+
+V6 RC2: the Windows portfolio build also generates an unsigned, per-user Setup
+EXE with SHA256SUMS.txt. Verify the checksum against the exact successful
+GitHub Actions artifact. An unsigned setup is NOT a publisher-authenticated
+installer. Do not bypass Windows security warnings for an untrusted build.
+Each source revision has its own default install directory and uninstall
+entry; no administrative privileges or backend service are installed. Close
+the running launcher before uninstalling. Browser demo data is stored by
+browser origin (the normal port is 5185) and is not removed by uninstall.
+The Inno Setup build is for this non-commercial portfolio demonstration;
+review its license before using the setup commercially.

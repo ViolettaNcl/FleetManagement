@@ -39,7 +39,7 @@ try{
     await page.getByRole("button",{name:"Sign in",exact:true}).click();
     await page.getByRole("heading",{name:"Operations overview"}).waitFor();
     await page.locator('[data-tab="overview"]').click();
-    await page.locator("#scheduled-review-state").getByText("Scheduled review disabled",{exact:true}).waitFor();
+    await page.waitForFunction(()=>document.querySelector("#scheduled-review-state")?.textContent==="Scheduled review disabled");
     await page.locator('[data-tab="fleet"]').click();
     await page.getByRole("button",{name:"Dark theme",exact:true}).click();
     assert.equal(await page.locator("body.dark-theme").count(),1);

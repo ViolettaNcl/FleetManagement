@@ -8,8 +8,8 @@ permissions:
   contents: read
 jobs:
   package:
-    runs-on: windows-latest
-    timeout-minutes: 15
+    runs-on: windows-2025
+    timeout-minutes: 25
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-dotnet@v4
@@ -51,6 +51,67 @@ jobs:
             Write-Host 'PASS: packaged exe, loopback HTTP and WASM'
           } finally { if (!$process.HasExited) { Stop-Process -Id $process.Id -Force } }
           Get-Content $log
+      - name: Build unsigned per-user setup (portfolio demo)
+        shell: pwsh
+        run: |
+          $compiler = Get-Command ISCC.exe -ErrorAction SilentlyContinue
+          if ($compiler) { $iscc = $compiler.Source }
+          else { $iscc = Join-Path ${env:ProgramFiles(x86)} 'Inno Setup 6\ISCC.exe' }
+          if (!(Test-Path -LiteralPath $iscc)) { throw 'Inno Setup compiler missing from runner' }
+          $revision = $env:GITHUB_SHA.Substring(0,7)
+          $out = "$env:RUNNER_TEMP/installer"
+          New-Item -ItemType Directory -Force $out | Out-Null
+          & $iscc "/DPayload=$env:RUNNER_TEMP/portable" "/DOutput=$out" "/DRevision=$revision" tools/windows-demo-setup.iss
+          if ($LASTEXITCODE) { throw 'Setup compilation failed' }
+          $setup = Join-Path $out "FleetManagement-Setup-$revision-unsigned.exe"
+          if (!(Test-Path -LiteralPath $setup)) { throw 'Installer missing' }
+          $hash = (Get-FileHash -Algorithm SHA256 -LiteralPath $setup).Hash.ToLowerInvariant()
+          "$hash  $(Split-Path -Leaf $setup)" | Set-Content -Encoding ascii "$out/SHA256SUMS.txt"
+          "source=$env:GITHUB_SHA`nsigning=unsigned`ncompiler=$((Get-Item -LiteralPath $iscc).VersionInfo.FileVersion)" | Set-Content -Encoding ascii "$out/BUILD-INFO.txt"
+      - name: Verify setup install, loopback launch and uninstall
+        shell: pwsh
+        run: |
+          $revision = $env:GITHUB_SHA.Substring(0,7)
+          $setup = "$env:RUNNER_TEMP/installer/FleetManagement-Setup-$revision-unsigned.exe"
+          $dest = "$env:RUNNER_TEMP/fleet-installed"
+          $install = Start-Process -FilePath $setup -ArgumentList @('/VERYSILENT','/SUPPRESSMSGBOXES','/NORESTART',('/DIR="{0}"' -f $dest)) -Wait -PassThru
+          if ($install.ExitCode -ne 0) { throw "Setup exited $($install.ExitCode)" }
+          $exe = Join-Path $dest 'FleetManagement.Demo.exe'
+          if (!(Test-Path -LiteralPath $exe)) { throw 'Installed launcher missing' }
+          $log = "$env:RUNNER_TEMP/installed.log"
+          $err = "$env:RUNNER_TEMP/installed.err"
+          $process = Start-Process -FilePath $exe -ArgumentList @('--no-browser','--port','0') -WorkingDirectory $dest -RedirectStandardOutput $log -RedirectStandardError $err -PassThru
+          try {
+            $url = $null
+            for ($i=0; $i -lt 60; $i++) {
+              if ($process.HasExited) { throw "Installed launcher exited: $(Get-Content $err -Raw)" }
+              $line = Get-Content $log -ErrorAction SilentlyContinue | Where-Object { $_ -match '^DEMO_URL=http://127\.0\.0\.1:\d+
+          path: ${{ runner.temp }}/portable
+          if-no-files-found: error
+ } | Select-Object -First 1
+              if ($line) { $url = $line.Substring(9); break }
+              Start-Sleep -Milliseconds 500
+            }
+            if (!$url) { throw 'Installed app did not announce loopback URL' }
+            $response = Invoke-WebRequest "$url/"
+            if ($response.StatusCode -ne 200 -or $response.Content -notmatch 'FleetManagement') { throw 'Installed UI unavailable' }
+            $wasm = Get-ChildItem "$dest/wwwroot/_framework" -Filter '*.wasm' -File | Select-Object -First 1
+            if (!$wasm) { throw 'Installed WASM missing' }
+            $asset = Invoke-WebRequest "$url/_framework/$($wasm.Name)"
+            if ($asset.StatusCode -ne 200 -or $asset.Headers['Content-Type'] -notmatch 'application/wasm') { throw 'Installed WASM MIME mismatch' }
+          } finally { if (!$process.HasExited) { Stop-Process -Id $process.Id -Force; $process.WaitForExit() } }
+          'untracked user file' | Set-Content -Encoding ascii "$dest/user-marker.txt"
+          $uninstaller = Get-ChildItem $dest -Filter 'unins*.exe' | Select-Object -First 1
+          if (!$uninstaller) { throw 'Uninstaller missing' }
+          $remove = Start-Process -FilePath $uninstaller.FullName -ArgumentList @('/VERYSILENT','/SUPPRESSMSGBOXES','/NORESTART') -Wait -PassThru
+          if ($remove.ExitCode -ne 0) { throw "Uninstall exited $($remove.ExitCode)" }
+          if ((Test-Path -LiteralPath $exe) -or !(Test-Path -LiteralPath "$dest/user-marker.txt")) { throw 'Uninstall failed or removed untracked data' }
+          Write-Host 'PASS: unsigned setup, installed application, WASM and uninstall preserving untracked data'
+      - uses: actions/upload-artifact@v4
+        with:
+          name: fleetmanagement-windows-x64-installer-unsigned
+          path: ${{ runner.temp }}/installer
+          if-no-files-found: error
       - uses: actions/upload-artifact@v4
         with:
           name: fleetmanagement-windows-x64-portable

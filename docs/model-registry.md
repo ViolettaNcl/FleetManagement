@@ -15,3 +15,6 @@ Each run creates a unique timestamp/GUID directory, initially staged under a pen
 No automatic selection or promotion of a winner; the synthetic generation equations favor certain models. Neither model comparison nor a small held-out error validates real vehicle operation. Test-based hyperparameter tuning is discouraged. The browser uses existing pure C# models and requires no native ML.NET trainer or model download. The original rule-based maintenance remains separate.
 
 CI workflow trains, reloads, checks hashes and manifest invariants, then uploads the registry. The verification deliberately does not require FastTree to beat the linear models: the measured comparison is the result.
+
+### Post-hoc explainability
+The trainer now records FastTree held-out permutation importance for each input dimension in the manifest: three deterministic shuffles and mean/min/max loss change (Brier for maintenance, MAE minutes for ETA). Original held-out rows and labels are not modified; the fitted models are not retrained or selected from these results. Negative importance is allowed. Correlated features and unrealistic shuffled combinations can distort marginal scores. These are synthetic, non-causal experimental explanations, not safety or operational advice.

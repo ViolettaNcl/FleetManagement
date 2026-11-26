@@ -35,3 +35,13 @@ for key in ("baseline", "linear", "fastTree"):
 assert e["validationSha256"] not in (e["trainSha256"], e["testSha256"])
 assert math.isfinite(e["fastTreeValidationResidual90"]) and e["fastTreeValidationResidual90"] >= 0
 print("Registry manifest, hashes, model archives, reload checks and evaluation metrics verified.")
+
+for section, metric in ((m, "Brier"), (e, "MAE (minutes)")):
+    importance = section["permutationImportance"]
+    assert importance["metric"] == metric and importance["repeats"] == 3
+    assert [row["feature"] for row in importance["features"]] == section["features"]
+    for row in importance["features"]:
+        low, mean, high = (row["minLossIncrease"], row["meanLossIncrease"], row["maxLossIncrease"])
+        assert all(math.isfinite(value) for value in (low, mean, high))
+        assert low - 1e-12 <= mean <= high + 1e-12
+print("Held-out feature permutation importance verified (finite, complete, bounded means).")

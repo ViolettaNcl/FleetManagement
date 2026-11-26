@@ -35,7 +35,7 @@ try{
     var fastMetrics=MaintenanceLearning.Evaluate(test,r=>loaded[(r.VehicleId-1000)*60+r.Day]);
     if(fastMetrics.TP+fastMetrics.FP+fastMetrics.TN+fastMetrics.FN!=test.Count)throw new InvalidOperationException("Wrong binary evaluation count.");
     Console.WriteLine($"Maintenance held-out: logistic F1={maintenance.Test.F1:F3}, FastTree F1={fastMetrics.F1:F3}; logistic Brier={maintenance.Test.Brier:F3}, FastTree Brier={fastMetrics.Brier:F3}");
-    Dictionary<int,double> Probabilities(ITransformer model)=>ml.Data.CreateEnumerable<BinaryOutput>(model.Transform(testView),reuseRowObject:false).ToDictionary(r=>r.RowKey,r=>(double)r.Probability);
+    Dictionary<int,double> Probabilities(ITransformer model,IDataView? input=null)=>ml.Data.CreateEnumerable<BinaryOutput>(model.Transform(input??testView),reuseRowObject:false).ToDictionary(r=>r.RowKey,r=>(double)r.Probability);
 
     var etaTrain=EtaLearning.Generate(seed,0,1600);
     var etaValidation=EtaLearning.Generate(unchecked(seed^0xB71),2000,400);
@@ -60,26 +60,54 @@ try{
     Console.WriteLine($"ETA held-out: linear MAE={etaBaseline.Test.Mae:F2} min, FastTree MAE={etaFast.Mae:F2} min");
     Dictionary<int,double> Durations(ITransformer model,IDataView input)=>ml.Data.CreateEnumerable<RegressionOutput>(model.Transform(input),reuseRowObject:false).ToDictionary(r=>r.RowKey,r=>Math.Max(1,(double)r.Score));
 
+    // Post-hoc held-out permutation importance. Never used to tune or select a model.
+    var maintenanceNames=LogisticMaintenanceModel.FeatureNames;
+    var etaNames=new[]{"Free-flow minutes","Free-flow minutes × traffic","Stops","Free-flow minutes × load"};
+    var maintenanceImportance=maintenanceNames.Select((name,column)=>{
+        var deltas=new double[3];
+        for(int repeat=0;repeat<deltas.Length;repeat++){
+            var rows=test.Select((r,i)=>MaintenanceRow.From(r,i)).ToArray();
+            var values=rows.Select(r=>r.Features[column]).ToArray();
+            Shuffle(values,unchecked(seed+1009*column+37*repeat));
+            for(int i=0;i<rows.Length;i++)rows[i].Features[column]=values[i];
+            var scores=Probabilities(binaryLoaded,ml.Data.LoadFromEnumerable(rows));
+            deltas[repeat]=MaintenanceLearning.Evaluate(test,r=>scores[(r.VehicleId-1000)*60+r.Day]).Brier-fastMetrics.Brier;
+        }
+        return new{feature=name,meanLossIncrease=deltas.Average(),minLossIncrease=deltas.Min(),maxLossIncrease=deltas.Max()};
+    }).ToArray();
+    var etaImportance=etaNames.Select((name,column)=>{
+        var deltas=new double[3];
+        for(int repeat=0;repeat<deltas.Length;repeat++){
+            var rows=etaTest.Select(EtaRow.From).ToArray();
+            var values=rows.Select(r=>r.Features[column]).ToArray();
+            Shuffle(values,unchecked(seed+2003*column+53*repeat));
+            for(int i=0;i<rows.Length;i++)rows[i].Features[column]=values[i];
+            var scores=Durations(etaLoaded,ml.Data.LoadFromEnumerable(rows));
+            deltas[repeat]=EtaLearning.Evaluate(etaTest,r=>scores[r.Id]).Mae-etaFast.Mae;
+        }
+        return new{feature=name,meanLossIncrease=deltas.Average(),minLossIncrease=deltas.Min(),maxLossIncrease=deltas.Max()};
+    }).ToArray();
+
     var manifest=new{
         schemaVersion=1,runId,createdUtc=stamp,seed,synthetic=true,mlNetVersion="5.0.0",
         sourceRevision=Environment.GetEnvironmentVariable("GITHUB_SHA")??"local-unrecorded",
         maintenance=new{
             trainRows=train.Count,testRows=test.Count,trainVehicles=40,testVehicles=12,threshold=.5,
-            features=LogisticMaintenanceModel.FeatureNames,trainSha256=Fingerprint(train),testSha256=Fingerprint(test),
+            features=maintenanceNames,permutationImportance=new{metric="Brier",repeats=3,features=maintenanceImportance},trainSha256=Fingerprint(train),testSha256=Fingerprint(test),
             baseline=maintenance.Baseline,logistic=maintenance.Test,fastTree=fastMetrics,
             settings=new{leaves=16,trees=100,minExamplesPerLeaf=20,learningRate=.1,threads=1},
             artifact=new{file="maintenance-fasttree.zip",sha256=FileHash(binaryPath)},reloadVerified=true
         },
         eta=new{
             trainRows=etaTrain.Count,validationRows=etaValidation.Count,testRows=etaTest.Count,
-            features=new[]{"Free-flow minutes","Free-flow minutes × traffic","Stops","Free-flow minutes × load"},
+            features=etaNames,permutationImportance=new{metric="MAE (minutes)",repeats=3,features=etaImportance},
             trainSha256=Fingerprint(etaTrain),validationSha256=Fingerprint(etaValidation),testSha256=Fingerprint(etaTest),
             baseline=etaBaseline.Baseline,linear=etaBaseline.Test,fastTree=etaFast,
             linearValidationResidual90=etaBaseline.ValidationResidual90,fastTreeValidationResidual90=residual90,
             settings=new{leaves=24,trees=150,minExamplesPerLeaf=15,learningRate=.1,threads=1},
             artifact=new{file="eta-fasttree.zip",sha256=FileHash(etaPath)},reloadVerified=true
         },
-        limitations="Synthetic labels only. No real-world accuracy or safety claim. Validation residual percentiles are not guaranteed intervals. Models are not automatically promoted or loaded by the browser."
+        limitations="Synthetic labels only. No real-world accuracy or safety claim. Validation residual percentiles are not guaranteed intervals. Permutation importance is marginal, post-hoc and non-causal; correlated features may yield misleading scores. Models are not automatically promoted or loaded by the browser."
     };
     File.WriteAllText(Path.Combine(pending,"manifest.json"),JsonSerializer.Serialize(manifest,new JsonSerializerOptions{WriteIndented=true}));
     // Only completed, reload-verified experiments become registry entries.
@@ -90,6 +118,10 @@ try{
     Console.Error.WriteLine(ex);
     if(Directory.Exists(pending))Directory.Delete(pending,true);
     return 1;
+}
+static void Shuffle(float[] values,int seed){
+    var random=new Random(seed);
+    for(int i=values.Length-1;i>0;i--){int j=random.Next(i+1);(values[i],values[j])=(values[j],values[i]);}
 }
 static string Fingerprint<T>(T value)=>Convert.ToHexString(SHA256.HashData(JsonSerializer.SerializeToUtf8Bytes(value))).ToLowerInvariant();
 static string FileHash(string path){using var stream=File.OpenRead(path);return Convert.ToHexString(SHA256.HashData(stream)).ToLowerInvariant();}

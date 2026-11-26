@@ -64,7 +64,7 @@ public static partial class FleetReport
             XElement Part(string name){
                 var entry=zip.GetEntry(name)??throw InvalidWorkbook();
                 using var stream=entry.Open();
-                using var reader=XmlReader.Create(stream,new XmlReaderSettings{DtdProcessing=DtdProcessing.Prohibit,XmlResolver=null,MaxCharactersInDocument=ExpandedLimit,MaxCharactersFromEntities=0});
+                using var reader=XmlReader.Create(stream,new XmlReaderSettings{DtdProcessing=DtdProcessing.Prohibit,XmlResolver=null,MaxCharactersInDocument=Math.Min(ExpandedLimit,Math.Max(1,entry.Length)),MaxCharactersFromEntities=0});
                 return XDocument.Load(reader).Root??throw InvalidWorkbook();
             }
             var types=Part("[Content_Types].xml");

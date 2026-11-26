@@ -124,6 +124,15 @@ jobs:
           if [ "$Fleet__Provider" = "Sqlite" ]; then
             kill "$pid"; wait "$pid" || true; unset pid
             python3 tests/api/recovery.py "$RUNNER_TEMP/fleet-test.db"
+            # Missing-schema instance: liveness remains available, readiness must fail closed.
+            export Fleet__InitializeDatabase=false Fleet__ScheduledReviewEnabled=false
+            export ConnectionStrings__Fleet="Data Source=$RUNNER_TEMP/empty-readiness.db"
+            start_api
+            status=$(curl -sS -o "$RUNNER_TEMP/not-ready.json" -w "%{http_code}" http://127.0.0.1:5095/ready)
+            test "$status" = 503
+            python3 -c 'import json,sys; assert json.load(open(sys.argv[1]))=={"status":"not-ready"}' "$RUNNER_TEMP/not-ready.json"
+            curl -fsS http://127.0.0.1:5095/health >/dev/null
+            echo "PASS: readiness fails closed without initialized schema while liveness remains available"
           fi
       - uses: actions/upload-artifact@v4
         with:

@@ -96,6 +96,18 @@ try{
  assert.equal(await review.getByRole('region',{name:'Local review history',exact:true}).locator('tbody tr').count(),1);await fit(review);
  await go('Digital Twin');await button('Initialize scenario').click();await button('Open 3D view').click();await page.locator('.twin-visual-companion').waitFor();
  await page.locator('.twin-visual-companion').screenshot({path:'browser-results/v6-twin-companion.png'});await button('Close 3D view').click();
+ await go('Help & settings');
+ const corrupted='{"Data":{"Vehicles":[null],"Drivers":[],"Trips":[]}}';
+ await page.evaluate(raw=>localStorage.setItem('fleetmanagement.demo.v1',raw),corrupted);
+ await page.reload();await button('Download unreadable stored JSON').waitFor({timeout:90000});
+ const rawDownload=page.waitForEvent('download');await button('Download unreadable stored JSON').click();
+ const rawFile=await rawDownload;assert.equal(await readFile(await rawFile.path(),'utf8'),corrupted);await rawFile.delete();
+ await go('Tracking');await button('+ 15 minutes').click();
+ assert.equal(await page.evaluate(()=>localStorage.getItem('fleetmanagement.demo.v1')),corrupted);
+ await go('Help & settings');await upload(JSON.stringify(original));await text('Snapshot validated. No records have changed.',restore).waitFor();
+ await restore.getByLabel('Replace all current demo records with this validated snapshot',{exact:true}).check();
+ await button('Restore validated snapshot',restore).click();await text('Demo snapshot restored.',restore).waitFor();
+ assert.equal(await button('Download unreadable stored JSON').count(),0);
  assert.deepEqual(errors,[]);
  console.log('PASS: V6 visual modes, safe JSON restore including storage failure, clustering, templates, PDF print, grouped CV, isolation forest, briefing, review history and 3D');
 }finally{await browser.close();}

@@ -573,4 +573,22 @@ Check(RejectSnapshotWorkbook([1,2,3])&&RejectSnapshotWorkbook(new byte[FleetRepo
 Check(RejectSnapshotWorkbook(AlterSnapshotWorkbook(rcXlsx,"xl/worksheets/sheet2.xml",x=>x.Replace("FM-205","FM-102"))),"RC workbook duplicate vehicle");
 Check(RejectSnapshotWorkbook(AlterSnapshotWorkbook(rcXlsx,"xl/worksheets/sheet2.xml",x=>x.Replace("<v>82400</v>","<f>1+1</f><v>82400</v>"))),"RC workbook formula rejection");
 Check(RejectSnapshotWorkbook(AlterSnapshotWorkbook(rcXlsx,"xl/worksheets/sheet2.xml",x=>x.Replace("<worksheet","<!DOCTYPE worksheet [<!ENTITY x SYSTEM 'file:///etc/passwd'>]><worksheet"))),"RC workbook DTD rejection");
+
+var rcShiftExpected=rcSample.Trips.Where(t=>t.End>now&&!ResourcePlanning.Covers(rcXlsxInput.Shifts,t.DriverId,t.Start,t.End)).OrderBy(t=>t.Start).ThenBy(t=>t.Id);
+Check(ResourcePlanning.Uncovered(rcSample,rcXlsxInput.Shifts,now).SequenceEqual(rcShiftExpected),"RC indexed shift coverage matches naive");
+byte[] SharedStringsFixture(byte[] bytes){
+    using var memory=new MemoryStream();memory.Write(bytes);memory.Position=0;
+    using(var archive=new System.IO.Compression.ZipArchive(memory,System.IO.Compression.ZipArchiveMode.Update,true)){
+        System.Xml.Linq.XNamespace ns="http://schemas.openxmlformats.org/spreadsheetml/2006/main";
+        var sheet=archive.GetEntry("xl/worksheets/sheet2.xml")!;System.Xml.Linq.XDocument doc;
+        using(var stream=sheet.Open())doc=System.Xml.Linq.XDocument.Load(stream);
+        var cell=doc.Descendants(ns+"c").Single(c=>(string?)c.Attribute("r")=="B2");
+        cell.SetAttributeValue("t","s");cell.RemoveNodes();cell.Add(new System.Xml.Linq.XElement(ns+"v","0"));
+        sheet.Delete();using(var stream=archive.CreateEntry("xl/worksheets/sheet2.xml").Open())doc.Save(stream);
+        using var shared=archive.CreateEntry("xl/sharedStrings.xml").Open();
+        new System.Xml.Linq.XElement(ns+"sst",new System.Xml.Linq.XElement(ns+"si",new System.Xml.Linq.XElement(ns+"t","FM-102"))).Save(shared);
+    }
+    return memory.ToArray();
+}
+Check(FleetReport.ImportSnapshotXlsx(SharedStringsFixture(rcXlsx)).Data.Vehicles.SequenceEqual(rcSample.Vehicles),"RC workbook shared string interoperability");
 Console.WriteLine("All business rule checks passed.");

@@ -1165,6 +1165,11 @@ internal static class DemoLocale
         ["Current records do not satisfy snapshot validation."]="Текущие записи не прошли проверку снимка.",
         ["Fleet workbook exceeds 4 MiB."]="Размер книги превышает 4 МиБ.",
         ["Fleet workbook exceeds 4 MiB or is empty."]="Книга превышает 4 МиБ или пуста.",
+        ["Stored demo data could not be validated. The original is protected from automatic overwrite. Restore a valid snapshot or explicitly reset the demo."]="Сохранённые данные демо не прошли проверку. Исходная запись защищена от автоматической перезаписи. Восстановите корректный снимок или явно сбросьте демо.",
+        ["Stored data recovery"]="Восстановление сохранённых данных",
+        ["Download the unreadable original before explicitly restoring a valid snapshot or resetting. The fallback demo is not saved while recovery is required."]="Скачайте нечитаемый оригинал перед восстановлением корректного снимка или сбросом. Резервное демо не сохраняется до завершения восстановления.",
+        ["Download unreadable stored JSON"]="Скачать нечитаемый сохранённый JSON",
+        ["Demo snapshot exceeds the supported local save limit; export records before closing."]="Размер снимка превышает лимит локального сохранения; экспортируйте данные перед закрытием.",
     };
     public static string Text(string value,bool russian)=>russian&&Russian.TryGetValue(value,out var translated)?translated:value;
 }

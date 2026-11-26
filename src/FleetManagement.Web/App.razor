@@ -40,6 +40,7 @@
     </div>
     @if(language=="ru"){<p class="localization-note">@T("Some technical labels and generated records remain in English.")</p>}
     @if (!string.IsNullOrEmpty(storageMessage)) { <p class="notice">@T(storageMessage)</p> }
+    @if(recoveryRaw is not null){<p class="error" role="status">@T(RecoveryWarning)</p>}
     @if(ModuleBanner(section) is var banner && banner.Art.Length>0){
         <div class="@("module-intro module-art-"+banner.Art)"><div><span class="module-kicker">@T("Workspace")</span><strong>@T(banner.Title)</strong><p>@T(banner.Description)</p></div><span class="module-watermark" aria-hidden="true"><WorkspaceIcon Name="@section"/></span></div>
     }
@@ -112,6 +113,7 @@
         <p class="muted">@T("Use Ctrl+K to search modules. On mobile, use the bottom navigation or More.")</p>
         </section>
         <section class="panel suite-panel" aria-labelledby="snapshot-export-title"><div class="suite-heading"><div><span class="suite-kicker">@T("Local data portability")</span><h2 id="snapshot-export-title">@T("Export demo snapshot")</h2><p class="muted">@T("Download the current demo records and clock as JSON. This file may contain names, notes and registrations. No server upload, preferences or automatic restore.")</p></div><div class="actions"><button @onclick="ExportSnapshot">@T("Download demo JSON")</button><button class="secondary" @onclick="ExportSnapshotWorkbook">@T("Download snapshot Excel")</button></div></div><div class="metrics suite-metrics"><div class="metric">@T("Vehicles")<strong>@fleet.Vehicles.Count</strong></div><div class="metric">@T("Drivers")<strong>@fleet.Drivers.Count</strong></div><div class="metric">@T("Trips")<strong>@fleet.Trips.Count</strong></div></div>@if(snapshotFeedback.Length>0){<p role="status">@T(snapshotFeedback)</p>}</section>
+        @if(recoveryRaw is not null){<section class="panel suite-panel"><h2>@T("Stored data recovery")</h2><p class="muted">@T("Download the unreadable original before explicitly restoring a valid snapshot or resetting. The fallback demo is not saved while recovery is required.")</p><button class="secondary" @onclick="ExportUnreadableSnapshot">@T("Download unreadable stored JSON")</button></section>}
         <SnapshotRestore Russian="@(language=="ru")" Restore="RestoreSnapshot"/>
     }
     else if (section == "Batch Dispatch")
@@ -397,6 +399,9 @@
         ("Machine learning",["Intelligence","Predictions","Demand Forecast","Model Registry","Data Quality","Model Drift"]),("Support",["Notifications","Help & settings"])
     ];
     private const string Key="fleetmanagement.demo.v1";
+    private const string RecoveryWarning="Stored demo data could not be validated. The original is protected from automatic overwrite. Restore a valid snapshot or explicitly reset the demo.";
+    private string? recoveryRaw;
+    private bool storageReadComplete;
     private FleetData fleet=FleetRules.Sample(DateTime.Now);
     private List<MaintenanceEntry> maintenanceEntries=[];
     private List<DriverShift> driverShifts=[];
@@ -439,8 +444,20 @@
             var incomingLanguage=await JS.InvokeAsync<string?>("fleetConsumeLanguage");
             if(incomingLanguage is "ru" or "en"){language=incomingLanguage;await JS.InvokeVoidAsync("localStorage.setItem",LanguageKey,language);}
         }catch(JSException){storageMessage="Unable to save locally; changes are session-only.";}
-        try { var json=await JS.InvokeAsync<string?>("localStorage.getItem",Key); if(!string.IsNullOrWhiteSpace(json)){var saved=JsonSerializer.Deserialize(json, DemoJsonContext.Default.DemoSnapshot); if(saved?.Data is not null && saved.Data.Vehicles is not null && saved.Data.Drivers is not null && saved.Data.Trips is not null){fleet=saved.Data;maintenanceEntries=saved.MaintenanceEntries??[];driverShifts=saved.DriverShifts??[];requireShifts=saved.RequireShifts;vehicleReservations=saved.VehicleReservations??[];Now=saved.Now;start=Now.AddHours(1);end=Now.AddHours(2);}} }
-        catch (Exception) {storageMessage="Local storage is unavailable; changes are session-only.";}
+        try{
+            var json=await JS.InvokeAsync<string?>("localStorage.getItem",Key);
+            if(json is not null){
+                DemoSnapshot? saved=null;
+                if(System.Text.Encoding.UTF8.GetByteCount(json)<=SnapshotValidation.MaxBytes){
+                    try{saved=JsonSerializer.Deserialize(json,DemoJsonContext.Default.DemoSnapshot);}catch(JsonException){}
+                }
+                if(saved is not null&&SnapshotValidation.Check(saved.Data,saved.Now,saved.MaintenanceEntries,saved.DriverShifts,saved.VehicleReservations) is null){
+                    fleet=saved.Data;maintenanceEntries=saved.MaintenanceEntries??[];driverShifts=saved.DriverShifts??[];requireShifts=saved.RequireShifts;vehicleReservations=saved.VehicleReservations??[];Now=saved.Now;
+                    start=Now.AddHours(1);end=Now.AddHours(2);vehicleId=fleet.Vehicles.FirstOrDefault()?.Id??0;driverId=fleet.Drivers.FirstOrDefault()?.Id??0;passportId=vehicleId;selectedTrip=fleet.Trips.FirstOrDefault()?.Id??0;
+                }else recoveryRaw=json;
+            }
+            storageReadComplete=true;
+        }catch(JSException){storageMessage="Local storage is unavailable; changes are session-only.";}
         try{self=DotNetObjectReference.Create(this);var requested=await JS.InvokeAsync<string?>("fleetInitNavigation",self);historyReady=true;if(requested is not null&&NavigationGroups.SelectMany(g=>g.Items).Contains(requested)){Navigate(requested);writeHistory=false;}}catch(JSException){}
         timer=new PeriodicTimer(TimeSpan.FromSeconds(1)); timerTask=RunClock(); StateHasChanged();
     }
@@ -452,6 +469,11 @@
             await JS.InvokeVoidAsync("fleetDownload",Convert.ToBase64String(json),$"fleet-demo-{Now:yyyy-MM-dd-HHmm}.json","application/json");
             snapshotFeedback="Demo JSON generated.";
         }catch(JSException){snapshotFeedback="Unable to download the demo snapshot.";}
+    }
+    private async Task ExportUnreadableSnapshot(){
+        if(recoveryRaw is null)return;
+        try{await JS.InvokeVoidAsync("fleetDownload",Convert.ToBase64String(System.Text.Encoding.UTF8.GetBytes(recoveryRaw)),"fleet-unreadable-original.json","application/json");}
+        catch(JSException){storageMessage="Unable to download the demo snapshot.";}
     }
     private async Task ExportSnapshotWorkbook(){
         try{
@@ -467,23 +489,30 @@
     private bool ApplySnapshot(DemoSnapshot snapshot){
         if(section!="Help & settings"||SnapshotValidation.Check(snapshot.Data,snapshot.Now,snapshot.MaintenanceEntries,snapshot.DriverShifts,snapshot.VehicleReservations) is not null)return false;
         // Save before replacing any in-memory records; failed/quota storage writes leave the workspace intact.
-        try{if(JS is not IJSInProcessRuntime local||!local.Invoke<bool>("fleetTrySaveSnapshot",Key,JsonSerializer.Serialize(snapshot,DemoJsonContext.Default.DemoSnapshot)))return false;}
+        try{var json=JsonSerializer.Serialize(snapshot,DemoJsonContext.Default.DemoSnapshot);if(System.Text.Encoding.UTF8.GetByteCount(json)>SnapshotValidation.MaxBytes||JS is not IJSInProcessRuntime local||!local.Invoke<bool>("fleetTrySaveSnapshot",Key,json))return false;}
         catch(JSException){return false;}
         playing=false;fleet=snapshot.Data;Now=snapshot.Now;
         maintenanceEntries=snapshot.MaintenanceEntries??[];driverShifts=snapshot.DriverShifts??[];
         vehicleReservations=snapshot.VehicleReservations??[];requireShifts=snapshot.RequireShifts;
         ClearTripFilters();recordAction++;newRecordSection="";editingTripId=null;tripDirty=false;feedback="";maintenanceFeedback="";
         vehicleId=fleet.Vehicles.FirstOrDefault()?.Id??0;driverId=fleet.Drivers.FirstOrDefault()?.Id??0;selectedTrip=fleet.Trips.FirstOrDefault()?.Id??0;passportId=vehicleId;
-        start=Now.AddHours(1);end=Now.AddHours(2);storageMessage="";snapshotFeedback="";StateHasChanged();
+        start=Now.AddHours(1);end=Now.AddHours(2);storageMessage="";snapshotFeedback="";recoveryRaw=null;storageReadComplete=true;StateHasChanged();
         return true;
     }
-    private async Task Persist(){try{await JS.InvokeVoidAsync("localStorage.setItem",Key,JsonSerializer.Serialize(new DemoSnapshot(fleet,Now,maintenanceEntries,driverShifts,requireShifts,vehicleReservations), DemoJsonContext.Default.DemoSnapshot));}catch(Exception){storageMessage="Unable to save locally; changes are session-only.";}}
+    private async Task Persist(){
+        if(recoveryRaw is not null||!storageReadComplete)return;
+        try{
+            var json=JsonSerializer.Serialize(new DemoSnapshot(fleet,Now,maintenanceEntries,driverShifts,requireShifts,vehicleReservations),DemoJsonContext.Default.DemoSnapshot);
+            if(System.Text.Encoding.UTF8.GetByteCount(json)>SnapshotValidation.MaxBytes){storageMessage="Demo snapshot exceeds the supported local save limit; export records before closing.";return;}
+            if(!await JS.InvokeAsync<bool>("fleetTrySaveSnapshot",Key,json))storageMessage="Unable to save locally; changes are session-only.";
+        }catch(JSException){storageMessage="Unable to save locally; changes are session-only.";}
+    }
     private void OpenPassport(int id){passportId=id;Navigate("Vehicle Passport");}
     private void Navigate(string item){if(section!=item){if(!CanLeaveRegister()||!CanDiscardTrip())return;if(section=="Dispatch")CancelEdit();}NavigateCore(item);}
     private void NavigateCore(string item){if(section!=item){newRecordSection="";writeHistory=true;recent.Remove(item);recent.Insert(0,item);if(recent.Count>5)recent.RemoveAt(5);recentDirty=true;}mobileNav=false;quickActionsExpanded=false;navQuery="";focusContent=true;if(item=="Vehicle Passport"&&!fleet.Vehicles.Any(v=>v.Id==passportId))passportId=fleet.Vehicles.FirstOrDefault()?.Id??0;section=item;feedback="";if(item=="Dispatch"){if(!fleet.Vehicles.Any(v=>v.Id==vehicleId))vehicleId=fleet.Vehicles.FirstOrDefault()?.Id??0;if(!fleet.Drivers.Any(d=>d.Id==driverId))driverId=fleet.Drivers.FirstOrDefault()?.Id??0;}}
     private async Task ToggleSimulation(){playing=!playing;if(!playing)await Persist();}
     private async Task Advance(){Now=Now.AddMinutes(15);await Persist();}
-    private async Task Reset(){if(!await JS.InvokeAsync<bool>("confirm",T("Reset all demo data?")))return;ClearTripFilters();recordAction++;newRecordSection="";playing=false;Now=DateTime.Now;fleet=FleetRules.Sample(Now);maintenanceEntries.Clear();driverShifts.Clear();vehicleReservations.Clear();requireShifts=false;maintenanceFeedback="";start=Now.AddHours(1);end=Now.AddHours(2);vehicleId=driverId=1;selectedTrip=101;editingTripId=null;tripDirty=false;feedback="";await Persist();}
+    private async Task Reset(){if(!await JS.InvokeAsync<bool>("confirm",T("Reset all demo data?")))return;var previousRecovery=recoveryRaw;recoveryRaw=null;storageReadComplete=true;ClearTripFilters();recordAction++;newRecordSection="";playing=false;Now=DateTime.Now;fleet=FleetRules.Sample(Now);maintenanceEntries.Clear();driverShifts.Clear();vehicleReservations.Clear();requireShifts=false;maintenanceFeedback="";start=Now.AddHours(1);end=Now.AddHours(2);vehicleId=driverId=1;selectedTrip=101;editingTripId=null;tripDirty=false;feedback="";storageMessage="";await Persist();if(previousRecovery is not null&&storageMessage.Length>0)recoveryRaw=previousRecovery;}
     private string VehicleName(int id)=>fleet.Vehicles.FirstOrDefault(v=>v.Id==id)?.Plate??"Unknown";
     private string DriverName(int id)=>fleet.Drivers.FirstOrDefault(d=>d.Id==id)?.Name??"Unknown";
     private async Task SetRequireShifts(bool value){requireShifts=value;await Persist();}

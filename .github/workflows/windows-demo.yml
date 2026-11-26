@@ -85,10 +85,7 @@ jobs:
             $url = $null
             for ($i=0; $i -lt 60; $i++) {
               if ($process.HasExited) { throw "Installed launcher exited: $(Get-Content $err -Raw)" }
-              $line = Get-Content $log -ErrorAction SilentlyContinue | Where-Object { $_ -match '^DEMO_URL=http://127\.0\.0\.1:\d+
-          path: ${{ runner.temp }}/portable
-          if-no-files-found: error
- } | Select-Object -First 1
+              $line = Get-Content $log -ErrorAction SilentlyContinue | Where-Object { $_ -match '^DEMO_URL=http://127\.0\.0\.1:\d+$' } | Select-Object -First 1
               if ($line) { $url = $line.Substring(9); break }
               Start-Sleep -Milliseconds 500
             }

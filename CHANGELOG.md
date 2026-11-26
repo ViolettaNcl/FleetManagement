@@ -1,5 +1,13 @@
 # Changelog
 
+## Unreleased — V6.0 RC2 release hardening
+
+- Restricted seven-sheet XLSX snapshot interchange with bounded ZIP/XML parsing, literal cells, shared strings, exact schema, validation and explicit atomic local restore.
+- Fix storage failure feedback with explicit JS boolean result and fault-injection regression.
+- Optional local server-side scheduled review (disabled by default), bounded persisted aggregate history, authenticated status endpoint and connected dashboard.
+- Expand browser audit to light-theme desktop/mobile module states; maintain previous dark-theme coverage.
+- Per-user unsigned Windows setup build with checksum, exact source metadata, install/launch/uninstall checks. No signing certificate or release supplied.
+
 ## Unreleased — V6.0 RC1 integrated candidate
 
 - Shared premium/classic visual style and workspace density, responsive polish, startup skeleton, reduced-motion support and illustrative 3D inspection companion.

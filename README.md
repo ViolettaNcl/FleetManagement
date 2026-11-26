@@ -25,7 +25,9 @@ The browser edition runs C# in WebAssembly, uses synthetic data, and requires no
 - [How to run the demo and enable GitHub Pages](docs/deployment.md)
 - [V3 development pull request](https://github.com/ViolettaNcl/FleetManagement/pull/2)
 
-### V6.0 RC1 (development candidate)
+### V6.0 RC2 (development candidate)
+
+RC2 adds round-trip fleet snapshot XLSX import/export, optional server-side scheduled reviews, dual-theme automated audit and an unsigned per-user Windows setup pipeline. No public release yet.
 
 [Integrated V6 user guide, architecture, verification and release boundaries](docs/v6-release-candidate.md). Includes premium/classic workspace styles, safe local snapshot restore, K-means, isolation forest, grouped validation, calibrated FastForest, daily briefing, driver activity, report templates, browser PDF printing and review history. This is a draft branch, not a public release.
 

@@ -1,4 +1,4 @@
-# V6.0 RC1 — integrated development candidate
+# V6.0 RC2 — integrated development candidate
 
 This document describes the draft branch, not a released or deployed version. The browser workspace is a synthetic local demo; the separate connected workspace uses a local authenticated ASP.NET Core API. No paid AI service, external API key, production dataset or live GPS is required for these experiments. The local backend still requires its existing randomly generated Fleet credential and Identity setup.
 
@@ -7,7 +7,7 @@ This document describes the draft branch, not a released or deployed version. Th
 | Workspace | Action | Result / boundary |
 |---|---|---|
 | Help & settings | Workspace visual style / density | Premium Violet (default) or Classic; comfortable or compact; locally saved alongside light/dark/system appearance. |
-| Help & settings | Download demo JSON, choose a snapshot, validate, confirm and restore | Bounded 4 MiB local import. Checks required fields, limits, identities, references, time intervals, duplicate registrations/licenses and conflicting vehicle/driver assignments; save before replacing memory. Export current data first. Does not import preferences or server records. |
+| Help & settings | Download demo JSON or snapshot Excel, choose a snapshot, validate, confirm and restore | Bounded 4 MiB local import. Checks required fields, limits, identities, references, time intervals, duplicate registrations/licenses and conflicting vehicle/driver assignments; save before replacing memory. Export current data first. XLSX uses seven exact English-named sheets and ISO text dates; no formulas, external links or macro execution. Does not import preferences or server records. |
 | Analytics | Run vehicle clustering | Deterministic standardized K-means using vehicle mileage, completed-trip count and completed distance. Choose 2–6 groups; identical vectors can yield fewer groups. Descriptive only, not a performance/safety ranking. |
 | Analytics | Driver activity | Cohort counts, completed distance and completed hours; not an employment or driving quality score. |
 | Analytics | Vehicle report builder / Report templates | Full fleet, service due and distance templates; one locally saved custom configuration. Text queries and dates are not stored. |
@@ -18,6 +18,8 @@ This document describes the draft branch, not a released or deployed version. Th
 | Assistant | Daily fleet briefing / details | Active trips, 24-hour departures, availability, service-due and alert counts. Last recognized topic can be repeated; five session topics. Deterministic read-only intent handling, not a conversational LLM. |
 | Digital Twin | Initialize scenario, Open 3D view | Existing illustrative interactive truck scene with adjacent selected simulation metrics; not a vehicle reconstruction or live telemetry. |
 | Notifications | Run and record review | Manually capture thresholds/counts/clock; keep up to 20 distinct local snapshots; optional clear. Existing rule preview and XLSX queue export preserved. |
+| Connected server | Optional scheduled review | Operator-configured background worker with bounded history and authenticated dashboard; default off, no external messages or fleet mutations. |
+| Windows | Unsigned Setup EXE | Per-user non-commercial demo installer with versioned folder, uninstall entry, SHA-256 and install/launch/uninstall CI. Publisher signature requires a certificate. |
 
 ## ML evaluation
 
@@ -46,7 +48,7 @@ The new JSON path is a replace-all demo operation, explicitly confirmed after va
 - Manually review every module in both themes and on real mobile devices; automated viewport checks do not replace device testing.
 - Independently audit authorization, deployment configuration, secrets and backups before real-world use. Confirm database outage and recovery behavior in the target environment.
 - Obtain authorized representative telemetry and labels, agree evaluation criteria and validate out-of-sample models before operational predictions.
-- External scheduling/notifications, arbitrary automation workflows, live GPS integration, direct server-side PDF rendering, general Excel import, and signed Windows installer are not part of this candidate. Existing portable package is not a signed installer.
+- External notifications, arbitrary automation workflows, live GPS integration, direct server-side PDF rendering and unrestricted Excel mapping are outside this demo. The supported XLSX interchange is the exported snapshot template only. The optional scheduler runs only while the local backend process is active. The Windows setup is unsigned; release signing requires the owner's signing certificate and a secure signing process.
 - Optional local LLM remains separate; no promise of unrestricted AI conversation or an installed model.
 - No merge, release tag or public deployment without explicit approval and successful exact-version checks.
 
@@ -60,3 +62,11 @@ dotnet publish src/FleetManagement.Web -c Release -o publish
 ```
 
 See [model registry](model-registry.md), [backend operations](backend-operations.md), [security review](security-review-v3.md) and [deployment](deployment.md) for existing setup, training and recovery instructions.
+
+
+## RC2 verification additions
+
+- RC1 exact revision d8adcf6: 22 successful checks, two Browser demo CI failures at the simulated storage-write failure assertion. JS interop may cache a bound `localStorage.setItem`; RC2 resolves storage dynamically in an explicit boolean-returning wrapper and tests the injected failure and unchanged persisted state.
+- RC2 Excel core tests passed at e924533, including all six operational registers, duplicate plate rejection, formula and DTD rejection, invalid ZIP and size limits. The existing browser test subsequently hit the same RC1 storage assertion; the corrected revision needs its own full run.
+- Added server scheduler with authenticated read-only dashboard, isolated opt-in integration checks, restart history verification and disabled-by-default check. Added full-module light-theme desktop/mobile screenshot and axe pass, on top of existing dark audit.
+- Installer build uses the Windows 2025 runner's preinstalled Inno Setup for this non-commercial portfolio demonstration. Review the [Inno Setup licensing terms](https://jrsoftware.org/inno-setup/purchase) before commercial distribution. No certificate, signing secret, or public release is created. CI must successfully verify install, launch, uninstall, and retained untracked data before distributing the setup.

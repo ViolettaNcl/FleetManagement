@@ -22,6 +22,11 @@ try{
     assert.match(await page.locator('.art-routes').evaluate(el=>getComputedStyle(el).backgroundImage),/routes\.webp/);
     assert.equal(await page.locator('.art-routes .art-glyph').isVisible(),false);
   }
+  await page.keyboard.press('Control+k');
+  await page.getByLabel('Find section',{exact:true}).fill('no-match-123');
+  await page.getByText('No matching modules',{exact:true}).waitFor();
+  await page.getByRole('button',{name:'Clear search',exact:true}).click();
+  await page.getByRole('button',{name:'Vehicles',exact:true}).waitFor();
   assert.equal(await page.getByRole('button',{name:'Play 3D motion',exact:true}).count(),1);
   await page.getByRole('button',{name:'Rotate right',exact:true}).click();
   await page.getByRole('button',{name:'Play 3D motion',exact:true}).click();
@@ -30,6 +35,7 @@ try{
   await page.locator('.capability-card').filter({hasText:'Route optimization'}).click();
   await page.getByRole('heading',{name:'Route optimization lab',exact:true}).waitFor();
   assert.equal(await page.locator('.hero-scene').count(),0);
+  await page.locator('.module-intro').getByText('Route intelligence',{exact:true}).waitFor();
   await page.getByRole('button',{name:'Overview',exact:true}).click();
   await page.locator('.scene-stage[data-renderer="webgl"]').waitFor();
   await page.setViewportSize({width:320,height:760});

@@ -3,14 +3,16 @@
 @inject IJSRuntime JS
 
 <div class="demo-shell @(darkTheme?"dark-theme":"")">
+<a class="skip-workspace" href="#fleet-content">@T("Skip to content")</a>
 <header class="workspace-header" lang="@language">
     <div class="brand"><span class="brand-signal" aria-hidden="true"></span><img class="brandicon" src="favicon.svg" alt="" /><div><h1>FleetManagement</h1><small>@T("Fleet operations • interactive portfolio")</small></div></div>
-    <div class="actions"><button class="secondary" aria-pressed="@(darkTheme?"true":"false")" @onclick="ToggleTheme">@T(darkTheme?"Light theme":"Dark theme")</button><label class="demo-language">@T("Language") <select @bind="language" @bind:after="PersistPreferences" aria-label="@T("Language")"><option value="en">English</option><option value="ru">Русский</option></select></label><span class="pill demo-status"><span class="signal-dot" aria-hidden="true"></span>@T("Demo mode · local data")</span><button class="secondary" @onclick="Reset">@T("Reset demo")</button></div>
+    <div class="actions"><button class="secondary command-search" data-command-search="true" @onclick="OpenSearch"><span aria-hidden="true">⌕</span> @T("Quick search") <kbd aria-hidden="true">Ctrl K</kbd></button><button class="secondary" aria-pressed="@(darkTheme?"true":"false")" @onclick="ToggleTheme">@T(darkTheme?"Light theme":"Dark theme")</button><label class="demo-language">@T("Language") <select @bind="language" @bind:after="PersistPreferences" aria-label="@T("Language")"><option value="en">English</option><option value="ru">Русский</option></select></label><span class="pill demo-status"><span class="signal-dot" aria-hidden="true"></span>@T("Demo mode · local data")</span><button class="secondary" @onclick="Reset">@T("Reset demo")</button></div>
 </header>
 <main lang="@language" class="workspace-layout">
     <button class="mobile-nav-toggle secondary" aria-expanded="@(mobileNav?"true":"false")" aria-controls="workspace-nav" @onclick="()=>mobileNav=!mobileNav"><span aria-hidden="true">☰</span> @T("Modules") · @T(section)</button>
     <nav id="workspace-nav" class="fleet-sidebar @(mobileNav?"nav-open":"")" aria-label="@T("Fleet sections")">
-        <div class="nav-eyebrow">@T("Workspace")</div><label class="nav-search">@T("Find section")<input type="search" @bind="navQuery" @bind:event="oninput" placeholder="@T("Search modules")" aria-label="@T("Find section")" aria-describedby="nav-hint" @onkeydown="SearchKey"/><small id="nav-hint">@T("Enter to open a single match; Escape clears search.")</small></label>
+        <div class="nav-eyebrow">@T("Workspace")</div><label class="nav-search">@T("Find section")<input @ref="navInput" type="search" @bind="navQuery" @bind:event="oninput" placeholder="@T("Search modules")" aria-label="@T("Find section")" aria-describedby="nav-hint" @onkeydown="SearchKey"/><small id="nav-hint">@T("Enter to open a single match; Escape clears search.")</small></label>
+        @if(!NavigationGroups.SelectMany(g=>g.Items).Any(MatchesSection)){<div class="nav-empty"><p>@T("No matching modules")</p><button class="secondary" @onclick="()=>navQuery=string.Empty">@T("Clear search")</button></div>}
         @foreach(var group in NavigationGroups.Where(g=>g.Items.Any(MatchesSection)))
         {
             <div class="nav-group">
@@ -22,10 +24,13 @@
             </div>
         }
     </nav>
-    <div class="fleet-content">
+    <div class="fleet-content" id="fleet-content" tabindex="-1">
     <div class="workspace-breadcrumb"><span>@T("Fleet workspace")</span><span aria-hidden="true">/</span><strong>@T(section)</strong><span class="workspace-clock">@T("Simulation time") · @Now.ToString("HH:mm")</span></div>
     @if(language=="ru"){<p class="localization-note">@T("Some technical labels and generated records remain in English.")</p>}
     @if (!string.IsNullOrEmpty(storageMessage)) { <p class="notice">@T(storageMessage)</p> }
+    @if(ModuleBanner(section) is var banner && banner.Art.Length>0){
+        <div class="@("module-intro module-art-"+banner.Art)"><div><span class="module-kicker">@T("Fleet lab")</span><strong>@T(banner.Title)</strong><p>@T(banner.Description)</p></div><span class="module-watermark" aria-hidden="true">@ModuleIcon(section)</span></div>
+    }
     @if (section == "Overview")
     {
         <section class="panel command-hero neon-hero">
@@ -185,10 +190,22 @@
 </main>
 </div>
 @code {
-    private bool darkTheme=true,mobileNav;
+    private bool darkTheme=true,mobileNav,focusSearch;
+    private ElementReference navInput;
+    private void OpenSearch(){mobileNav=true;navQuery="";focusSearch=true;}
+    private static (string Art,string Title,string Description) ModuleBanner(string name)=>name switch{
+        "Optimization"=>("routes","Route intelligence","Compare routing algorithms using an identical synthetic scenario."),
+        "Digital Twin"=>("twin","Simulation workspace","Explore movement and telemetry in a controlled simulation."),
+        "Maintenance"=>("maintenance","Vehicle health workspace","Review service intervals and recorded maintenance."),
+        "Intelligence"=>("maintenance","Machine learning workspace","Train and evaluate a classifier on isolated telemetry."),
+        "Assistant"=>("assistant","Decision support workspace","Review rule-based evidence before making operational decisions."),
+        "Analytics" or "Cost Intelligence"=>("analytics","Operational insights","Review calculated performance and financial estimates."),
+        "Tracking"=>("command-center","Movement workspace","Follow simulated trips and advance the scenario clock."),
+        _=>("","","")
+    };
     private static readonly (string Section,string Art,string Title,string Description)[] Capabilities=[("Optimization","routes","Route optimization","Compare exact and heuristic routes."),("Digital Twin","twin","Digital Twin simulation","Explore simulated vehicle movement."),("Intelligence","maintenance","Maintenance ML","Train a model on synthetic telemetry."),("Assistant","assistant","Fleet intelligence","Review actionable rule-based alerts.")];
     private static string ModuleIcon(string section)=>section switch{"Overview"=>"◈","Vehicles"=>"▣","Drivers"=>"◎","Vehicle Passport"=>"▤","Dispatch"=>"↗","Batch Dispatch"=>"⇄","Calendar"=>"▦","Resource Planning"=>"▧","Maintenance"=>"◇","Tracking"=>"⌖","Geo Map"=>"◉","Analytics"=>"▥","Cost Intelligence"=>"≋","Assistant"=>"✦","Optimization"=>"⤳","Multi Dispatch"=>"⇶","Digital Twin"=>"⬡","What-if"=>"◫","Intelligence"=>"⌁","Predictions"=>"∿","Demand Forecast"=>"↗","Model Registry"=>"▤","Data Quality"=>"✓","Model Drift"=>"≈",_=>"•"};
-    private const string ThemeKey="fleetmanagement.preferences.theme", LanguageKey="fleetmanagement.preferences.language";
+    private const string ThemeKey="fleetmanagement.preferences.theme.neon", LanguageKey="fleetmanagement.preferences.language";
     private async Task ToggleTheme(){darkTheme=!darkTheme;await PersistPreferences();}
     private async Task PersistPreferences(){
         try{
@@ -231,6 +248,7 @@
     private Task? timerTask;
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
+        if(focusSearch){focusSearch=false;try{await navInput.FocusAsync();}catch(JSException){}}
         if(!firstRender)return;
         try{
             darkTheme=await JS.InvokeAsync<string?>("localStorage.getItem",ThemeKey)!="light";

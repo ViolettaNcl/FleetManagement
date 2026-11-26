@@ -13,3 +13,8 @@ When supplied, add them under src/FleetManagement.Web/wwwroot/assets/neon and de
  
 ## Acceptance
 Desktop (1366–1440), tablet (768), mobile (390 and 320). Check keyboard navigation, light/dark, RU/EN, reduced motion, WebGL fallback, scene disposal, full operational smoke, media and the release evidence gate before promoting the preview. The existing public release must remain untouched during redesign tests.
+
+## Archive integration
+Eight owner images map to the hero, route optimization, twin, maintenance, assistant, analytics, abstract background, and command-center tracking. The mockup and style board are references, not genuine operational data. The build imports one exact verified archive from `design/`, with a strict allowlist and size/format checks. The public website receives only eight WebPs and a manifest; no ZIP or PNG. The optimized package (about 468 KiB) is preferred; the exact original ZIP is also accepted without re-encoding. Procedural artwork remains active until the archive is in the repository. The live smoke decodes the images when an archive is present. For local publish run `python tools/import_neon_assets.py publish/wwwroot` after dotnet publish.
+
+Quick search (Ctrl/Cmd+K), mobile disclosure navigation, no-match state, skip link, illustrated headers and the new default neon preference are integrated. Existing demo records and language preferences are unchanged; the theme key is versioned so the first visit to the redesign defaults to neon dark.

@@ -55,3 +55,14 @@
 .demo-shell .capability-card:focus-visible{outline-offset:4px}
 @media(max-width:1000px){.demo-shell .neon-hero{min-height:0}.capability-grid{grid-template-columns:repeat(2,minmax(0,1fr))}}
 @media(max-width:480px){.design-gallery-grid{grid-template-columns:minmax(0,1fr)}.module-intro{background-position:center}.demo-shell .neon-hero{background-position:center}}
+
+/* First-load screen matches the real application and uses no blocking image. */
+.neon-loading{min-height:100dvh;display:flex;flex-direction:column;justify-content:center;align-items:center;gap:14px;padding:24px;background:radial-gradient(ellipse at 50% 40%,#302052,#0b0915 65%);color:#f3efff;font-family:"Segoe UI",system-ui,sans-serif;text-align:center}
+.neon-loading img{border-radius:16px;box-shadow:0 8px 40px #7c3aed50}
+.neon-loading strong{font-size:clamp(26px,6vw,44px);letter-spacing:-.05em}
+.neon-loading span{color:#c4b5fd;letter-spacing:.12em;font-size:12px;text-transform:uppercase}
+.neon-loading small{color:#c8bedb;font-size:13px}
+.loading-track{width:min(220px,80vw);height:4px;background:#382953;border-radius:99px;overflow:hidden}
+.loading-track i{display:block;width:35%;height:100%;background:linear-gradient(90deg,#a78bfa,#67e8f9);border-radius:99px;animation:boot-motion 1.5s ease-in-out infinite alternate}
+@keyframes boot-motion{from{transform:translateX(0)}to{transform:translateX(185%)}}
+@media(prefers-reduced-motion:reduce){.loading-track i{animation:none;width:100%}}

@@ -49,4 +49,4 @@ The Pages workflow automatically runs the same read-only evidence gate before de
 
 The new Pages pipeline emits a non-sensitive `preview-build.json` containing the exact commit and verifies it before testing the actual public URL in Chromium after deployment. The same probe runs locally before upload. A green deploy alone does not certify the current site; the verify-live job must also pass.
 
-Neon artwork: the preview branch runs the full CI suite on every push, including an owner upload to `design/`. The Pages importer recognizes the exact original or optimized design ZIP and fails closed on unknown archives. The live verification checks the artwork mode and actual image decoding. Never commit the archive under wwwroot.
+Neon artwork: all ten optimized WebP files are committed under wwwroot/assets/neon. The build validates exact file hashes and writes a manifest; the public test verifies the exact revision, hashes and image decoding. No archive upload is required. Never commit the source ZIP under wwwroot.

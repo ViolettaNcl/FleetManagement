@@ -153,3 +153,5 @@ V3 release hardening: localized offline analytics/finance workbooks and assistan
 
 ### Standalone Pages and Windows preview
 The dedicated `preview/fleetops-v3` branch builds a synthetic static site, checks the exact-commit release evidence and deploys only if its Pages environment permits the branch. Expected URL: https://violettancl.github.io/FleetManagement/ (verify deployment before sharing). No Vercel, backend or paid AI service is required. The [Windows portable demo workflow](https://github.com/ViolettaNcl/FleetManagement/actions/workflows/windows-demo.yml) builds an unsigned self-contained x64 executable archive; extract the whole archive and run FleetManagement.Demo.exe. See [deployment guide](docs/deployment.md). Route optimization adds multi-start 2-opt and exact small-tour Held–Karp; the ML.NET trainer now emits held-out permutation importance, not causal claims.
+
+Optional local generative AI companion: [Ollama guide](docs/local-ai.md). No API key, no cloud or database access; separate from the public browser. The Data Quality module also supports isolated CSV model training with vehicle-disjoint holdout (no promotion).

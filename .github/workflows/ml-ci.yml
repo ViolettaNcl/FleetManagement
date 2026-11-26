@@ -2,9 +2,9 @@ name: ML training and model registry
 on:
   push:
     branches: [master, 'feature/**']
-    paths: ['tools/FleetManagement.ModelTrainer/**', 'src/FleetManagement.Core/**', '.github/workflows/ml-ci.yml', 'tests/ml/**']
+    paths: ['tools/FleetManagement.ModelTrainer/**', 'src/FleetManagement.Core/**', '.github/workflows/ml-ci.yml', 'tests/ml/**', 'tools/local_ai.py']
   pull_request:
-    paths: ['tools/FleetManagement.ModelTrainer/**', 'src/FleetManagement.Core/**', '.github/workflows/ml-ci.yml', 'tests/ml/**']
+    paths: ['tools/FleetManagement.ModelTrainer/**', 'src/FleetManagement.Core/**', '.github/workflows/ml-ci.yml', 'tests/ml/**', 'tools/local_ai.py']
   workflow_dispatch:
 permissions:
   contents: read
@@ -16,6 +16,8 @@ jobs:
       - uses: actions/setup-dotnet@v4
         with:
           dotnet-version: '10.0.x'
+      - name: Verify optional local AI protocol (no external model)
+        run: python3 tests/ml/test_local_ai.py
       - name: Train and reload ML.NET models
         run: dotnet run --project tools/FleetManagement.ModelTrainer -c Release -- model-registry 42
       - name: Verify registry artifacts and metrics

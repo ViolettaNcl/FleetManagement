@@ -13,7 +13,9 @@
             <div class="workload-donut" style="@DonutStyle(statusCounts)" role="img" aria-label="@WorkloadLabel(statusCounts)"><div><strong>@Fleet.Trips.Count</strong><small>@T("Total trips")</small></div></div>
             <div class="workload-legend">
                 @foreach(var status in new[]{"In transit","Scheduled","Completed"}){
-                    <button class="secondary workload-row workload-filter" aria-label="@($"{T("Show trips")}: {T(status)}")" @onclick="()=>FilterTrips.InvokeAsync(status)"><span class="@("chart-dot "+Tone(status))" aria-hidden="true"></span><span>@T(status)</span><strong>@statusCounts.GetValueOrDefault(status)</strong><small>@Percent(statusCounts.GetValueOrDefault(status),Fleet.Trips.Count)</small></button>
+                    var number=statusCounts.GetValueOrDefault(status);
+                    var share=Percent(number,Fleet.Trips.Count);
+                    <button class="secondary workload-row workload-filter" aria-label="@($"{T(status)} {number} {share} — {T("Show trips")}")" @onclick="()=>FilterTrips.InvokeAsync(status)"><span class="@("chart-dot "+Tone(status))" aria-hidden="true"></span><span>@T(status)</span><strong>@number</strong><small>@share</small></button>
                 }
             </div>
         </div>

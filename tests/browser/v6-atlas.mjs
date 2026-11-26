@@ -23,7 +23,14 @@ try{
  await page.getByText('Editing trip #103',{exact:true}).waitFor();
  assert.equal(await page.getByLabel('Origin',{exact:true}).inputValue(),'Central hub');
  await go('Overview');
- await page.getByRole('button',{name:'Show trips: Scheduled',exact:true}).click();
+ // The accessible name must include every visible value in reading order.
+ for(const [status,count,share] of [['In transit',2,'50%'],['Scheduled',1,'25%'],['Completed',1,'25%']]){
+   const legend=page.getByRole('button',{name:status+' '+count+' '+share+' — Show trips',exact:true});
+   await legend.waitFor();
+   assert.equal(await legend.locator('strong').innerText(),String(count));
+   assert.equal(await legend.locator('small').innerText(),share);
+ }
+ await page.getByRole('button',{name:'Scheduled 1 25% — Show trips',exact:true}).click();
  await page.getByLabel('Trip status filter',{exact:true}).waitFor();
  assert.equal(await page.getByLabel('Trip status filter',{exact:true}).inputValue(),'Scheduled');
  assert.equal(await page.locator('.trip-table tbody tr').count(),1);

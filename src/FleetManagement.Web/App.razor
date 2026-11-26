@@ -3,7 +3,7 @@
 @inject IJSRuntime JS
 
 @{var currentAlerts=FleetAdvisor.Assess(fleet,Now,driverShifts,requireShifts,vehicleReservations,russian:language=="ru");}
-<div class="demo-shell v4-shell @(darkTheme?"dark-theme":"") @(collapsed?"sidebar-collapsed":"")">
+<div class="demo-shell v4-shell @(darkTheme?"dark-theme":"") @(collapsed?"sidebar-collapsed":"") @(compactDashboard&&section=="Overview"?"dashboard-compact":"")">
 <a class="skip-workspace" href="#fleet-content">@T("Skip to content")</a>
 <header class="workspace-header" lang="@language">
     <div class="brand"><img class="brandicon" src="favicon.svg" alt="" /><div><h1>FleetManagement</h1><small>@T("Fleet operations workspace")</small></div></div>
@@ -12,7 +12,7 @@
 <main lang="@language" class="workspace-layout">
     <button class="mobile-nav-toggle secondary" aria-expanded="@(mobileNav?"true":"false")" aria-controls="workspace-nav" @onclick="ToggleMobileMenu"><span aria-hidden="true">☰</span> @T("Modules") · @T(section)</button>
     <nav id="workspace-nav" class="fleet-sidebar @(mobileNav?"nav-open":"")" aria-label="@T("Fleet sections")">
-        <div class="nav-eyebrow">@T("Workspace")<button class="secondary sidebar-collapse" @onclick="()=>collapsed=!collapsed" aria-label="@T(collapsed?"Expand sidebar":"Collapse sidebar")" title="@T(collapsed?"Expand sidebar":"Collapse sidebar")">@(collapsed?"»":"«")</button></div><label class="nav-search">@T("Find section")<input @ref="navInput" type="search" @bind="navQuery" @bind:event="oninput" placeholder="@T("Search modules")" aria-label="@T("Find section")" aria-describedby="nav-hint" @onkeydown="SearchKey"/><small id="nav-hint">@T("Enter to open a single match; Escape clears search.")</small></label>
+        <div class="nav-eyebrow">@T("Workspace")<button class="secondary sidebar-collapse" @onclick="ToggleSidebar" aria-label="@T(collapsed?"Expand sidebar":"Collapse sidebar")" title="@T(collapsed?"Expand sidebar":"Collapse sidebar")">@(collapsed?"»":"«")</button></div><label class="nav-search">@T("Find section")<input @ref="navInput" type="search" @bind="navQuery" @bind:event="oninput" placeholder="@T("Search modules")" aria-label="@T("Find section")" aria-describedby="nav-hint" @onkeydown="SearchKey"/><small id="nav-hint">@T("Enter to open a single match; Escape clears search.")</small></label>
         @if(!string.IsNullOrWhiteSpace(navQuery)){<div class="v4-search-actions">@foreach(var action in QuickActions.Where(a=>MatchesSection(a.Label))){<button class="secondary" @onclick="()=>RunQuickAction(action.Key)">@T(action.Label)</button>}</div>}
         @if(string.IsNullOrWhiteSpace(navQuery)&&!collapsed){<div class="nav-quick-access">@if(favorites.Count>0){<small>@T("Favorites")</small>@foreach(var item in favorites){<button aria-label="@($"{T("Favorite")}: {T(item)}")" @onclick="()=>Navigate(item)"><WorkspaceIcon Name="@item"/><span>@T(item)</span></button>}}@if(recent.Count>0){<small>@T("Recent modules")</small>@foreach(var item in recent.Take(3)){<button aria-label="@($"{T("Recent")}: {T(item)}")" @onclick="()=>Navigate(item)"><WorkspaceIcon Name="@item"/><span>@T(item)</span></button>}}</div>}
         @if(!NavigationGroups.SelectMany(g=>g.Items).Any(MatchesSection)&&!QuickActions.Any(a=>MatchesSection(a.Label))){<div class="nav-empty"><p>@T("No matching modules")</p><button class="secondary" @onclick="()=>navQuery=string.Empty">@T("Clear search")</button></div>}
@@ -49,6 +49,19 @@
             <div class="actions hero-actions"><button @onclick='() => Navigate("Tracking")'>@T("Open live tracking") <span aria-hidden="true">↗</span></button><button class="secondary" @onclick='() => Navigate("Dispatch")'>@T("Plan a trip")</button><button class="secondary" @onclick='() => Navigate("Maintenance")'>@T("Review maintenance")</button></div></div>
             <div class="hero-art-space" aria-hidden="true"></div>
         </section>
+        <section class="panel dashboard-preferences" aria-labelledby="dashboard-preferences-title">
+            <div class="dashboard-preference-heading"><div><h2 id="dashboard-preferences-title">@T("Dashboard layout")</h2><p class="muted">@T("Choose a workspace view. Core metrics and alerts stay visible.")</p></div>
+                <button class="secondary" aria-expanded="@(dashboardSettingsOpen?"true":"false")" aria-controls="dashboard-preferences-fields" @onclick="()=>dashboardSettingsOpen=!dashboardSettingsOpen"><WorkspaceIcon Name="Overview"/> @T("Customize dashboard")</button>
+            </div>
+            <div id="dashboard-preferences-fields" class="dashboard-preference-fields" hidden="@(!dashboardSettingsOpen)">
+                <label>@T("Dashboard preset")<select aria-label="@T("Dashboard preset")" value="@dashboardPreset" @onchange="ChangeDashboardPreset"><option value="full">@T("Full overview")</option><option value="operations">@T("Operations focus")</option><option value="intelligence">@T("Intelligence focus")</option><option value="custom">@T("Custom layout")</option></select></label>
+                <fieldset><legend>@T("Optional panels")</legend>
+                    @foreach(var panel in DashboardPanels){<label class="dashboard-check"><input type="checkbox" checked="@dashboardPanels.Contains(panel.Key)" @onchange="e=>ToggleDashboardPanel(panel.Key,e.Value is true)"/><span>@T(panel.Label)</span></label>}
+                </fieldset>
+                <label class="dashboard-check"><input type="checkbox" @bind="compactDashboard" @bind:after="SaveDashboardPreferences"/><span>@T("Compact dashboard")</span></label>
+                <button class="secondary dashboard-reset" @onclick="ResetDashboardPreferences">@T("Restore default layout")</button>
+            </div>
+        </section>
         <div class="metrics dashboard-kpis">
             @foreach(var metric in OverviewMetrics()){
                 <button class="metric metric-action secondary" @onclick="()=>Navigate(metric.Section)">
@@ -59,25 +72,30 @@
         </div>
         <CommandSummary Russian="@(language=="ru")" Reservations="vehicleReservations" Fleet="fleet" Now="Now" Open="Navigate" />
         <section class="panel"><div class="registerhead"><div><h2>@T("Intelligent alerts")</h2><p class="muted">@T("Live rule-based review of current demo records.")</p></div><button class="secondary" @onclick='()=>Navigate("Notifications")'>@T("Open alert center")</button></div><FleetAlertList Russian="@(language=="ru")" Alerts="@(currentAlerts.Take(3).ToArray())" Open="Navigate"/></section>
-        <section class="panel recent-trips"><div class="registerhead"><div><h2>@T("Recent trips")</h2><p class="muted">@T("Latest eight trips by departure time.")</p></div><button class="secondary" @onclick='()=>Navigate("Dispatch")'>@T("View trip schedule")</button></div>@TripTable()</section>
+        @if(dashboardPanels.Contains("trips")){
+        <section class="panel recent-trips"><div class="registerhead"><div><h2>@T("Recent trips")</h2><p class="muted">@T("Latest eight trips by departure time.")</p></div><button class="secondary" @onclick='()=>Navigate("Dispatch")'>@T("View trip schedule")</button></div>@TripTable()</section>}
+        @if(dashboardPanels.Contains("simulation")){
         <section class="panel simulation-showcase">
             <div class="simulation-copy"><span class="module-kicker">@T("Simulation workspace")</span><h2>@T("Interactive fleet visualization")</h2><p class="muted">@T("Inspect the illustrative 3D scene, then open the digital twin for actual simulated telemetry and incident scenarios.")</p><button class="secondary" @onclick='()=>Navigate("Digital Twin")'>@T("Open simulation") <span aria-hidden="true">↗</span></button></div>
             <FleetHeroScene Russian="@(language=="ru")" />
-        </section>
+        </section>}
+        @if(dashboardPanels.Contains("intelligence")){
         <section class="panel capability-panel"><div class="registerhead"><div><h2>@T("Explore intelligence")</h2><p class="muted">@T("Open a working laboratory with synthetic data and explainable results.")</p></div></div>
         <div class="capability-grid">
             @foreach(var tile in Capabilities){
                 <button class="capability-card secondary" @onclick="()=>Navigate(tile.Section)"><span class="@("capability-art art-"+tile.Art)" aria-hidden="true"><span class="art-glyph"><WorkspaceIcon Name="@tile.Section"/></span></span><span class="capability-copy"><strong>@T(tile.Title)</strong><small>@T(tile.Description)</small><span class="capability-link">@T("Open module") <span aria-hidden="true">↗</span></span></span></button>
             }
-        </div></section>
+        </div></section>}
+        @if(dashboardPanels.Contains("guide")){
         <section class="panel"><h2>@T("Try a guided scenario")</h2><p class="muted">@T("All records are synthetic. Changes are stored only in this browser, so you can experiment safely.")</p>
         <div class="demojourney">
             <button class="secondary" @onclick='() => Navigate("Vehicles")'><strong>@T("01 · Register")</strong><small>@T("Add a vehicle and test search or validation.")</small></button>
             <button class="secondary" @onclick='() => Navigate("Dispatch")'><strong>@T("02 · Schedule")</strong><small>@T("Find a free vehicle and driver.")</small></button>
             <button class="secondary" @onclick='() => Navigate("Tracking")'><strong>@T("03 · Track")</strong><small>@T("Advance the simulated clock.")</small></button>
             <button class="secondary" @onclick='() => Navigate("Analytics")'><strong>@T("04 · Report")</strong><small>@T("Export an Excel workbook.")</small></button>
-        </div></section>
-        <details class="panel design-gallery"><summary>@T("Design gallery")</summary><p class="muted">@T("Concept artwork and palette references — not live dashboard records.")</p><div class="design-gallery-grid"><figure><img src="assets/neon/ui-mockup.webp" alt="@T("Interface concept artwork")" loading="lazy" decoding="async" width="1200" height="675"/><figcaption>@T("Interface concept artwork")</figcaption></figure><figure><img src="assets/neon/style-board.webp" alt="@T("Neon design style board")" loading="lazy" decoding="async" width="1200" height="800"/><figcaption>@T("Neon design style board")</figcaption></figure></div></details>
+        </div></section>}
+        @if(dashboardPanels.Contains("artwork")){
+        <details class="panel design-gallery"><summary>@T("Design gallery")</summary><p class="muted">@T("Concept artwork and palette references — not live dashboard records.")</p><div class="design-gallery-grid"><figure><img src="assets/neon/ui-mockup.webp" alt="@T("Interface concept artwork")" loading="lazy" decoding="async" width="1200" height="675"/><figcaption>@T("Interface concept artwork")</figcaption></figure><figure><img src="assets/neon/style-board.webp" alt="@T("Neon design style board")" loading="lazy" decoding="async" width="1200" height="800"/><figcaption>@T("Neon design style board")</figcaption></figure></div></details>}
     }
     else if (section == "Vehicles" || section == "Drivers")
     {
@@ -226,6 +244,50 @@
     private bool historyReady,writeHistory,quickActionsExpanded;
     private List<string> favorites=[],recent=[];
     private const string FavoritesKey="fleetmanagement.preferences.favorites.v4";
+    private const string DashboardKey="fleetmanagement.preferences.dashboard.v4", SidebarKey="fleetmanagement.preferences.sidebar.v4";
+    private static readonly (string Key,string Label)[] DashboardPanels=[("trips","Recent trips"),("simulation","Interactive fleet visualization"),("intelligence","Explore intelligence"),("guide","Try a guided scenario"),("artwork","Design gallery")];
+    private HashSet<string> dashboardPanels=new(DashboardPanels.Select(p=>p.Key),StringComparer.Ordinal);
+    private string dashboardPreset="full";
+    private bool compactDashboard,dashboardSettingsOpen;
+    private static HashSet<string> PanelsForPreset(string preset)=>new(preset switch{
+        "operations"=>new[]{"trips"},"intelligence"=>new[]{"simulation","intelligence"},_=>DashboardPanels.Select(p=>p.Key).ToArray()
+    },StringComparer.Ordinal);
+    private async Task ChangeDashboardPreset(ChangeEventArgs args){
+        var requested=args.Value?.ToString();
+        if(requested is not ("full" or "operations" or "intelligence" or "custom"))return;
+        dashboardPreset=requested;
+        if(requested!="custom")dashboardPanels=PanelsForPreset(requested);
+        await SaveDashboardPreferences();
+    }
+    private async Task ToggleDashboardPanel(string key,bool visible){
+        if(!DashboardPanels.Any(p=>p.Key==key))return;
+        if(visible)dashboardPanels.Add(key);else dashboardPanels.Remove(key);
+        dashboardPreset="custom";
+        await SaveDashboardPreferences();
+    }
+    private async Task ResetDashboardPreferences(){
+        dashboardPreset="full";dashboardPanels=PanelsForPreset("full");compactDashboard=false;
+        await SaveDashboardPreferences();
+    }
+    private async Task SaveDashboardPreferences(){
+        try{
+            await JS.InvokeVoidAsync("localStorage.setItem",DashboardKey,dashboardPreset+";"+(compactDashboard?"1":"0")+";"+string.Join("|",DashboardPanels.Where(p=>dashboardPanels.Contains(p.Key)).Select(p=>p.Key)));
+        }catch(JSException){storageMessage="Unable to save locally; changes are session-only.";}
+    }
+    private void LoadDashboardPreferences(string? value){
+        if(string.IsNullOrEmpty(value)||value.Length>200)return;
+        var parts=value.Split(';');
+        if(parts.Length!=3||parts[0] is not ("full" or "operations" or "intelligence" or "custom")||parts[1] is not ("0" or "1"))return;
+        var requested=parts[2].Split('|',StringSplitOptions.RemoveEmptyEntries);
+        if(requested.Any(key=>!DashboardPanels.Any(p=>p.Key==key)))return;
+        dashboardPreset=parts[0];compactDashboard=parts[1]=="1";
+        dashboardPanels=dashboardPreset=="custom"?new HashSet<string>(requested,StringComparer.Ordinal):PanelsForPreset(dashboardPreset);
+    }
+    private async Task ToggleSidebar(){
+        collapsed=!collapsed;
+        try{await JS.InvokeVoidAsync("localStorage.setItem",SidebarKey,collapsed?"1":"0");}
+        catch(JSException){storageMessage="Unable to save locally; changes are session-only.";}
+    }
     private static readonly (string Key,string Label)[] QuickActions=[("trip","+ New trip"),("vehicle","Register vehicle"),("driver","Register driver"),("report","Export reports"),("maintenance","Review maintenance"),("alerts","Open alert center")];
     private (string Key,string Label,string Icon) ContextAction=>section switch{
         "Overview" or "Dispatch" or "Calendar"=>("trip","+ New trip","Dispatch"),
@@ -324,6 +386,8 @@
         try{
             themeMode=await JS.InvokeAsync<string?>("localStorage.getItem",ThemeKey)??"dark";if(themeMode!="light"&&themeMode!="dark"&&themeMode!="system")themeMode="dark";darkTheme=themeMode=="dark"||(themeMode=="system"&&await JS.InvokeAsync<bool>("fleetPrefersDark"));
             language=await JS.InvokeAsync<string?>("localStorage.getItem",LanguageKey)=="ru"?"ru":"en";
+            LoadDashboardPreferences(await JS.InvokeAsync<string?>("localStorage.getItem",DashboardKey));
+            collapsed=await JS.InvokeAsync<string?>("localStorage.getItem",SidebarKey)=="1";
             var storedFavorites=await JS.InvokeAsync<string?>("localStorage.getItem",FavoritesKey);favorites=(storedFavorites??"").Split('|',StringSplitOptions.RemoveEmptyEntries).Where(x=>NavigationGroups.SelectMany(g=>g.Items).Contains(x)).Distinct().Take(8).ToList();
         }catch(JSException){storageMessage="Local storage is unavailable; changes are session-only.";}
         try{

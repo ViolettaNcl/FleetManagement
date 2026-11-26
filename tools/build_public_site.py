@@ -100,6 +100,10 @@ def main():
     text=index.read_text(encoding="utf-8")
     text=text.replace("</head>",'<meta name="robots" content="noindex,follow"></head>')
     index.write_text(text,encoding="utf-8")
+    from package_pwa import package
+    package(target/'app')
+    app_index=target/'app/index.html'
+    app_index.write_text(app_index.read_text(encoding='utf-8').replace('</head>','<link rel="stylesheet" href="css/pwa.css"></head>'),encoding='utf-8')
     generate(target)
     (target/".nojekyll").touch()
     print(f"Generated {len(PAGES)*2} static public pages and preserved interactive app.")

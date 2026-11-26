@@ -1,0 +1,66 @@
+import { chromium } from 'playwright';
+import assert from 'node:assert/strict';
+import { mkdir, writeFile } from 'node:fs/promises';
+const root=process.env.FLEET_PREVIEW_URL;
+const canonical='https://violettancl.github.io/FleetManagement/';
+assert.ok([canonical,'http://127.0.0.1:8080/FleetManagement/'].includes(root));
+const browser=await chromium.launch();
+try{
+  const staticContext=await browser.newContext({javaScriptEnabled:false,viewport:{width:390,height:844},serviceWorkers:'block'});
+  const request=staticContext.request;
+  const xml=await (await request.get(root+'sitemap.xml')).text();
+  const urls=[...xml.matchAll(/<loc>(.*?)<\/loc>/g)].map(m=>m[1]);
+  assert.equal(urls.length,20);
+  assert.equal(new Set(urls).size,20);
+  const titles=new Set(),descriptions=new Set(),page=await staticContext.newPage();
+  const records=[];
+  for(const url of urls){
+    assert.ok(url.startsWith(canonical)&&!url.includes('/app/'));
+    const response=await page.goto(root+url.slice(canonical.length),{waitUntil:'load'});
+    assert.equal(response.status(),200);
+    assert.equal(await page.locator('h1').count(),1);
+    const title=await page.title(),description=await page.locator('meta[name=description]').getAttribute('content');
+    assert.ok(title&&description&&!titles.has(title)&&!descriptions.has(description));titles.add(title);descriptions.add(description);
+    assert.equal(await page.locator('link[rel=canonical]').getAttribute('href'),url);
+    assert.equal(await page.locator('link[rel=alternate][hreflang=en]').count(),1);
+    assert.equal(await page.locator('link[rel=alternate][hreflang=ru]').count(),1);
+    assert.equal(await page.locator('meta[name=robots]').getAttribute('content'),'index,follow');
+    assert.equal(await page.locator('script[src]').count(),0);
+    assert.ok(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth));
+    const links=await page.locator('a[href]').evaluateAll(nodes=>nodes.map(a=>a.href));
+    for(const link of links.filter(x=>x.startsWith(root)&&!x.includes('#'))){
+      assert.ok(link===root+'app/'||urls.includes(canonical+link.slice(root.length)),link);
+    }
+    const alternates=await page.locator('link[hreflang]').evaluateAll(nodes=>nodes.map(a=>a.href));
+    assert.ok(alternates.every(x=>urls.includes(x)));
+    const main=await page.locator('main').innerText();assert.ok(main.length>400);
+    const images=await page.locator('img').evaluateAll(nodes=>nodes.map(a=>a.src));
+    for(const image of new Set(images))assert.ok((await request.get(image)).ok(),image);
+    records.push({url,title,description,htmlBytes:(await response.body()).length});
+  }
+  await staticContext.close();
+  const context=await browser.newContext({viewport:{width:390,height:844},isMobile:true,hasTouch:true,serviceWorkers:'allow'});
+  const demo=await context.newPage();const errors=[];demo.on('pageerror',e=>errors.push(e.message));
+  const manifest=await (await context.request.get(root+'app/manifest.webmanifest')).json();
+  assert.equal(manifest.scope,'./');assert.equal(manifest.start_url,'./');assert.equal(manifest.display,'standalone');assert.equal(manifest.icons.length,2);
+  for(const icon of manifest.icons)assert.ok((await context.request.get(root+'app/'+icon.src)).ok());
+  const began=Date.now();
+  await demo.goto(root+'app/');
+  await demo.getByRole('heading',{name:'Operations overview',exact:true}).waitFor({timeout:90000});
+  const startup=Date.now()-began;
+  assert.equal(await demo.locator('meta[name=robots]').getAttribute('content'),'noindex,follow');
+  await demo.evaluate(()=>navigator.serviceWorker.ready);
+  await demo.waitForFunction(()=>!!navigator.serviceWorker.controller,{timeout:90000});
+  const cached=await demo.evaluate(async()=>{const names=await caches.keys();return names.filter(x=>x.startsWith('fleet-public-demo:')).length;});
+  assert.equal(cached,1);
+  await context.setOffline(true);
+  await demo.reload();
+  await demo.getByRole('heading',{name:'Operations overview',exact:true}).waitFor({timeout:90000});
+  await demo.getByRole('button',{name:'Mobile Fleet',exact:true}).click();
+  await demo.getByRole('heading',{name:'Vehicle register',exact:true}).waitFor();
+  assert.deepEqual(errors,[]);
+  await mkdir('browser-results',{recursive:true});
+  await demo.screenshot({path:'browser-results/v4-offline-mobile.png',fullPage:true});
+  await writeFile('browser-results/v4-seo-perf.json',JSON.stringify({environment:'Playwright Chromium, unthrottled, synthetic demo; not field CWV',startupMs:startup,pages:records,offlineReload:true},null,2));
+  console.log('PASS: 20 no-JS indexable pages, unique metadata, links, app noindex, install manifest and offline navigation');
+}finally{await browser.close();}

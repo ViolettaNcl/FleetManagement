@@ -5,7 +5,7 @@ namespace FleetManagement.Core;
 
 public sealed record VehicleReportOptions(string Service,string Query,int MinimumTrips,bool Model,bool Counts,bool Distance,bool ServiceColumn)
 {
-    public bool Valid=>Service is "All" or "Healthy" or "Soon" or "Due" && Query.Length<=100 && MinimumTrips is >=0 and <=100000;
+    public bool Valid=>(Service is "All" or "Healthy" or "Soon" or "Due") && Query.Length<=100 && MinimumTrips is >=0 and <=100000;
 }
 public static partial class FleetReport
 {
@@ -26,9 +26,9 @@ public static partial class FleetReport
         if(options.Distance)headers.Add("Completed distance (km)");
         if(options.ServiceColumn)headers.Add("Service status");
         var rows=new List<object[]>{
-            [russian?"Период с":"From",from.ToString("yyyy-MM-dd",CultureInfo.InvariantCulture)],
-            [russian?"Период по":"To",to.ToString("yyyy-MM-dd",CultureInfo.InvariantCulture)],
-            [russian?"Строк в выборке":"Filtered vehicles",filtered.Count],
+            new object[]{russian?"Период с":"From",from.ToString("yyyy-MM-dd",CultureInfo.InvariantCulture)},
+            new object[]{russian?"Период по":"To",to.ToString("yyyy-MM-dd",CultureInfo.InvariantCulture)},
+            new object[]{russian?"Строк в выборке":"Filtered vehicles",filtered.Count},
             ReportLocale.Labels(headers.ToArray(),russian)
         };
         foreach(var v in filtered){

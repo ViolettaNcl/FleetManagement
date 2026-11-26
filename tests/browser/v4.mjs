@@ -12,6 +12,7 @@ try{
   assert.ok(counts&&Number(counts[1])<=Number(counts[2]));
   await page.getByRole('button',{name:'Collapse sidebar',exact:true}).click();
   assert.equal(await page.locator('.sidebar-collapsed').count(),1);
+  await page.waitForFunction(()=>localStorage.getItem('fleetmanagement.preferences.sidebar.v4')==='1');
   await page.reload();
   await page.getByRole('heading',{name:'Operations overview',exact:true}).waitFor({timeout:90000});
   await page.locator('.sidebar-collapsed').waitFor();
@@ -31,6 +32,7 @@ try{
   assert.equal(await preset.inputValue(),'custom');
   await page.getByLabel('Compact dashboard',{exact:true}).check();
   await page.locator('.dashboard-compact').waitFor();
+  await page.waitForFunction(()=>localStorage.getItem('fleetmanagement.preferences.dashboard.v4')?.startsWith('custom;1;'));
   await page.reload();
   await page.getByRole('heading',{name:'Operations overview',exact:true}).waitFor({timeout:90000});
   await page.locator('.dashboard-compact').waitFor();
@@ -49,6 +51,19 @@ try{
   await page.getByRole('button',{name:'Customize dashboard',exact:true}).click();
   await page.keyboard.press('Control+k');
   const search=page.getByLabel('Find section',{exact:true});
+  await search.fill('fuel budget');
+  await page.getByRole('status').filter({hasText:'Matching commands: 1'}).waitFor();
+  await page.locator('#workspace-nav').getByRole('button',{name:'Cost Intelligence',exact:true}).waitFor();
+  await search.fill('топливо бюджет');
+  await page.getByRole('status').filter({hasText:'Matching commands: 1'}).waitFor();
+  const costResult=page.locator('#workspace-nav').getByRole('button',{name:'Cost Intelligence',exact:true});
+  await costResult.waitFor();
+  await search.press('ArrowDown');
+  assert.equal(await costResult.evaluate(el=>el===document.activeElement),true);
+  await costResult.press('Escape');
+  await page.waitForFunction(()=>document.querySelector('.nav-search input')?.value==='');
+  await search.fill('qa-no-such-workflow');
+  await page.getByText('No matching modules',{exact:true}).waitFor();
   await search.fill('Calendar');
   await page.getByRole('status').filter({hasText:'Matching commands: 1'}).waitFor();
   await search.press('ArrowDown');

@@ -536,4 +536,11 @@ rcManifest["maintenance"]!["fastForestReloadVerified"]=true;
 Check(RegistryManifest.Parse(rcManifest.ToJsonString()).FastForestF1==.6&&registry.FastForestF1==null,"RC optional FastForest backward compatibility");
 rcManifest["maintenance"]!["fastForestReloadVerified"]=false;
 Check(RejectManifest(rcManifest.ToJsonString()),"RC FastForest rejects missing reload evidence");
+
+var rcBrief=FleetBriefing.Build(rcSample,now);
+Check(rcBrief.ActiveTrips==2&&rcBrief.Next24Departures==1&&rcBrief.AvailableNow==1&&rcBrief.CompletedToday==1,"RC briefing counts");
+Check(AdvisorIntent.ResolveFollowUp("Подробнее","briefing")=="briefing"&&AdvisorIntent.ResolveFollowUp("details",null)==null&&AdvisorIntent.ResolveFollowUp("delete data","briefing")==null,"RC supported follow-up only");
+Check(FleetAdvisor.Answer(rcSample,now,"daily briefing").Title=="Daily fleet briefing","RC daily briefing intent");
+var rcDriverRows=DriverActivity.Build(rcSample,now,now,now);
+Check(rcDriverRows.Sum(d=>d.Trips)==report.Trips&&rcDriverRows.Sum(d=>d.Completed)==report.Completed&&rcDriverRows.Sum(d=>d.CompletedKm)==report.CompletedDistanceKm,"RC driver activity reconciles");
 Console.WriteLine("All business rule checks passed.");

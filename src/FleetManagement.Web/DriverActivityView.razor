@@ -1,0 +1,17 @@
+@using FleetManagement.Web
+<section class="panel suite-panel" aria-labelledby="driver-activity-title">
+    <div class="suite-heading"><div><span class="suite-kicker">@T("Resource analytics")</span><h2 id="driver-activity-title">@T("Driver trip activity")</h2><p class="muted">@T("Registered departure cohort, sorted by completed distance. Not a driver quality, safety or employment ranking.")</p></div></div>
+    @{var rows=DriverActivity.Build(Fleet,Now,From,To);var pages=Math.Max(1,(rows.Count+24)/25);var current=Math.Min(page,pages-1);}
+    <div class="metrics suite-metrics"><div class="metric">@T("Drivers")<strong>@rows.Count</strong></div><div class="metric">@T("Trips")<strong>@rows.Sum(d=>d.Trips)</strong></div><div class="metric">@T("Completed")<strong>@rows.Sum(d=>d.Completed)</strong></div><div class="metric">@T("Completed distance")<strong>@rows.Sum(d=>d.CompletedKm).ToString("N0") km</strong></div></div>
+    <div class="tablewrap" role="region" tabindex="0" aria-label="@T("Driver trip activity")"><table><thead><tr><th>@T("Driver")</th><th>@T("Trips")</th><th>@T("Completed")</th><th>@T("Completed distance")</th><th>@T("Completed trip hours")</th></tr></thead><tbody>@foreach(var d in rows.Skip(current*25).Take(25)){<tr><td>@d.Name</td><td>@d.Trips</td><td>@d.Completed</td><td>@d.CompletedKm km</td><td>@d.CompletedHours.ToString("F1")</td></tr>}</tbody></table></div>
+    <div class="suite-pagination"><button class="secondary" @onclick="()=>page=current-1" disabled="@(current==0)">@T("Previous report page")</button><span>@T("Page") @(current+1) / @pages</span><button class="secondary" @onclick="()=>page=current+1" disabled="@(current+1>=pages)">@T("Next report page")</button></div>
+</section>
+@code{
+    [Parameter] public bool Russian{get;set;}
+    [Parameter,EditorRequired] public FleetData Fleet{get;set;}=default!;
+    [Parameter] public DateTime Now{get;set;}
+    [Parameter] public DateTime From{get;set;}
+    [Parameter] public DateTime To{get;set;}
+    private int page;
+    private string T(string value)=>DemoLocale.Text(value,Russian);
+}

@@ -16,6 +16,10 @@
         </details>
         <p class="muted">@T("Queue counts include every high alert regardless of the medium-alert setting. Rules are evaluated only in the open demo.")</p>
     }
+    <div class="suite-note"><div class="suite-heading"><div><h3>@T("Local review history")</h3><p class="muted">@T("Record the current rule result and simulation clock. The last 20 distinct snapshots store only counts and thresholds, not alert text or personal data.")</p></div><div class="actions suite-review-actions"><button @onclick="RecordReview" disabled="@(!Policy.Valid)">@T("Run and record review")</button><button class="secondary" @onclick="ClearHistory" disabled="@(history.Count==0)">@T("Clear review history")</button></div></div>
+        @if(history.Count==0){<p class="muted">@T("No recorded review runs.")</p>}
+        else{<div class="tablewrap" role="region" tabindex="0" aria-label="@T("Local review history")"><table><thead><tr><th>@T("Simulation time")</th><th>@T("High priority")</th><th>@T("Review soon")</th><th>@T("Review queue")</th><th>@T("Escalation")</th></tr></thead><tbody>@foreach(var run in history){<tr><td>@run.Clock.ToString("yyyy-MM-dd HH:mm")</td><td>@run.High / @run.HighThreshold</td><td>@run.Medium / @run.MediumThreshold</td><td>@run.Queue</td><td>@T(run.Escalate?"Yes":"No")</td></tr>}</tbody></table></div>}
+    </div>
     @if(feedback.Length>0){<p class="notice" role="status">@T(feedback)</p>}
 </section>
 @code{
@@ -23,7 +27,8 @@
     [Parameter] public DateTime Now{get;set;}
     [Parameter,EditorRequired] public IReadOnlyList<FleetAlert> Alerts{get;set;}=[];
     [Parameter] public EventCallback<string> Open{get;set;}
-    private const string Key="fleetmanagement.preferences.review.v5";
+    private const string Key="fleetmanagement.preferences.review.v5",HistoryKey="fleetmanagement.preferences.review-history.v6";
+    private IReadOnlyList<ReviewRun> history=[];
     private int high=1,medium=3;
     private bool includeMedium=true;
     private string feedback="";
@@ -33,6 +38,8 @@
     protected override async Task OnAfterRenderAsync(bool firstRender){
         if(!firstRender)return;
         try{
+            history=ReviewHistory.Decode(await JS.InvokeAsync<string?>("localStorage.getItem",HistoryKey));
+            StateHasChanged();
             var raw=await JS.InvokeAsync<string?>("localStorage.getItem",Key);
             if(raw is null||raw.Length>32)return;
             var parts=raw.Split('|');
@@ -40,6 +47,19 @@
                 var value=new ReviewPolicy(h,m,parts[2]=="1");if(value.Valid){high=h;medium=m;includeMedium=value.IncludeMedium;StateHasChanged();}
             }
         }catch(JSException){feedback="Review settings are session-only.";StateHasChanged();}
+    }
+    private async Task RecordReview(){
+        if(!Policy.Valid)return;
+        try{
+            var next=ReviewHistory.Add(history,ReviewHistory.Capture(Now,Policy,Alerts));
+            await JS.InvokeVoidAsync("localStorage.setItem",HistoryKey,ReviewHistory.Encode(next));history=next;feedback="Review run recorded.";
+        }catch(JSException){feedback="Unable to save review history.";}
+        catch(ArgumentException){feedback="Review snapshot is outside supported bounds.";}
+    }
+    private async Task ClearHistory(){
+        if(!await JS.InvokeAsync<bool>("confirm",T("Clear all local review runs?")))return;
+        try{await JS.InvokeVoidAsync("localStorage.removeItem",HistoryKey);history=[];feedback="Review history cleared.";}
+        catch(JSException){feedback="Unable to save review history.";}
     }
     private async Task Export(){
         if(!Policy.Valid)return;

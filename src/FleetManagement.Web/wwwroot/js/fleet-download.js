@@ -6,3 +6,6 @@ window.fleetDownload = (base64, filename, contentType) => {
   document.body.appendChild(link); link.click(); link.remove();
   setTimeout(() => URL.revokeObjectURL(url), 1000);
 };
+
+// User-initiated browser printing; all report content is rendered by Blazor.
+window.fleetPrintReport=()=>{if(document.querySelector(".fleet-print-document"))window.print();};

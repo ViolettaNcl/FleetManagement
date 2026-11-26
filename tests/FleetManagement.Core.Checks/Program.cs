@@ -543,4 +543,15 @@ Check(AdvisorIntent.ResolveFollowUp("Подробнее","briefing")=="briefing"
 Check(FleetAdvisor.Answer(rcSample,now,"daily briefing").Title=="Daily fleet briefing","RC daily briefing intent");
 var rcDriverRows=DriverActivity.Build(rcSample,now,now,now);
 Check(rcDriverRows.Sum(d=>d.Trips)==report.Trips&&rcDriverRows.Sum(d=>d.Completed)==report.Completed&&rcDriverRows.Sum(d=>d.CompletedKm)==report.CompletedDistanceKm,"RC driver activity reconciles");
+
+var rcTemplate=new VehicleReportOptions("Due","private search",2,true,false,true,false,"Service");
+Check(ReportTemplate.Decode(ReportTemplate.Encode(rcTemplate))==rcTemplate with{Query=""},"RC report template roundtrip excludes search");
+Check(ReportTemplate.Decode("Due|Service|2|10x1")==null&&ReportTemplate.Decode("No|Service|2|1001")==null,"RC invalid templates rejected");
+var rcRun=ReviewHistory.Capture(now,new(1,3,false),notices);
+Check(rcRun.Queue==notices.Count(a=>a.Severity=="High")&&rcRun.Escalate,"RC review history captures policy");
+var rcHistory=ReviewHistory.Add(ReviewHistory.Add([],rcRun),rcRun);
+Check(rcHistory.Count==1&&ReviewHistory.Decode(ReviewHistory.Encode(rcHistory)).SequenceEqual(rcHistory),"RC review history dedup and roundtrip");
+Check(ReviewHistory.Decode("invalid").Count==0&&ReviewHistory.Decode(new string('x',4097)).Count==0,"RC review history bounds");
+for(int i=1;i<=30;i++)rcHistory=ReviewHistory.Add(rcHistory,rcRun with{Clock=now.AddMinutes(i)});
+Check(rcHistory.Count==20&&rcHistory[0].Clock==now.AddMinutes(30),"RC review history bounded latest runs");
 Console.WriteLine("All business rule checks passed.");

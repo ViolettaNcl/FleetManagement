@@ -466,7 +466,7 @@
         vehicleReservations=snapshot.VehicleReservations??[];requireShifts=snapshot.RequireShifts;
         ClearTripFilters();recordAction++;newRecordSection="";editingTripId=null;tripDirty=false;feedback="";maintenanceFeedback="";
         vehicleId=fleet.Vehicles.FirstOrDefault()?.Id??0;driverId=fleet.Drivers.FirstOrDefault()?.Id??0;selectedTrip=fleet.Trips.FirstOrDefault()?.Id??0;passportId=vehicleId;
-        start=Now.AddHours(1);end=Now.AddHours(2);storageMessage="";snapshotFeedback="";
+        start=Now.AddHours(1);end=Now.AddHours(2);storageMessage="";snapshotFeedback="";StateHasChanged();
         return true;
     }
     private async Task Persist(){try{await JS.InvokeVoidAsync("localStorage.setItem",Key,JsonSerializer.Serialize(new DemoSnapshot(fleet,Now,maintenanceEntries,driverShifts,requireShifts,vehicleReservations), DemoJsonContext.Default.DemoSnapshot));}catch(Exception){storageMessage="Unable to save locally; changes are session-only.";}}

@@ -278,3 +278,33 @@
  .demo-shell.premium-workspace .registertools button,.demo-shell.premium-workspace .hero-actions button,.demo-shell.premium-workspace .register-pagination button{min-height:44px}
  .demo-shell.workspace-dense .fleet-content>.panel{padding:12px}
 }
+
+
+/* Printable report contains the same complete filtered cohort as the workbook. */
+.fleet-print-document{display:none}
+.template-actions{gap:8px;flex-wrap:wrap}
+.demo-shell .template-actions button{min-height:44px;white-space:normal;max-width:100%}
+@media print{
+ body:has(.fleet-print-document){background:#fff!important;color:#111!important}
+ body:has(.fleet-print-document) .workspace-header,
+ body:has(.fleet-print-document) .fleet-sidebar,
+ body:has(.fleet-print-document) .mobile-nav-toggle,
+ body:has(.fleet-print-document) .skip-workspace,
+ body:has(.fleet-print-document) .mobile-bottom-nav,
+ body:has(.fleet-print-document) .fleet-content>:not(.custom-report-panel),
+ body:has(.fleet-print-document) .custom-report-panel>:not(.fleet-print-document){display:none!important}
+ body:has(.fleet-print-document) :is(.demo-shell,.workspace-layout,.fleet-content,.custom-report-panel){
+  display:block!important;width:auto!important;max-width:none!important;margin:0!important;padding:0!important;min-height:0!important;
+  background:#fff!important;box-shadow:none!important;border:0!important;color:#111!important;overflow:visible!important
+ }
+ body:has(.fleet-print-document) .fleet-print-document{display:block!important;background:#fff!important;color:#111!important;font:11pt/1.45 Arial,sans-serif}
+ .fleet-print-document h1{font-size:23pt;margin:14pt 0 8pt;color:#151126!important}
+ .fleet-print-document .fleet-print-heading{display:flex;justify-content:space-between;align-items:center;border-bottom:2px solid #6540bd;padding:0 0 8pt;color:#151126}
+ .fleet-print-document p{font-size:10pt;margin:5pt 0}
+ .fleet-print-document table{width:100%;border-collapse:collapse;min-width:0!important;table-layout:auto;font-size:9pt!important}
+ .fleet-print-document th,.fleet-print-document td{padding:5pt!important;border:1px solid #b7b7c4!important;color:#111!important;background:#fff!important;white-space:normal!important;overflow-wrap:anywhere}
+ .fleet-print-document th{font-weight:bold;background:#eeeaf6!important}
+ .fleet-print-document thead{display:table-header-group}
+ .fleet-print-document tr{break-inside:avoid}
+ @page{size:A4 landscape;margin:12mm}
+}

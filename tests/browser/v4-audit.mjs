@@ -34,5 +34,6 @@ try{
  assert.deepEqual(errors,[]);
  const overflow=result.filter(x=>x.layout.document>x.layout.viewport);
  assert.deepEqual(overflow.map(x=>({module:x.module,layout:x.layout})),[],'Module mobile overflow');
- console.log('PASS: screenshot and mobile-width audit for '+modules.length+' modules; accessibility findings recorded.');
+ assert.deepEqual(result.flatMap(x=>x.findings.map(f=>({module:x.module,rule:f.id,nodes:f.nodes.map(n=>n.target)}))),[],'Automated accessibility violations on audited module states');
+ console.log('PASS: screenshot, mobile-width and automated accessibility audit for '+modules.length+' modules.');
 }finally{await browser.close();}

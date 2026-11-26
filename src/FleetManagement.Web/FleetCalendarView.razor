@@ -24,8 +24,8 @@
             @foreach(var date in Days)
             {
                 var entries=Events(date);
-                <button class="calendar-day @(date==selected.Date?"selected":"") @(date.Month!=selected.Month&&view=="Month"?"outside":"")" aria-label="@date.ToString("yyyy-MM-dd")" aria-pressed="@(date==selected.Date)" @onclick="()=>selected=date">
-                    <span class="calendar-date">@date.Day</span>
+                <button class="calendar-day @(date==selected.Date?"selected":"") @(date.Month!=selected.Month&&view=="Month"?"outside":"")" data-date="@date.ToString("yyyy-MM-dd")" aria-pressed="@(date==selected.Date)" @onclick="()=>selected=date">
+                    <span class="calendar-date">@date.Day</span><span class="v4-sr-only">@date.ToString("yyyy-MM-dd")</span>
                     @foreach(var e in entries.Take(3)){<span class="calendar-chip @(e.Kind=="Trip"?"trip":"service")">@e.Title · @T(e.Kind)</span>}
                     @if(entries.Count>3){<small>+ @(entries.Count-3) more</small>}
                 </button>

@@ -40,6 +40,21 @@ try{
     for(const image of new Set(images))assert.ok((await request.get(image)).ok(),image);
     records.push({url,title,description,htmlBytes:(await response.body()).length,...performance});
   }
+  const alternateMap=new Map();
+  for(const url of urls){
+    const response=await request.get(root+url.slice(canonical.length));
+    const html=await response.text();
+    const pairs=[...html.matchAll(/<link rel="alternate" hreflang="(en|ru)" href="([^"]+)">/g)];
+    assert.equal(pairs.length,2);
+    alternateMap.set(url,new Map(pairs.map(m=>[m[1],m[2]])));
+  }
+  for(const [url,pair] of alternateMap)for(const alt of pair.values()){
+    const reciprocal=alternateMap.get(alt);
+    assert.ok(reciprocal&&[...reciprocal.values()].includes(url),'Nonreciprocal hreflang '+url);
+  }
+  const missing=await request.get(root+'nonexistent-qa-v41/');
+  assert.equal(missing.status(),404);
+  const robots=await request.get(root+'robots.txt');assert.ok(robots.ok());assert.match(await robots.text(),/Sitemap: https:\/\/violettancl\.github\.io\/FleetManagement\/sitemap\.xml/);
   await staticContext.close();
   const a11y=await browser.newPage({viewport:{width:390,height:844}});
   await a11y.goto(root);
@@ -56,18 +71,26 @@ try{
   await demo.goto(root+'app/');
   await demo.getByRole('heading',{name:'Operations overview',exact:true}).waitFor({timeout:90000});
   const startup=Date.now()-began;
+  const cold=await demo.evaluate(()=>({navigationMs:performance.getEntriesByType('navigation')[0]?.duration??0,resources:performance.getEntriesByType('resource').length,transferBytes:performance.getEntriesByType('resource').reduce((n,r)=>n+r.transferSize,0),decodedBytes:performance.getEntriesByType('resource').reduce((n,r)=>n+r.decodedBodySize,0)}));
   assert.equal(await demo.locator('meta[name=robots]').getAttribute('content'),'noindex,follow');
   await demo.waitForFunction(()=>!!navigator.serviceWorker.controller,null,{timeout:90000});
   const cached=await demo.evaluate(async()=>{const names=await caches.keys();return names.filter(x=>x.startsWith('fleet-public-demo:')).length;});
   assert.equal(cached,1);
-  await context.setOffline(true);
+  const warmStart=Date.now();
   await demo.reload();
   await demo.getByRole('heading',{name:'Operations overview',exact:true}).waitFor({timeout:90000});
+  const warmMs=Date.now()-warmStart;
+  const warm=await demo.evaluate(()=>({resources:performance.getEntriesByType('resource').length,transferBytes:performance.getEntriesByType('resource').reduce((n,r)=>n+r.transferSize,0)}));
+  await context.setOffline(true);
+  const offlineStart=Date.now();
+  await demo.reload();
+  await demo.getByRole('heading',{name:'Operations overview',exact:true}).waitFor({timeout:90000});
+  const offlineMs=Date.now()-offlineStart;
   await demo.getByRole('button',{name:'Mobile Fleet',exact:true}).click();
   await demo.getByRole('heading',{name:'Vehicle register',exact:true}).waitFor();
   assert.deepEqual(errors,[]);
   await mkdir('browser-results',{recursive:true});
   await demo.screenshot({path:'browser-results/v4-offline-mobile.png',fullPage:true});
-  await writeFile('browser-results/v4-seo-perf.json',JSON.stringify({environment:'Playwright Chromium, unthrottled, synthetic demo; not field CWV',startupMs:startup,pages:records,offlineReload:true},null,2));
+  await writeFile('browser-results/v4-seo-perf.json',JSON.stringify({environment:'Playwright Chromium, unthrottled, synthetic demo; not field CWV',startupMs:startup,cold,warmMs,warm,offlineMs,pages:records,offlineReload:true},null,2));
   console.log('PASS: 20 no-JS indexable pages, unique metadata, links, app noindex, install manifest and offline navigation');
 }finally{await browser.close();}

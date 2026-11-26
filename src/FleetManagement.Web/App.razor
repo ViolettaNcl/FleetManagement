@@ -112,6 +112,7 @@
         <p class="muted">@T("Use Ctrl+K to search modules. On mobile, use the bottom navigation or More.")</p>
         </section>
         <section class="panel suite-panel" aria-labelledby="snapshot-export-title"><div class="suite-heading"><div><span class="suite-kicker">@T("Local data portability")</span><h2 id="snapshot-export-title">@T("Export demo snapshot")</h2><p class="muted">@T("Download the current demo records and clock as JSON. This file may contain names, notes and registrations. No server upload, preferences or automatic restore.")</p></div><button @onclick="ExportSnapshot">@T("Download demo JSON")</button></div><div class="metrics suite-metrics"><div class="metric">@T("Vehicles")<strong>@fleet.Vehicles.Count</strong></div><div class="metric">@T("Drivers")<strong>@fleet.Drivers.Count</strong></div><div class="metric">@T("Trips")<strong>@fleet.Trips.Count</strong></div></div>@if(snapshotFeedback.Length>0){<p role="status">@T(snapshotFeedback)</p>}</section>
+        <SnapshotRestore Russian="@(language=="ru")" Restore="RestoreSnapshot"/>
     }
     else if (section == "Batch Dispatch")
     {
@@ -447,6 +448,19 @@
             await JS.InvokeVoidAsync("fleetDownload",Convert.ToBase64String(json),$"fleet-demo-{Now:yyyy-MM-dd-HHmm}.json","application/json");
             snapshotFeedback="Demo JSON generated.";
         }catch(JSException){snapshotFeedback="Unable to download the demo snapshot.";}
+    }
+    private async Task<bool> RestoreSnapshot(DemoSnapshot snapshot){
+        if(SnapshotValidation.Check(snapshot.Data,snapshot.Now,snapshot.MaintenanceEntries,snapshot.DriverShifts,snapshot.VehicleReservations) is not null)return false;
+        // Save before replacing any in-memory records; failed/quota storage writes leave the workspace intact.
+        try{await JS.InvokeVoidAsync("localStorage.setItem",Key,JsonSerializer.Serialize(snapshot,DemoJsonContext.Default.DemoSnapshot));}
+        catch(JSException){return false;}
+        playing=false;fleet=snapshot.Data;Now=snapshot.Now;
+        maintenanceEntries=snapshot.MaintenanceEntries??[];driverShifts=snapshot.DriverShifts??[];
+        vehicleReservations=snapshot.VehicleReservations??[];requireShifts=snapshot.RequireShifts;
+        ClearTripFilters();recordAction++;newRecordSection="";editingTripId=null;tripDirty=false;feedback="";maintenanceFeedback="";
+        vehicleId=fleet.Vehicles.FirstOrDefault()?.Id??0;driverId=fleet.Drivers.FirstOrDefault()?.Id??0;selectedTrip=fleet.Trips.FirstOrDefault()?.Id??0;passportId=vehicleId;
+        start=Now.AddHours(1);end=Now.AddHours(2);storageMessage="";snapshotFeedback="";
+        return true;
     }
     private async Task Persist(){try{await JS.InvokeVoidAsync("localStorage.setItem",Key,JsonSerializer.Serialize(new DemoSnapshot(fleet,Now,maintenanceEntries,driverShifts,requireShifts,vehicleReservations), DemoJsonContext.Default.DemoSnapshot));}catch(Exception){storageMessage="Unable to save locally; changes are session-only.";}}
     private void OpenPassport(int id){passportId=id;Navigate("Vehicle Passport");}

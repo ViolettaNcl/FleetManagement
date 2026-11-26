@@ -502,4 +502,15 @@ v52Timer.Stop();var v52OldMs=v52Timer.Elapsed.TotalMilliseconds;
 v52Timer.Restart();for(int i=0;i<20;i++)v52Index+=v52New();
 v52Timer.Stop();Check(v52Scan==v52Index,"V5.2 diagnostic benchmark checksums");
 Console.WriteLine($"V5.2 synthetic grouping benchmark: 20 iterations, {v52Trips.Length} trips, {scaleFleet.Vehicles.Count} vehicles; naive {v52OldMs:F2} ms, indexed {v52Timer.Elapsed.TotalMilliseconds:F2} ms; no SLA.");
+
+var rcSample=FleetRules.Sample(now);
+Check(SnapshotValidation.Check(rcSample,now,[],[],[])==null,"RC valid demo snapshot");
+Check(SnapshotValidation.Check(new FleetData([],[],[]),now,[],[],[])==null,"RC empty demo snapshot");
+Check(SnapshotValidation.Check(rcSample,default,[],[],[])!=null,"RC invalid snapshot clock");
+Check(SnapshotValidation.Check(rcSample with{Vehicles=[..rcSample.Vehicles,rcSample.Vehicles[0]]},now,[],[],[])!=null,"RC rejects duplicate vehicle");
+Check(SnapshotValidation.Check(rcSample with{Trips=[..rcSample.Trips,rcSample.Trips[0] with{Id=500}]},now,[],[],[])!=null,"RC rejects overlapping trips");
+Check(SnapshotValidation.Check(rcSample with{Trips=[rcSample.Trips[0] with{DriverId=999}]},now,[],[],[])!=null,"RC rejects orphan trip");
+Check(SnapshotValidation.Check(rcSample,now,[],[],[new(1,rcSample.Trips[0].VehicleId,rcSample.Trips[0].Start,rcSample.Trips[0].End,"Repair","")])!=null,"RC rejects conflicting reservation");
+Check(SnapshotValidation.Check(rcSample,now,[new(1,999,now,0,"Repair","",null)],[],[])!=null,"RC rejects orphan maintenance");
+Check(SnapshotValidation.Check(rcSample,now,[],[new(1,1,now,now.AddHours(2)),new(2,1,now.AddHours(1),now.AddHours(3))],[])!=null,"RC rejects overlapping shifts");
 Console.WriteLine("All business rule checks passed.");

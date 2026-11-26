@@ -1,0 +1,49 @@
+{
+  "schemaVersion": 1,
+  "synthetic": true,
+  "runId": "test-run-001",
+  "createdUtc": "2026-11-25T20:00:00Z",
+  "seed": 42,
+  "sourceRevision": "fixture",
+  "mlNetVersion": "5.0.0",
+  "maintenance": {
+    "testRows": 10,
+    "testSha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+    "reloadVerified": true,
+    "logistic": {
+      "TP": 3,
+      "FP": 1,
+      "TN": 4,
+      "FN": 2,
+      "F1": 0.667,
+      "Brier": 0.12
+    },
+    "fastTree": {
+      "TP": 3,
+      "FP": 2,
+      "TN": 3,
+      "FN": 2,
+      "F1": 0.6,
+      "Brier": 0.13
+    },
+    "artifact": {
+      "sha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+    }
+  },
+  "eta": {
+    "testRows": 10,
+    "testSha256": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+    "reloadVerified": true,
+    "linear": {
+      "Mae": 8,
+      "Rmse": 10
+    },
+    "fastTree": {
+      "Mae": 12,
+      "Rmse": 15
+    },
+    "artifact": {
+      "sha256": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb"
+    }
+  }
+}

@@ -9,6 +9,8 @@ using Microsoft.AspNetCore.RateLimiting;
 using Microsoft.EntityFrameworkCore;
 
 var builder=WebApplication.CreateBuilder(args);
+const long MaxRequestBytes=256*1024;
+builder.WebHost.ConfigureKestrel(options=>options.Limits.MaxRequestBodySize=MaxRequestBytes);
 var secret=builder.Configuration["Fleet:ApiKey"];
 if (string.IsNullOrWhiteSpace(secret) || secret.Length<32)
     throw new InvalidOperationException("Set Fleet__ApiKey to a randomly generated secret of at least 32 characters.");
@@ -50,6 +52,7 @@ builder.Services.AddRateLimiter(options=>{
         }));
 });
 builder.Services.AddSingleton<FleetWriteGate>();
+builder.Services.AddSingleton(new OperationsPolicy(builder.Configuration.GetValue<bool>("Fleet:RequireShifts")));
 builder.Services.AddScoped<FleetStore>();
 builder.Services.AddOpenApi();
 builder.Services.AddSignalR();
@@ -57,19 +60,51 @@ builder.Services.AddProblemDetails();
 var app=builder.Build();
 app.UseExceptionHandler();
 app.Use(async (context,next)=>{
-    if(context.Request.Path.StartsWithSegments("/api") || context.Request.Path.StartsWithSegments("/openapi"))
+    if(context.Request.Path.StartsWithSegments("/api") || context.Request.Path.StartsWithSegments("/openapi")){
         context.Response.Headers.CacheControl="no-store";
+        context.Response.Headers["X-Content-Type-Options"]="nosniff";
+        if(context.Request.ContentLength>MaxRequestBytes){context.Response.StatusCode=413;await context.Response.WriteAsJsonAsync(new{error="Request body exceeds 256 KiB."});return;}
+    }
     await next();
 });
 app.UseRouting();
 app.UseRateLimiter();
 app.UseAuthentication();
+// Identity bearer tickets are short-lived, but role changes and explicit revocation
+// must also invalidate tickets before their expiry on subsequent HTTP requests.
+app.Use(async (context,next)=>{
+    if(context.User.Identity?.IsAuthenticated==true&&!context.User.IsInRole("Automation")
+       &&!context.Request.Path.Equals(new PathString("/api/auth/login"))){
+        var signIn=context.RequestServices.GetRequiredService<SignInManager<IdentityUser>>();
+        if(await signIn.ValidateSecurityStampAsync(context.User) is null){
+            context.Response.StatusCode=401;return;
+        }
+    }
+    await next();
+});
 app.UseAuthorization();
 
+if(builder.Configuration.GetValue<bool>("Fleet:UpgradeV2Schema")&&!builder.Configuration.GetValue<bool>("Fleet:InitializeDatabase"))
+    throw new InvalidOperationException("Fleet:UpgradeV2Schema requires Fleet:InitializeDatabase.");
 if(builder.Configuration.GetValue<bool>("Fleet:InitializeDatabase")){
     await using var scope=app.Services.CreateAsyncScope();
     var db=scope.ServiceProvider.GetRequiredService<FleetDbContext>();
-    await db.Database.EnsureCreatedAsync();
+    if(builder.Configuration.GetValue<bool>("Fleet:UpgradeV2Schema")){
+        await OperationsSchemaUpgrade.Run(db);
+        app.Logger.LogInformation("Operational schema upgrade verified. Disable Fleet:UpgradeV2Schema for normal startup.");
+    }else await db.Database.EnsureCreatedAsync();
+    // Fail before identity initialization or demo seeding on an incompatible schema.
+    try { await OperationsSchemaUpgrade.Verify(db); }
+    catch (System.Data.Common.DbException ex) { throw new InvalidOperationException("V3 operational schema missing or inaccessible. Back up the existing database; use the documented explicit upgrade or a fresh V3 database.",ex); }
+    if(db.Database.IsSqlite()){
+        await db.Database.OpenConnectionAsync();
+        try{
+            var actual=db.Database.GetDbConnection().ServerVersion;
+            if(!Version.TryParse(actual,out var sqliteVersion)||sqliteVersion<new Version(3,50,2))
+                throw new InvalidOperationException("SQLite native library must be at least 3.50.2.");
+            app.Logger.LogInformation("Verified native SQLite version {Version}.",actual);
+        }finally{await db.Database.CloseConnectionAsync();}
+    }
     await IdentityEndpoints.Initialize(scope.ServiceProvider,builder.Configuration);
     if(builder.Configuration.GetValue<bool>("Fleet:SeedDemo") &&
         !await db.Vehicles.AnyAsync() && !await db.Drivers.AnyAsync() && !await db.Trips.AnyAsync()){
@@ -78,10 +113,14 @@ if(builder.Configuration.GetValue<bool>("Fleet:InitializeDatabase")){
         await db.SaveChangesAsync();
     }
 }
+ConnectedConsole.Map(app);
 app.MapGet("/health",()=>Results.Ok(new { status="ok" }));
 app.MapOpenApi().RequireAuthorization("FleetRead");
-app.MapHub<FleetHub>("/hubs/fleet",options=>options.CloseOnAuthenticationExpiration=true).RequireAuthorization("FleetRead");
+app.MapHub<FleetHub>("/hubs/fleet",options=>{options.CloseOnAuthenticationExpiration=true;options.LongPolling.PollTimeout=TimeSpan.FromSeconds(20);}).RequireAuthorization("FleetRead");
 var api=app.MapGroup("/api").RequireAuthorization("FleetRead");
 FleetEndpoints.Map(api);
+FinancialEndpoints.Map(api);
+OperationsEndpoints.Map(api);
+OverviewEndpoints.Map(api);
 IdentityEndpoints.Map(api);
 app.Run();

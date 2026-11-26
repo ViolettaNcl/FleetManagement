@@ -28,7 +28,13 @@ jobs:
         run: |
           npm install --prefix tests/browser --no-audit --no-fund
           cd tests/browser
-          npx playwright install --with-deps chromium
+          npx playwright install --with-deps chromium firefox webkit
+      - name: Install and verify video tools
+        run: |
+          sudo apt-get update -qq
+          sudo apt-get install -y --no-install-recommends ffmpeg
+          ffmpeg -version
+          ffprobe -version
       - name: Browser smoke test at GitHub Pages subpath
         run: |
           mkdir -p preview/FleetManagement
@@ -37,6 +43,17 @@ jobs:
           server=$!
           trap 'kill "$server" || true' EXIT
           node tests/browser/smoke.mjs
+          node tests/browser/cross-browser.mjs
+          node tests/browser/portfolio-tour.mjs
+          ffmpeg -hide_banner -loglevel error -y -i portfolio-video/fleetmanagement-v3-tour.webm -c:v libx264 -pix_fmt yuv420p -movflags +faststart portfolio-video/fleetmanagement-v3-tour.mp4
+          python3 tests/browser/verify_media.py
+      - name: Upload actual portfolio tour
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: fleetmanagement-portfolio-tour
+          path: portfolio-video
+          if-no-files-found: warn
       - name: Upload browser screenshots
         if: always()
         uses: actions/upload-artifact@v4

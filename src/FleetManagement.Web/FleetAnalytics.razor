@@ -1,42 +1,45 @@
+@using FleetManagement.Web
 @inject IJSRuntime JS
 <section class="panel">
-    <div class="registerhead"><div><h2>Fleet analytics</h2><p class="muted">Trip cohort by departure date. Completed distance counts only finished trips. Service health reflects simulation time.</p></div><button @onclick="Export" disabled="@(!Valid)">Export Excel (.xlsx)</button></div>
+    <div class="registerhead"><div><h2>@T("Fleet analytics")</h2><p class="muted">@T("Trip cohort by departure date. Completed distance counts only finished trips. Service health reflects simulation time.")</p></div><button @onclick="Export" disabled="@(!Valid)">@T("Export Excel (.xlsx)")</button></div>
     <div class="actions registertools">
-        <label>From<input type="date" @bind="from" /></label>
-        <label>To<input type="date" @bind="to" /></label>
-        <button class="secondary" @onclick="Last30">Last 30 days</button>
+        <label>@T("From")<input type="date" @bind="from" /></label>
+        <label>@T("To")<input type="date" @bind="to" /></label>
+        <button class="secondary" @onclick="Last30">@T("Last 30 days")</button>
     </div>
-    @if(!Valid){<p class="error" role="status">Choose a valid date range of up to 366 calendar days.</p>}
+    @if(!Valid){<p class="error" role="status">@T("Choose a valid date range of up to 366 calendar days.")</p>}
     @if(!string.IsNullOrEmpty(feedback)){<p class="notice" role="status">@feedback</p>}
 </section>
 @if(Valid)
 {
     var data=FleetReport.Build(Fleet,Now,from,to);
     <div class="metrics">
-        <div class="metric">Trips<strong>@data.Trips</strong></div>
-        <div class="metric">Completed<strong>@data.Completed</strong></div>
-        <div class="metric">Completed distance<strong>@data.CompletedDistanceKm.ToString("N0") <small>km</small></strong></div>
-        <div class="metric">Service due<strong>@data.ServiceDue</strong></div>
+        <div class="metric">@T("Trips")<strong>@data.Trips</strong></div>
+        <div class="metric">@T("Completed")<strong>@data.Completed</strong></div>
+        <div class="metric">@T("Completed distance")<strong>@data.CompletedDistanceKm.ToString("N0") <small>km</small></strong></div>
+        <div class="metric">@T("Service due")<strong>@data.ServiceDue</strong></div>
     </div>
     <div class="split">
-        <section class="panel"><h2>Distance by vehicle</h2><p class="muted">Completed trips only · km</p>
+        <section class="panel"><h2>@T("Distance by vehicle")</h2><p class="muted">@T("Completed trips only · km")</p>
             @foreach(var row in data.VehicleRows){
                 <div class="reportbar"><div><strong>@row.Registration</strong><span>@row.CompletedDistanceKm.ToString("N0") km</span></div><div class="progress"><i style="@BarStyle(row.CompletedDistanceKm,data.VehicleRows.Max(r=>r.CompletedDistanceKm))"></i></div></div>
             }
-            @if(data.VehicleRows.Count==0){<p>No vehicles registered.</p>}
+            @if(data.VehicleRows.Count==0){<p>@T("No vehicles registered.")</p>}
         </section>
-        <section class="panel"><h2>Trip status</h2>
-            <div class="reportbar"><div><strong>Completed</strong><span>@data.Completed</span></div><div class="progress"><i style="@BarStyle(data.Completed,data.Trips)"></i></div></div>
-            <div class="reportbar"><div><strong>In transit</strong><span>@data.Active</span></div><div class="progress"><i style="@BarStyle(data.Active,data.Trips)"></i></div></div>
-            <div class="reportbar"><div><strong>Scheduled</strong><span>@data.Scheduled</span></div><div class="progress"><i style="@BarStyle(data.Scheduled,data.Trips)"></i></div></div>
+        <section class="panel"><h2>@T("Trip status")</h2>
+            <div class="reportbar"><div><strong>@T("Completed")</strong><span>@data.Completed</span></div><div class="progress"><i style="@BarStyle(data.Completed,data.Trips)"></i></div></div>
+            <div class="reportbar"><div><strong>@T("In transit")</strong><span>@data.Active</span></div><div class="progress"><i style="@BarStyle(data.Active,data.Trips)"></i></div></div>
+            <div class="reportbar"><div><strong>@T("Scheduled")</strong><span>@data.Scheduled</span></div><div class="progress"><i style="@BarStyle(data.Scheduled,data.Trips)"></i></div></div>
             <p class="muted">Service due: @data.ServiceDue · Service soon: @data.ServiceSoon</p>
         </section>
     </div>
-    <section class="panel"><h2>Vehicle performance</h2><div class="tablewrap"><table><thead><tr><th>Registration</th><th>Model</th><th>Trips</th><th>Completed</th><th>Completed distance</th><th>Service</th></tr></thead><tbody>
-        @foreach(var row in data.VehicleRows){<tr><td>@row.Registration</td><td>@row.Model</td><td>@row.Trips</td><td>@row.CompletedTrips</td><td>@row.CompletedDistanceKm km</td><td><span class="pill @row.ServiceStatus.ToLowerInvariant()">@row.ServiceStatus</span></td></tr>}
+    <section class="panel"><h2>@T("Vehicle performance")</h2><div class="tablewrap"><table><thead><tr><th>@T("Registration")</th><th>@T("Model")</th><th>@T("Trips")</th><th>@T("Completed")</th><th>@T("Completed distance")</th><th>@T("Service")</th></tr></thead><tbody>
+        @foreach(var row in data.VehicleRows){<tr><td>@row.Registration</td><td>@row.Model</td><td>@row.Trips</td><td>@row.CompletedTrips</td><td>@row.CompletedDistanceKm km</td><td><span class="pill @row.ServiceStatus.ToLowerInvariant()">@T(row.ServiceStatus)</span></td></tr>}
     </tbody></table></div></section>
 }
-@code {
+@code{
+    [Parameter] public bool Russian{get;set;}
+    private string T(string value)=>DemoLocale.Text(value,Russian);
     [Parameter, EditorRequired] public FleetData Fleet {get;set;}=default!;
     [Parameter] public DateTime Now {get;set;}
     private DateTime from,to;
@@ -48,7 +51,7 @@
     private async Task Export(){
         if(!Valid)return;
         try{
-            var bytes=FleetReport.ExportXlsx(FleetReport.Build(Fleet,Now,from,to),from,to);
+            var bytes=FleetReport.ExportXlsx(FleetReport.Build(Fleet,Now,from,to),from,to,Russian);
             await JS.InvokeVoidAsync("fleetDownload",Convert.ToBase64String(bytes),$"fleet-report-{from:yyyy-MM-dd}-{to:yyyy-MM-dd}.xlsx");
             feedback="Excel workbook generated.";
         }catch(JSException){feedback="Unable to download the workbook in this browser.";}

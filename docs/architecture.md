@@ -16,7 +16,7 @@ FleetManagement began as a Windows WPF application on .NET Framework 4.7.2 and E
 
 ### ADR-001 — Static demo and local API remain independent
 
-GitHub Pages hosts the WASM files, not a server or a database. The browser never receives an API key or a production connection string. This reduces deployment friction and lets recruiters explore the product without registering. A future connected client would need HTTPS, an explicit authentication flow, CORS policy and deployment hardening.
+GitHub Pages hosts the WASM files, not a server or a database. The browser never receives an API key or a production connection string. This reduces deployment friction and lets recruiters explore the product without registering. V3 now serves a separate same-origin connected workspace at /console from the API. It uses Identity bearer login and memory-only tokens. No automatic synchronization with the static WASM demo; external deployment requires HTTPS and hardening.
 
 ### ADR-002 — A shared core instead of duplicated business rules
 
@@ -24,7 +24,7 @@ The scheduling and report functions run in both the browser and API. UI feedback
 
 ### ADR-003 — Scheduling and data integrity
 
-An in-process semaphore serializes mutation checks and persistence in the local API. Foreign keys and unique indexes protect references. This is suitable for the single-process prototype; database-level concurrency and stable server-generated IDs are required before scale-out.
+An in-process semaphore plus a provider-level transaction lock serializes cooperating V3 fleet mutations across API processes. SQLite reserves its writer; SQL Server uses a transaction-owned application lock. Foreign keys and unique indexes protect references. Direct database writers and earlier versions bypass this protocol; stable non-reused IDs and durable idempotency remain open.
 
 ### ADR-004 — Identity and audit
 
@@ -36,7 +36,7 @@ Tracking interpolates positions on a schematic route using simulated time. No GP
 
 ### ADR-006 — Native spreadsheet export
 
-The report uses standard Office Open XML with two sheets; user strings are stored as inline text, not formulas. The workbook contains numeric cells for calculations and can be generated without proprietary packages.
+The operational and financial reports use standard Office Open XML with two and four sheets respectively; user strings are stored as inline text, not formulas. The workbook contains numeric cells for calculations and can be generated without proprietary packages.
 
 ## Verification strategy
 
@@ -48,4 +48,52 @@ The report uses standard Office Open XML with two sheets; user strings are store
 
 ## Remaining technical debt
 
-EF migrations and importing old records, full account lifecycle/revocation, reliable multi-instance notifications, production observability and an authenticated client are future work. Legacy WPF security and legacy tests remain unresolved. See SECURITY.md and the backend guide.
+V2-to-V3 additive schema upgrade and SQLite recovery are implemented; full versioned EF migration history and legacy WPF import remain open. Staff role changes and HTTP session revocation, durable batch receipts and a narrow SignalR Long Polling subscriber are implemented. Full account lifecycle, distributed SignalR, idempotency for other operations, production observability and complete UI parity remain open. Legacy WPF security and legacy tests remain unresolved. See SECURITY.md and the backend guide.
+
+## V3 component boundaries
+
+```mermaid
+flowchart TD
+  W[Offline WASM demo] --> C[Shared C# Core]
+  W --> L[LocalStorage synthetic data]
+  U[Connected browser console] -->|Same-origin Identity bearer| A[ASP.NET Core API]
+  A --> C
+  A --> T[Provider transaction and audit]
+  T --> S[(SQLite or SQL Server)]
+  A --> H[SignalR local notifications]
+  U -->|SignalR long polling and revision fallback| A
+  M[ML.NET local trainer] --> C
+  M --> R[Local model registry artifacts]
+```
+
+Neither UI automatically imports or synchronizes the other store. The ML trainer uses synthetic datasets and does not deploy models into the API. See [security review](security-review-v3.md), [database concurrency](database-concurrency.md), [recovery](database-recovery.md) and [performance](performance-testing.md).
+
+## Logical persistence model (V3)
+
+```mermaid
+erDiagram
+    VEHICLES ||--o{ TRIPS : assigned
+    DRIVERS ||--o{ TRIPS : assigned
+    VEHICLES ||--o{ MAINTENANCE_ENTRIES : history
+    VEHICLES ||--o{ VEHICLE_RESERVATIONS : blocks
+    DRIVERS ||--o{ DRIVER_SHIFTS : availability
+    ASPNET_USERS ||--o{ ASPNET_USER_ROLES : memberships
+    ASPNET_ROLES ||--o{ ASPNET_USER_ROLES : memberships
+    AUDIT_ENTRIES {
+      int Id PK
+      string ActorId
+      string EntityType
+      int EntityId
+      string Action
+      datetime OccurredUtc
+    }
+    BATCH_RECEIPTS {
+      string ActorId PK
+      uuid Key PK
+      string PayloadHash
+      string ResponseJson
+      datetime CreatedUtc
+    }
+```
+
+Audit actor/entity references and receipt actor IDs are logical references, not foreign keys: historical records survive deletion of operational entities. BatchReceipts also stores versioned ordinary fleet write receipts; see [receipt contract](batch-receipts.md). Current databases use explicit, verified additive upgrade from the known V2/V3 schemas, not a complete EF migration history. A future migration baseline requires provider-specific model snapshots, explicit operator adoption and tested preservation of all existing records; never run an initial create migration over an existing database.

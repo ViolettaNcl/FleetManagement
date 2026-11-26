@@ -2,9 +2,8 @@ name: Backend API integration
 on:
   push:
     branches: [master, 'feature/**']
-    paths: ['src/FleetManagement.Core/**','src/FleetManagement.Api/**','tests/api/**','tests/FleetManagement.Realtime.Checks/**','.github/workflows/api-ci.yml']
   pull_request:
-    paths: ['src/FleetManagement.Core/**','src/FleetManagement.Api/**','tests/api/**','tests/FleetManagement.Realtime.Checks/**','.github/workflows/api-ci.yml']
+    paths: ['src/FleetManagement.Core/**','src/FleetManagement.Api/**','tests/api/**','tools/sqlite_recovery.py','tools/migration-baseline.sh','tools/FleetManagement.SchemaInspector/**','tests/FleetManagement.Realtime.Checks/**','.github/workflows/api-ci.yml']
   workflow_dispatch:
 permissions:
   contents: read
@@ -20,6 +19,16 @@ jobs:
       - uses: actions/setup-dotnet@v4
         with:
           dotnet-version: '10.0.x'
+      - uses: actions/checkout@v4
+        with:
+          ref: 4287aef89861d1be7a0ab38de5c8253074cd402b
+          path: v2-baseline
+      - uses: actions/checkout@v4
+        with:
+          ref: 9250eccc57f4606c6fce88a15d5acb531f25699b
+          path: v3-baseline
+      - run: dotnet build v3-baseline/src/FleetManagement.Api -c Release
+      - run: dotnet build v2-baseline/src/FleetManagement.Api -c Release
       - run: dotnet build src/FleetManagement.Api -c Release
       - name: Test HTTP, Identity, audit and persistence (${{ matrix.provider }})
         shell: bash
@@ -33,6 +42,8 @@ jobs:
           export ConnectionStrings__Fleet="Data Source=$RUNNER_TEMP/fleet-test.db"
           cleanup() {
             if [ -n "${pid:-}" ]; then kill "$pid" 2>/dev/null || true; fi
+            if [ -n "${pid2:-}" ]; then kill "$pid2" 2>/dev/null || true; fi
+            cat "$RUNNER_TEMP/fleet-api2.log" 2>/dev/null || true
             if [ -n "${sql_container:-}" ]; then docker rm -f "$sql_container" >/dev/null 2>&1 || true; fi
             cat "$RUNNER_TEMP/fleet-api.log" 2>/dev/null || true
           }
@@ -51,7 +62,7 @@ jobs:
             export ConnectionStrings__Fleet="Server=127.0.0.1,1433;Database=FleetCi;User Id=sa;Password=$MSSQL_SA_PASSWORD;Encrypt=True;TrustServerCertificate=True"
           fi
           start_api() {
-            dotnet src/FleetManagement.Api/bin/Release/net10.0/FleetManagement.Api.dll --urls http://127.0.0.1:5095 > "$RUNNER_TEMP/fleet-api.log" 2>&1 &
+            dotnet "${api_dll:-src/FleetManagement.Api/bin/Release/net10.0/FleetManagement.Api.dll}" --urls http://127.0.0.1:5095 > "$RUNNER_TEMP/fleet-api.log" 2>&1 &
             pid=$!
             for i in $(seq 1 60); do
               if curl -fsS http://127.0.0.1:5095/health >/dev/null 2>&1; then return; fi
@@ -60,10 +71,75 @@ jobs:
             cat "$RUNNER_TEMP/fleet-api.log"
             return 1
           }
+          api_dll=v2-baseline/src/FleetManagement.Api/bin/Release/net10.0/FleetManagement.Api.dll
+          start_api
+          python3 tests/api/upgrade.py capture "$RUNNER_TEMP/v2-state.json"
+          kill "$pid"; wait "$pid" || true; unset pid api_dll
+          # V3 must refuse the old schema unless explicitly opted in.
+          set +e
+          timeout 20s dotnet src/FleetManagement.Api/bin/Release/net10.0/FleetManagement.Api.dll --urls http://127.0.0.1:5095 > "$RUNNER_TEMP/upgrade-guard.log" 2>&1
+          guard_status=$?
+          set -e
+          test "$guard_status" -ne 0 && test "$guard_status" -ne 124
+          grep -q "V3 operational schema missing or inaccessible" "$RUNNER_TEMP/upgrade-guard.log"
+          export Fleet__UpgradeV2Schema=true
+          # Exercise upgrade from the actual pre-receipt V3 schema as well.
+          api_dll=v3-baseline/src/FleetManagement.Api/bin/Release/net10.0/FleetManagement.Api.dll
+          start_api
+          python3 tests/api/upgrade.py compare "$RUNNER_TEMP/v2-state.json"
+          kill "$pid"; wait "$pid" || true; unset pid api_dll
+          start_api
+          python3 tests/api/upgrade.py compare "$RUNNER_TEMP/v2-state.json"
+          kill "$pid"; wait "$pid" || true; unset pid
+          # Explicit rerun is non-destructive and idempotent for known schema.
+          start_api
+          python3 tests/api/upgrade.py compare "$RUNNER_TEMP/v2-state.json"
+          kill "$pid"; wait "$pid" || true; unset pid Fleet__UpgradeV2Schema
           start_api
           python3 tests/api/smoke.py
+          # Second independent API process; do not run initialization concurrently.
+          Fleet__InitializeDatabase=false dotnet src/FleetManagement.Api/bin/Release/net10.0/FleetManagement.Api.dll --urls http://127.0.0.1:5096 > "$RUNNER_TEMP/fleet-api2.log" 2>&1 &
+          pid2=$!
+          ready=false
+          for i in $(seq 1 60); do
+            if curl -fsS http://127.0.0.1:5096/health >/dev/null 2>&1; then ready=true; break; fi
+            sleep 1
+          done
+          test "$ready" = true
+          python3 tests/api/cross_process.py
+          kill "$pid2"; wait "$pid2" || true; unset pid2
           dotnet run --project tests/FleetManagement.Realtime.Checks -c Release
           kill "$pid"
           wait "$pid" || true
           start_api
           python3 tests/api/smoke.py --verify-persistence
+          python3 tests/api/performance.py "$RUNNER_TEMP/fleet-performance.json"
+          if [ "$Fleet__Provider" = "Sqlite" ]; then
+            kill "$pid"; wait "$pid" || true; unset pid
+            python3 tests/api/recovery.py "$RUNNER_TEMP/fleet-test.db"
+          fi
+      - uses: actions/upload-artifact@v4
+        with:
+          name: fleet-performance-${{ matrix.provider }}
+          path: ${{ runner.temp }}/fleet-performance.json
+          if-no-files-found: error
+  migration-baseline:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    strategy:
+      fail-fast: false
+      matrix:
+        provider: [Sqlite, SqlServer]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '10.0.x'
+      - name: Generate and rehearse fresh EF migration baseline
+        run: bash tools/migration-baseline.sh "${{ matrix.provider }}"
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: ef-baseline-${{ matrix.provider }}
+          path: ${{ runner.temp }}/migration-${{ matrix.provider }}
+          if-no-files-found: error

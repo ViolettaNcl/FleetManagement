@@ -1,0 +1,42 @@
+@using FleetManagement.Web
+@using Microsoft.AspNetCore.Components.Forms
+<section class="panel"><h2>@T("Model registry")</h2><p class="muted">@T("Import manifest.json from a local ML.NET run or GitHub Actions registry artifact. Metadata only: no ZIP execution, model loading, network upload or automatic promotion. Imported claims and hashes are not independently verified here.")</p>
+<label>@T("Experiment manifests (JSON, up to 64 KiB each)")<InputFile OnChange="Import" multiple accept=".json,application/json"/></label>
+<div class="actions"><button class="secondary" @onclick="Clear">@T("Clear imported experiments")</button><a href="https://github.com/ViolettaNcl/FleetManagement/actions/workflows/ml-ci.yml" target="_blank" rel="noopener noreferrer">@T("Open ML training artifacts")</a></div>
+@if(message.Length>0){<p role="status" class="notice">@T(message)</p>}</section>
+@if(entries.Count>0){
+    <section class="panel"><h2>@T("Experiment history")</h2><div class="tablewrap"><table><thead><tr><th>@T("Run")</th><th>@T("Seed")</th><th>Logistic F1</th><th>FastTree F1</th><th>Linear MAE</th><th>FastTree MAE</th><th>@T("Compare")</th></tr></thead><tbody>@foreach(var entry in entries.OrderByDescending(x=>x.CreatedUtc)){<tr><td><button class="secondary" @onclick="()=>selected=entry.RunId">@entry.CreatedUtc.ToString("yyyy-MM-dd HH:mm:ss") UTC</button></td><td>@entry.Seed</td><td>@entry.LogisticF1.ToString("P1")</td><td>@entry.FastTreeF1.ToString("P1")</td><td>@entry.LinearMae.ToString("F2")</td><td>@entry.FastTreeMae.ToString("F2")</td><td>@(RegistryManifest.Comparable(Current,entry)?T("Same test data"):T("Different test data"))</td></tr>}</tbody></table></div></section>
+    var current=Current;
+    <div class="split"><section class="panel"><h2>@T("Maintenance benchmark")</h2><p>@T("Held-out samples"): @current.MaintenanceRows</p><div class="tablewrap"><table><thead><tr><th>@T("Model")</th><th>F1 ↑</th><th>Brier ↓</th></tr></thead><tbody><tr><td>Logistic</td><td>@current.LogisticF1.ToString("P1")</td><td>@current.LogisticBrier.ToString("F3")</td></tr><tr><td>FastTree</td><td>@current.FastTreeF1.ToString("P1")</td><td>@current.FastTreeBrier.ToString("F3")</td></tr></tbody></table></div><p class="muted">@T("F1 and Brier measure different properties. No automatic winner is promoted.")</p></section>
+    <section class="panel"><h2>@T("ETA benchmark")</h2><p>Held-out samples: @current.EtaRows</p><div class="tablewrap"><table><thead><tr><th>@T("Model")</th><th>MAE ↓</th><th>RMSE ↓</th></tr></thead><tbody><tr><td>Linear</td><td>@current.LinearMae.ToString("F2")</td><td>@current.LinearRmse.ToString("F2")</td></tr><tr><td>FastTree</td><td>@current.FastTreeMae.ToString("F2")</td><td>@current.FastTreeRmse.ToString("F2")</td></tr></tbody></table></div><p class="muted">@T("Errors in minutes; synthetic journeys only.")</p></section></div>
+    @if(current.MaintenanceImportance is not null||current.EtaImportance is not null){
+        <section class="panel"><h2>@T("FastTree feature importance")</h2><p class="muted">@T("Imported held-out permutation loss changes. Positive means worse after shuffling; negative values are possible. Not causal and not independently verified.")</p>
+        @foreach(var group in new[]{(Name:"Maintenance benchmark",Metric:"Brier",Rows:current.MaintenanceImportance),(Name:"ETA benchmark",Metric:"MAE (min)",Rows:current.EtaImportance)}){
+            if(group.Rows is not null){<h3>@T(group.Name) · @T(group.Metric)</h3><div class="tablewrap"><table><thead><tr><th>@T("Feature")</th><th>@T("Mean loss change")</th><th>@T("Minimum")</th><th>@T("Maximum")</th></tr></thead><tbody>@foreach(var row in group.Rows.OrderByDescending(x=>x.Mean)){<tr><td>@T(row.Feature)</td><td>@row.Mean.ToString("F4")</td><td>@row.Min.ToString("F4")</td><td>@row.Max.ToString("F4")</td></tr>}</tbody></table></div>}
+        }
+        </section>
+    }
+    <section class="panel"><h2>@T("Experiment provenance")</h2><dl class="registry-details"><dt>@T("Run ID")</dt><dd>@current.RunId</dd><dt>@T("Source revision")</dt><dd>@current.Revision</dd><dt>ML.NET</dt><dd>@current.Version</dd><dt>@T("Maintenance test fingerprint")</dt><dd>@current.MaintenanceTestHash</dd><dt>@T("ETA test fingerprint")</dt><dd>@current.EtaTestHash</dd><dt>@T("Reported maintenance artifact hash")</dt><dd>@current.MaintenanceHash</dd><dt>@T("Reported ETA artifact hash")</dt><dd>@current.EtaHash</dd></dl><p class="muted">@T("Compare experiments only when their datasets and evaluation protocol match. Matching hashes do not authenticate imported files. This session-only viewer does not persist imported metadata.")</p></section>
+}
+@code{
+    [Parameter] public bool Russian{get;set;}
+    private string T(string value)=>DemoLocale.Text(value,Russian);
+    private readonly List<RegistryEntry> entries=[];
+    private string selected="",message="";
+    private RegistryEntry Current=>entries.Single(x=>x.RunId==selected);
+    private async Task Import(InputFileChangeEventArgs e){
+        if(e.FileCount>10){message="Select at most 10 manifests at once.";return;}
+        int added=0,rejected=0;
+        foreach(var file in e.GetMultipleFiles(10)){
+            try{
+                if(entries.Count>=50)throw new FormatException("Session limit reached.");
+                using var reader=new StreamReader(file.OpenReadStream(RegistryManifest.MaxBytes));
+                var entry=RegistryManifest.Parse(await reader.ReadToEndAsync());
+                if(entries.Any(x=>x.RunId==entry.RunId))throw new FormatException("Duplicate run ID.");
+                entries.Add(entry);selected=entry.RunId;added++;
+            }catch(Exception ex) when(ex is IOException or FormatException or InvalidOperationException){rejected++;}
+        }
+        message=$"Imported {added}; rejected {rejected} (invalid, duplicate, oversized or session limit).";
+    }
+    private void Clear(){entries.Clear();selected="";message="Session registry cleared.";}
+}

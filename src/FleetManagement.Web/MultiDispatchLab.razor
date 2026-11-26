@@ -1,0 +1,42 @@
+@using FleetManagement.Web
+<section class="panel"><div class="registerhead"><div><h2>@T("Multi-vehicle dispatch lab")</h2><p class="muted">@T("Compare two deterministic heuristics on synthetic delivery orders. Capacity, service start windows, waiting, service duration and depot return are enforced. No external map or actual fleet assignment.")</p></div><button @onclick="Calculate">@T("Optimize fleet")</button></div>
+<div class="formgrid"><label>@T("Orders")<input type="number" min="1" max="40" @bind="orders"/></label><label>@T("Vehicles")<input type="number" min="1" max="8" @bind="vehicles"/></label><label>@T("Capacity per vehicle (units)")<input type="number" min="1" max="100" @bind="capacity"/></label><label>@T("Scenario seed")<input type="number" @bind="seed"/></label></div>
+@if(error.Length>0){<p class="error" role="status">@error</p>}
+</section>
+@if(scenario is not null&&plans.Count>0){
+    var plan=plans[selected];var sc=scenario;
+    <div class="metrics"><div class="metric">@T("Assigned orders")<strong>@plan.Assigned / @sc.Orders.Count</strong></div><div class="metric">@T("Unassigned")<strong>@plan.Unassigned.Count</strong></div><div class="metric">@T("Fleet distance")<strong>@plan.Distance.ToString("F1") km</strong></div><div class="metric">@T("Last depot return")<strong>@TimeLabel(plan.Makespan)</strong></div></div>
+    <section class="panel"><h2>@T("Dispatch strategy comparison")</h2><div class="tablewrap"><table><thead><tr><th>@T("Strategy")</th><th>@T("Assigned")</th><th>@T("Distance")</th><th>@T("Last return")</th></tr></thead><tbody>@foreach(var p in plans){<tr><td>@p.Algorithm</td><td>@p.Assigned</td><td>@p.Distance.ToString("F1") km</td><td>@TimeLabel(p.Makespan)</td></tr>}</tbody></table></div><p class="muted">@T("Recommended prioritizes number of served orders, then distance. Compare mileage only at equal coverage. Heuristic, not a proof of optimality.")</p><div class="actions">@for(int i=0;i<plans.Count;i++){var index=i;<button class="@(selected==index?"":"secondary")" aria-pressed="@(selected==index)" @onclick="()=>selected=index">@plans[index].Algorithm</button>}</div></section>
+    <div class="split"><section class="panel"><h2>@T("Multi-route preview")</h2><svg class="map route-lab-map" viewBox="0 0 600 390" role="img" aria-label="Synthetic multi-vehicle routes">
+        @for(int i=0;i<=10;i++){<line class="road" x1="@(30+i*54)" y1="20" x2="@(30+i*54)" y2="370"/><line class="road" x1="30" y1="@(20+i*35)" x2="570" y2="@(20+i*35)"/>}
+        @foreach(var tour in plan.Tours.Where(t=>t.Visits.Count>0)){<polyline points="@Polyline(tour,sc.Depot)" stroke="@Color(tour.Vehicle.Id)" stroke-width="3" fill="none" stroke-linejoin="round"/>@foreach(var visit in tour.Visits){<circle cx="@X(visit.Order.Stop)" cy="@Y(visit.Order.Stop)" r="6" fill="@Color(tour.Vehicle.Id)" stroke="white" stroke-width="1.5"><title>Order @visit.Order.Id</title></circle>}}
+        @foreach(var order in plan.Unassigned){<circle cx="@X(order.Stop)" cy="@Y(order.Stop)" r="6" fill="#FFFFFF" stroke="#A12645" stroke-width="2"><title>Unassigned order @order.Id</title></circle>}
+        <circle cx="@X(sc.Depot)" cy="@Y(sc.Depot)" r="10" fill="#4B0082" stroke="white" stroke-width="2"/>
+    </svg><p class="muted">@T("Filled dots: assigned. Hollow red dots: unassigned. Distances are Euclidean, not road distances.")</p></section>
+    <section class="panel"><h2>@T("Vehicle capacity")</h2>@foreach(var tour in plan.Tours){<div class="reportbar"><div><strong style="color:@Color(tour.Vehicle.Id)">Vehicle @tour.Vehicle.Id</strong><span>@tour.Load / @tour.Vehicle.Capacity units</span></div><div class="progress"><i style="@CapacityStyle(tour)"></i></div></div>}</section></div>
+    <section class="panel"><h2>@T("Dispatch Gantt timeline")</h2><p class="muted">@T("08:00–16:00 shift. Colored segments represent service time at stops; pale track represents time away from depot including travel and waiting.")</p>
+    <div class="gantt-scroll"><div class="gantt-grid"><div></div><div class="gantt-axis">@for(int h=8;h<=16;h++){<span>@($"{h:00}:00")</span>}</div>
+    @foreach(var tour in plan.Tours){<strong>Vehicle @tour.Vehicle.Id</strong><div class="gantt-track" aria-label="@($"Vehicle {tour.Vehicle.Id} schedule")"><div class="gantt-away" style="@Span(0,tour.ReturnMinute,sc.ShiftMinutes)"></div>@foreach(var visit in tour.Visits){<div class="gantt-visit" style="@(Span(visit.Start,visit.End,sc.ShiftMinutes)+";background:"+Color(tour.Vehicle.Id))" title="@($"Order {visit.Order.Id}: {TimeLabel(visit.Start)}–{TimeLabel(visit.End)}")"></div>}</div>}
+    </div></div></section>
+    <section class="panel"><h2>@T("Delivery schedule")</h2><div class="tablewrap"><table><thead><tr><th>@T("Vehicle")</th><th>@T("Order")</th><th>@T("Demand")</th><th>@T("Window (service start)")</th><th>@T("Arrival")</th><th>@T("Service start")</th><th>@T("Service end")</th></tr></thead><tbody>@foreach(var tour in plan.Tours){@foreach(var visit in tour.Visits){<tr><td>Vehicle @tour.Vehicle.Id</td><td>#@visit.Order.Id</td><td>@visit.Order.Demand</td><td>@TimeLabel(visit.Order.Earliest)–@TimeLabel(visit.Order.Latest)</td><td>@TimeLabel(visit.Arrival)</td><td>@TimeLabel(visit.Start)</td><td>@TimeLabel(visit.End)</td></tr>}}</tbody></table></div></section>
+    <section class="panel"><h2>@T("Unassigned orders")</h2>@if(plan.Unassigned.Count==0){<p>@T("No unassigned orders.")</p>}else{<p class="muted">@T("No feasible placement was found by this heuristic. A different algorithm or more capacity may serve them.")</p><div class="tablewrap"><table><thead><tr><th>@T("Order")</th><th>@T("Demand")</th><th>@T("Window")</th></tr></thead><tbody>@foreach(var o in plan.Unassigned){<tr><td>#@o.Id</td><td>@o.Demand</td><td>@TimeLabel(o.Earliest)–@TimeLabel(o.Latest)</td></tr>}</tbody></table></div>}</section>
+}
+@code{
+    [Parameter] public bool Russian{get;set;}
+    private string T(string value)=>DemoLocale.Text(value,Russian);
+    private int orders=20,vehicles=4,capacity=30,seed=42,selected=2;
+    private string error="";
+    private DispatchScenario? scenario;
+    private IReadOnlyList<DispatchPlan> plans=[];
+    private static readonly string[] Colors=["#6A5ACD","#BA55A7","#287E83","#9564B7","#4779B2","#9E6A37","#66724E","#9D5572"];
+    protected override void OnInitialized()=>Calculate();
+    private void Calculate(){if(orders is <1 or >40||vehicles is <1 or >8||capacity is <1 or >100){error="Choose 1–40 orders, 1–8 vehicles and capacity 1–100.";return;}error="";scenario=MultiVehicleDispatch.Generate(orders,vehicles,capacity,seed);plans=MultiVehicleDispatch.Compare(scenario);selected=2;}
+    private static string Color(int id)=>Colors[(id-1)%Colors.Length];
+    private static string F(double x)=>x.ToString("F2",CultureInfo.InvariantCulture);
+    private static string X(RouteStop s)=>F(30+s.X*5.4);
+    private static string Y(RouteStop s)=>F(20+s.Y*3.5);
+    private static string Polyline(DeliveryTour t,RouteStop depot)=>string.Join(" ",t.Visits.Select(v=>v.Order.Stop).Prepend(depot).Append(depot).Select(s=>X(s)+","+Y(s)));
+    private static string TimeLabel(double minutes)=>TimeSpan.FromMinutes(480+Math.Round(minutes)).ToString(@"hh\:mm");
+    private static string CapacityStyle(DeliveryTour t)=>"width:"+F(100.0*t.Load/t.Vehicle.Capacity)+"%;background:"+Color(t.Vehicle.Id);
+    private static string Span(double start,double end,int shift)=>"left:"+F(100*start/shift)+"%;width:"+F(100*(end-start)/shift)+"%";
+}

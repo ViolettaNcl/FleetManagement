@@ -1,0 +1,41 @@
+import { chromium } from 'playwright';
+import assert from 'node:assert/strict';
+
+const url=process.env.FLEET_PREVIEW_URL;
+const revision=process.env.GITHUB_SHA;
+assert.ok(['http://127.0.0.1:8080/FleetManagement/','https://violettancl.github.io/FleetManagement/'].includes(url),'Only the intended local or public preview is supported');
+assert.match(revision,/^[0-9a-f]{40}$/);
+const browser=await chromium.launch({headless:true});
+try {
+  const context=await browser.newContext({viewport:{width:1366,height:900}});
+  // Allow bounded CDN propagation, never accept stale or unknown revision.
+  let verified=false;
+  for(let attempt=0;attempt<18;attempt++){
+    try{
+      const response=await context.request.get(url+'preview-build.json?rev='+revision+'&attempt='+attempt,{timeout:10000,maxRedirects:0});
+      if(response.ok()){
+        const data=await response.json();
+        verified=data.schema===1&&data.revision===revision&&data.mode==='synthetic-browser-demo';
+        if(verified)break;
+      }
+    }catch{}
+    if(attempt<17)await new Promise(resolve=>setTimeout(resolve,5000));
+  }
+  assert.ok(verified,'Public build marker missing or stale');
+  const page=await context.newPage();
+  const errors=[];
+  page.on('pageerror',e=>errors.push(e.message));
+  const response=await page.goto(url,{waitUntil:'domcontentloaded',timeout:60000});
+  assert.ok(response?.ok(),'Preview HTTP response failed');
+  assert.equal(new URL(page.url()).origin,new URL(url).origin);
+  await page.getByRole('heading',{name:'Operations overview',exact:true}).waitFor({timeout:90000});
+  await page.getByRole('button',{name:'Optimization',exact:true}).click();
+  await page.getByRole('button',{name:'Calculate routes',exact:true}).click();
+  await page.getByRole('button',{name:'Multi-start 2-opt',exact:true}).waitFor();
+  await page.getByRole('button',{name:'Multi-start 2-opt',exact:true}).click();
+  await page.getByRole('button',{name:'Overview',exact:true}).click();
+  await page.getByLabel('Language',{exact:true}).selectOption('ru');
+  await page.getByRole('heading',{name:'Обзор операций',exact:true}).waitFor();
+  assert.deepEqual(errors,[]);
+  console.log('PASS: actual preview UI and exact deployed revision '+revision);
+}finally{await browser.close();}

@@ -1,0 +1,6 @@
+# Geographic tracking V1
+Three synthetic trips among approximate Central European city centres. Haversine distances (mean Earth radius 6371.0088 km) weight legs; linear latitude/longitude interpolation is regional, not a road route. Fixed synthetic durations.
+
+Basemap: Natural Earth 1:110m admin-0 countries, v5.1.2, public domain. Source: https://github.com/nvkelso/natural-earth-vector/blob/v5.1.2/geojson/ne_110m_admin_0_countries.geojson and https://www.naturalearthdata.com/about/terms-of-use/. Polygon rings clipped to 7–24 E / 43–54 N, projected equirectangularly into SVG, rounded to two decimal projected units. Boundaries follow that small-scale dataset and are illustrative, not a political statement or navigation data. No external requests at runtime.
+
+Geofences: Haversine distance to nearest named hub on the journey, adjustable 5–50 km; display ellipses approximate the projection. Event history reconstructed at integer minutes, brief crossings may be missed. Predeparture positions excluded from events. Overlapping zones use nearest hub. Replay from 08:00 to 20:00. No live GPS, real road network, location collection, persistence or connection to registered fleet. Tests cover distance, endpoints, status, progress and deterministic sampled events.

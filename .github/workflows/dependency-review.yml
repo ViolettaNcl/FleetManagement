@@ -1,0 +1,61 @@
+name: Modern dependency inventory
+on:
+  workflow_dispatch:
+  push:
+    branches: [master, 'feature/**']
+  pull_request:
+    paths: ['src/**/*.csproj','tools/**/*.csproj','tests/**/*.csproj','.github/workflows/dependency-review.yml','tools/dependency_inventory.py','tools/legacy_inventory.py','tests/browser/package.json','tests/browser/package-lock.json','src/FleetManagement.Api/Dockerfile','src/FleetManagement.Api/**','src/FleetManagement.Core/**']
+permissions:
+  contents: read
+jobs:
+  inventory:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '10.0.x'
+      - name: Query NuGet advisory data for modern projects
+        run: python3 tools/dependency_inventory.py "${{ runner.temp }}/dependency-inventory"
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: modern-nuget-advisory-inventory
+          path: ${{ runner.temp }}/dependency-inventory
+          if-no-files-found: error
+  additional:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+      - name: Audit browser dependencies without lifecycle scripts
+        run: |
+          mkdir -p "$RUNNER_TEMP/extra-inventory"
+          cd tests/browser
+          npm install --package-lock-only --ignore-scripts --no-audit --no-fund
+          set +e
+          npm audit --json > "$RUNNER_TEMP/extra-inventory/npm.json"
+          code=$?
+          set -e
+          python3 -c 'import json,sys; d=json.load(open(sys.argv[1])); assert "error" not in d and isinstance(d.get("metadata",{}).get("vulnerabilities"),dict); print("npm findings:",d["metadata"]["vulnerabilities"])' "$RUNNER_TEMP/extra-inventory/npm.json"
+          test "$code" -le 1
+      - name: Query historical WPF declared packages
+        run: python3 tools/legacy_inventory.py "$RUNNER_TEMP/extra-inventory/legacy-wpf.json"
+      - name: Build disposable runtime image and save scanner input
+        run: |
+          docker build --pull -f src/FleetManagement.Api/Dockerfile -t fleetmanagement:review .
+          docker image inspect fleetmanagement:review > "$RUNNER_TEMP/extra-inventory/image.json"
+          docker save fleetmanagement:review -o "$RUNNER_TEMP/fleet-review.tar"
+      - name: Scan runtime image (no registry push)
+        run: |
+          docker run --rm -v "$RUNNER_TEMP/fleet-review.tar:/scan/image.tar:ro" -v "$RUNNER_TEMP/extra-inventory:/out" aquasec/trivy:0.76.2 image --input /scan/image.tar --scanners vuln --format json --output /out/container.json --exit-code 0 --timeout 10m
+          python3 -c 'import json,sys; d=json.load(open(sys.argv[1])); assert isinstance(d.get("Results"),list); print("Container vulnerability entries:",sum(len(r.get("Vulnerabilities") or []) for r in d["Results"]))' "$RUNNER_TEMP/extra-inventory/container.json"
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: additional-dependency-inventory
+          path: ${{ runner.temp }}/extra-inventory
+          if-no-files-found: error

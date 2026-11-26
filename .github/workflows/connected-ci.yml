@@ -1,0 +1,47 @@
+name: Connected workspace CI
+on:
+  push:
+    branches: [master, 'feature/**']
+  pull_request:
+    paths: ['src/FleetManagement.Api/**','src/FleetManagement.Core/**','tests/browser/connected.mjs','tests/browser/package.json','.github/workflows/connected-ci.yml']
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  browser:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '10.0.x'
+      - run: dotnet build src/FleetManagement.Api -c Release
+      - run: |
+          npm install --prefix tests/browser --no-audit --no-fund
+          cd tests/browser
+          npx playwright install --with-deps chromium
+      - name: Test connected workspace against disposable API
+        run: |
+          export Fleet__ApiKey="$(python3 -c 'import secrets; print(secrets.token_hex(32))')"
+          echo "::add-mask::$Fleet__ApiKey"
+          export Fleet__BootstrapAdminEmail=admin@example.test
+          export Fleet__BootstrapAdminPassword="Admin-$(python3 -c 'import secrets; print(secrets.token_hex(24))')!aA"
+          echo "::add-mask::$Fleet__BootstrapAdminPassword"
+          export Fleet__InitializeDatabase=true Fleet__SeedDemo=true Fleet__Provider=Sqlite
+          export ConnectionStrings__Fleet="Data Source=$RUNNER_TEMP/connected-ci.db"
+          dotnet src/FleetManagement.Api/bin/Release/net10.0/FleetManagement.Api.dll --urls http://127.0.0.1:5095 > "$RUNNER_TEMP/connected-api.log" 2>&1 &
+          pid=$!
+          trap 'kill "$pid" 2>/dev/null || true; cat "$RUNNER_TEMP/connected-api.log"' EXIT
+          ready=false
+          for i in $(seq 1 60); do
+            if curl -fsS http://127.0.0.1:5095/health >/dev/null 2>&1; then ready=true; break; fi
+            sleep 1
+          done
+          test "$ready" = true
+          node tests/browser/connected.mjs
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: connected-workspace-preview
+          path: browser-results
+          if-no-files-found: ignore

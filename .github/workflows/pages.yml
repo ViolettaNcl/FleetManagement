@@ -1,32 +1,29 @@
-name: Publish FleetManagement demo
+name: Publish FleetManagement demo (Pages)
 on:
   push:
-    branches: [master]
-    paths:
-      - 'src/FleetManagement.Core/**'
-      - 'src/FleetManagement.Web/**'
-      - 'tests/FleetManagement.Core.Checks/**'
-      - 'tests/browser/**'
-      - '.github/workflows/pages.yml'
+    branches: [master, 'preview/fleetops-v3']
   workflow_dispatch:
 permissions:
   contents: read
-  pages: write
-  id-token: write
 concurrency:
   group: pages
   cancel-in-progress: false
 jobs:
   build:
-    if: github.ref == 'refs/heads/master'
+    if: github.ref == 'refs/heads/master' || github.ref == 'refs/heads/preview/fleetops-v3'
     runs-on: ubuntu-24.04
+    timeout-minutes: 15
     steps:
       - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
       - uses: actions/setup-dotnet@v4
         with:
           dotnet-version: '10.0.x'
       - run: dotnet run --project tests/FleetManagement.Core.Checks -c Release
       - run: dotnet publish src/FleetManagement.Web -c Release -o publish
+      - name: Add exact revision marker
+        run: python3 tools/write_preview_manifest.py publish/wwwroot
       - name: Validate published browser build
         run: |
           npm install --prefix tests/browser --no-audit --no-fund
@@ -37,13 +34,50 @@ jobs:
           server=$!
           trap 'kill "$server" || true' EXIT
           node tests/browser/smoke.mjs
+          FLEET_PREVIEW_URL=http://127.0.0.1:8080/FleetManagement/ node tests/browser/public-preview.mjs
       - run: touch publish/wwwroot/.nojekyll
-      - uses: actions/configure-pages@v5
+      - name: Publish test link in workflow summary
+        run: |
+          echo '### FleetManagement browser preview' >> "$GITHUB_STEP_SUMMARY"
+          echo 'Expected public URL: https://violettancl.github.io/FleetManagement/' >> "$GITHUB_STEP_SUMMARY"
+          echo 'Link is verified only by the public smoke job after deployment.' >> "$GITHUB_STEP_SUMMARY"
       - uses: actions/upload-pages-artifact@v3
         with:
           path: publish/wwwroot
+          retention-days: 3
+  evidence:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 17
+    permissions:
+      contents: read
+      actions: read
+      checks: read
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - name: Wait for exact-commit CI evidence (bounded)
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          for attempt in $(seq 1 30); do
+            if python3 tools/release_gate.py "$RUNNER_TEMP/release-evidence.json"; then exit 0; fi
+            if [ "$attempt" -lt 30 ]; then sleep 30; fi
+          done
+          exit 1
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: pages-release-evidence
+          path: ${{ runner.temp }}/release-evidence.json
+          if-no-files-found: error
   deploy:
-    needs: build
+    if: github.ref == 'refs/heads/master' || github.ref == 'refs/heads/preview/fleetops-v3'
+    needs: [build, evidence]
+    permissions:
+      pages: write
+      id-token: write
+      contents: read
     runs-on: ubuntu-24.04
     environment:
       name: github-pages
@@ -52,3 +86,23 @@ jobs:
       - name: Deploy
         id: deployment
         uses: actions/deploy-pages@v4
+  verify-live:
+    needs: deploy
+    runs-on: ubuntu-24.04
+    timeout-minutes: 8
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - run: |
+          npm install --prefix tests/browser --no-audit --no-fund
+          (cd tests/browser && npx playwright install --with-deps chromium)
+      - name: Verify exact deployed revision and actual public UI
+        env:
+          FLEET_PREVIEW_URL: https://violettancl.github.io/FleetManagement/
+        run: node tests/browser/public-preview.mjs
+      - name: Record verified public URL
+        run: |
+          echo '### Public preview verified' >> "$GITHUB_STEP_SUMMARY"
+          echo '[Open FleetManagement](https://violettancl.github.io/FleetManagement/)' >> "$GITHUB_STEP_SUMMARY"
+          echo "Revision: $GITHUB_SHA" >> "$GITHUB_STEP_SUMMARY"

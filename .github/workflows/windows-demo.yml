@@ -1,0 +1,56 @@
+name: Windows portable demo
+on:
+  push:
+    branches: [master, 'feature/**']
+  pull_request:
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  package:
+    runs-on: windows-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '10.0.x'
+      - name: Build self-contained offline demo
+        shell: pwsh
+        run: |
+          dotnet publish src/FleetManagement.Web -c Release -o "$env:RUNNER_TEMP/web"
+          if ($LASTEXITCODE) { throw 'Web publish failed' }
+          dotnet publish tools/FleetManagement.DemoLauncher -c Release -r win-x64 --self-contained true -o "$env:RUNNER_TEMP/portable"
+          if ($LASTEXITCODE) { throw 'Launcher publish failed' }
+          Copy-Item "$env:RUNNER_TEMP/web/wwwroot" "$env:RUNNER_TEMP/portable/wwwroot" -Recurse
+          Copy-Item docs/windows-demo.txt "$env:RUNNER_TEMP/portable/START-HERE.txt"
+      - name: Verify packaged executable and WebAssembly
+        shell: pwsh
+        run: |
+          $root = "$env:RUNNER_TEMP/portable"
+          $log = "$env:RUNNER_TEMP/launcher.log"
+          $err = "$env:RUNNER_TEMP/launcher.err"
+          $process = Start-Process "$root/FleetManagement.Demo.exe" -ArgumentList '--no-browser' -WorkingDirectory $root -RedirectStandardOutput $log -RedirectStandardError $err -PassThru
+          try {
+            $url = $null
+            for ($i=0; $i -lt 60; $i++) {
+              if ($process.HasExited) { throw "Launcher exited: $(Get-Content $err -Raw)" }
+              $line = Get-Content $log -ErrorAction SilentlyContinue | Where-Object { $_ -match '^DEMO_URL=http://127\.0\.0\.1:\d+$' } | Select-Object -First 1
+              if ($line) { $url = $line.Substring(9); break }
+              Start-Sleep -Milliseconds 500
+            }
+            if ($url -ne 'http://127.0.0.1:5185') { throw 'Expected stable loopback URL' }
+            $response = Invoke-WebRequest "$url/"
+            if ($response.StatusCode -ne 200 -or $response.Content -notmatch 'FleetManagement') { throw 'Index unavailable' }
+            $wasm = Get-ChildItem "$root/wwwroot/_framework" -Filter '*.wasm' -File | Select-Object -First 1
+            if (!$wasm) { throw 'No WASM asset' }
+            $asset = Invoke-WebRequest "$url/_framework/$($wasm.Name)"
+            if ($asset.StatusCode -ne 200 -or $asset.Headers['Content-Type'] -notmatch 'application/wasm') { throw 'WASM MIME mismatch' }
+            Write-Host 'PASS: packaged exe, loopback HTTP and WASM'
+          } finally { if (!$process.HasExited) { Stop-Process -Id $process.Id -Force } }
+          Get-Content $log
+      - uses: actions/upload-artifact@v4
+        with:
+          name: fleetmanagement-windows-x64-portable
+          path: ${{ runner.temp }}/portable
+          if-no-files-found: error

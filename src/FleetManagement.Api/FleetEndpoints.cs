@@ -23,78 +23,86 @@ public static class FleetEndpoints
         api.MapGet("/drivers", async (FleetDbContext db,CancellationToken ct)=>await db.Drivers.AsNoTracking().OrderBy(x=>x.Id).ToListAsync(ct));
         api.MapGet("/trips", async (FleetDbContext db,CancellationToken ct)=>await db.Trips.AsNoTracking().OrderBy(x=>x.Start).ToListAsync(ct));
         api.MapPost("/vehicles", (VehicleInput input,FleetDbContext db,FleetStore store,CancellationToken ct)=>
-            store.Write(async data=>{
-                var v=input.ToVehicle(data.Vehicles.Select(x=>x.Id).DefaultIfEmpty().Max()+1);
+            store.WriteWithReceipt(input,async data=>{
+                var v=input.ToVehicle(await RecordIds.Next(db,nameof(Vehicle),data.Vehicles.Select(x=>x.Id).DefaultIfEmpty().Max(),ct));
                 if(VehicleError(data,v) is string error)return Invalid(error);
                 db.Vehicles.Add(v);await db.SaveChangesAsync(ct);return Results.Created($"/api/vehicles/{v.Id}",v);
             },ct)).RequireAuthorization("FleetWrite");
         api.MapGet("/vehicles/{id:int}", async Task<IResult> (int id,FleetDbContext db,CancellationToken ct)=>
             await db.Vehicles.AsNoTracking().SingleOrDefaultAsync(x=>x.Id==id,ct) is Vehicle v?Results.Ok(v):Results.NotFound());
         api.MapPut("/vehicles/{id:int}", (int id,VehicleInput input,FleetDbContext db,FleetStore store,CancellationToken ct)=>
-            store.Write(async data=>{
+            store.WriteWithReceipt(input,async data=>{
                 if(!data.Vehicles.Any(x=>x.Id==id))return Results.NotFound();
                 var v=input.ToVehicle(id);if(VehicleError(data,v) is string error)return Invalid(error);
+                var before=data.Vehicles.Single(x=>x.Id==id);
+                if(input.Expected is not null&&!input.Expected.Matches(before))return Conflict("Vehicle changed since it was opened. Refresh and review again.");
+                if(MaintenanceJournal.ValidateVehicleEdit(before,v,await db.MaintenanceEntries.AsNoTracking().Where(e=>e.VehicleId==id).ToListAsync(ct)) is string historyError)return Conflict(historyError);
+                if(v.LastService.Date==before.LastService.Date)v=v with{LastService=before.LastService};
                 db.Vehicles.Update(v);await db.SaveChangesAsync(ct);return Results.Ok(v);
             },ct)).RequireAuthorization("FleetWrite");
         api.MapDelete("/vehicles/{id:int}", (int id,FleetDbContext db,FleetStore store,CancellationToken ct)=>
-            store.Write(async data=>{
+            store.WriteWithReceipt(null,async data=>{
                 var v=data.Vehicles.FirstOrDefault(x=>x.Id==id);if(v is null)return Results.NotFound();
                 if(FleetRules.CanRemoveVehicle(data,id) is string error)return Conflict(error);
+                if(await db.MaintenanceEntries.AnyAsync(e=>e.VehicleId==id,ct)||await db.VehicleReservations.AnyAsync(e=>e.VehicleId==id,ct))return Conflict("Vehicle has maintenance or reservation history.");
                 db.Vehicles.Remove(v);await db.SaveChangesAsync(ct);return Results.NoContent();
             },ct)).RequireAuthorization("FleetWrite");
         api.MapPost("/drivers", (DriverInput input,FleetDbContext db,FleetStore store,CancellationToken ct)=>
-            store.Write(async data=>{
-                var d=input.ToDriver(data.Drivers.Select(x=>x.Id).DefaultIfEmpty().Max()+1);
+            store.WriteWithReceipt(input,async data=>{
+                var d=input.ToDriver(await RecordIds.Next(db,nameof(Driver),data.Drivers.Select(x=>x.Id).DefaultIfEmpty().Max(),ct));
                 if(DriverError(data,d) is string error)return Invalid(error);
                 db.Drivers.Add(d);await db.SaveChangesAsync(ct);return Results.Created($"/api/drivers/{d.Id}",d);
             },ct)).RequireAuthorization("FleetWrite");
         api.MapGet("/drivers/{id:int}", async Task<IResult> (int id,FleetDbContext db,CancellationToken ct)=>
             await db.Drivers.AsNoTracking().SingleOrDefaultAsync(x=>x.Id==id,ct) is Driver d?Results.Ok(d):Results.NotFound());
         api.MapPut("/drivers/{id:int}", (int id,DriverInput input,FleetDbContext db,FleetStore store,CancellationToken ct)=>
-            store.Write(async data=>{
+            store.WriteWithReceipt(input,async data=>{
                 if(!data.Drivers.Any(x=>x.Id==id))return Results.NotFound();
+                var before=data.Drivers.Single(x=>x.Id==id);
+                if(input.Expected is not null&&!input.Expected.Matches(before))return Conflict("Driver changed since it was opened. Refresh and review again.");
                 var d=input.ToDriver(id);if(DriverError(data,d) is string error)return Invalid(error);
                 db.Drivers.Update(d);await db.SaveChangesAsync(ct);return Results.Ok(d);
             },ct)).RequireAuthorization("FleetWrite");
         api.MapDelete("/drivers/{id:int}", (int id,FleetDbContext db,FleetStore store,CancellationToken ct)=>
-            store.Write(async data=>{
+            store.WriteWithReceipt(null,async data=>{
                 var d=data.Drivers.FirstOrDefault(x=>x.Id==id);if(d is null)return Results.NotFound();
                 if(FleetRules.CanRemoveDriver(data,id) is string error)return Conflict(error);
+                if(await db.DriverShifts.AnyAsync(e=>e.DriverId==id,ct))return Conflict("Driver has shift records.");
                 db.Drivers.Remove(d);await db.SaveChangesAsync(ct);return Results.NoContent();
             },ct)).RequireAuthorization("FleetWrite");
         api.MapGet("/trips/{id:int}", async Task<IResult> (int id,FleetDbContext db,CancellationToken ct)=>
             await db.Trips.AsNoTracking().SingleOrDefaultAsync(x=>x.Id==id,ct) is Trip t?Results.Ok(t):Results.NotFound());
-        api.MapPost("/trips", (TripInput input,FleetDbContext db,FleetStore store,CancellationToken ct)=>
-            store.Write(async data=>{
-                var t=input.ToTrip(data.Trips.Select(x=>x.Id).DefaultIfEmpty().Max()+1);
-                if(TripError(data,t) is string error)return Invalid(error);
+        api.MapPost("/trips", (TripInput input,FleetDbContext db,FleetStore store,OperationsPolicy policy,CancellationToken ct)=>
+            store.WriteWithReceipt(input,async data=>{
+                var t=input.ToTrip(await RecordIds.Next(db,nameof(Trip),data.Trips.Select(x=>x.Id).DefaultIfEmpty().Max(),ct));
+                if(await TripError(data,t,db,policy,ct) is string error)return Invalid(error);
                 db.Trips.Add(t);await db.SaveChangesAsync(ct);return Results.Created($"/api/trips/{t.Id}",t);
             },ct)).RequireAuthorization("FleetWrite");
-        api.MapPut("/trips/{id:int}", (int id,TripInput input,FleetDbContext db,FleetStore store,CancellationToken ct)=>
-            store.Write(async data=>{
+        api.MapPut("/trips/{id:int}", (int id,TripInput input,FleetDbContext db,FleetStore store,OperationsPolicy policy,CancellationToken ct)=>
+            store.WriteWithReceipt(input,async data=>{
                 if(!data.Trips.Any(x=>x.Id==id))return Results.NotFound();
                 if(FleetRules.CanChangeTrip(data,id,DateTime.UtcNow) is string invalid)return Conflict(invalid);
-                var t=input.ToTrip(id);if(TripError(data,t) is string error)return Invalid(error);
+                var current=data.Trips.Single(x=>x.Id==id);
+                if(input.Expected is not null&&!input.Expected.Matches(current))return Conflict("Trip changed since it was opened. Refresh and review it again.");
+                var t=input.ToTrip(id);if(await TripError(data,t,db,policy,ct) is string error)return Invalid(error);
                 db.Trips.Update(t);await db.SaveChangesAsync(ct);return Results.Ok(t);
             },ct)).RequireAuthorization("FleetWrite");
         api.MapDelete("/trips/{id:int}", (int id,FleetDbContext db,FleetStore store,CancellationToken ct)=>
-            store.Write(async data=>{
+            store.WriteWithReceipt(null,async data=>{
                 var t=data.Trips.FirstOrDefault(x=>x.Id==id);if(t is null)return Results.NotFound();
                 if(FleetRules.CanChangeTrip(data,id,DateTime.UtcNow) is string error)return Conflict(error);
                 db.Trips.Remove(t);await db.SaveChangesAsync(ct);return Results.NoContent();
             },ct)).RequireAuthorization("FleetWrite");
-        api.MapGet("/dispatch/recommend", async Task<IResult> (DateTimeOffset start,DateTimeOffset end,FleetStore store,CancellationToken ct)=>{
+        api.MapGet("/dispatch/recommend", async Task<IResult> (DateTimeOffset start,DateTimeOffset end,FleetStore store,FleetDbContext db,OperationsPolicy policy,CancellationToken ct)=>{
             if(end<=start || start.UtcDateTime<=DateTime.UtcNow)return Invalid("Choose a future interval.");
-            var a=FleetRules.Recommend(await store.Read(ct),start.UtcDateTime,end.UtcDateTime,start.UtcDateTime);
+            var a=ResourcePlanning.Recommend(await store.Read(ct),start.UtcDateTime,end.UtcDateTime,start.UtcDateTime,await db.DriverShifts.AsNoTracking().ToListAsync(ct),policy.RequireShifts,reservations:await db.VehicleReservations.AsNoTracking().ToListAsync(ct));
             return a is null?Results.NotFound(new{error="No available assignment."}):Results.Ok(a);
         });
         api.MapGet("/maintenance", async (FleetDbContext db,CancellationToken ct)=>
             (await db.Vehicles.AsNoTracking().OrderBy(x=>x.Id).ToListAsync(ct)).Select(v=>new{vehicleId=v.Id,assessment=FleetRules.Assess(v,DateTime.UtcNow)}));
         api.MapPost("/vehicles/{id:int}/service", (int id,FleetDbContext db,FleetStore store,CancellationToken ct)=>
-            store.Write(async data=>{
-                var v=data.Vehicles.FirstOrDefault(x=>x.Id==id);if(v is null)return Results.NotFound();
-                var updated=v with{LastService=DateTime.UtcNow,LastServiceMileage=v.Mileage};
-                db.Vehicles.Update(updated);await db.SaveChangesAsync(ct);return Results.Ok(updated);
+            store.WriteWithReceipt(null,async data=>{
+                return await OperationsEndpoints.RecordWork(data,db,new(id,"Scheduled service","",null),true,ct);
             },ct)).RequireAuthorization("FleetWrite");
     }
 
@@ -104,20 +112,34 @@ public static class FleetEndpoints
         v.Plate.Length>40 || v.Model.Length>100?"Registration or model too long.":FleetRules.ValidateVehicle(data,v,DateTime.UtcNow);
     private static string? DriverError(FleetData data,Driver d)=>
         d.Name.Length>100 || d.License.Length>50?"Name or license too long.":FleetRules.ValidateDriver(data,d);
-    private static string? TripError(FleetData data,Trip t)=>
+    private static async Task<string?> TripError(FleetData data,Trip t,FleetDbContext db,OperationsPolicy policy,CancellationToken ct)=>
         t.Origin.Length>100 || t.Destination.Length>100?"Location too long.":
-        t.Start<=DateTime.UtcNow?"Trip must start in the future.":FleetRules.ValidateTrip(data,t);
+        t.Start<=DateTime.UtcNow?"Trip must start in the future.":ResourcePlanning.ValidateTrip(data,t,await db.DriverShifts.AsNoTracking().ToListAsync(ct),policy.RequireShifts,await db.VehicleReservations.AsNoTracking().ToListAsync(ct));
 }
 
-public sealed record VehicleInput(string? Plate,string? Model,int Mileage,int LastServiceMileage,DateTimeOffset LastService,int ServiceIntervalKm,int ServiceIntervalDays)
+public sealed record VehicleInput(string? Plate,string? Model,int Mileage,int LastServiceMileage,DateTimeOffset LastService,int ServiceIntervalKm,int ServiceIntervalDays,VehicleVersion? Expected=null)
 {
     public Vehicle ToVehicle(int id)=>new(id,(Plate??"").Trim().ToUpperInvariant(),(Model??"").Trim(),Mileage,LastServiceMileage,LastService.UtcDateTime,ServiceIntervalKm,ServiceIntervalDays);
 }
-public sealed record DriverInput(string? Name,string? License,int Experience)
+public sealed record DriverInput(string? Name,string? License,int Experience,DriverVersion? Expected=null)
 {
     public Driver ToDriver(int id)=>new(id,(Name??"").Trim(),(License??"").Trim().ToUpperInvariant(),Experience);
 }
-public sealed record TripInput(int VehicleId,int DriverId,string? Origin,string? Destination,DateTimeOffset Start,DateTimeOffset End,int Distance)
+public sealed record TripInput(int VehicleId,int DriverId,string? Origin,string? Destination,DateTimeOffset Start,DateTimeOffset End,int Distance,TripVersion? Expected=null)
 {
     public Trip ToTrip(int id)=>new(id,VehicleId,DriverId,(Origin??"").Trim(),(Destination??"").Trim(),Start.UtcDateTime,End.UtcDateTime,Distance,-1);
+}
+
+public sealed record TripVersion(int VehicleId,int DriverId,string? Origin,string? Destination,DateTimeOffset Start,DateTimeOffset End,int Distance)
+{
+    public bool Matches(Trip t)=>VehicleId==t.VehicleId&&DriverId==t.DriverId&&Origin==t.Origin&&Destination==t.Destination&&Start.UtcDateTime==t.Start&&End.UtcDateTime==t.End&&Distance==t.Distance;
+}
+
+public sealed record VehicleVersion(string? Plate,string? Model,int Mileage,int LastServiceMileage,DateTimeOffset LastService,int ServiceIntervalKm,int ServiceIntervalDays)
+{
+    public bool Matches(Vehicle v)=>Plate==v.Plate&&Model==v.Model&&Mileage==v.Mileage&&LastServiceMileage==v.LastServiceMileage&&LastService.UtcDateTime==v.LastService&&ServiceIntervalKm==v.ServiceIntervalKm&&ServiceIntervalDays==v.ServiceIntervalDays;
+}
+public sealed record DriverVersion(string? Name,string? License,int Experience)
+{
+    public bool Matches(Driver d)=>Name==d.Name&&License==d.License&&Experience==d.Experience;
 }

@@ -1,72 +1,79 @@
+@using FleetManagement.Web
 @inject IJSRuntime JS
 <section class="panel">
     <div class="registerhead">
-        <div><h2>@(IsVehicles ? "Vehicle register" : "Driver register")</h2><p class="muted">Manage synthetic records in the original spreadsheet-style interface.</p></div>
-        <button @onclick="NewRecord">@(IsVehicles ? "+ Add vehicle" : "+ Add driver")</button>
+        <div><h2>@T(IsVehicles ? "Vehicle register" : "Driver register")</h2><p class="muted">@T("Manage synthetic records in the original spreadsheet-style interface.")</p></div>
+        <button @onclick="NewRecord">@T(IsVehicles ? "+ Add vehicle" : "+ Add driver")</button>
     </div>
     <div class="actions registertools">
-        <label>Search<input type="search" placeholder="Search records…" @bind="query" @bind:event="oninput" /></label>
-        <label>Sort by<select @bind="sort"><option value="id">ID</option><option value="name">Name / registration</option><option value="metric">@(IsVehicles ? "Mileage" : "Experience")</option></select></label>
-        <button class="secondary" @onclick="()=>descending=!descending">@(descending ? "Descending ↓" : "Ascending ↑")</button>
+        <label>@T("Search")<input type="search" placeholder="@T("Search records…")" @bind="query" @bind:event="oninput" /></label>
+        <label>@T("Sort by")<select @bind="sort"><option value="id">ID</option><option value="name">@T("Name / registration")</option><option value="metric">@T(IsVehicles ? "Mileage" : "Experience")</option></select></label>
+        <button class="secondary" @onclick="()=>descending=!descending">@T(descending ? "Descending ↓" : "Ascending ↑")</button>
     </div>
-    @if (feedback.Length > 0) { <p role="status" class="@(error ? "error" : "notice")">@feedback</p> }
+    @if (feedback.Length > 0) { <p role="status" class="@(error ? "error" : "notice")">@T(feedback)</p> }
     @if (editing)
     {
         <div class="editor">
-            <h3>@(editId == 0 ? "New record" : $"Edit #{editId}")</h3>
+            <h3>@(editId == 0 ? T("New record") : $"{T("Edit")} #{editId}")</h3>
             @if (IsVehicles)
             {
                 <div class="formgrid">
-                    <label>Registration<input @bind="plate" maxlength="40" /></label>
-                    <label>Model<input @bind="name" maxlength="100" /></label>
-                    <label>Current mileage (km)<input type="number" min="0" @bind="mileage" /></label>
-                    <label>Last service mileage (km)<input type="number" min="0" @bind="serviceMileage" /></label>
-                    <label>Last service date<input type="date" @bind="serviceDate" /></label>
-                    <label>Service interval (km)<input type="number" min="1" max="1000000" @bind="intervalKm" /></label>
-                    <label>Service interval (days)<input type="number" min="1" max="3650" @bind="intervalDays" /></label>
+                    <label>@T("Registration")<input @bind="plate" maxlength="40" /></label>
+                    <label>@T("Model")<input @bind="name" maxlength="100" /></label>
+                    <label>@T("Current mileage (km)")<input type="number" min="0" @bind="mileage" /></label>
+                    <label>@T("Last service mileage (km)")<input type="number" min="0" @bind="serviceMileage" /></label>
+                    <label>@T("Last service date")<input type="date" @bind="serviceDate" /></label>
+                    <label>@T("Service interval (km)")<input type="number" min="1" max="1000000" @bind="intervalKm" /></label>
+                    <label>@T("Service interval (days)")<input type="number" min="1" max="3650" @bind="intervalDays" /></label>
                 </div>
             }
             else
             {
                 <div class="formgrid">
-                    <label>Full name<input @bind="name" maxlength="100" /></label>
-                    <label>License number<input @bind="license" maxlength="50" /></label>
-                    <label>Experience (years)<input type="number" min="0" max="70" @bind="experience" /></label>
+                    <label>@T("Full name")<input @bind="name" maxlength="100" /></label>
+                    <label>@T("License number")<input @bind="license" maxlength="50" /></label>
+                    <label>@T("Experience (years)")<input type="number" min="0" max="70" @bind="experience" /></label>
                 </div>
             }
-            <div class="actions"><button @onclick="Save">Save record</button><button class="secondary" @onclick="Cancel">Cancel</button></div>
+            <div class="actions"><button @onclick="Save">@T("Save record")</button><button class="secondary" @onclick="Cancel">@T("Cancel")</button></div>
         </div>
     }
     <div class="tablewrap"><table>
     @if (IsVehicles)
     {
-        <thead><tr><th>ID</th><th>Registration</th><th>Model</th><th>Mileage</th><th>Last service</th><th>Health</th><th>Actions</th></tr></thead>
+        <thead><tr><th>ID</th><th>@T("Registration")</th><th>@T("Model")</th><th>@T("Mileage")</th><th>@T("Last service")</th><th>@T("Health")</th><th>@T("Actions")</th></tr></thead>
         <tbody>
         @foreach(var v in Vehicles)
         {
-            <tr @key="v.Id"><td>@v.Id</td><td>@v.Plate</td><td>@v.Model</td><td>@v.Mileage.ToString("N0") km</td><td>@v.LastService.ToString("dd MMM yyyy")</td><td><span class="pill @FleetRules.Assess(v,Today).Status.ToLowerInvariant()">@FleetRules.Assess(v,Today).Status</span></td><td><div class="actions"><button class="secondary" @onclick="()=>EditVehicle(v)">Edit</button><button class="delete" @onclick="()=>Remove(v.Id)">Delete</button></div></td></tr>
+            <tr @key="v.Id"><td>@v.Id</td><td>@v.Plate</td><td>@v.Model</td><td>@v.Mileage.ToString("N0") km</td><td>@v.LastService.ToString("dd MMM yyyy")</td><td><span class="pill @FleetRules.Assess(v,Today).Status.ToLowerInvariant()">@T(FleetRules.Assess(v,Today).Status)</span></td><td><div class="actions"><button class="secondary" @onclick="()=>OpenPassport.InvokeAsync(v.Id)">@T("Passport")</button><button class="secondary" @onclick="()=>EditVehicle(v)">@T("Edit")</button><button class="delete" @onclick="()=>Remove(v.Id)">@T("Delete")</button></div></td></tr>
         }
-        @if(!Vehicles.Any()){<tr><td colspan="7">No matching vehicles.</td></tr>}
+        @if(!Vehicles.Any()){<tr><td colspan="7">@T("No matching vehicles.")</td></tr>}
         </tbody>
     }
     else
     {
-        <thead><tr><th>ID</th><th>Driver</th><th>License</th><th>Experience</th><th>Assigned trips</th><th>Active trips</th><th>Actions</th></tr></thead>
+        <thead><tr><th>ID</th><th>@T("Driver")</th><th>@T("License")</th><th>@T("Experience")</th><th>@T("Assigned trips")</th><th>@T("Active trips")</th><th>@T("Actions")</th></tr></thead>
         <tbody>
         @foreach(var d in Drivers)
         {
-            <tr @key="d.Id"><td>@d.Id</td><td>@d.Name</td><td>@d.License</td><td>@d.Experience years</td><td>@Fleet.Trips.Count(t=>t.DriverId==d.Id)</td><td>@Fleet.Trips.Count(t=>t.DriverId==d.Id && FleetRules.TripStatus(t,Today)=="In transit")</td><td><div class="actions"><button class="secondary" @onclick="()=>EditDriver(d)">Edit</button><button class="delete" @onclick="()=>Remove(d.Id)">Delete</button></div></td></tr>
+            <tr @key="d.Id"><td>@d.Id</td><td>@d.Name</td><td>@d.License</td><td>@d.Experience years</td><td>@Fleet.Trips.Count(t=>t.DriverId==d.Id)</td><td>@Fleet.Trips.Count(t=>t.DriverId==d.Id && FleetRules.TripStatus(t,Today)=="In transit")</td><td><div class="actions"><button class="secondary" @onclick="()=>EditDriver(d)">@T("Edit")</button><button class="delete" @onclick="()=>Remove(d.Id)">@T("Delete")</button></div></td></tr>
         }
-        @if(!Drivers.Any()){<tr><td colspan="7">No matching drivers.</td></tr>}
+        @if(!Drivers.Any()){<tr><td colspan="7">@T("No matching drivers.")</td></tr>}
         </tbody>
     }
     </table></div>
 </section>
 @code {
+    [Parameter] public bool Russian{get;set;}
+    private string T(string value)=>DemoLocale.Text(value,Russian);
     [Parameter, EditorRequired] public FleetData Fleet {get;set;}=default!;
     [Parameter] public bool IsVehicles {get;set;}
     [Parameter] public DateTime Today {get;set;}
     [Parameter] public EventCallback Changed {get;set;}
+    [Parameter] public EventCallback<int> OpenPassport {get;set;}
+    [Parameter] public IReadOnlyList<MaintenanceEntry> MaintenanceEntries {get;set;}=[];
+    [Parameter] public IReadOnlyList<DriverShift> Shifts {get;set;}=[];
+    [Parameter] public IReadOnlyList<VehicleReservation> Reservations {get;set;}=[];
     private string query="",sort="id",name="",plate="",license="",feedback="";
     private bool descending,editing,error;
     private int editId,mileage,serviceMileage,intervalKm=10000,intervalDays=180,experience;
@@ -88,7 +95,12 @@
             var id=editId==0?Fleet.Vehicles.Select(v=>v.Id).DefaultIfEmpty().Max()+1:editId;
             var item=new Vehicle(id,plate.Trim(),name.Trim(),mileage,serviceMileage,serviceDate.Date,intervalKm,intervalDays);
             if(FleetRules.ValidateVehicle(Fleet,item,Today) is string invalid){Fail(invalid);return;}
-            var index=Fleet.Vehicles.FindIndex(v=>v.Id==id);if(index<0)Fleet.Vehicles.Add(item);else Fleet.Vehicles[index]=item;
+            var index=Fleet.Vehicles.FindIndex(v=>v.Id==id);if(index<0)Fleet.Vehicles.Add(item);else{
+                var before=Fleet.Vehicles[index];
+                if(MaintenanceJournal.ValidateVehicleEdit(before,item,MaintenanceEntries) is string historyError){Fail(historyError);return;}
+                if(item.LastService.Date==before.LastService.Date)item=item with{LastService=before.LastService};
+                Fleet.Vehicles[index]=item;
+            }
         }else{
             var id=editId==0?Fleet.Drivers.Select(d=>d.Id).DefaultIfEmpty().Max()+1:editId;
             var item=new Driver(id,name.Trim(),license.Trim(),experience);
@@ -98,9 +110,9 @@
         editing=false;error=false;feedback="Record saved.";await Changed.InvokeAsync();
     }
     private async Task Remove(int id){
-        var invalid=IsVehicles?FleetRules.CanRemoveVehicle(Fleet,id):FleetRules.CanRemoveDriver(Fleet,id);
+        var invalid=IsVehicles?(FleetRules.CanRemoveVehicle(Fleet,id)??MaintenanceJournal.CanRemove(id,MaintenanceEntries)??VehicleReservations.CanRemoveVehicle(id,Reservations)):(FleetRules.CanRemoveDriver(Fleet,id)??ResourcePlanning.CanRemoveDriver(id,Shifts));
         if(invalid is not null){Fail(invalid);return;}
-        if(!await JS.InvokeAsync<bool>("confirm","Delete this demo record?"))return;
+        if(!await JS.InvokeAsync<bool>("confirm",T("Delete this demo record?")))return;
         if(IsVehicles)Fleet.Vehicles.RemoveAll(v=>v.Id==id);else Fleet.Drivers.RemoveAll(d=>d.Id==id);
         if(editId==id)editing=false;error=false;feedback="Record deleted.";await Changed.InvokeAsync();
     }

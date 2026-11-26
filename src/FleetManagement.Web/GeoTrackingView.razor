@@ -1,0 +1,44 @@
+@using FleetManagement.Web
+@implements IAsyncDisposable
+<section class="panel"><div class="registerhead"><div><h2>@T("Geographic fleet tracking")</h2><p class="muted">@T("Offline regional map. Synthetic journeys between approximate city-centre coordinates; straight segments are not roads or live GPS.")</p></div><button @onclick="Reset">@T("Reset playback")</button></div>
+<div class="actions"><button disabled="@(minute>=GeoTracking.MaxMinute)" @onclick="Toggle">@T(playing?"Pause map":"Play map")</button><button class="secondary" @onclick="Advance">@T("+ 15 minutes")</button><strong data-testid="geo-clock">@TimeLabel(minute)</strong><label>@T("Geofence radius (km)")<input type="number" min="5" max="50" @bind="radius"/></label></div>
+<label>@T("Replay position")<input type="range" min="0" max="@GeoTracking.MaxMinute" step="1" @bind="minute" @bind:event="oninput"/></label>
+<p class="muted">@T("Each second advances 10 simulated minutes. Scrub the timeline to inspect previous positions.")</p></section>
+@{var snapshots=Routes.Select(r=>GeoTracking.At(r,minute,SafeRadius)).ToArray();var current=snapshots.Single(s=>s.Journey.Id==selected);}
+<div class="metrics"><div class="metric">@T("In transit")<strong>@snapshots.Count(s=>s.Status=="In transit")</strong></div><div class="metric">@T("Arrived")<strong>@snapshots.Count(s=>s.Status=="Arrived")</strong></div><div class="metric">@T("Inside zone")<strong>@snapshots.Count(s=>s.Status!="Scheduled"&&s.Zone!=null)</strong></div><div class="metric">@T("Simulated distance")<strong>@snapshots.Sum(s=>s.DistanceKm).ToString("F0") km</strong></div></div>
+<div class="split"><section class="panel"><h2>@T("Regional map")</h2>
+<svg viewBox="0 0 800 580" class="geo-map" role="img" aria-label="Offline Central European map with simulated journeys">
+<image href="maps/central-europe.svg" x="0" y="0" width="800" height="580"/>
+@foreach(var hub in Routes.SelectMany(r=>r.Hubs).DistinctBy(h=>h.Name)){<ellipse cx="@X(hub.Position)" cy="@Y(hub.Position)" rx="@RadiusX(hub.Position)" ry="@RadiusY()" fill="#9370DB" fill-opacity=".08" stroke="#9370DB" stroke-opacity=".65" stroke-dasharray="3 3"/><circle cx="@X(hub.Position)" cy="@Y(hub.Position)" r="3.5" fill="#4B0082"/>}
+@foreach(var route in Routes){<polyline points="@string.Join(" ",route.Hubs.Select(h=>X(h.Position)+","+Y(h.Position)))" fill="none" stroke="@Color(route.Id)" stroke-width="2.5" stroke-dasharray="5 3" opacity=".7"/>}
+@foreach(var snap in snapshots){<circle cx="@X(snap.Position)" cy="@Y(snap.Position)" r="@(snap.Journey.Id==selected?10:6)" fill="@Color(snap.Journey.Id)" stroke="white" stroke-width="2"><title>@snap.Journey.Plate · @snap.Status</title></circle>}
+</svg><p class="muted">@T("Basemap:") <a href="https://www.naturalearthdata.com/" target="_blank" rel="noopener noreferrer">Natural Earth</a>, 1:110m, public domain. Equirectangular view; geofence ellipses approximate the projection.</p>
+</section><section class="panel"><h2>@T("Journey replay")</h2><label>@T("Tracked vehicle")<select @bind="selected">@foreach(var route in Routes){<option value="@route.Id">@route.Plate</option>}</select></label>
+<dl class="twin-details"><dt>@T("Status")</dt><dd>@current.Status</dd><dt>@T("Latitude")</dt><dd>@current.Position.Latitude.ToString("F4")</dd><dt>@T("Longitude")</dt><dd>@current.Position.Longitude.ToString("F4")</dd><dt>@T("Progress")</dt><dd>@current.Progress.ToString("P0")</dd><dt>@T("Travelled")</dt><dd>@current.DistanceKm.ToString("F1") km</dd><dt>@T("Zone")</dt><dd>@(current.Status=="Scheduled"?"Not departed":current.Zone??"Outside")</dd><dt>@T("Destination")</dt><dd>@current.Journey.Hubs[^1].Name</dd></dl>
+<p>@string.Join(" → ",current.Journey.Hubs.Select(h=>h.Name))</p><div class="progress"><i style="@("width:"+F(current.Progress*100)+"%")"></i></div><p class="muted">@T("Distance is the sum of great-circle leg lengths scaled by progress. Positions are linearly interpolated within each segment.")</p>
+</section></div>
+<section class="panel"><h2>@T("Geofence event history")</h2><p class="muted">@T("Reconstructed at one-minute intervals; a short zone crossing may be missed. Not actual device notifications.")</p><div class="tablewrap"><table><thead><tr><th>@T("Time")</th><th>@T("Vehicle")</th><th>@T("Zone")</th><th>@T("Event")</th></tr></thead><tbody>@foreach(var entry in GeoTracking.Events(Routes,minute,SafeRadius).Reverse().Take(40)){<tr><td>@TimeLabel(entry.Minute)</td><td>@entry.Plate</td><td>@entry.Hub</td><td>@entry.Kind</td></tr>}</tbody></table></div></section>
+@code{
+    [Parameter] public bool Russian{get;set;}
+    private string T(string value)=>DemoLocale.Text(value,Russian);
+    private readonly IReadOnlyList<GeoJourney> Routes=GeoTracking.Sample();
+    private int minute=120,selected=1,radius=20;
+    private double SafeRadius=>Math.Clamp(radius,5,50);
+    private bool playing;
+    private readonly CancellationTokenSource cts=new();
+    private Task? loop;
+    private void Toggle(){if(minute>=GeoTracking.MaxMinute)return;playing=!playing;loop??=Clock();}
+    private void Advance(){minute=Math.Min(GeoTracking.MaxMinute,minute+15);if(minute>=GeoTracking.MaxMinute)playing=false;}
+    private void Reset(){playing=false;minute=0;}
+    private async Task Clock(){using var timer=new PeriodicTimer(TimeSpan.FromSeconds(1));try{while(await timer.WaitForNextTickAsync(cts.Token)){await InvokeAsync(()=>{if(playing){minute=Math.Min(GeoTracking.MaxMinute,minute+10);if(minute>=GeoTracking.MaxMinute)playing=false;StateHasChanged();}});}}catch(OperationCanceledException){}}
+    private static string F(double v)=>v.ToString("F2",CultureInfo.InvariantCulture);
+    private static double PX(GeoPoint p)=>30+(p.Longitude-7)*740/17;
+    private static double PY(GeoPoint p)=>30+(54-p.Latitude)*520/11;
+    private static string X(GeoPoint p)=>F(PX(p));
+    private static string Y(GeoPoint p)=>F(PY(p));
+    private string RadiusX(GeoPoint p)=>F(SafeRadius/(111.195*Math.Cos(p.Latitude*Math.PI/180))*740/17);
+    private string RadiusY()=>F(SafeRadius/111.195*520/11);
+    private static string Color(int id)=>id switch{1=>"#6A5ACD",2=>"#BA55A7",_=>"#287E83"};
+    private static string TimeLabel(int m)=>TimeSpan.FromMinutes(480+m).ToString(@"hh\:mm");
+    public async ValueTask DisposeAsync(){playing=false;cts.Cancel();if(loop is not null)await loop;cts.Dispose();}
+}

@@ -1,0 +1,52 @@
+@using FleetManagement.Web
+<section class="panel"><h2>@T("Integrated batch dispatch")</h2><p class="muted">@T("Plan user-entered trips against the registered demo fleet. Fixed times and distances are supplied by the dispatcher, not inferred from the geographic or synthetic routing labs. The preview is read-only.")</p>
+<p class="muted">@(Enforce?"Strict driver shift coverage is enabled.":"Driver shift coverage is advisory.") Vehicle reservations and existing assignments are always checked. Recommended vehicles must not be service due at departure.</p>
+<div class="formgrid">
+<label>@T("Batch origin")<input maxlength="100" @bind="origin"/></label><label>@T("Batch destination")<input maxlength="100" @bind="destination"/></label>
+<label>@T("Batch departure")<input type="datetime-local" @bind="start"/></label><label>@T("Batch arrival")<input type="datetime-local" @bind="end"/></label><label>@T("Batch distance (km)")<input type="number" min="1" max="10000" @bind="distance"/></label>
+</div><div class="actions"><button @onclick="Add">@T("Add trip request")</button><button class="secondary" disabled="@(requests.Count==0)" @onclick="Preview">@T("Compare assignments")</button></div>
+@if(message.Length>0){<p role="status" class="@(failed?"error":"notice")">@T(message)</p>}</section>
+<section class="panel"><h2>@T("Pending trip requests")</h2><div class="tablewrap"><table><thead><tr><th>@T("Request")</th><th>@T("Route")</th><th>@T("Departure")</th><th>@T("Arrival")</th><th>@T("Distance")</th><th>@T("Action")</th></tr></thead><tbody>
+@foreach(var item in requests){<tr><td>#@item.Id</td><td>@item.Origin → @item.Destination</td><td>@item.Start.ToString("dd MMM HH:mm")</td><td>@item.End.ToString("dd MMM HH:mm")</td><td>@item.Distance km</td><td><button class="delete" @onclick="()=>Remove(item)">@T("Remove request")</button></td></tr>}
+</tbody></table></div>@if(requests.Count==0){<p>@T("No pending requests.")</p>}</section>
+@if(plans.Count>0){
+    var plan=plans[selected];
+    <section class="panel"><h2>@T("Assignment preview")</h2><p class="muted">@T("Two deterministic greedy strategies. Recommendation maximizes assigned requests among these candidates (ties favor earliest start). Not a globally optimal schedule.")</p>
+    <div class="actions">@for(int i=0;i<plans.Count;i++){var index=i;<button class="@(selected==index?"":"secondary")" @onclick="()=>Select(index)">@plans[index].Strategy (@plans[index].Assigned.Count / @requests.Count)</button>}</div>
+    <div class="metrics"><div class="metric">@T("Assigned")<strong>@plan.Assigned.Count</strong></div><div class="metric">@T("Unassigned")<strong>@plan.Unassigned.Count</strong></div></div>
+    <div class="tablewrap"><table><thead><tr><th>@T("Request")</th><th>@T("Route")</th><th>@T("Vehicle")</th><th>@T("Driver")</th><th>@T("Departure")</th><th>@T("Arrival")</th></tr></thead><tbody>
+    @foreach(var a in plan.Assigned){<tr><td>#@a.Request.Id</td><td>@a.Request.Origin → @a.Request.Destination</td><td>@Vehicle(a.VehicleId)</td><td>@Driver(a.DriverId)</td><td>@a.Request.Start.ToString("dd MMM HH:mm")</td><td>@a.Request.End.ToString("dd MMM HH:mm")</td></tr>}
+    </tbody></table></div>
+    <h3>@T("Unassigned requests")</h3>
+    @if(plan.Unassigned.Count==0){<p>@T("All requests assigned by this strategy.")</p>}else{<p class="muted">@T("No eligible pair found by this strategy; these requests will remain pending.")</p>@foreach(var item in plan.Unassigned){<p>#@item.Id · @item.Origin → @item.Destination · @item.Start.ToString("dd MMM HH:mm")</p>}}
+    <label><input type="checkbox" @bind="confirmed"/> @T("I reviewed the assigned trips and understand that unassigned requests stay pending.")</label>
+    <div class="actions"><button disabled="@(!confirmed||plan.Assigned.Count==0)" @onclick="Apply">@T("Apply assigned trips")</button><button class="secondary" @onclick='()=>Open.InvokeAsync("Calendar")'>@T("Open calendar")</button></div>
+    <p class="muted">@T("Apply revalidates every assignment against current time, vehicle service status, reservations, shifts and trip conflicts. If any fails, no trips are added. Pending requests are session-only; applied trips use the existing local snapshot.")</p>
+    </section>
+}
+@code{
+    [Parameter] public bool Russian{get;set;}
+    private string T(string value)=>DemoLocale.Text(value,Russian);
+    [Parameter,EditorRequired] public FleetData Fleet{get;set;}=default!;
+    [Parameter] public DateTime Now{get;set;}
+    [Parameter] public IReadOnlyList<DriverShift> Shifts{get;set;}=[];
+    [Parameter] public IReadOnlyList<VehicleReservation> Reservations{get;set;}=[];
+    [Parameter] public bool Enforce{get;set;}
+    [Parameter] public EventCallback Changed{get;set;}
+    [Parameter] public EventCallback<string> Open{get;set;}
+    private readonly List<TripRequest> requests=[];
+    private IReadOnlyList<BatchPlan> plans=[];
+    private int nextId=1,selected=2,distance=100;
+    private string origin="North depot",destination="Central hub",message="";
+    private DateTime start,end;
+    private bool confirmed,failed;
+    protected override void OnInitialized(){start=Now.Date.AddDays(1).AddHours(9);end=start.AddHours(2);}
+    private void Invalidate(){plans=[];confirmed=false;}
+    private void Add(){var request=new TripRequest(nextId,origin.Trim(),destination.Trim(),start,end,distance);var error=requests.Count>=BatchDispatch.MaxRequests?"Request limit reached.":BatchDispatch.ValidateRequest(request,Now);failed=error is not null;message=error??"Request added.";if(!failed){nextId++;requests.Add(request);Invalidate();}}
+    private void Remove(TripRequest request){requests.Remove(request);Invalidate();message="Request removed.";failed=false;}
+    private void Preview(){Invalidate();try{plans=BatchDispatch.Compare(Fleet,requests,Now,Shifts,Enforce,Reservations);selected=2;message="Preview ready; register unchanged.";failed=false;}catch(ArgumentException ex){message=ex.Message;failed=true;}}
+    private void Select(int index){selected=index;confirmed=false;}
+    private async Task Apply(){if(!confirmed||plans.Count==0)return;var plan=plans[selected];var error=BatchDispatch.Apply(Fleet,plan,Now,Shifts,Enforce,Reservations);failed=error is not null;confirmed=false;message=error??$"Applied {plan.Assigned.Count} trips to the register.";if(failed)return;var ids=plan.Assigned.Select(a=>a.Request.Id).ToHashSet();requests.RemoveAll(r=>ids.Contains(r.Id));Invalidate();await Changed.InvokeAsync();}
+    private string Vehicle(int id)=>Fleet.Vehicles.FirstOrDefault(v=>v.Id==id)?.Plate??"Unavailable";
+    private string Driver(int id)=>Fleet.Drivers.FirstOrDefault(d=>d.Id==id)?.Name??"Unavailable";
+}

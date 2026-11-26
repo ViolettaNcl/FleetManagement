@@ -211,3 +211,8 @@
 .demo-shell .suite-heading h3{margin:0 0 5px}
 .demo-shell .suite-queue-details .tablewrap{margin-top:8px}
 @media(max-width:600px){.demo-shell .assistant-examples button{flex:1 1 160px;min-width:0}}
+
+.demo-shell .assistant-intents{display:flex;flex-wrap:wrap;gap:8px;margin:12px 0}
+.demo-shell .assistant-intents button{min-height:44px;white-space:normal;max-width:100%;text-align:left}
+.demo-shell .assistant-intents button[aria-pressed=true]{border-color:var(--accent);box-shadow:inset 0 0 0 1px var(--accent)}
+@media(max-width:600px){.demo-shell .assistant-intents button{flex:1 1 140px;min-width:0}}

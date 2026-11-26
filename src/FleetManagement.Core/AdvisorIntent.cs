@@ -9,8 +9,8 @@ public static class AdvisorIntent
         void Add(string intent,params string[] phrases){foreach(var phrase in phrases)result[Normalize(phrase)]=intent;}
         Add("overview","overview","summary","what needs attention?","fleet overview","show fleet overview","обзор","сводка","обзор автопарка","что требует внимания");
         Add("maintenance","maintenance","service","what needs maintenance?","show maintenance alerts","which vehicles need service","то","обслуживание","какие машины требуют то","какие автомобили требуют обслуживания");
-        Add("dispatch","dispatch","availability","who is available?","show available vehicles","диспетчер","доступность","кто доступен","какие автомобили доступны");
-        Add("alerts","alerts","risk","warnings","show operational risks","show high priority alerts","риски","предупреждения","покажи риски","покажи предупреждения");
+        Add("dispatch","dispatch","availability","who is available?","suggest an available assignment","диспетчер","доступность","кто доступен","предложи доступное назначение");
+        Add("alerts","alerts","risk","warnings","show operational risks","риски","предупреждения","покажи риски","покажи предупреждения");
         Add("calendar","calendar","agenda","today","show today's agenda","what is scheduled today","календарь","сегодня","что запланировано сегодня","покажи расписание на сегодня");
         return result;
     }

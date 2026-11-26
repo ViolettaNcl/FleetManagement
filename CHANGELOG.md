@@ -1,5 +1,15 @@
 # Changelog
 
+## Unreleased — V5.2 evaluation and data portability
+
+- Exact tie-aware ROC-AUC and step-wise average precision on the independent synthetic test cohort, with undefined single-class handling and a nine-threshold validation-only decision table.
+- Local experiment XLSX export containing seed, cohort sizes, cost weight, threshold, model metrics and calibration; no real-data certification or promotion.
+- Bilingual normalized full-phrase assistant matching, supported examples and explicit navigation actions; unknown requests do not create or modify records.
+- Demo JSON snapshot export from Help & settings, including the simulation clock and registered data, not UI preferences. Export only; no automatic import or server transfer.
+- Indexed calendar lookups and diagnostic naive/indexed aggregation comparison with equal checksums; no production timing claim.
+- Responsive assistant controls, core regression and populated browser acceptance coverage. Fresh exact CI required.
+
+
 ## Unreleased — V5.1 comparative analytics and operational review
 
 - Fix explicit accessible names on custom report controls after the V5 browser timeout.

@@ -311,3 +311,27 @@
 }
 
 .demo-shell .gantt-scroll:focus-visible{outline:2px solid var(--focus);outline-offset:3px}
+
+
+/* V6.1 guided mode: keep navigation, labels and task actions predictable. */
+.navigation-mode{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:4px;padding:4px;border:1px solid var(--line);border-radius:10px;background:var(--surface-2)}
+.demo-shell .navigation-mode button{font-size:11px;min-height:36px;padding:5px 3px;white-space:normal;overflow-wrap:anywhere;color:var(--ink);border-color:transparent;background:transparent}
+.demo-shell .navigation-mode button[aria-pressed=true]{background:var(--surface);border-color:var(--line);color:var(--ink);font-weight:750;box-shadow:var(--shadow)}
+.guided-nav-note{margin:0;color:var(--muted);font-size:11px;line-height:1.5;padding:6px}
+.guided-kicker{display:block;color:var(--muted);font-size:11px;font-weight:650;letter-spacing:.06em;text-transform:uppercase;margin-bottom:5px}
+.demo-shell .guided-context{padding:18px 20px;display:grid;grid-template-columns:minmax(0,1fr);gap:10px}
+.guided-context p{margin:5px 0;color:var(--muted);max-width:80ch}
+.guided-context details{border-top:1px solid var(--line);padding-top:10px;min-width:0}
+.guided-context summary{cursor:pointer;font-weight:650;min-height:28px;color:var(--ink)}
+.guided-context details button{white-space:normal;max-width:100%;margin-top:5px}
+.guided-task-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(240px,100%),1fr));gap:10px;margin-top:12px}
+.demo-shell .guided-task{display:grid;grid-template-columns:38px minmax(0,1fr) 16px;align-items:center;text-align:left;gap:10px;min-height:84px;padding:12px;background:var(--surface-2);border:1px solid var(--line);color:var(--ink);border-radius:12px;white-space:normal}
+.guided-task-icon{display:grid;place-items:center;width:36px;height:36px;border-radius:10px;background:var(--surface);color:var(--accent);border:1px solid var(--line)}
+.guided-task strong,.guided-task small{display:block;overflow-wrap:anywhere}
+.guided-task strong{font-size:14px;line-height:1.4}.guided-task small{font-size:12px;line-height:1.45;color:var(--muted);margin-top:4px;font-weight:400}
+.guided-task-arrow{color:var(--muted)}
+.demo-shell.guided-workspace .workspace-header [hidden]{display:none!important}
+@media(min-width:1001px){.demo-shell.sidebar-collapsed .navigation-mode,.demo-shell.sidebar-collapsed .guided-nav-note{display:none}}
+@media(max-width:1000px){.demo-shell .fleet-sidebar.nav-open{grid-template-columns:minmax(0,1fr);max-height:62dvh}.demo-shell .navigation-mode button,.demo-shell .nav-group button{min-height:44px}.demo-shell .nav-group button{font-size:14px}.demo-shell .nav-search input{font-size:16px;min-height:44px}.demo-shell .guided-context summary{min-height:36px}}
+@media(max-width:720px){.demo-shell.guided-workspace .workspace-header>.actions{grid-template-columns:44px 44px minmax(72px,1fr) 48px}.demo-shell.guided-workspace .workspace-header .toolbar-icon-button{width:44px;height:44px;min-height:44px}.demo-shell.guided-workspace .workspace-header .header-alerts{height:44px}.demo-shell .guided-context{padding:14px}.demo-shell .guided-task{min-height:74px}.demo-shell .guided-task-grid{grid-template-columns:1fr}.demo-shell .guided-context details button{min-height:44px}.demo-shell .fleet-content{scroll-margin-top:12px}.demo-shell .formgrid :is(input:not([type=checkbox]),select,textarea){font-size:16px;min-height:44px;max-width:100%}}
+@media print{body:has(.fleet-print-document) .guided-context{display:none!important}}

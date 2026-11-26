@@ -3,30 +3,32 @@
 @inject IJSRuntime JS
 
 @{var currentAlerts=FleetAdvisor.Assess(fleet,Now,driverShifts,requireShifts,vehicleReservations,russian:language=="ru");}
-<div class="demo-shell v4-shell @(darkTheme?"dark-theme":"") @(collapsed?"sidebar-collapsed":"") @(compactDashboard&&section=="Overview"?"dashboard-compact":"") @(visualMode=="premium"?"premium-workspace":"") @(workspaceDensity=="compact"?"workspace-dense":"")">
+<div class="demo-shell v4-shell @(darkTheme?"dark-theme":"") @(collapsed?"sidebar-collapsed":"") @(compactDashboard&&section=="Overview"?"dashboard-compact":"") @(visualMode=="premium"?"premium-workspace":"") @(workspaceDensity=="compact"?"workspace-dense":"") @(navigationMode=="essentials"?"guided-workspace":"")">
 <a class="skip-workspace" href="#fleet-content">@T("Skip to content")</a>
 <header class="workspace-header" lang="@language">
     <div class="brand"><img class="brandicon" src="favicon.svg" alt="" /><div><h1>FleetManagement</h1><small>@T("Fleet operations workspace")</small></div></div>
-    <div class="actions"><button class="secondary command-search toolbar-icon-button" data-command-search="true" @onclick="OpenSearch" aria-keyshortcuts="Control+k Meta+k" title="@T("Quick search")"><WorkspaceIcon Name="Search" /><span class="toolbar-label toolbar-accessible-label">@T("Quick search")</span><kbd aria-hidden="true">Ctrl K</kbd></button><button class="secondary theme-action toolbar-icon-button" aria-pressed="@(darkTheme?"true":"false")" @onclick="ToggleTheme" aria-label="@T(darkTheme?"Light theme":"Dark theme")" title="@T(darkTheme?"Light theme":"Dark theme")"><WorkspaceIcon Name="@(darkTheme?"Sun":"Moon")"/><span class="toolbar-label">@T(darkTheme?"Light theme":"Dark theme")</span></button><label class="demo-language"><span class="toolbar-language-label">@T("Language")</span><select @bind="language" @bind:after="PersistPreferences" aria-label="@T("Language")"><option value="en">English</option><option value="ru">Русский</option></select></label><span class="pill demo-status"><span class="signal-dot" aria-hidden="true"></span>@T("Demo mode · local data")</span><button class="secondary header-alerts" @onclick='()=>Navigate("Notifications")' ><WorkspaceIcon Name="Assistant"/><span class="toolbar-accessible-label">@T("Alerts")</span> <strong class="alert-counter">@currentAlerts.Count</strong></button><button class="secondary reset-action toolbar-icon-button" @onclick="Reset" aria-label="@T("Reset demo")" title="@T("Reset demo")"><WorkspaceIcon Name="Reset"/><span class="toolbar-label">@T("Reset demo")</span></button></div>
+    <div class="actions"><button class="secondary command-search toolbar-icon-button" data-command-search="true" @onclick="OpenSearch" aria-keyshortcuts="Control+k Meta+k" title="@T("Quick search")"><WorkspaceIcon Name="Search" /><span class="toolbar-label toolbar-accessible-label">@T("Quick search")</span><kbd aria-hidden="true">Ctrl K</kbd></button><button class="secondary theme-action toolbar-icon-button" aria-pressed="@(darkTheme?"true":"false")" @onclick="ToggleTheme" aria-label="@T(darkTheme?"Light theme":"Dark theme")" title="@T(darkTheme?"Light theme":"Dark theme")"><WorkspaceIcon Name="@(darkTheme?"Sun":"Moon")"/><span class="toolbar-label">@T(darkTheme?"Light theme":"Dark theme")</span></button><label class="demo-language"><span class="toolbar-language-label">@T("Language")</span><select @bind="language" @bind:after="PersistPreferences" aria-label="@T("Language")"><option value="en">English</option><option value="ru">Русский</option></select></label><span class="pill demo-status"><span class="signal-dot" aria-hidden="true"></span>@T("Demo mode · local data")</span><button class="secondary header-alerts" @onclick='()=>Navigate("Notifications")' ><WorkspaceIcon Name="Assistant"/><span class="toolbar-accessible-label">@T("Alerts")</span> <strong class="alert-counter">@currentAlerts.Count</strong></button><button class="secondary reset-action toolbar-icon-button" @onclick="Reset" hidden="@(navigationMode=="essentials")" aria-label="@T("Reset demo")" title="@T("Reset demo")"><WorkspaceIcon Name="Reset"/><span class="toolbar-label">@T("Reset demo")</span></button></div>
 </header>
 <main lang="@language" class="workspace-layout">
     <button class="mobile-nav-toggle secondary" aria-expanded="@(mobileNav?"true":"false")" aria-controls="workspace-nav" @onclick="ToggleMobileMenu"><span aria-hidden="true">☰</span> @T("Modules") · @T(section)</button>
     <nav id="workspace-nav" class="fleet-sidebar @(mobileNav?"nav-open":"")" aria-label="@T("Fleet sections")">
         <div class="nav-eyebrow">@T("Workspace")<button class="secondary sidebar-collapse" @onclick="ToggleSidebar" aria-label="@T(collapsed?"Expand sidebar":"Collapse sidebar")" title="@T(collapsed?"Expand sidebar":"Collapse sidebar")">@(collapsed?"»":"«")</button></div><label class="nav-search">@T("Find section")<input @ref="navInput" type="search" maxlength="120" @bind="navQuery" @bind:event="oninput" placeholder="@T("Search modules")" aria-label="@T("Find section")" aria-describedby="nav-hint" @onkeydown="SearchKey"/><small id="nav-hint">@T("Enter to open a single match; Escape clears search.") @T("Use arrow keys to browse results.")</small></label>
+        <div class="navigation-mode" role="group" aria-label="@T("Navigation level")"><button class="secondary" aria-pressed="@(navigationMode=="essentials"?"true":"false")" @onclick='()=>SetNavigationMode("essentials")'>@T("Essentials")</button><button class="secondary" aria-pressed="@(navigationMode=="all"?"true":"false")" @onclick='()=>SetNavigationMode("all")'>@T("All tools")</button></div>
         @if(!string.IsNullOrWhiteSpace(navQuery)){<p class="nav-search-count" role="status">@T("Matching commands"): @SearchMatchCount</p>}
         @if(!string.IsNullOrWhiteSpace(navQuery)){<div class="v4-search-actions">@foreach(var action in QuickActions.Where(a=>MatchesSection(a.Label))){<button class="secondary" @onclick="()=>RunQuickAction(action.Key)">@T(action.Label)</button>}</div>}
         @if(string.IsNullOrWhiteSpace(navQuery)&&!collapsed){<div class="nav-quick-access">@if(favorites.Count>0){<small>@T("Favorites")</small>@foreach(var item in favorites){<button aria-label="@($"{T("Favorite")}: {T(item)}")" @onclick="()=>Navigate(item)"><WorkspaceIcon Name="@item"/><span>@T(item)</span></button>}}@if(recent.Count>0){<div class="recent-nav-heading"><small>@T("Recent modules")</small><button class="secondary" @onclick="ClearRecent">@T("Clear recent")</button></div>@foreach(var item in recent.Take(3)){<button aria-label="@($"{T("Recent")}: {T(item)}")" @onclick="()=>Navigate(item)"><WorkspaceIcon Name="@item"/><span>@T(item)</span></button>}}</div>}
         @if(!NavigationGroups.SelectMany(g=>g.Items).Any(MatchesSection)&&!QuickActions.Any(a=>MatchesSection(a.Label))){<div class="nav-empty"><p>@T("No matching modules")</p><button class="secondary" @onclick="()=>navQuery=string.Empty">@T("Clear search")</button></div>}
-        @foreach(var group in NavigationGroups.Where(g=>g.Items.Any(MatchesSection)))
+        @foreach(var group in NavigationGroups.Where(g=>g.Items.Any(VisibleNavigationItem)))
         {
             <div class="nav-group">
                 <h2>@T(group.Name)</h2>
-                @foreach(var item in group.Items.Where(MatchesSection))
+                @foreach(var item in group.Items.Where(VisibleNavigationItem))
                 {
                     <button class="@(section == item ? "active" : "")" aria-pressed="@(section == item ? "true" : "false")" aria-current="@(section == item ? "page" : null)" aria-label="@T(item)" title="@T(item)" @onclick="() => Navigate(item)"><span class="nav-icon" aria-hidden="true"><WorkspaceIcon Name="@item" /></span><span class="nav-label">@T(item)</span></button>
                 }
             </div>
         }
+        @if(navigationMode=="essentials"&&string.IsNullOrWhiteSpace(navQuery)){<p class="guided-nav-note">@T("Search finds every tool, even in Essentials.")</p>}
     </nav>
     <div class="fleet-content" id="fleet-content" tabindex="-1" @ref="contentRoot">
     <div class="workspace-breadcrumb"><span>@T("Fleet workspace")</span><span aria-hidden="true">/</span><strong>@T(section)</strong><button class="secondary favorite-action" aria-label="@T(favorites.Contains(section)?"Remove favorite":"Add favorite")" aria-pressed="@(favorites.Contains(section)?"true":"false")" @onclick="ToggleFavorite">@(favorites.Contains(section)?"★":"☆")</button><span class="workspace-clock">@T("Simulation time") · @Now.ToString("HH:mm")</span>@if(buildRevision.Length==7){<span class="build-revision" title="Published source revision" data-testid="build-revision">@buildRevision</span>}</div>
@@ -38,10 +40,11 @@
             <button class="secondary" @onclick='()=>Navigate("Help & settings")'>@T("Help & settings")</button>
         </div>
     </div>
+    @if(navigationMode=="essentials"&&section!="Overview"){var guide=WorkspaceGuides.For(section);<section class="panel guided-context" aria-labelledby="guided-context-title"><div><span class="guided-kicker">@T("You are here")</span><h2 id="guided-context-title">@T(guide.Title)</h2><p>@T(guide.Description)</p></div><details><summary>@T("How to use this section")</summary><p>@T(guide.Hint)</p><button class="secondary" @onclick="()=>Navigate(guide.Next)">@T(guide.Action)</button></details></section>}
     @if(language=="ru"){<p class="localization-note">@T("Some technical labels and generated records remain in English.")</p>}
     @if (!string.IsNullOrEmpty(storageMessage)) { <p class="notice">@T(storageMessage)</p> }
     @if(recoveryRaw is not null){<p class="error" role="status">@T(RecoveryWarning)</p>}
-    @if(ModuleBanner(section) is var banner && banner.Art.Length>0){
+    @if(navigationMode=="all"&&ModuleBanner(section) is var banner && banner.Art.Length>0){
         <div class="@("module-intro module-art-"+banner.Art)"><div><span class="module-kicker">@T("Workspace")</span><strong>@T(banner.Title)</strong><p>@T(banner.Description)</p></div><span class="module-watermark" aria-hidden="true"><WorkspaceIcon Name="@section"/></span></div>
     }
     @if (section == "Overview")
@@ -51,6 +54,7 @@
             <div class="actions hero-actions"><button @onclick='() => Navigate("Tracking")'>@T("Open live tracking") <span aria-hidden="true">↗</span></button><button class="secondary" @onclick='() => Navigate("Dispatch")'>@T("Plan a trip")</button><button class="secondary" @onclick='() => Navigate("Maintenance")'>@T("Review maintenance")</button></div></div>
             <div class="hero-art-space" aria-hidden="true"></div>
         </section>
+        @if(navigationMode=="essentials"){<section class="panel guided-start" aria-labelledby="guided-start-title"><div class="suite-heading"><div><span class="guided-kicker">@T("Quick start")</span><h2 id="guided-start-title">@T("What would you like to do?")</h2><p class="muted">@T("Choose a task. You can open every advanced tool from the navigation.")</p></div></div><div class="guided-task-grid">@foreach(var task in GuidedTasks){<button class="secondary guided-task" @onclick="()=>RunQuickAction(task.Key)"><span class="guided-task-icon" aria-hidden="true"><WorkspaceIcon Name="@task.Icon"/></span><span><strong>@T(task.Title)</strong><small>@T(task.Description)</small></span><span class="guided-task-arrow" aria-hidden="true">↗</span></button>}</div></section>}
         <section class="panel dashboard-preferences" aria-labelledby="dashboard-preferences-title">
             <div class="dashboard-preference-heading"><div><h2 id="dashboard-preferences-title">@T("Dashboard layout")</h2><p class="muted">@T("Choose a workspace view. Core metrics and alerts stay visible.")</p></div>
                 <button class="secondary" aria-expanded="@(dashboardSettingsOpen?"true":"false")" aria-controls="dashboard-preferences-fields" @onclick="()=>dashboardSettingsOpen=!dashboardSettingsOpen"><WorkspaceIcon Name="Overview"/> @T("Customize dashboard")</button>
@@ -109,12 +113,14 @@
     else if(section=="Help & settings"){
         <section class="panel v4-help"><h2>@T("Help & settings")</h2><p class="muted">@T("Choose a workflow. Demo records stay in this browser; no live GPS or private server data is connected.")</p>
         <div class="formgrid"><label>@T("Appearance")<select aria-label="@T("Appearance")" @bind="themeMode" @bind:after="ApplyTheme"><option value="dark">@T("Dark")</option><option value="light">@T("Light")</option><option value="system">@T("System")</option></select></label><label>@T("Workspace visual style")<select aria-label="@T("Workspace visual style")" @bind="visualMode" @bind:after="PersistPreferences"><option value="premium">@T("Premium Violet")</option><option value="classic">@T("Classic workspace")</option></select></label><label>@T("Workspace density")<select aria-label="@T("Workspace density")" @bind="workspaceDensity" @bind:after="PersistPreferences"><option value="comfortable">@T("Comfortable")</option><option value="compact">@T("Compact")</option></select></label></div>
+        <div class="formgrid"><label>@T("Navigation level")<select aria-label="@T("Navigation level")" value="@navigationMode" @onchange="e=>SetNavigationMode(e.Value?.ToString())"><option value="essentials">@T("Essentials")</option><option value="all">@T("All tools")</option></select></label></div>
         <div class="help-grid">@foreach(var h in HelpItems){<button class="secondary" @onclick="()=>Navigate(h.Section)"><strong>@T(h.Section)</strong><small>@T(h.Description)</small></button>}</div>
         <p class="muted">@T("Use Ctrl+K to search modules. On mobile, use the bottom navigation or More.")</p>
         </section>
         <section class="panel suite-panel" aria-labelledby="snapshot-export-title"><div class="suite-heading"><div><span class="suite-kicker">@T("Local data portability")</span><h2 id="snapshot-export-title">@T("Export demo snapshot")</h2><p class="muted">@T("Download the current demo records and clock as JSON. This file may contain names, notes and registrations. No server upload, preferences or automatic restore.")</p></div><div class="actions"><button @onclick="ExportSnapshot">@T("Download demo JSON")</button><button class="secondary" @onclick="ExportSnapshotWorkbook">@T("Download snapshot Excel")</button></div></div><div class="metrics suite-metrics"><div class="metric">@T("Vehicles")<strong>@fleet.Vehicles.Count</strong></div><div class="metric">@T("Drivers")<strong>@fleet.Drivers.Count</strong></div><div class="metric">@T("Trips")<strong>@fleet.Trips.Count</strong></div></div>@if(snapshotFeedback.Length>0){<p role="status">@T(snapshotFeedback)</p>}</section>
         @if(recoveryRaw is not null){<section class="panel suite-panel"><h2>@T("Stored data recovery")</h2><p class="muted">@T("Download the unreadable original before explicitly restoring a valid snapshot or resetting. The fallback demo is not saved while recovery is required.")</p><button class="secondary" @onclick="ExportUnreadableSnapshot">@T("Download unreadable stored JSON")</button></section>}
         <SnapshotRestore Russian="@(language=="ru")" Restore="RestoreSnapshot"/>
+        @if(navigationMode=="essentials"){<section class="panel suite-panel"><h2>@T("Reset local demo")</h2><p class="muted">@T("Reset replaces your local records with the original sample. Export a backup first.")</p><button class="secondary" @onclick="Reset">@T("Reset demo")</button></section>}
     }
     else if (section == "Batch Dispatch")
     {
@@ -245,6 +251,11 @@
 </div>
 @code {
     private bool darkTheme=true,mobileNav,focusSearch,focusContent,collapsed;
+    private const string NavigationModeKey="fleetmanagement.preferences.navigation.v6";
+    private string navigationMode="essentials";
+    private bool VisibleNavigationItem(string item)=>MatchesSection(item)&&(navigationMode=="all"||!string.IsNullOrWhiteSpace(navQuery)||WorkspaceGuides.IsEssential(item)||item==section);
+    private async Task SetNavigationMode(string? mode){if(mode is not ("essentials" or "all")||navigationMode==mode)return;navigationMode=mode;await PersistPreferences();}
+    private static readonly (string Key,string Icon,string Title,string Description)[] GuidedTasks=[("vehicle","Vehicles","Add a vehicle","Register a truck or other fleet vehicle."),("driver","Drivers","Add a driver","Create a driver profile."),("trip","Dispatch","Create a trip","Choose the route, time and assignment."),("maintenance","Maintenance","Check maintenance","See which vehicles need service."),("report","Analytics","Prepare a report","Review activity or export a report."),("alerts","Assistant","Review current alerts","Open warnings and suggested actions.")];
     private string themeMode="dark",newRecordSection="",visualMode="premium",workspaceDensity="comfortable";private int recordAction;
     private bool historyReady,writeHistory,quickActionsExpanded,recentDirty;
     private List<string> favorites=[],recent=[];
@@ -253,8 +264,8 @@
     private List<string> ReadModulePreference(string? stored,int limit)=>(stored??"").Length>2048?[]:(stored??"").Split('|',StringSplitOptions.RemoveEmptyEntries).Where(x=>NavigationGroups.SelectMany(g=>g.Items).Contains(x)).Distinct().Take(limit).ToList();
     private const string DashboardKey="fleetmanagement.preferences.dashboard.v4", SidebarKey="fleetmanagement.preferences.sidebar.v4";
     private static readonly (string Key,string Label)[] DashboardPanels=[("trips","Recent trips"),("simulation","Interactive fleet visualization"),("intelligence","Explore intelligence"),("guide","Try a guided scenario"),("artwork","Design gallery")];
-    private HashSet<string> dashboardPanels=new(DashboardPanels.Select(p=>p.Key),StringComparer.Ordinal);
-    private string dashboardPreset="full";
+    private HashSet<string> dashboardPanels=PanelsForPreset("operations");
+    private string dashboardPreset="operations";
     private bool compactDashboard,dashboardSettingsOpen;
     private static HashSet<string> PanelsForPreset(string preset)=>new(preset switch{
         "operations"=>new[]{"trips"},"intelligence"=>new[]{"simulation","intelligence"},_=>DashboardPanels.Select(p=>p.Key).ToArray()
@@ -310,7 +321,7 @@
     private bool CanLeaveRegister()=>section is not ("Vehicles" or "Drivers")||activeRegister?.CanDiscard()!=false;
     private void NewTripAction(){if(!CanLeaveRegister()||!CanDiscardTrip())return;CancelEdit();NavigateCore("Dispatch");}
     private void NewRecordAction(string target){if(!CanLeaveRegister()||!CanDiscardTrip())return;if(section=="Dispatch")CancelEdit();NavigateCore(target);newRecordSection=target;recordAction++;}
-    private void ToggleMobileMenu(){mobileNav=!mobileNav;if(mobileNav)focusSearch=true;}
+    private void ToggleMobileMenu(){mobileNav=!mobileNav;if(!mobileNav)navQuery="";}
     private async Task ApplyTheme(){darkTheme=themeMode=="dark"||(themeMode=="system"&&await JS.InvokeAsync<bool>("fleetPrefersDark"));await PersistPreferences();}
     [JSInvokable] public Task RestoreModule(string value)=>InvokeAsync(()=>{if(NavigationGroups.SelectMany(g=>g.Items).Contains(value)){Navigate(value);writeHistory=section!=value;StateHasChanged();}});
     [JSInvokable] public Task SystemThemeChanged(bool value)=>InvokeAsync(()=>{if(themeMode=="system"){darkTheme=value;StateHasChanged();}});
@@ -346,6 +357,7 @@
             await JS.InvokeVoidAsync("localStorage.setItem",LanguageKey,language=="ru"?"ru":"en");
             await JS.InvokeVoidAsync("localStorage.setItem",VisualKey,visualMode=="classic"?"classic":"premium");
             await JS.InvokeVoidAsync("localStorage.setItem",DensityKey,workspaceDensity=="compact"?"compact":"comfortable");
+            await JS.InvokeVoidAsync("localStorage.setItem",NavigationModeKey,navigationMode);
         }catch(JSException){storageMessage="Unable to save locally; changes are session-only.";}
     }
     private string navQuery="";
@@ -435,7 +447,10 @@
             language=await JS.InvokeAsync<string?>("localStorage.getItem",LanguageKey)=="ru"?"ru":"en";
             visualMode=await JS.InvokeAsync<string?>("localStorage.getItem",VisualKey)=="classic"?"classic":"premium";
             workspaceDensity=await JS.InvokeAsync<string?>("localStorage.getItem",DensityKey)=="compact"?"compact":"comfortable";
-            LoadDashboardPreferences(await JS.InvokeAsync<string?>("localStorage.getItem",DashboardKey));
+            navigationMode=await JS.InvokeAsync<string?>("localStorage.getItem",NavigationModeKey)=="all"?"all":"essentials";
+            var savedDashboard=await JS.InvokeAsync<string?>("localStorage.getItem",DashboardKey);
+            if(navigationMode=="all"&&string.IsNullOrEmpty(savedDashboard)){dashboardPreset="full";dashboardPanels=PanelsForPreset("full");}
+            LoadDashboardPreferences(savedDashboard);
             collapsed=await JS.InvokeAsync<string?>("localStorage.getItem",SidebarKey)=="1";
             favorites=ReadModulePreference(await JS.InvokeAsync<string?>("localStorage.getItem",FavoritesKey),8);
             recent=ReadModulePreference(await JS.InvokeAsync<string?>("localStorage.getItem",RecentKey),5);

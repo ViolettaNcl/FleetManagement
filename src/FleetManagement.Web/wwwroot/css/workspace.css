@@ -290,7 +290,7 @@
  body:has(.fleet-print-document) .fleet-sidebar,
  body:has(.fleet-print-document) .mobile-nav-toggle,
  body:has(.fleet-print-document) .skip-workspace,
- body:has(.fleet-print-document) .mobile-bottom-nav,
+ body:has(.fleet-print-document) .v4-bottom-nav,
  body:has(.fleet-print-document) .fleet-content>:not(.custom-report-panel),
  body:has(.fleet-print-document) .custom-report-panel>:not(.fleet-print-document){display:none!important}
  body:has(.fleet-print-document) :is(.demo-shell,.workspace-layout,.fleet-content,.custom-report-panel){

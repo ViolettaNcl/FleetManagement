@@ -42,6 +42,7 @@ if "--verify-persistence" in sys.argv:
 
 now=datetime.now(timezone.utc)
 request("GET","/health",authorized=False)
+assert request("GET","/ready",authorized=False)=={"status":"ready"}
 request("GET","/api/fleet",status=401,authorized=False)
 request("GET","/openapi/v1.json",status=401,authorized=False)
 request("GET","/openapi/v1.json")

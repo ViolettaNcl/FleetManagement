@@ -50,6 +50,7 @@ jobs:
           node tests/browser/pwa-update.mjs
           node tests/browser/v4.mjs
           node tests/browser/v5-suite.mjs
+          node tests/browser/v6-rc.mjs
           node tests/browser/neon.mjs
           node tests/browser/smoke.mjs
           node tests/browser/cross-browser.mjs

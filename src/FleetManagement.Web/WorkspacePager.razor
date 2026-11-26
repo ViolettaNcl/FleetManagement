@@ -1,0 +1,18 @@
+@using FleetManagement.Web
+<div class="register-pagination" role="group" aria-label="@T("Pagination")">
+  <label>@T("Rows per page")<select aria-label="@T("Rows per page")" value="@PageSize" @onchange="ChangeSize">@foreach(var size in Sizes){<option value="@size">@size</option>}</select></label>
+  <span aria-live="polite">@T("Page") @(Page+1) / @PageCount</span>
+  <button class="secondary" disabled="@(Page<=0)" @onclick="()=>PageChanged.InvokeAsync(Page-1)">@T("Previous page")</button>
+  <button class="secondary" disabled="@(Page+1>=PageCount)" @onclick="()=>PageChanged.InvokeAsync(Page+1)">@T("Next page")</button>
+</div>
+@code{
+    [Parameter] public bool Russian{get;set;}
+    [Parameter] public int Page{get;set;}
+    [Parameter] public int PageCount{get;set;}=1;
+    [Parameter] public int PageSize{get;set;}=10;
+    [Parameter] public EventCallback<int> PageChanged{get;set;}
+    [Parameter] public EventCallback<int> SizeChanged{get;set;}
+    private static readonly int[] Sizes=[5,10,25,50];
+    private string T(string s)=>DemoLocale.Text(s,Russian);
+    private Task ChangeSize(ChangeEventArgs args)=>int.TryParse(args.Value?.ToString(),out var size)&&Sizes.Contains(size)?SizeChanged.InvokeAsync(size):Task.CompletedTask;
+}

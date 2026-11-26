@@ -10,12 +10,15 @@ try{
   await page.getByRole('button',{name:'Collapse sidebar',exact:true}).click();
   assert.equal(await page.locator('.sidebar-collapsed').count(),1);
   await page.getByRole('button',{name:'Expand sidebar',exact:true}).click();
+  await page.locator('.v4-context-actions').getByRole('button',{name:'Quick actions',exact:false}).click();
   await page.locator('.v4-context-actions').getByRole('button',{name:'Register vehicle',exact:true}).click();
   await page.getByRole('heading',{name:'New record',exact:true}).waitFor();
   await page.getByLabel('Registration',{exact:true}).fill('DRAFT-QA');
+  await page.locator('.v4-context-actions').getByRole('button',{name:'Quick actions',exact:false}).click();
   page.once('dialog',d=>d.dismiss());
   await page.locator('.v4-context-actions').getByRole('button',{name:'+ New trip',exact:true}).click();
   assert.equal(await page.getByLabel('Registration',{exact:true}).inputValue(),'DRAFT-QA');
+  await page.locator('.v4-context-actions').getByRole('button',{name:'Quick actions',exact:false}).click();
   page.once('dialog',d=>d.accept());
   await page.locator('.v4-context-actions').getByRole('button',{name:'+ New trip',exact:true}).click();
   await page.getByRole('heading',{name:'Intelligent dispatch planner',exact:true}).waitFor();
@@ -26,6 +29,7 @@ try{
   await page.getByRole('heading',{name:'Vehicle register',exact:true}).waitFor();
   await page.getByLabel('Rows per page',{exact:true}).selectOption('5');
   assert.equal(await page.getByRole('button',{name:'Previous page',exact:true}).isDisabled(),true);
+  await page.locator('.v4-context-actions').getByRole('button',{name:'Quick actions',exact:false}).click();
   await page.locator('.v4-context-actions').getByRole('button',{name:'Help & settings',exact:true}).click();
   await page.getByRole('heading',{name:'Help & settings',exact:true}).waitFor();
   await page.getByLabel('Appearance',{exact:true}).selectOption('system');

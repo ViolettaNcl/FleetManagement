@@ -28,7 +28,14 @@
     </nav>
     <div class="fleet-content" id="fleet-content" tabindex="-1" @ref="contentRoot">
     <div class="workspace-breadcrumb"><span>@T("Fleet workspace")</span><span aria-hidden="true">/</span><strong>@T(section)</strong><button class="secondary favorite-action" aria-label="@T(favorites.Contains(section)?"Remove favorite":"Add favorite")" aria-pressed="@(favorites.Contains(section)?"true":"false")" @onclick="ToggleFavorite">@(favorites.Contains(section)?"★":"☆")</button><span class="workspace-clock">@T("Simulation time") · @Now.ToString("HH:mm")</span>@if(buildRevision.Length==7){<span class="build-revision" title="Published source revision" data-testid="build-revision">@buildRevision</span>}</div>
-    <div class="v4-context-actions @(quickActionsExpanded?"actions-expanded":"")"><button class="quick-primary" @onclick="NewTripAction">@T("+ New trip")</button><button class="secondary mobile-action-toggle" aria-expanded="@(quickActionsExpanded?"true":"false")" aria-controls="v4-secondary-actions" @onclick="()=>quickActionsExpanded=!quickActionsExpanded">@T("Quick actions") <span aria-hidden="true">⌄</span></button><div class="v4-secondary-actions" id="v4-secondary-actions"><button class="secondary" @onclick='()=>NewRecordAction("Vehicles")'>@T("Register vehicle")</button><button class="secondary" @onclick='()=>NewRecordAction("Drivers")'>@T("Register driver")</button><button class="secondary" @onclick='()=>Navigate("Help & settings")'>@T("Help & settings")</button></div></div>
+    <div class="v4-context-actions contextual-toolbar @(quickActionsExpanded?"actions-expanded":"")">
+        @if(ContextAction is var primary&&primary.Key.Length>0){<button class="quick-primary" @onclick="()=>RunQuickAction(primary.Key)"><WorkspaceIcon Name="@primary.Icon"/> @T(primary.Label)</button>}
+        <button class="secondary context-action-toggle" aria-expanded="@(quickActionsExpanded?"true":"false")" aria-controls="v4-secondary-actions" @onclick="()=>quickActionsExpanded=!quickActionsExpanded">@T("Quick actions") <span aria-hidden="true">⌄</span></button>
+        <div class="v4-secondary-actions" id="v4-secondary-actions" hidden="@(!quickActionsExpanded)">
+            @foreach(var action in QuickActions.Where(x=>x.Key!=ContextAction.Key)){<button class="secondary" @onclick="()=>RunQuickAction(action.Key)">@T(action.Label)</button>}
+            <button class="secondary" @onclick='()=>Navigate("Help & settings")'>@T("Help & settings")</button>
+        </div>
+    </div>
     @if(language=="ru"){<p class="localization-note">@T("Some technical labels and generated records remain in English.")</p>}
     @if (!string.IsNullOrEmpty(storageMessage)) { <p class="notice">@T(storageMessage)</p> }
     @if(ModuleBanner(section) is var banner && banner.Art.Length>0){
@@ -219,7 +226,12 @@
     private List<string> favorites=[],recent=[];
     private const string FavoritesKey="fleetmanagement.preferences.favorites.v4";
     private static readonly (string Key,string Label)[] QuickActions=[("trip","+ New trip"),("vehicle","Register vehicle"),("driver","Register driver"),("report","Export reports"),("maintenance","Review maintenance"),("alerts","Open alert center")];
-    private void RunQuickAction(string key){switch(key){case "trip":NewTripAction();break;case "vehicle":NewRecordAction("Vehicles");break;case "driver":NewRecordAction("Drivers");break;case "report":Navigate("Analytics");break;case "maintenance":Navigate("Maintenance");break;case "alerts":Navigate("Notifications");break;}}
+    private (string Key,string Label,string Icon) ContextAction=>section switch{
+        "Overview" or "Dispatch" or "Calendar"=>("trip","+ New trip","Dispatch"),
+        "Vehicles" or "Vehicle Passport"=>("vehicle","Register vehicle","Vehicles"),
+        "Drivers" or "Resource Planning"=>("driver","Register driver","Drivers"),
+        _=>("","","")};
+    private void RunQuickAction(string key){quickActionsExpanded=false;switch(key){case "trip":NewTripAction();break;case "vehicle":NewRecordAction("Vehicles");break;case "driver":NewRecordAction("Drivers");break;case "report":Navigate("Analytics");break;case "maintenance":Navigate("Maintenance");break;case "alerts":Navigate("Notifications");break;}}
     private async Task ToggleFavorite(){if(!favorites.Remove(section)){if(favorites.Count>=8)favorites.RemoveAt(0);favorites.Add(section);}try{await JS.InvokeVoidAsync("localStorage.setItem",FavoritesKey,string.Join("|",favorites));}catch(JSException){storageMessage="Unable to save locally; changes are session-only.";}}
     private DotNetObjectReference<App>? self;
     private static readonly (string Section,string Label)[] MobileTabs=[("Overview","Home"),("Vehicles","Fleet"),("Dispatch","Trips"),("Notifications","Alerts")];
@@ -227,7 +239,7 @@
     private FleetRegister? activeRegister;
     private bool CanLeaveRegister()=>section is not ("Vehicles" or "Drivers")||activeRegister?.CanDiscard()!=false;
     private void NewTripAction(){if(!CanLeaveRegister()||!CanDiscardTrip())return;CancelEdit();NavigateCore("Dispatch");}
-    private void NewRecordAction(string target){if(!CanLeaveRegister()||!CanDiscardTrip())return;NavigateCore(target);newRecordSection=target;recordAction++;}
+    private void NewRecordAction(string target){if(!CanLeaveRegister()||!CanDiscardTrip())return;if(section=="Dispatch")CancelEdit();NavigateCore(target);newRecordSection=target;recordAction++;}
     private void ToggleMobileMenu(){mobileNav=!mobileNav;if(mobileNav)focusSearch=true;}
     private async Task ApplyTheme(){darkTheme=themeMode=="dark"||(themeMode=="system"&&await JS.InvokeAsync<bool>("fleetPrefersDark"));await PersistPreferences();}
     [JSInvokable] public Task RestoreModule(string value)=>InvokeAsync(()=>{if(NavigationGroups.SelectMany(g=>g.Items).Contains(value)){Navigate(value);writeHistory=section!=value;StateHasChanged();}});
@@ -325,7 +337,7 @@
     private void NavigateCore(string item){if(section!=item){newRecordSection="";writeHistory=true;recent.Remove(item);recent.Insert(0,item);if(recent.Count>5)recent.RemoveAt(5);}mobileNav=false;quickActionsExpanded=false;navQuery="";focusContent=true;if(item=="Vehicle Passport"&&!fleet.Vehicles.Any(v=>v.Id==passportId))passportId=fleet.Vehicles.FirstOrDefault()?.Id??0;section=item;feedback="";if(item=="Dispatch"){if(!fleet.Vehicles.Any(v=>v.Id==vehicleId))vehicleId=fleet.Vehicles.FirstOrDefault()?.Id??0;if(!fleet.Drivers.Any(d=>d.Id==driverId))driverId=fleet.Drivers.FirstOrDefault()?.Id??0;}}
     private async Task ToggleSimulation(){playing=!playing;if(!playing)await Persist();}
     private async Task Advance(){Now=Now.AddMinutes(15);await Persist();}
-    private async Task Reset(){if(!await JS.InvokeAsync<bool>("confirm",T("Reset all demo data?")))return;ClearTripFilters();playing=false;Now=DateTime.Now;fleet=FleetRules.Sample(Now);maintenanceEntries.Clear();driverShifts.Clear();vehicleReservations.Clear();requireShifts=false;maintenanceFeedback="";start=Now.AddHours(1);end=Now.AddHours(2);vehicleId=driverId=1;selectedTrip=101;editingTripId=null;tripDirty=false;feedback="";await Persist();}
+    private async Task Reset(){if(!await JS.InvokeAsync<bool>("confirm",T("Reset all demo data?")))return;ClearTripFilters();recordAction++;newRecordSection="";playing=false;Now=DateTime.Now;fleet=FleetRules.Sample(Now);maintenanceEntries.Clear();driverShifts.Clear();vehicleReservations.Clear();requireShifts=false;maintenanceFeedback="";start=Now.AddHours(1);end=Now.AddHours(2);vehicleId=driverId=1;selectedTrip=101;editingTripId=null;tripDirty=false;feedback="";await Persist();}
     private string VehicleName(int id)=>fleet.Vehicles.FirstOrDefault(v=>v.Id==id)?.Plate??"Unknown";
     private string DriverName(int id)=>fleet.Drivers.FirstOrDefault(d=>d.Id==id)?.Name??"Unknown";
     private async Task SetRequireShifts(bool value){requireShifts=value;await Persist();}
@@ -369,7 +381,7 @@
     }
     @if(!FilteredTrips().Any()){<p class="empty-state">@T("No matching trips.")</p>}
     </div>
-    @if(section=="Dispatch"){<div class="register-pagination"><label>@T("Rows per page")<select aria-label="@T("Rows per page")" @bind="tripPageSize" @bind:after="ResetTripPage"><option value="5">5</option><option value="10">10</option><option value="25">25</option><option value="50">50</option></select></label><span aria-live="polite">@T("Page") @(CurrentTripPage+1) / @TripPageCount</span><button class="secondary" disabled="@(CurrentTripPage==0)" @onclick="()=>tripPage=CurrentTripPage-1">@T("Previous page")</button><button class="secondary" disabled="@(CurrentTripPage+1>=TripPageCount)" @onclick="()=>tripPage=CurrentTripPage+1">@T("Next page")</button></div>}
+    @if(section=="Dispatch"){<WorkspacePager Russian="@(language=="ru")" Page="CurrentTripPage" PageCount="TripPageCount" PageSize="tripPageSize" PageChanged="@(p=>tripPage=p)" SizeChanged="@(n=>{tripPageSize=n;ResetTripPage();})" />}
     </div>;
     public async ValueTask DisposeAsync(){try{await JS.InvokeVoidAsync("fleetDisposeNavigation");}catch(JSException){}self?.Dispose();cts.Cancel();timer?.Dispose();if(timerTask is not null)await timerTask;cts.Dispose();}
 }

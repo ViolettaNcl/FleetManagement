@@ -34,6 +34,7 @@ try{
     await nav("Calendar","Fleet calendar");await page.getByRole("button",{name:"Month",exact:true}).click();await hold(2600);
     await nav("Dispatch","Intelligent dispatch planner");
     await page.getByRole("button",{name:"Suggest assignment"}).click();await hold(2000);
+    page.once("dialog",dialog=>dialog.accept());
     await nav("Optimization","Route optimization lab");
     await page.getByRole("button",{name:"Calculate routes"}).click();
     await page.getByRole("button",{name:"2-opt",exact:true}).click();await hold(2500);

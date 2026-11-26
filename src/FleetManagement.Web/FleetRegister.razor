@@ -80,7 +80,7 @@
       @if(!Drivers.Any()){<p class="empty-state">@T("No matching drivers.")</p>}
     }
     </div>
-    <div class="register-pagination"><label>@T("Rows per page")<select aria-label="@T("Rows per page")" @bind="pageSize" @bind:after="ResetPage"><option value="5">5</option><option value="10">10</option><option value="25">25</option><option value="50">50</option></select></label><span aria-live="polite">@T("Page") @(CurrentPage+1) / @PageCount</span><button class="secondary" disabled="@(CurrentPage==0)" @onclick="()=>pageIndex=CurrentPage-1">@T("Previous page")</button><button class="secondary" disabled="@(CurrentPage+1>=PageCount)" @onclick="()=>pageIndex=CurrentPage+1">@T("Next page")</button></div>
+    <WorkspacePager Russian="Russian" Page="CurrentPage" PageCount="PageCount" PageSize="pageSize" PageChanged="@(p=>pageIndex=p)" SizeChanged="@(n=>{pageSize=n;ResetPage();})" />
 </section>
 @code {
     [Parameter] public bool StartNew{get;set;}

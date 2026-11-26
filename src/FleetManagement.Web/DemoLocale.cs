@@ -891,6 +891,7 @@ internal static class DemoLocale
         ["Events"]="События",
         ["More events"]="других событий",
         ["Discard unsaved changes?"]="Отменить несохранённые изменения?",
+        ["Pagination"]="Разбиение на страницы",
     };
     public static string Text(string value,bool russian)=>russian&&Russian.TryGetValue(value,out var translated)?translated:value;
 }

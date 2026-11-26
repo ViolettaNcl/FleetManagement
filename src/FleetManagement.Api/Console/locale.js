@@ -1,5 +1,18 @@
 "use strict";
 const translations={
+"Scheduled operational review":"Плановая операционная проверка",
+"Read-only server schedule. No records are changed or messages sent.":"Серверная проверка только для чтения. Записи не меняются, сообщения не отправляются.",
+"Scheduled review history":"История плановых проверок",
+"Scheduled review starting":"Запуск плановой проверки",
+"Scheduled review idle":"Плановая проверка ожидает",
+"Scheduled review running":"Плановая проверка выполняется",
+"Scheduled review failed":"Ошибка плановой проверки",
+"Scheduled review unavailable":"Плановая проверка недоступна",
+"Scheduled review disabled":"Плановая проверка отключена",
+"Last attempt (UTC)":"Последняя попытка (UTC)",
+"Observation (UTC)":"Время проверки (UTC)",
+"Review queue":"Очередь проверки",
+"Escalation":"Эскалация",
 "Resolve the pending write before submitting another.":"Сначала завершите предыдущую запись.",
 "Write outcome uncertain. Retry the original confirmed request, not a new submission. The UUID remains valid for this session only.":"Результат записи неизвестен. Повторите исходный подтверждённый запрос, а не создавайте новый. UUID сохраняется только в текущем сеансе.",
 "Retry original write":"Повторить исходный запрос",

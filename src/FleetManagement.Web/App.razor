@@ -467,7 +467,7 @@
     private bool ApplySnapshot(DemoSnapshot snapshot){
         if(section!="Help & settings"||SnapshotValidation.Check(snapshot.Data,snapshot.Now,snapshot.MaintenanceEntries,snapshot.DriverShifts,snapshot.VehicleReservations) is not null)return false;
         // Save before replacing any in-memory records; failed/quota storage writes leave the workspace intact.
-        try{if(JS is IJSInProcessRuntime local)local.InvokeVoid("localStorage.setItem",Key,JsonSerializer.Serialize(snapshot,DemoJsonContext.Default.DemoSnapshot));else return false;}
+        try{if(JS is not IJSInProcessRuntime local||!local.Invoke<bool>("fleetTrySaveSnapshot",Key,JsonSerializer.Serialize(snapshot,DemoJsonContext.Default.DemoSnapshot)))return false;}
         catch(JSException){return false;}
         playing=false;fleet=snapshot.Data;Now=snapshot.Now;
         maintenanceEntries=snapshot.MaintenanceEntries??[];driverShifts=snapshot.DriverShifts??[];

@@ -100,7 +100,7 @@ try{
   await page.setViewportSize({width:320,height:760});
   await page.evaluate(()=>window.scrollTo(0,0));
   assert.ok(await page.locator('.workspace-header').evaluate(el=>el.getBoundingClientRect().height<=150),'Mobile toolbar must not consume the viewport');
-  for(const name of ['Quick search Ctrl K','Light theme','Reset demo'])assert.ok(await page.getByRole('button',{name,exact:true}).isVisible());
+  for(const name of ['Quick search','Light theme','Reset demo'])assert.ok(await page.getByRole('button',{name,exact:true}).isVisible());
   assert.ok(await page.getByRole('button',{name:/^Alerts \d+$/}).isVisible());
   await page.screenshot({path:'browser-results/workspace-mobile-header.png',fullPage:false});
   await page.locator('.mobile-nav-toggle').click();

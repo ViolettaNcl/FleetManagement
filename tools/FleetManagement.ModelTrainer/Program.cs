@@ -37,6 +37,20 @@ try{
     Console.WriteLine($"Maintenance held-out: logistic F1={maintenance.Test.F1:F3}, FastTree F1={fastMetrics.F1:F3}; logistic Brier={maintenance.Test.Brier:F3}, FastTree Brier={fastMetrics.Brier:F3}");
     Dictionary<int,double> Probabilities(ITransformer model,IDataView? input=null)=>ml.Data.CreateEnumerable<BinaryOutput>(model.Transform(input??testView),reuseRowObject:false).ToDictionary(r=>r.RowKey,r=>(double)r.Probability);
 
+    // Same exact training and held-out rows as FastTree; fixed settings.
+    var forest=ml.BinaryClassification.Trainers.FastForest(new FastForestBinaryTrainer.Options{
+        LabelColumnName="Label",FeatureColumnName="Features",NumberOfLeaves=16,NumberOfTrees=100,
+        MinimumExampleCountPerLeaf=20,NumberOfThreads=1
+    }).Fit(trainView);
+    var forestPath=Path.Combine(pending,"maintenance-fastforest.zip");
+    ml.Model.Save(forest,trainView.Schema,forestPath);
+    var forestLoaded=ml.Model.Load(forestPath,out _);
+    var forestScores=Probabilities(forestLoaded);
+    CheckReload(Probabilities(forest),forestScores);
+    var forestMetrics=MaintenanceLearning.Evaluate(test,r=>forestScores[(r.VehicleId-1000)*60+r.Day]);
+    var forestRanking=RankingEvaluation.Evaluate(test.Select(r=>(forestScores[(r.VehicleId-1000)*60+r.Day],r.FailureWithin7Days)));
+    Console.WriteLine($"FastForest held-out F1={forestMetrics.F1:F3}, Brier={forestMetrics.Brier:F3}, ROC-AUC={forestRanking.RocAuc:F3}");
+
     var etaTrain=EtaLearning.Generate(seed,0,1600);
     var etaValidation=EtaLearning.Generate(unchecked(seed^0xB71),2000,400);
     var etaTest=EtaLearning.Generate(unchecked(seed^0x99A),3000,400);
@@ -94,7 +108,9 @@ try{
         maintenance=new{
             trainRows=train.Count,testRows=test.Count,trainVehicles=40,testVehicles=12,threshold=.5,
             features=maintenanceNames,permutationImportance=new{metric="Brier",repeats=3,features=maintenanceImportance},trainSha256=Fingerprint(train),testSha256=Fingerprint(test),
-            baseline=maintenance.Baseline,logistic=maintenance.Test,fastTree=fastMetrics,
+            baseline=maintenance.Baseline,logistic=maintenance.Test,fastTree=fastMetrics,fastForest=forestMetrics,
+            fastForestArtifact=new{file="maintenance-fastforest.zip",sha256=FileHash(forestPath)},fastForestReloadVerified=true,
+            fastForestSettings=new{leaves=16,trees=100,minExamplesPerLeaf=20,threads=1},fastForestRanking=forestRanking,
             settings=new{leaves=16,trees=100,minExamplesPerLeaf=20,learningRate=.1,threads=1},
             artifact=new{file="maintenance-fasttree.zip",sha256=FileHash(binaryPath)},reloadVerified=true
         },

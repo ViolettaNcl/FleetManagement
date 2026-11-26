@@ -18,3 +18,7 @@ CI workflow trains, reloads, checks hashes and manifest invariants, then uploads
 
 ### Post-hoc explainability
 The trainer now records FastTree held-out permutation importance for each input dimension in the manifest: three deterministic shuffles and mean/min/max loss change (Brier for maintenance, MAE minutes for ETA). Original held-out rows and labels are not modified; the fitted models are not retrained or selected from these results. Negative importance is allowed. Correlated features and unrealistic shuffled combinations can distort marginal scores. These are synthetic, non-causal experimental explanations, not safety or operational advice.
+
+
+### V6 candidate — FastForest comparison
+The same local trainer additionally fits a fixed 100-tree ML.NET FastForest classifier using the existing FastTree package. It evaluates exactly the existing vehicle-disjoint maintenance test cohort and writes maintenance-fastforest.zip, a reload check, hash, classification metrics, settings and tie-aware ranking metrics. Old schema-v1 manifests without the optional FastForest block remain readable. The registry UI displays the imported F1/Brier and artifact hash, not an independently authenticated model. All settings are fixed before evaluation; no selection on test and no production promotion.

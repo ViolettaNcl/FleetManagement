@@ -1,0 +1,25 @@
+@using FleetManagement.Web
+<section class="panel suite-panel" aria-labelledby="group-validation-title">
+    <div class="suite-heading"><div><span class="suite-kicker">@T("Hyperparameter review")</span><h2 id="group-validation-title">@T("Vehicle-group cross-validation")</h2><p class="muted">@T("Compare 30, 120 and 240 epochs in four disjoint vehicle folds, select by mean validation Brier loss, then evaluate once on a separate synthetic test cohort.")</p></div><button @onclick="Run" disabled="@running">@T("Run grouped validation")</button></div>
+    <div class="formgrid"><label>@T("Cross-validation seed")<input type="number" @bind="seed" disabled="@running"/></label></div>
+    @if(running){<p role="status">@T("Evaluating synthetic cohorts…")</p>}
+    @if(report is not null){
+        var e=report;
+        <p class="muted">@T("Evaluated seed"): @evaluatedSeed · @e.FinalRows @T("Held-out rows")</p>
+        <div class="metrics suite-metrics"><div class="metric">@T("Selected epochs")<strong data-testid="group-selected-epochs">@e.SelectedEpochs</strong></div><div class="metric">@T("Test Brier loss")<strong>@e.Final.Brier.ToString("F4")</strong></div><div class="metric">@T("Fixed 120-epoch test Brier")<strong>@e.FixedBaseline.Brier.ToString("F4")</strong></div></div>
+        <div class="tablewrap" role="region" tabindex="0" aria-label="@T("Cross-validation results")"><table><thead><tr><th>@T("Training epochs")</th>@for(int i=1;i<=4;i++){<th>@T("Fold") @i</th>}<th>@T("Mean Brier")</th><th>@T("Selection")</th></tr></thead><tbody>@foreach(var candidate in e.Candidates){<tr><td>@candidate.Epochs</td>@foreach(var fold in candidate.Folds){<td>@fold.Brier.ToString("F4")</td>}<td>@candidate.MeanBrier.ToString("F4")</td><td>@(candidate.Epochs==e.SelectedEpochs?T("Selected"):"—")</td></tr>}</tbody></table></div>
+        <p class="muted">@T("The final synthetic test is not used to select epochs. Improvement on the test is not guaranteed. No model is promoted automatically.")</p>
+    }
+</section>
+@code{
+    [Parameter] public bool Russian{get;set;}
+    private string T(string value)=>DemoLocale.Text(value,Russian);
+    private int seed=42,evaluatedSeed;
+    private bool running;
+    private GroupValidationResult? report;
+    private async Task Run(){
+        if(running)return;running=true;var chosen=seed;
+        try{await Task.Yield();report=GroupValidation.Run(chosen);evaluatedSeed=chosen;}
+        finally{running=false;}
+    }
+}

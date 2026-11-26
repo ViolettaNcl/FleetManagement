@@ -524,4 +524,16 @@ var rcForest=IsolationLearning.Run(42,16);
 Check(rcForest.TrainRows==500&&rcForest.ValidationRows==240&&rcForest.TestRows==240&&rcForest.Samples.All(s=>s.Score is >=0 and <=1),"RC isolation cohort and scores");
 Check(rcForest.Forest.TP+rcForest.Forest.FP+rcForest.Forest.TN+rcForest.Forest.FN==240&&rcForest.Samples.Count(s=>s.Flagged)==rcForest.Forest.TP+rcForest.Forest.FP,"RC isolation confusion totals");
 Check(rcForest.Ranking.Positives==rcForest.Samples.Count(s=>s.Actual)&&rcForest.Samples.SequenceEqual(IsolationLearning.Run(42,16).Samples),"RC isolation ranking and deterministic forest");
+
+var rcCross=GroupValidation.Run(42);
+Check(rcCross.Candidates.Count==3&&rcCross.Candidates.All(c=>c.Folds.Count==4&&c.Folds.All(f=>f.TrainVehicles==30&&f.ValidationVehicles==10&&f.ValidationRows==600)),"RC four grouped validation folds");
+Check(rcCross.SelectedEpochs==rcCross.Candidates.OrderBy(c=>c.MeanBrier).ThenBy(c=>c.Epochs).First().Epochs&&rcCross.FinalRows==720,"RC selection only on grouped validation");
+Check(rcCross.Final.TP+rcCross.Final.FP+rcCross.Final.TN+rcCross.Final.FN==720,"RC final cohort confusion totals");
+var rcManifest=System.Text.Json.Nodes.JsonNode.Parse(manifestJson)!;
+rcManifest["maintenance"]!["fastForest"]=rcManifest["maintenance"]!["fastTree"]!.DeepClone();
+rcManifest["maintenance"]!["fastForestArtifact"]=new System.Text.Json.Nodes.JsonObject{["sha256"]=new string('d',64)};
+rcManifest["maintenance"]!["fastForestReloadVerified"]=true;
+Check(RegistryManifest.Parse(rcManifest.ToJsonString()).FastForestF1==.6&&registry.FastForestF1==null,"RC optional FastForest backward compatibility");
+rcManifest["maintenance"]!["fastForestReloadVerified"]=false;
+Check(RejectManifest(rcManifest.ToJsonString()),"RC FastForest rejects missing reload evidence");
 Console.WriteLine("All business rule checks passed.");

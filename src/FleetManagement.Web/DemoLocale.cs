@@ -1096,6 +1096,17 @@ internal static class DemoLocale
         ["Open 3D view"]="Открыть 3D-вид",
         ["Close 3D view"]="Закрыть 3D-вид",
         ["Sensor readings are stale."]="Показания датчиков устарели.",
+        ["Reported FastForest artifact hash"]="Заявленный хеш артефакта FastForest",
+        ["Hyperparameter review"]="Проверка гиперпараметров",
+        ["Vehicle-group cross-validation"]="Кросс-валидация по группам автомобилей",
+        ["Compare 30, 120 and 240 epochs in four disjoint vehicle folds, select by mean validation Brier loss, then evaluate once on a separate synthetic test cohort."]="Сравнение 30, 120 и 240 эпох на четырёх непересекающихся группах автомобилей, выбор по средней ошибке Brier на валидации и оценка на отдельной синтетической тестовой выборке.",
+        ["Run grouped validation"]="Запустить групповую валидацию",
+        ["Cross-validation seed"]="Начальное число кросс-валидации",
+        ["Fixed 120-epoch test Brier"]="Brier фиксированной модели (120 эпох)",
+        ["Cross-validation results"]="Результаты кросс-валидации",
+        ["Fold"]="Фолд",
+        ["Mean Brier"]="Средняя ошибка Brier",
+        ["The final synthetic test is not used to select epochs. Improvement on the test is not guaranteed. No model is promoted automatically."]="Итоговый синтетический тест не используется для выбора эпох. Улучшение на тесте не гарантируется. Модель не продвигается автоматически.",
     };
     public static string Text(string value,bool russian)=>russian&&Russian.TryGetValue(value,out var translated)?translated:value;
 }

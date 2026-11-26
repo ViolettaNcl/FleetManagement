@@ -23,3 +23,22 @@ window.fleetConsumeLanguage=()=>{
   history.replaceState(history.state,'',url);
   return lang;
 };
+
+
+document.addEventListener('keydown',event=>{
+  if(event.defaultPrevented||event.altKey||event.ctrlKey||event.metaKey||event.shiftKey)return;
+  const nav=document.getElementById('workspace-nav');
+  const input=nav?.querySelector('.nav-search input');
+  if(!input?.value.trim()||!nav.contains(document.activeElement))return;
+  const results=[...nav.querySelectorAll('.v4-search-actions button,.nav-group button')].filter(button=>!button.disabled&&button.getClientRects().length);
+  const items=[input,...results],current=items.indexOf(document.activeElement);
+  if(current<0)return;
+  if(event.key==='ArrowDown'||event.key==='ArrowUp'){
+    if(results.length===0)return;
+    event.preventDefault();
+    const step=event.key==='ArrowDown'?1:-1;
+    items[(current+step+items.length)%items.length].focus();
+  }else if(event.key==='Escape'&&current>0){
+    event.preventDefault();input.value='';input.dispatchEvent(new Event('input',{bubbles:true}));input.focus();
+  }
+});

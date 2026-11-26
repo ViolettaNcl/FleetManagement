@@ -66,6 +66,8 @@
     </table></div>
 </section>
 @code {
+    [Parameter] public bool StartNew{get;set;}
+    protected override void OnInitialized(){if(StartNew)NewRecord();}
     [Parameter] public bool Russian{get;set;}
     private string T(string value)=>DemoLocale.Text(value,Russian);
     [Parameter, EditorRequired] public FleetData Fleet {get;set;}=default!;

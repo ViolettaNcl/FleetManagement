@@ -326,6 +326,10 @@
             language=await JS.InvokeAsync<string?>("localStorage.getItem",LanguageKey)=="ru"?"ru":"en";
             var storedFavorites=await JS.InvokeAsync<string?>("localStorage.getItem",FavoritesKey);favorites=(storedFavorites??"").Split('|',StringSplitOptions.RemoveEmptyEntries).Where(x=>NavigationGroups.SelectMany(g=>g.Items).Contains(x)).Distinct().Take(8).ToList();
         }catch(JSException){storageMessage="Local storage is unavailable; changes are session-only.";}
+        try{
+            var incomingLanguage=await JS.InvokeAsync<string?>("fleetConsumeLanguage");
+            if(incomingLanguage is "ru" or "en"){language=incomingLanguage;await JS.InvokeVoidAsync("localStorage.setItem",LanguageKey,language);}
+        }catch(JSException){storageMessage="Unable to save locally; changes are session-only.";}
         try { var json=await JS.InvokeAsync<string?>("localStorage.getItem",Key); if(!string.IsNullOrWhiteSpace(json)){var saved=JsonSerializer.Deserialize(json, DemoJsonContext.Default.DemoSnapshot); if(saved?.Data is not null && saved.Data.Vehicles is not null && saved.Data.Drivers is not null && saved.Data.Trips is not null){fleet=saved.Data;maintenanceEntries=saved.MaintenanceEntries??[];driverShifts=saved.DriverShifts??[];requireShifts=saved.RequireShifts;vehicleReservations=saved.VehicleReservations??[];Now=saved.Now;start=Now.AddHours(1);end=Now.AddHours(2);}} }
         catch (Exception) {storageMessage="Local storage is unavailable; changes are session-only.";}
         try{self=DotNetObjectReference.Create(this);var requested=await JS.InvokeAsync<string?>("fleetInitNavigation",self);historyReady=true;if(requested is not null&&NavigationGroups.SelectMany(g=>g.Items).Contains(requested)){Navigate(requested);writeHistory=false;}}catch(JSException){}

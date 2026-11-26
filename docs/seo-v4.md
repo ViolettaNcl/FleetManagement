@@ -5,3 +5,6 @@ Verify the project URL-prefix property at Google Search Console and Yandex Webma
 Sources: https://developers.google.com/search/help/crawling-index-faq and https://yandex.ru/support/webmaster/ru/indexing-options/sitemap.
 
 The semantic map now includes source and research date columns. JSON-LD includes truthful WebSite/SoftwareApplication descriptions for the public demo and BreadcrumbList for visible breadcrumb trails; no fabricated ratings, reviews or prices.
+
+## V4.2 language handoff
+Every public RU/EN page links to the interactive demo with an explicit `lang=ru` or `lang=en` query. The demo validates and consumes that value once, preserves other query parameters, and saves the selected preference locally. Direct app links without this parameter keep the existing preference. The public sitemap continues to exclude the demo. Static-link and actual browser tests cover the handoff and persistence; fresh CI is pending.

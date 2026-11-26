@@ -29,7 +29,8 @@ try{
     assert.ok(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth));
     const links=await page.locator('a[href]').evaluateAll(nodes=>nodes.map(a=>a.href));
     for(const link of links.filter(x=>x.startsWith(root)&&!x.includes('#'))){
-      assert.ok(link===root+'app/'||urls.includes(canonical+link.slice(root.length)),link);
+      const lang=url.startsWith(canonical+'ru/')?'ru':'en';
+      assert.ok(link===root+'app/?lang='+lang||urls.includes(canonical+link.slice(root.length)),link);
     }
     const alternates=await page.locator('link[hreflang]').evaluateAll(nodes=>nodes.map(a=>a.href));
     assert.ok(alternates.every(x=>urls.includes(x)));
@@ -56,6 +57,20 @@ try{
   assert.equal(missing.status(),404);
   const robots=await request.get(root+'robots.txt');assert.ok(robots.ok());assert.match(await robots.text(),/Sitemap: https:\/\/violettancl\.github\.io\/FleetManagement\/sitemap\.xml/);
   await staticContext.close();
+  const languageContext=await browser.newContext({serviceWorkers:'block'});
+  const localized=await languageContext.newPage();
+  await localized.goto(root+'ru/');
+  await localized.locator('a[href$="app/?lang=ru"]').first().click();
+  await localized.locator('.demo-language select').waitFor({timeout:90000});
+  await localized.waitForFunction(()=>document.querySelector('.demo-language select')?.value==='ru'&&!new URL(location.href).searchParams.has('lang'),null,{timeout:90000});
+  assert.equal(await localized.evaluate(()=>localStorage.getItem('fleetmanagement.preferences.language')),'ru');
+  await localized.reload();
+  await localized.waitForFunction(()=>document.querySelector('.demo-language select')?.value==='ru',null,{timeout:90000});
+  await localized.goto(root);
+  await localized.locator('a[href$="app/?lang=en"]').first().click();
+  await localized.waitForFunction(()=>document.querySelector('.demo-language select')?.value==='en'&&!new URL(location.href).searchParams.has('lang'),null,{timeout:90000});
+  assert.equal(await localized.evaluate(()=>localStorage.getItem('fleetmanagement.preferences.language')),'en');
+  await languageContext.close();
   const a11y=await browser.newPage({viewport:{width:390,height:844}});
   await a11y.goto(root);
   await a11y.addScriptTag({path:new URL('./node_modules/axe-core/axe.min.js',import.meta.url).pathname});

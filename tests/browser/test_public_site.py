@@ -43,7 +43,9 @@ class SiteTest(unittest.TestCase):
                 self.assertEqual(inspector.meta["robots"],"index,follow")
                 for link in inspector.anchors:
                     target=urljoin(url,link)
-                    if target.startswith(BASE) and "#" not in target:self.assertIn(target,urls+[BASE+"app/"])
+                    lang="ru" if url.startswith(BASE+"ru/") else "en"
+                    if target.startswith(BASE) and "#" not in target:self.assertIn(target,urls+[BASE+"app/?lang="+lang])
+                self.assertIn(BASE+"app/?lang="+("ru" if url.startswith(BASE+"ru/") else "en"),[urljoin(url,link) for link in inspector.anchors])
                 for alt in [x for x in inspector.links if x.get("hreflang")]:
                     self.assertIn(alt["href"],urls)
     def test_scoped_pwa(self):

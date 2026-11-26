@@ -44,7 +44,7 @@ def generate(root):
             href=lambda target:page_link(target,current)
             canonical=BASE+current
             enurl=BASE+route(path,"en"); ruurl=BASE+route(path,"ru")
-            app=href("app/")
+            app=href("app/")+"?lang="+lang
             image=href("app/assets/neon/"+art+".webp")
             social=BASE+"app/assets/neon/"+art+".webp"
             home="Главная" if ru else "Home"

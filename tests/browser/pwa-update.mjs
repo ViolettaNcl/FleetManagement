@@ -1,4 +1,4 @@
-// Test the production service-worker template against two independently packaged fixture revisions.
+// Test the production service-worker template against three independently packaged fixture revisions.
 // The production WASM offline path is exercised separately by seo-pwa.mjs.
 import {chromium} from 'playwright';
 import {mkdtemp,readFile,writeFile,mkdir,rm} from 'node:fs/promises';
@@ -46,6 +46,16 @@ try{
   await update.waitFor({timeout:30000});
   page.once('dialog',d=>d.dismiss());await update.click();
   assert.equal(await page.locator('h1').innerText(),'Revision 0');
+  const other=await context.newPage();
+  await other.goto(url);
+  await other.waitForFunction(()=>!!navigator.serviceWorker.controller);
+  await other.getByRole('heading',{name:'Revision 0'}).waitFor();
+  page.once('dialog',d=>d.accept());await update.click();
+  await page.getByRole('status').filter({hasText:'Close other demo tabs'}).waitFor({timeout:30000});
+  assert.equal(await page.locator('h1').innerText(),'Revision 0');
+  assert.equal(await other.locator('h1').innerText(),'Revision 0');
+  assert.equal(await update.isEnabled(),true);
+  await other.close();
   page.once('dialog',d=>d.accept());await update.click();
   await page.getByRole('heading',{name:'Revision 1'}).waitFor({timeout:30000});
   assert.equal(await page.evaluate(()=>localStorage.getItem('fleet-fixture-record')),'saved-record');
@@ -65,5 +75,5 @@ try{
   assert.equal(rejected,true);
   await page.reload();await page.getByRole('heading',{name:'Revision 1'}).waitFor();
   assert.equal(await page.evaluate(()=>localStorage.getItem('fleet-fixture-record')),'saved-record');
-  console.log('PASS: production PWA worker fixture revision update, dismiss/accept, saved data, offline and stale-byte recovery');
+  console.log('PASS: production PWA worker fixture revision update, dismiss/accept, multi-tab guard, retry, saved data, offline and stale-byte recovery');
 }finally{await browser.close();await new Promise(r=>server.close(r));await rm(folder,{recursive:true,force:true});}

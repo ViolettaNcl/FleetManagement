@@ -39,7 +39,30 @@ def package(app):
     const bar=document.createElement('aside');bar.dataset.pwaUpdate='true';bar.className='pwa-update';
     const text=document.createElement('span');text.textContent='A new version is ready / Доступна новая версия';
     const button=document.createElement('button');button.textContent='Update / Обновить';
-    button.addEventListener('click',()=>{if(confirm('Reload now? Unsaved form edits will be lost. / Перезагрузить? Несохранённые изменения будут потеряны.')){button.disabled=true;let done=false;navigator.serviceWorker.addEventListener('controllerchange',()=>{if(!done){done=true;location.reload();}},{once:true});worker.postMessage('ACTIVATE_UPDATE');}});
+    text.setAttribute('role','status');
+    button.addEventListener('click',()=>{
+      if(!confirm('Reload now? Unsaved form edits will be lost. / Перезагрузить? Несохранённые изменения будут потеряны.'))return;
+      button.disabled=true;
+      text.textContent='Checking open demo tabs / Проверяем открытые вкладки';
+      const channel=new MessageChannel();
+      const reload=()=>{clearTimeout(timer);channel.port1.close();location.reload();};
+      const fail=message=>{
+        clearTimeout(timer);
+        navigator.serviceWorker.removeEventListener('controllerchange',reload);
+        channel.port1.close();
+        text.textContent=message;
+        button.disabled=false;
+      };
+      const timer=setTimeout(()=>fail('Update not confirmed. Retry or reopen the demo. / Обновление не подтверждено. Повторите или откройте демо заново.'),30000);
+      navigator.serviceWorker.addEventListener('controllerchange',reload,{once:true});
+      channel.port1.onmessage=event=>{
+        if(event.data==='BLOCKED_TABS')fail('Close other demo tabs, then retry. / Закройте другие вкладки демо и повторите.');
+        else if(event.data==='FAILED')fail('Update failed. Please retry. / Ошибка обновления. Повторите попытку.');
+        else if(event.data==='ACCEPTED')text.textContent='Activating update / Активируем обновление';
+      };
+      try{worker.postMessage('ACTIVATE_UPDATE',[channel.port2]);}
+      catch{fail('Update unavailable. Reopen the demo. / Обновление недоступно. Откройте демо заново.');}
+    });
     bar.append(text,button);document.body.append(bar);
   };
   navigator.serviceWorker.register('./sw.js',{scope:'./',updateViaCache:'none'}).then(reg=>{
@@ -73,7 +96,22 @@ self.addEventListener('install',event=>event.waitUntil((async()=>{
   }catch(error){await caches.delete(name);throw error;}
 })()));
 self.addEventListener('activate',event=>event.waitUntil((async()=>{for(const key of await caches.keys())if(key.startsWith(prefix)&&key!==name)await caches.delete(key);await self.clients.claim();})()));
-self.addEventListener('message',event=>{if(event.data==='ACTIVATE_UPDATE'&&event.source?.url?.startsWith(scope))event.waitUntil(self.skipWaiting());});
+self.addEventListener('message',event=>{
+  if(event.data!=='ACTIVATE_UPDATE'||!event.source?.url?.startsWith(scope)||!event.ports[0])return;
+  const reply=event.ports[0];
+  event.waitUntil((async()=>{
+    try{
+      // Do not knowingly replace the active worker beneath another open demo tab.
+      // A newly opened tab can still race activation; this is a best-effort guard.
+      const windows=await self.clients.matchAll({type:'window',includeUncontrolled:true});
+      if(windows.some(client=>client.id!==event.source.id&&client.url.startsWith(scope))){
+        reply.postMessage('BLOCKED_TABS');return;
+      }
+      reply.postMessage('ACCEPTED');
+      await self.skipWaiting();
+    }catch{reply.postMessage('FAILED');}
+  })());
+});
 self.addEventListener('fetch',event=>{
   if(event.request.method!=='GET')return;
   const url=new URL(event.request.url);

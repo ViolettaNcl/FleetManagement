@@ -895,6 +895,20 @@ internal static class DemoLocale
         ["Vehicles available now"]="Автомобили доступны сейчас",
         ["No active trip, current reservation or overdue service. Future assignments still require validation."]="Нет активного рейса, текущего бронирования или просроченного ТО. Будущие назначения требуют проверки.",
         ["Open dispatch"]="Открыть диспетчерскую",
+        ["Use arrow keys to browse results."]="Перемещайтесь по результатам стрелками.",
+        ["Matching commands"]="Найдено команд",
+        ["Clear recent"]="Очистить",
+        ["Dashboard layout"]="Компоновка панели",
+        ["Choose a workspace view. Core metrics and alerts stay visible."]="Выберите вид рабочего пространства. Основные показатели и предупреждения всегда видны.",
+        ["Customize dashboard"]="Настроить панель",
+        ["Dashboard preset"]="Вид панели",
+        ["Full overview"]="Полный обзор",
+        ["Operations focus"]="Операционный режим",
+        ["Intelligence focus"]="Аналитический режим",
+        ["Custom layout"]="Своя компоновка",
+        ["Optional panels"]="Дополнительные блоки",
+        ["Compact dashboard"]="Компактная панель",
+        ["Restore default layout"]="Восстановить стандартный вид",
     };
     public static string Text(string value,bool russian)=>russian&&Russian.TryGetValue(value,out var translated)?translated:value;
 }

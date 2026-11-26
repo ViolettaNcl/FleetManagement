@@ -90,3 +90,43 @@
 /* Keep the actual button text accessible when its visual label is compacted. */
 @media(max-width:720px){.demo-shell .workspace-header .toolbar-accessible-label{display:block!important;position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip-path:inset(50%);white-space:nowrap;line-height:1}.demo-shell .workspace-header .command-search,.demo-shell .workspace-header .header-alerts{position:relative}}
 @media(min-width:721px) and (max-width:1180px){.demo-shell .workspace-header .toolbar-accessible-label{display:block!important;position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip-path:inset(50%);white-space:nowrap}.demo-shell .workspace-header .command-search,.demo-shell .workspace-header .header-alerts{position:relative}}
+
+
+/* V4.3: user-controlled information density; essential signals are never hidden. */
+.demo-shell .dashboard-preferences{padding:12px 16px}
+.dashboard-preference-heading{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap}
+.dashboard-preference-heading>div{flex:1 1 190px;min-width:0}
+.dashboard-preference-heading h2{font-size:15px;margin:0 0 3px}
+.dashboard-preference-heading p{margin:0;font-size:12px;line-height:1.45}
+.demo-shell .dashboard-preference-heading button{display:inline-flex;align-items:center;justify-content:center;gap:7px;min-height:36px;white-space:normal}
+.dashboard-preference-heading .workspace-icon{width:16px;height:16px}
+.dashboard-preference-fields[hidden]{display:none!important}
+.dashboard-preference-fields:not([hidden]){display:grid;grid-template-columns:minmax(0,1fr) minmax(0,2fr);gap:14px;padding-top:14px;margin-top:12px;border-top:1px solid var(--line);align-items:start}
+.dashboard-preference-fields>label:not(.dashboard-check){display:grid;gap:6px;min-width:0}
+.dashboard-preference-fields select{width:100%;min-width:0}
+.dashboard-preference-fields fieldset{min-width:0;display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:4px 12px;border:1px solid var(--line);border-radius:8px;margin:0;padding:8px 12px}
+.dashboard-preference-fields legend{font-weight:600;padding:0 5px}
+.demo-shell .dashboard-check{display:flex;align-items:center;gap:8px;min-height:44px;min-width:0;overflow-wrap:anywhere;cursor:pointer;font-size:13px}
+.demo-shell .dashboard-check input[type=checkbox]{width:18px;height:18px;min-width:18px;margin:0;accent-color:var(--accent)}
+.demo-shell .dashboard-check input:focus-visible{outline:2px solid var(--focus);outline-offset:3px}
+.dashboard-reset{justify-self:end}
+.demo-shell.dashboard-compact .dashboard-kpis{gap:8px}
+.demo-shell.dashboard-compact .dashboard-kpis .metric{padding:10px 12px;min-height:0}
+.demo-shell.dashboard-compact .command-summary>.panel,.demo-shell.dashboard-compact .recent-trips,.demo-shell.dashboard-compact .capability-panel{padding:12px}
+.demo-shell.dashboard-compact .command-summary .workload-overview{padding-block:8px}
+.demo-shell.dashboard-compact .command-summary .command-event{padding-block:6px}
+@media(max-width:720px){
+ .demo-shell .dashboard-preferences{padding:12px}
+ .demo-shell .dashboard-preference-heading button{min-height:44px;width:100%}
+ .dashboard-preference-fields:not([hidden]){grid-template-columns:minmax(0,1fr)}
+ .dashboard-preference-fields fieldset{grid-template-columns:minmax(0,1fr)}
+ .demo-shell .dashboard-reset{min-height:44px;width:100%;justify-self:stretch}
+}
+
+
+.nav-search-count{margin:2px 6px 6px;font-size:12px;color:var(--muted);overflow-wrap:anywhere}
+.recent-nav-heading{display:flex;align-items:center;justify-content:space-between;gap:4px;padding:3px 4px;flex-wrap:wrap}
+.recent-nav-heading small{font-size:10px;text-transform:uppercase;letter-spacing:.06em;color:var(--muted)}
+.demo-shell .nav-quick-access .recent-nav-heading button{width:auto;min-height:32px;min-width:44px;padding:4px 7px;font-size:11px}
+.demo-shell .fleet-sidebar button:focus-visible{outline:2px solid var(--focus);outline-offset:2px}
+@media(max-width:1000px){.nav-search-count{grid-column:1/-1}}

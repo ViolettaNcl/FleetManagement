@@ -1,5 +1,14 @@
 # Changelog
 
+## Unreleased — V4.3 personalized workspace
+
+- Dashboard presets: Full overview, Operations focus, Intelligence focus and individually selected optional panels. Core KPIs, readiness, agenda and alerts remain present. Compact density and reset affect layout only; preferences are stored separately from synthetic fleet records.
+- Persistent desktop sidebar state and bounded recent module history, with explicit history clearing.
+- Bilingual multi-token command search over curated workflow aliases, result count and keyboard traversal (arrow keys, Enter, Escape).
+- Calendar pressed-state ARIA values explicitly serialized as strings, correcting the V4.2 browser failure.
+- Browser coverage includes preset changes, essential indicators, persisted preferences, responsive settings at four widths, command aliases, keyboard and recent history. Fresh exact-commit CI required.
+
+
 ## Unreleased — V4.2 release hardening
 
 - Calendar day buttons use their visible text and an additional screen-reader-only full date/event count instead of an overriding accessible name. Addresses the reported V4.1 axe failure; new CI required.

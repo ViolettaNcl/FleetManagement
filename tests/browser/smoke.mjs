@@ -207,6 +207,14 @@ try {
   await page.getByRole('status').filter({hasText:'header does not match'}).waitFor();
   await page.locator('input[type=file]').setInputFiles('src/FleetManagement.Web/wwwroot/data/telemetry-example.csv');
   await page.getByRole('heading',{name:'Valid data preview'}).waitFor();
+  await page.getByRole('button',{name:'Train imported model',exact:true}).click();
+  await page.getByRole('status').filter({hasText:'at least 6 vehicles'}).waitFor();
+  const importedRows=['vehicle_id,day,temperature,vibration,battery_voltage,service_fraction,engine_hours,failure_within_7_days'];
+  for(let vehicle=1;vehicle<=8;vehicle++)for(let day=0;day<20;day++)importedRows.push([vehicle,day,80+day,2,13,.5,1000,day%2].join(','));
+  await page.locator('input[type=file]').setInputFiles({name:'synthetic-training.csv',mimeType:'text/csv',buffer:Buffer.from(importedRows.join('\n'))});
+  await page.getByRole('status').filter({hasText:'Inspected 160 rows; rejected 0'}).waitFor();
+  await page.getByRole('button',{name:'Train imported model',exact:true}).click();
+  await page.getByRole('status').filter({hasText:'Experimental model trained'}).waitFor();
   await page.screenshot({path:'browser-results/data-quality.png',fullPage:true});
   await page.getByRole('button',{name:'Cost Intelligence',exact:true}).click();
   await page.getByRole('heading',{name:'Vehicle cost estimates'}).waitFor();

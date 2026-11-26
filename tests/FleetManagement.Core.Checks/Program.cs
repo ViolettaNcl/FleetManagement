@@ -204,6 +204,15 @@ Check(RejectManifest(manifestJson.Replace("\"TP\":3","\"TP\":4")),"registry reje
 Check(RejectManifest(manifestJson.Replace("\"F1\":0.667","\"F1\":1.5")),"registry rejects invalid metric");
 Check(RejectManifest(new string('x',70000)),"registry size limit");
 Check(RejectManifest("{}"),"registry incomplete manifest");
+var manifestNode=System.Text.Json.Nodes.JsonNode.Parse(manifestJson)!;
+var importanceNode=new System.Text.Json.Nodes.JsonObject{
+    ["metric"]="Brier",["repeats"]=3,
+    ["features"]=new System.Text.Json.Nodes.JsonArray(LogisticMaintenanceModel.FeatureNames.Select(name=>(System.Text.Json.Nodes.JsonNode)new System.Text.Json.Nodes.JsonObject{["feature"]=name,["meanLossIncrease"]=0.02,["minLossIncrease"]=-0.01,["maxLossIncrease"]=0.04}).ToArray())
+};
+manifestNode["maintenance"]!["permutationImportance"]=importanceNode;
+Check(RegistryManifest.Parse(manifestNode.ToJsonString()).MaintenanceImportance?.Count==5,"registry parses optional importance");
+importanceNode["features"]![0]!["meanLossIncrease"]=2;
+Check(RejectManifest(manifestNode.ToJsonString()),"registry rejects out-of-range importance");
 var csv=TelemetryCsv.Header+"\n1,0,84,2.1,13.6,0.3,1200,0\n1,0,85,2.2,13.5,0.31,1207,0\n2,0,105,4.2,12.2,0.95,4800,1\n3,0,NaN,2.8,13.2,0.5,2400,0\n4,0,90,2.8,13.2,0.5,2400,2\n";
 var inspection=TelemetryCsv.Inspect(csv);
 Check(inspection.Rows==5&&inspection.ValidRows==2&&inspection.InvalidRows==3,"CSV exact row accounting");

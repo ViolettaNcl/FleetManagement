@@ -12,7 +12,7 @@
 <main lang="@language" class="workspace-layout">
     <button class="mobile-nav-toggle secondary" aria-expanded="@(mobileNav?"true":"false")" aria-controls="workspace-nav" @onclick="ToggleMobileMenu"><span aria-hidden="true">☰</span> @T("Modules") · @T(section)</button>
     <nav id="workspace-nav" class="fleet-sidebar @(mobileNav?"nav-open":"")" aria-label="@T("Fleet sections")">
-        <div class="nav-eyebrow">@T("Workspace")<button class="secondary sidebar-collapse" @onclick="ToggleSidebar" aria-label="@T(collapsed?"Expand sidebar":"Collapse sidebar")" title="@T(collapsed?"Expand sidebar":"Collapse sidebar")">@(collapsed?"»":"«")</button></div><label class="nav-search">@T("Find section")<input @ref="navInput" type="search" @bind="navQuery" @bind:event="oninput" placeholder="@T("Search modules")" aria-label="@T("Find section")" aria-describedby="nav-hint" @onkeydown="SearchKey"/><small id="nav-hint">@T("Enter to open a single match; Escape clears search.") @T("Use arrow keys to browse results.")</small></label>
+        <div class="nav-eyebrow">@T("Workspace")<button class="secondary sidebar-collapse" @onclick="ToggleSidebar" aria-label="@T(collapsed?"Expand sidebar":"Collapse sidebar")" title="@T(collapsed?"Expand sidebar":"Collapse sidebar")">@(collapsed?"»":"«")</button></div><label class="nav-search">@T("Find section")<input @ref="navInput" type="search" maxlength="120" @bind="navQuery" @bind:event="oninput" placeholder="@T("Search modules")" aria-label="@T("Find section")" aria-describedby="nav-hint" @onkeydown="SearchKey"/><small id="nav-hint">@T("Enter to open a single match; Escape clears search.") @T("Use arrow keys to browse results.")</small></label>
         @if(!string.IsNullOrWhiteSpace(navQuery)){<p class="nav-search-count" role="status">@T("Matching commands"): @SearchMatchCount</p>}
         @if(!string.IsNullOrWhiteSpace(navQuery)){<div class="v4-search-actions">@foreach(var action in QuickActions.Where(a=>MatchesSection(a.Label))){<button class="secondary" @onclick="()=>RunQuickAction(action.Key)">@T(action.Label)</button>}</div>}
         @if(string.IsNullOrWhiteSpace(navQuery)&&!collapsed){<div class="nav-quick-access">@if(favorites.Count>0){<small>@T("Favorites")</small>@foreach(var item in favorites){<button aria-label="@($"{T("Favorite")}: {T(item)}")" @onclick="()=>Navigate(item)"><WorkspaceIcon Name="@item"/><span>@T(item)</span></button>}}@if(recent.Count>0){<div class="recent-nav-heading"><small>@T("Recent modules")</small><button class="secondary" @onclick="ClearRecent">@T("Clear recent")</button></div>@foreach(var item in recent.Take(3)){<button aria-label="@($"{T("Recent")}: {T(item)}")" @onclick="()=>Navigate(item)"><WorkspaceIcon Name="@item"/><span>@T(item)</span></button>}}</div>}
@@ -344,7 +344,40 @@
     }
     private string navQuery="";
     private int SearchMatchCount=>NavigationGroups.SelectMany(g=>g.Items).Count(MatchesSection)+QuickActions.Count(a=>MatchesSection(a.Label));
-    private bool MatchesSection(string item)=>string.IsNullOrWhiteSpace(navQuery)||item.Contains(navQuery.Trim(),StringComparison.OrdinalIgnoreCase)||T(item).Contains(navQuery.Trim(),StringComparison.OrdinalIgnoreCase);
+    private static readonly IReadOnlyDictionary<string,string> SearchAliases=new Dictionary<string,string>(StringComparer.Ordinal){
+        ["Vehicles"]="fleet truck registration plate автомобиль транспорт реестр номер",
+        ["Drivers"]="staff workforce license водитель персонал права",
+        ["Vehicle Passport"]="vehicle history profile история паспорт карточка",
+        ["Dispatch"]="assign schedule trip dispatch назначение рейс планирование",
+        ["Batch Dispatch"]="bulk orders allocation пакет заказ распределение",
+        ["Calendar"]="agenda dates schedule календарь расписание дата",
+        ["Resource Planning"]="shifts drivers capacity coverage смены ресурсы персонал",
+        ["Maintenance"]="repair inspection service workshop ремонт ТО осмотр обслуживание",
+        ["Tracking"]="gps playback movement location трекинг маршрут движение",
+        ["Geo Map"]="gps geography location geofence карта геозона",
+        ["Analytics"]="reports statistics performance отчёт показатели статистика",
+        ["Cost Intelligence"]="fuel budget expenses finance cost EUR топливо бюджет расходы финансы",
+        ["Assistant"]="recommendations rules decision support совет рекомендации помощь",
+        ["Optimization"]="routing distance algorithm 2-opt оптимизация расстояние алгоритм",
+        ["Multi Dispatch"]="capacity time window orders маршруты ограничения вместимость",
+        ["Digital Twin"]="telemetry simulation incidents цифровой двойник телеметрия симуляция",
+        ["What-if"]="scenario alternatives experiment сценарий эксперимент",
+        ["Intelligence"]="ML AI classifier maintenance failure обучение классификация прогноз поломка",
+        ["Predictions"]="ETA regression anomaly model прибытие аномалия регрессия",
+        ["Demand Forecast"]="forecast demand orders time series спрос прогноз временной ряд",
+        ["Model Registry"]="manifest metrics model comparison модель метрики реестр",
+        ["Data Quality"]="CSV import dataset training данные импорт качество",
+        ["Model Drift"]="PSI shift monitoring дрейф сдвиг мониторинг",
+        ["Notifications"]="alerts warnings incidents уведомления предупреждения риск",
+        ["Help & settings"]="preferences theme language help настройки язык тема помощь"
+    };
+    private bool MatchesSection(string item){
+        if(string.IsNullOrWhiteSpace(navQuery))return true;
+        var tokens=navQuery.Trim().Split((char[]?)null,StringSplitOptions.RemoveEmptyEntries);
+        if(tokens.Length>12||navQuery.Length>120)return false;
+        var searchable=item+" "+T(item)+" "+SearchAliases.GetValueOrDefault(item,"");
+        return tokens.All(token=>searchable.Contains(token,StringComparison.OrdinalIgnoreCase));
+    }
     private void SearchKey(KeyboardEventArgs e){
         if(e.Key=="Escape"){navQuery="";return;}
         if(e.Key!="Enter"||string.IsNullOrWhiteSpace(navQuery))return;

@@ -1,6 +1,6 @@
 import { chromium } from 'playwright';
 import assert from 'node:assert/strict';
-import { mkdir } from 'node:fs/promises';
+import { mkdir, readdir } from 'node:fs/promises';
 const url='http://127.0.0.1:8080/FleetManagement/';
 const browser=await chromium.launch({headless:true,args:['--enable-webgl','--use-angle=swiftshader','--enable-unsafe-swiftshader']});
 try{
@@ -10,6 +10,18 @@ try{
   await page.goto(url);
   await page.getByRole('heading',{name:'Operations overview',exact:true}).waitFor({timeout:90000});
   await page.locator('.scene-stage[data-renderer="webgl"]').waitFor({timeout:20000});
+  const hasArchive=(await readdir('design')).some(name=>name.endsWith('.zip'));
+  const artwork=await (await page.request.get(url+'assets/neon/manifest.json')).json();
+  assert.equal(artwork.mode,hasArchive?'imported':'fallback');
+  assert.equal(artwork.files.length,hasArchive?8:0);
+  if(hasArchive){
+    for(const asset of artwork.files){
+      assert.match(asset.name,/^[a-z-]+\.webp$/);
+      assert.ok(await page.evaluate(async name=>{const img=new Image();img.src='assets/neon/'+name;await img.decode();return img.naturalWidth>0;},asset.name));
+    }
+    assert.match(await page.locator('.art-routes').evaluate(el=>getComputedStyle(el).backgroundImage),/routes\.webp/);
+    assert.equal(await page.locator('.art-routes .art-glyph').isVisible(),false);
+  }
   assert.equal(await page.getByRole('button',{name:'Play 3D motion',exact:true}).count(),1);
   await page.getByRole('button',{name:'Rotate right',exact:true}).click();
   await page.getByRole('button',{name:'Play 3D motion',exact:true}).click();

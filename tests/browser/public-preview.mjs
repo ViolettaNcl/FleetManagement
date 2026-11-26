@@ -1,5 +1,6 @@
 import { chromium } from 'playwright';
 import assert from 'node:assert/strict';
+import { readdir } from 'node:fs/promises';
 
 const url=process.env.FLEET_PREVIEW_URL;
 const revision=process.env.GITHUB_SHA;
@@ -9,13 +10,14 @@ const browser=await chromium.launch({headless:true});
 try {
   const context=await browser.newContext({viewport:{width:1366,height:900}});
   // Allow bounded CDN propagation, never accept stale or unknown revision.
+  const hasArchive=(await readdir('design')).some(name=>name.endsWith('.zip'));
   let verified=false;
   for(let attempt=0;attempt<18;attempt++){
     try{
       const response=await context.request.get(url+'preview-build.json?rev='+revision+'&attempt='+attempt,{timeout:10000,maxRedirects:0});
       if(response.ok()){
         const data=await response.json();
-        verified=data.schema===1&&data.revision===revision&&data.mode==='synthetic-browser-demo';
+        verified=data.schema===1&&data.revision===revision&&data.mode==='synthetic-browser-demo'&&data.artworkMode===(hasArchive?'imported':'fallback');
         if(verified)break;
       }
     }catch{}
@@ -29,6 +31,15 @@ try {
   assert.ok(response?.ok(),'Preview HTTP response failed');
   assert.equal(new URL(page.url()).origin,new URL(url).origin);
   await page.getByRole('heading',{name:'Operations overview',exact:true}).waitFor({timeout:90000});
+  if(hasArchive){
+    const artwork=await (await context.request.get(url+'assets/neon/manifest.json?rev='+revision)).json();
+    assert.equal(artwork.mode,'imported');
+    assert.equal(artwork.files.length,8);
+    for(const asset of artwork.files){
+      assert.match(asset.name,/^[a-z-]+\.webp$/);
+      assert.ok(await page.evaluate(async name=>{const image=new Image();image.src='assets/neon/'+name;await image.decode();return image.naturalWidth>0;},asset.name));
+    }
+  }
   await page.getByRole('button',{name:'Optimization',exact:true}).click();
   await page.getByRole('button',{name:'Calculate routes',exact:true}).click();
   await page.getByRole('button',{name:'Multi-start 2-opt',exact:true}).waitFor();

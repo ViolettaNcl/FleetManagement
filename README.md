@@ -1,16 +1,18 @@
 <div align="center">
-  <img src="docs/assets/banner.svg" alt="FleetManagement — fleet operations platform" width="100%">
+  <img src="docs/assets/brand/fleet-readme-banner.webp" alt="FleetManagement Neon Command Center — conceptual 3D fleet illustration" width="100%">
   <h1>FleetManagement</h1>
+  <p><sub>Concept artwork · illustrative telemetry and metrics, not measured product results.</sub></p>
   <p><strong>A modern .NET fleet operations platform, evolved from a WPF desktop application.</strong></p>
   <p>
     <a href="README.ru.md">Русская версия</a> ·
     <a href="docs/portfolio-v3.md">Demo guide</a> ·
     <a href="docs/backend.md">Backend documentation</a> ·
-    <a href="docs/architecture.md">Architecture</a>
+    <a href="docs/architecture.md">Architecture</a> ·
+    <a href="docs/branding.md">Brand assets</a>
   </p>
   <p>
-    <a href="https://github.com/ViolettaNcl/FleetManagement/actions/workflows/demo-ci.yml"><img alt="Browser CI" src="https://github.com/ViolettaNcl/FleetManagement/actions/workflows/demo-ci.yml/badge.svg?branch=feature%2Ffleetops-v3"></a>
-    <a href="https://github.com/ViolettaNcl/FleetManagement/actions/workflows/api-ci.yml"><img alt="Backend CI" src="https://github.com/ViolettaNcl/FleetManagement/actions/workflows/api-ci.yml/badge.svg?branch=feature%2Ffleetops-v3"></a>
+    <a href="https://github.com/ViolettaNcl/FleetManagement/actions/workflows/demo-ci.yml"><img alt="Browser CI" src="https://github.com/ViolettaNcl/FleetManagement/actions/workflows/demo-ci.yml/badge.svg?branch=feature%2Fv5-intelligence-suite"></a>
+    <a href="https://github.com/ViolettaNcl/FleetManagement/actions/workflows/api-ci.yml"><img alt="Backend CI" src="https://github.com/ViolettaNcl/FleetManagement/actions/workflows/api-ci.yml/badge.svg?branch=feature%2Fv5-intelligence-suite"></a>
     <img alt=".NET 10" src="https://img.shields.io/badge/.NET-10_LTS-6A5ACD">
     <img alt="C#" src="https://img.shields.io/badge/C%23-Blazor%20%7C%20ASP.NET_Core-9370DB">
     <img alt="SQL Server and SQLite" src="https://img.shields.io/badge/EF_Core-SQL_Server_%7C_SQLite-4B0082">
@@ -23,7 +25,12 @@ The browser edition runs C# in WebAssembly, uses synthetic data, and requires no
 
 - [Latest browser builds, screenshots and actual screen-recorded portfolio tour](https://github.com/ViolettaNcl/FleetManagement/actions/workflows/demo-ci.yml)
 - [How to run the demo and enable GitHub Pages](docs/deployment.md)
-- [V3 development pull request](https://github.com/ViolettaNcl/FleetManagement/pull/2)
+- [Current development pull request — V6.1](https://github.com/ViolettaNcl/FleetManagement/pull/8)
+- [Original V3 development pull request](https://github.com/ViolettaNcl/FleetManagement/pull/2)
+
+### V6.1 — Guided Workspace (development candidate)
+
+New profiles open in Essentials: ten everyday sections, six quick actions and contextual English/Russian guidance. All tools reveals all 26 modules, while global search can find any tool in either mode. Trip planning has three grouped steps, draft safeguards, larger mobile controls and remembered preferences. See [the integrated guide](docs/v6-release-candidate.md#v61-guided-workspace-candidate). The candidate remains separate from the published preview.
 
 ### V6.0 RC2 (development candidate)
 
@@ -37,7 +44,7 @@ See [V5 workflows and limitations](docs/v5-intelligence-suite.md) and [Changelog
 
 ### Guided demo
 
-The grouped V3 workspace includes an English/Russian navigation and overview switch (detailed offline modules remain English). It separates operational records, tracking/reporting, simulation/optimization and ML experiments. The overview combines live demo-clock trip counts, service readiness, today's agenda and rule-based alerts.
+The guided workspace includes English/Russian navigation, task shortcuts and contextual guidance (some detailed modules and exports remain English). It separates operational records, tracking/reporting, simulation/optimization and ML experiments. The overview combines live demo-clock trip counts, service readiness, today's agenda and rule-based alerts.
 
 | Screen | What to try |
 | --- | --- |

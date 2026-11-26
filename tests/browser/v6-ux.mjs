@@ -77,6 +77,12 @@ try{
  await audit('Guided home Russian mobile');
  assert.ok(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth));
  await page.screenshot({path:'browser-results/v6-guided-mobile-ru.png'});
+ await page.getByRole('button',{name:"Мобильная: ещё",exact:true}).click();
+ await nav.getByRole('button',{name:"Помощь и настройки",exact:true}).click();
+ const brand=page.locator('.workspace-brand-about img');
+ await brand.scrollIntoViewIfNeeded();
+ await page.waitForFunction(()=>{const img=document.querySelector('.workspace-brand-about img');return img?.complete&&img.naturalWidth===1000&&img.naturalHeight===1000;});
+ assert.ok(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth),'Brand settings mobile overflow');
  assert.deepEqual(errors,[]);
  console.log('PASS: guided essentials, every-tool search, saved mode, task shortcuts, discard guard, mobile and Russian UX');
 }finally{await browser.close();}

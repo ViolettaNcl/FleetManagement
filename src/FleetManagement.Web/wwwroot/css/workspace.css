@@ -364,3 +364,9 @@
  .demo-shell .trip-editor-actions button,.demo-shell .editor-actions button{min-height:44px;white-space:normal}
  #record-editor-heading{scroll-margin-top:14px}
 }
+
+/* Brand artwork is confined to the About/settings area, keeping operations uncluttered. */
+.workspace-brand-about{display:flex;align-items:center;gap:14px;min-width:0;margin-bottom:12px}
+.workspace-brand-about img{display:block;width:96px;height:96px;object-fit:contain;flex:0 0 96px;border-radius:12px;border:1px solid var(--line);background:#070611}
+.workspace-brand-about h2{margin:0 0 4px}.workspace-brand-about p{margin:0}
+@media(max-width:480px){.workspace-brand-about{gap:10px}.workspace-brand-about img{width:72px;height:72px;flex-basis:72px}}

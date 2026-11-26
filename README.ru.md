@@ -1,8 +1,9 @@
 <div align="center">
-<img src="docs/assets/banner.svg" alt="FleetManagement" width="100%">
+<img src="docs/assets/brand/fleet-readme-banner.webp" alt="FleetManagement Neon Command Center — концептуальная 3D-иллюстрация автопарка" width="100%">
 <h1>FleetManagement</h1>
+<p><sub>Концептуальная иллюстрация: показатели и телеметрия на баннере не являются реальными результатами продукта.</sub></p>
 <p>Система управления автопарком на C# и .NET</p>
-<p><a href="README.md">English</a> · <a href="docs/portfolio-v3.md">Демо</a> · <a href="docs/backend.md">Backend</a> · <a href="docs/architecture.md">Архитектура</a></p>
+<p><a href="README.md">English</a> · <a href="docs/portfolio-v3.md">Демо</a> · <a href="docs/backend.md">Backend</a> · <a href="docs/architecture.md">Архитектура</a> · <a href="docs/branding.md">Фирменный стиль</a></p>
 </div>
 
 ## Современная версия
@@ -12,6 +13,10 @@ FleetManagement вырос из оригинального WPF-приложен�
 Браузерное демо включает управление транспортом и водителями, календарь рейсов и сроков ТО, планирование рейсов с проверкой пересечений, симуляцию движения, расчёт сроков ТО, аналитику и экспорт Excel. Данные демонстрационные и сохраняются в браузере. Настоящий сервер не нужен.
 
 Backend включает EF Core, SQL Server и SQLite, Identity, роли Admin / Dispatcher / Viewer, аудит, OpenAPI и SignalR. Публичное демо не подключается к Backend. Сервер предназначен для локальной технической демонстрации, а не для эксплуатации с реальными данными.
+
+## V6.1 — упрощённое рабочее пространство
+
+Новый профиль открывается в режиме «Основное» с десятью повседневными разделами, шестью быстрыми действиями и пояснениями на русском и английском. В режиме «Все инструменты» доступны все 26 разделов; общий поиск работает в обоих режимах. Планирование рейса разделено на три понятных блока, сохранены защита черновиков, мобильные элементы управления и пользовательские настройки. [Руководство](docs/v6-release-candidate.md#v61-guided-workspace-candidate) · [Текущий Pull Request](https://github.com/ViolettaNcl/FleetManagement/pull/8). Версия находится в ветке разработки.
 
 ## V6.0 RC2 — кандидат релиза
 

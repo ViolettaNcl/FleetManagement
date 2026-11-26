@@ -887,6 +887,9 @@ internal static class DemoLocale
         ["Open intelligence assistant"]="Открыть помощника",
         ["Search alerts"]="Поиск предупреждений",
         ["Alerts shown"]="предупреждений показано",
+        ["Calendar dates"]="Даты календаря",
+        ["Events"]="События",
+        ["More events"]="других событий",
     };
     public static string Text(string value,bool russian)=>russian&&Russian.TryGetValue(value,out var translated)?translated:value;
 }

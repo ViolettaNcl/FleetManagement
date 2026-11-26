@@ -27,7 +27,7 @@ try{
    const findings=await page.evaluate(async()=>{const r=await axe.run({runOnly:{type:'tag',values:['wcag2a','wcag2aa','wcag21a','wcag21aa','wcag22aa']}});return r.violations.map(v=>({id:v.id,impact:v.impact,description:v.description,nodes:v.nodes.map(n=>({target:n.target,summary:n.failureSummary}))}));});
    await page.setViewportSize({width:390,height:844});await page.evaluate(()=>window.scrollTo(0,0));
    await page.screenshot({path:'browser-results/v4-modules/'+slug+'-mobile.png'});
-   const layout=await page.evaluate(()=>({viewport:innerWidth,document:document.documentElement.scrollWidth}));
+   const layout=await page.evaluate(()=>({viewport:innerWidth,document:document.documentElement.scrollWidth,offenders:[...document.querySelectorAll("body *")].filter(el=>{const r=el.getBoundingClientRect();return r.width>0&&r.right>innerWidth+1&&getComputedStyle(el).position!=="fixed";}).slice(0,15).map(el=>({tag:el.tagName,className:String(el.className).slice(0,120),right:Math.round(el.getBoundingClientRect().right)}))}));
    result.push({module,layout,findings});
  }
  await writeFile('browser-results/v4-accessibility.json',JSON.stringify({scope:'Automated checks; full manual WCAG evaluation not claimed',modules:result,errors},null,2));

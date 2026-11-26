@@ -37,6 +37,19 @@ try{
     if([320,768,1440].includes(width))await page.screenshot({path:'browser-results/v4-overview-'+width+'.png',fullPage:true});
   }
   await page.setViewportSize({width:390,height:844});
+  await page.getByRole('button',{name:'Mobile More',exact:true}).click();
+  await page.locator('#workspace-nav').getByRole('button',{name:'Calendar',exact:true}).click();
+  await page.getByRole('heading',{name:'Fleet calendar',exact:true}).waitFor();
+  for(const width of [320,390,768,1440]){
+    await page.setViewportSize({width,height:844});
+    for(const mode of ['Day','Week','Month']){
+      await page.getByRole('button',{name:mode,exact:true}).click();
+      assert.ok(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth),'Calendar '+mode+' overflow '+width);
+      if(mode!=='Day')await page.locator('.calendar-day').first().click();
+      assert.ok(await page.locator('.calendar-agenda').isVisible());
+    }
+  }
+  await page.setViewportSize({width:390,height:844});
   await page.getByRole('button',{name:'Mobile Fleet',exact:true}).click();
   await page.locator('.register-cards .register-record').first().waitFor();
   assert.equal(await page.locator('.register-table').isVisible(),false);

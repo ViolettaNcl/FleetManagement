@@ -1,0 +1,82 @@
+name: Import approved FleetManagement artwork
+on:
+  push:
+    branches:
+      - feature/approved-fleet-assets
+    paths:
+      - FleetManagement_36_Assets_App_Integration.zip
+permissions:
+  contents: read
+concurrency:
+  group: approved-fleet-artwork-import
+  cancel-in-progress: false
+jobs:
+  import:
+    if: github.ref == 'refs/heads/feature/approved-fleet-assets'
+    runs-on: ubuntu-24.04
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v4
+      - name: Validate exact approved archive
+        id: archive
+        shell: bash
+        run: |
+          set -euo pipefail
+          archive=FleetManagement_36_Assets_App_Integration.zip
+          if [[ ! -f "$archive" ]]; then
+            echo "present=false" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+          echo "6dc5cc21152a9c764824bf4545c512f1f9e232823816645137d6eed64ade2730  $archive" | sha256sum --check
+          mkdir -p "$RUNNER_TEMP/approved-fleet-artwork"
+          python3 - "$archive" "$RUNNER_TEMP/approved-fleet-artwork" <<'PY'
+          import sys, zipfile
+          from pathlib import Path
+          with zipfile.ZipFile(sys.argv[1]) as z:
+              for item in z.infolist():
+                  p = Path(item.filename)
+                  if p.is_absolute() or '..' in p.parts:
+                      raise ValueError('Unsafe archive path')
+              z.extractall(sys.argv[2])
+          PY
+          echo "present=true" >> "$GITHUB_OUTPUT"
+      - name: Apply all 36 approved assets and app changes
+        if: steps.archive.outputs.present == 'true'
+        run: |
+          python3 "$RUNNER_TEMP/approved-fleet-artwork/apply.py" . --check
+          python3 "$RUNNER_TEMP/approved-fleet-artwork/apply.py" .
+      - uses: actions/setup-dotnet@v4
+        if: steps.archive.outputs.present == 'true'
+        with:
+          dotnet-version: '10.0.x'
+      - name: Check business rules and publish application
+        if: steps.archive.outputs.present == 'true'
+        run: |
+          dotnet run --project tests/FleetManagement.Core.Checks -c Release
+          dotnet publish src/FleetManagement.Web -c Release -o "$RUNNER_TEMP/fleet-publish"
+          python3 tests/browser/test_asset_import.py
+          python3 tools/import_neon_assets.py "$RUNNER_TEMP/fleet-publish/wwwroot"
+      - name: Verify published image checksums
+        if: steps.archive.outputs.present == 'true'
+        run: |
+          python3 - "$RUNNER_TEMP/fleet-publish/wwwroot" <<'PY'
+          import hashlib, json, sys
+          from pathlib import Path
+          manifest = json.loads(Path('docs/fleet-approved-assets.json').read_text())
+          assert len(manifest) == 36
+          root = Path(sys.argv[1]) / 'assets/fleet-approved'
+          assert set(p.name for p in root.glob('*.webp')) == set(manifest)
+          for name, metadata in manifest.items():
+              assert hashlib.sha256((root / name).read_bytes()).hexdigest() == metadata['sha256'], name
+          print('PASS: 36 published images and all SHA-256 checksums')
+          PY
+      - name: Commit only approved application changes
+        if: steps.archive.outputs.present == 'true'
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add -- src/FleetManagement.Web/App.razor src/FleetManagement.Web/FleetRegister.razor src/FleetManagement.Web/VehicleReportBuilder.razor src/FleetManagement.Web/wwwroot/index.html src/FleetManagement.Web/wwwroot/assets/fleet-approved src/FleetManagement.Web/wwwroot/css/fleet-approved.css src/FleetManagement.Web/wwwroot/js/fleet-approved.js docs/fleet-approved-assets.json
+          git rm -- FleetManagement_36_Assets_App_Integration.zip
+          git commit -m "Integrate 36 approved FleetManagement images into application"
+          git push origin HEAD:refs/heads/feature/approved-fleet-assets

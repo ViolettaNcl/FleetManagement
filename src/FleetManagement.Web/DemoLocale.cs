@@ -880,6 +880,13 @@ internal static class DemoLocale
         ["Add favorite"]="Добавить в избранное",
         ["Remove favorite"]="Убрать из избранного",
         ["Export reports"]="Экспорт отчётов",
+        ["Quick actions"]="Быстрые действия",
+        ["Notifications"]="Уведомления",
+        ["Notification center"]="Центр уведомлений",
+        ["Current operational alerts are recalculated from registered demo records. No alerts are dismissed or resolved automatically."]="Предупреждения пересчитываются по записям демо. Они не скрываются и не устраняются автоматически.",
+        ["Open intelligence assistant"]="Открыть помощника",
+        ["Search alerts"]="Поиск предупреждений",
+        ["Alerts shown"]="предупреждений показано",
     };
     public static string Text(string value,bool russian)=>russian&&Russian.TryGetValue(value,out var translated)?translated:value;
 }

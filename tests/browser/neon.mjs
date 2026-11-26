@@ -56,6 +56,8 @@ try{
   assert.ok(sums[0]>=sums[1]&&sums[1]>=0);
   assert.equal(sums[0],Number(await page.locator('.fleet-content .metrics .metric strong').first().innerText()));
   await page.getByRole('button',{name:'Workspace alerts',exact:true}).click();
+  await page.getByRole('heading',{name:'Notification center',exact:true}).waitFor();
+  await page.getByRole('button',{name:'Open intelligence assistant',exact:true}).click();
   await page.getByRole('heading',{name:'Fleet intelligence assistant',exact:true}).waitFor();
   await page.getByRole('button',{name:'Maintenance review',exact:true}).click();
   assert.equal(await page.getByRole('button',{name:'Maintenance review',exact:true}).getAttribute('aria-pressed'),'true');

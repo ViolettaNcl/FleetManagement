@@ -43,6 +43,13 @@ try{
   assert.ok(await page.locator('.register-cards .register-record').first().getByRole('button',{name:'Passport',exact:true}).isVisible());
   await page.getByRole('button',{name:'Mobile Trips',exact:true}).click();
   await page.getByRole('heading',{name:'Intelligent dispatch planner',exact:true}).waitFor();
+  await page.locator('.trip-cards .register-record').first().waitFor();
+  assert.equal(await page.locator('.trip-table').isVisible(),false);
+  await page.getByRole('button',{name:'Mobile Alerts',exact:true}).click();
+  await page.getByRole('heading',{name:'Notification center',exact:true}).waitFor();
+  await page.getByLabel('Search alerts',{exact:true}).fill('not-an-alert-qa');
+  await page.getByText('No matching alerts. This does not certify vehicle safety.',{exact:true}).waitFor();
+  await page.getByRole('button',{name:'Clear filters',exact:true}).click();
   await page.getByRole('button',{name:'Mobile More',exact:true}).click();
   await page.locator('#workspace-nav').getByRole('button',{name:'Optimization',exact:true}).click();
   await page.getByRole('heading',{name:'Route optimization lab',exact:true}).waitFor();

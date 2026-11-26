@@ -6,7 +6,7 @@ const require=createRequire(import.meta.url);
 const axePath=require.resolve('axe-core/axe.min.js');
 const root='http://127.0.0.1:8080/FleetManagement/';
 const browser=await chromium.launch();
-const modules=['Overview','Vehicles','Drivers','Vehicle Passport','Dispatch','Batch Dispatch','Calendar','Resource Planning','Maintenance','Tracking','Geo Map','Analytics','Cost Intelligence','Assistant','Optimization','Multi Dispatch','Digital Twin','What-if','Intelligence','Predictions','Demand Forecast','Model Registry','Data Quality','Model Drift','Help & settings'];
+const modules=['Overview','Vehicles','Drivers','Vehicle Passport','Dispatch','Batch Dispatch','Calendar','Resource Planning','Maintenance','Tracking','Geo Map','Analytics','Cost Intelligence','Assistant','Optimization','Multi Dispatch','Digital Twin','What-if','Intelligence','Predictions','Demand Forecast','Model Registry','Data Quality','Model Drift','Notifications','Help & settings'];
 const result=[];
 await mkdir('browser-results/v4-modules',{recursive:true});
 try{

@@ -554,4 +554,23 @@ Check(rcHistory.Count==1&&ReviewHistory.Decode(ReviewHistory.Encode(rcHistory)).
 Check(ReviewHistory.Decode("invalid").Count==0&&ReviewHistory.Decode(new string('x',4097)).Count==0,"RC review history bounds");
 for(int i=1;i<=30;i++)rcHistory=ReviewHistory.Add(rcHistory,rcRun with{Clock=now.AddMinutes(i)});
 Check(rcHistory.Count==20&&rcHistory[0].Clock==now.AddMinutes(30),"RC review history bounded latest runs");
+
+var rcXlsxInput=new FleetWorkbookSnapshot(rcSample,now,[new(1,3,now,110800,"Repair","=literal note",12.34m)],[new(1,4,now.AddHours(2),now.AddHours(6))],true,[new(1,3,now.AddHours(1),now.AddHours(2),"Inspection","check")]);
+var rcXlsx=FleetReport.ExportSnapshotXlsx(rcXlsxInput);
+var rcXlsxBack=FleetReport.ImportSnapshotXlsx(rcXlsx);
+Check(rcXlsxBack.Data.Vehicles.SequenceEqual(rcSample.Vehicles)&&rcXlsxBack.Data.Drivers.SequenceEqual(rcSample.Drivers)&&rcXlsxBack.Data.Trips.SequenceEqual(rcSample.Trips)&&rcXlsxBack.Now==now&&rcXlsxBack.RequireShifts,"RC workbook roundtrip");
+Check(rcXlsxBack.Maintenance.SequenceEqual(rcXlsxInput.Maintenance)&&rcXlsxBack.Shifts.SequenceEqual(rcXlsxInput.Shifts)&&rcXlsxBack.Reservations.SequenceEqual(rcXlsxInput.Reservations),"RC workbook operational records and literal note");
+bool RejectSnapshotWorkbook(byte[] bytes){try{FleetReport.ImportSnapshotXlsx(bytes);return false;}catch(FormatException){return true;}}
+byte[] AlterSnapshotWorkbook(byte[] bytes,string path,Func<string,string> change){
+    using var memory=new MemoryStream();memory.Write(bytes);memory.Position=0;
+    using(var archive=new System.IO.Compression.ZipArchive(memory,System.IO.Compression.ZipArchiveMode.Update,true)){
+        var entry=archive.GetEntry(path)!;string xml;using(var reader=new StreamReader(entry.Open()))xml=reader.ReadToEnd();
+        entry.Delete();using var writer=new StreamWriter(archive.CreateEntry(path).Open());writer.Write(change(xml));
+    }
+    return memory.ToArray();
+}
+Check(RejectSnapshotWorkbook([1,2,3])&&RejectSnapshotWorkbook(new byte[FleetReport.WorkbookMaxBytes+1]),"RC invalid and oversized workbook");
+Check(RejectSnapshotWorkbook(AlterSnapshotWorkbook(rcXlsx,"xl/worksheets/sheet2.xml",x=>x.Replace("FM-205","FM-102"))),"RC workbook duplicate vehicle");
+Check(RejectSnapshotWorkbook(AlterSnapshotWorkbook(rcXlsx,"xl/worksheets/sheet2.xml",x=>x.Replace("<v>82400</v>","<f>1+1</f><v>82400</v>"))),"RC workbook formula rejection");
+Check(RejectSnapshotWorkbook(AlterSnapshotWorkbook(rcXlsx,"xl/worksheets/sheet2.xml",x=>x.Replace("<worksheet","<!DOCTYPE worksheet [<!ENTITY x SYSTEM 'file:///etc/passwd'>]><worksheet"))),"RC workbook DTD rejection");
 Console.WriteLine("All business rule checks passed.");

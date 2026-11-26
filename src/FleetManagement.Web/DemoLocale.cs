@@ -1156,6 +1156,15 @@ internal static class DemoLocale
         ["Review snapshot is outside supported bounds."]="Снимок проверки выходит за поддерживаемые пределы.",
         ["Clear all local review runs?"]="Очистить все локальные проверки?",
         ["Review history cleared."]="История проверок очищена.",
+        ["Choose a JSON or fleet snapshot XLSX file (up to 4 MiB). Validate before replacing current demo records. Excel import requires the exported template with unchanged headers and ISO text dates. Export current data first."]="Выберите JSON или XLSX-снимок автопарка (до 4 МиБ). Проверьте его перед заменой данных. Для Excel требуется экспортированный шаблон с неизменными заголовками и текстовыми датами ISO. Сначала экспортируйте текущие данные.",
+        ["Choose demo JSON or XLSX"]="Выбрать JSON или XLSX демо",
+        ["Download snapshot Excel"]="Скачать снимок Excel",
+        ["Fleet snapshot workbook generated."]="Снимок автопарка в Excel сформирован.",
+        ["Choose a JSON or XLSX snapshot."]="Выберите снимок JSON или XLSX.",
+        ["Invalid or unsupported fleet workbook. Use the exported snapshot template, literal cells and ISO text dates."]="Некорректная или неподдерживаемая книга. Используйте экспортированный шаблон, значения без формул и текстовые даты ISO.",
+        ["Current records do not satisfy snapshot validation."]="Текущие записи не прошли проверку снимка.",
+        ["Fleet workbook exceeds 4 MiB."]="Размер книги превышает 4 МиБ.",
+        ["Fleet workbook exceeds 4 MiB or is empty."]="Книга превышает 4 МиБ или пуста.",
     };
     public static string Text(string value,bool russian)=>russian&&Russian.TryGetValue(value,out var translated)?translated:value;
 }

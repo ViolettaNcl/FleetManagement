@@ -111,7 +111,7 @@
         <div class="help-grid">@foreach(var h in HelpItems){<button class="secondary" @onclick="()=>Navigate(h.Section)"><strong>@T(h.Section)</strong><small>@T(h.Description)</small></button>}</div>
         <p class="muted">@T("Use Ctrl+K to search modules. On mobile, use the bottom navigation or More.")</p>
         </section>
-        <section class="panel suite-panel" aria-labelledby="snapshot-export-title"><div class="suite-heading"><div><span class="suite-kicker">@T("Local data portability")</span><h2 id="snapshot-export-title">@T("Export demo snapshot")</h2><p class="muted">@T("Download the current demo records and clock as JSON. This file may contain names, notes and registrations. No server upload, preferences or automatic restore.")</p></div><button @onclick="ExportSnapshot">@T("Download demo JSON")</button></div><div class="metrics suite-metrics"><div class="metric">@T("Vehicles")<strong>@fleet.Vehicles.Count</strong></div><div class="metric">@T("Drivers")<strong>@fleet.Drivers.Count</strong></div><div class="metric">@T("Trips")<strong>@fleet.Trips.Count</strong></div></div>@if(snapshotFeedback.Length>0){<p role="status">@T(snapshotFeedback)</p>}</section>
+        <section class="panel suite-panel" aria-labelledby="snapshot-export-title"><div class="suite-heading"><div><span class="suite-kicker">@T("Local data portability")</span><h2 id="snapshot-export-title">@T("Export demo snapshot")</h2><p class="muted">@T("Download the current demo records and clock as JSON. This file may contain names, notes and registrations. No server upload, preferences or automatic restore.")</p></div><div class="actions"><button @onclick="ExportSnapshot">@T("Download demo JSON")</button><button class="secondary" @onclick="ExportSnapshotWorkbook">@T("Download snapshot Excel")</button></div></div><div class="metrics suite-metrics"><div class="metric">@T("Vehicles")<strong>@fleet.Vehicles.Count</strong></div><div class="metric">@T("Drivers")<strong>@fleet.Drivers.Count</strong></div><div class="metric">@T("Trips")<strong>@fleet.Trips.Count</strong></div></div>@if(snapshotFeedback.Length>0){<p role="status">@T(snapshotFeedback)</p>}</section>
         <SnapshotRestore Russian="@(language=="ru")" Restore="RestoreSnapshot"/>
     }
     else if (section == "Batch Dispatch")
@@ -452,6 +452,14 @@
             await JS.InvokeVoidAsync("fleetDownload",Convert.ToBase64String(json),$"fleet-demo-{Now:yyyy-MM-dd-HHmm}.json","application/json");
             snapshotFeedback="Demo JSON generated.";
         }catch(JSException){snapshotFeedback="Unable to download the demo snapshot.";}
+    }
+    private async Task ExportSnapshotWorkbook(){
+        try{
+            var bytes=FleetReport.ExportSnapshotXlsx(new(fleet,Now,maintenanceEntries,driverShifts,requireShifts,vehicleReservations));
+            await JS.InvokeVoidAsync("fleetDownload",Convert.ToBase64String(bytes),$"fleet-snapshot-{Now:yyyy-MM-dd-HHmm}.xlsx");
+            snapshotFeedback="Fleet snapshot workbook generated.";
+        }catch(FormatException ex){snapshotFeedback=ex.Message;}
+        catch(JSException){snapshotFeedback="Unable to download the demo snapshot.";}
     }
     private Task<bool> RestoreSnapshot(DemoSnapshot snapshot){
         return Task.FromResult(ApplySnapshot(snapshot));

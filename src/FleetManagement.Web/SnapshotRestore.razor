@@ -1,9 +1,9 @@
 @using FleetManagement.Web
 @using Microsoft.AspNetCore.Components.Forms
 <section class="panel suite-panel" aria-labelledby="snapshot-restore-title">
-    <div class="suite-heading"><div><span class="suite-kicker">@T("Local recovery")</span><h2 id="snapshot-restore-title">@T("Restore demo snapshot")</h2><p class="muted">@T("Choose a JSON file exported by this demo (up to 4 MiB). Validate it before replacing current demo records. Export the current records first if you need to keep them.")</p></div></div>
-    <label class="snapshot-file-label" for="snapshot-input">@T("Choose demo JSON")</label>
-    <InputFile id="snapshot-input" accept=".json,application/json" OnChange="Read" disabled="@busy" />
+    <div class="suite-heading"><div><span class="suite-kicker">@T("Local recovery")</span><h2 id="snapshot-restore-title">@T("Restore demo snapshot")</h2><p class="muted">@T("Choose a JSON or fleet snapshot XLSX file (up to 4 MiB). Validate before replacing current demo records. Excel import requires the exported template with unchanged headers and ISO text dates. Export current data first.")</p></div></div>
+    <label class="snapshot-file-label" for="snapshot-input">@T("Choose demo JSON or XLSX")</label>
+    <InputFile id="snapshot-input" accept=".json,.xlsx,application/json,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet" OnChange="Read" disabled="@busy" />
     @if(message.Length>0){<p role="status" class="@(error?"error":"notice")">@T(message)</p>}
     @if(candidate is not null){
         <div class="suite-note">
@@ -30,11 +30,18 @@
         try{
             if(args.File.Size>SnapshotValidation.MaxBytes){message="Snapshot file exceeds 4 MiB.";error=true;return;}
             await using var stream=args.File.OpenReadStream(SnapshotValidation.MaxBytes);
-            var parsed=await JsonSerializer.DeserializeAsync(stream,DemoJsonContext.Default.DemoSnapshot);
+            DemoSnapshot? parsed;
+            if(args.File.Name.EndsWith(".xlsx",StringComparison.OrdinalIgnoreCase)){
+                using var buffer=new MemoryStream();await stream.CopyToAsync(buffer);
+                var workbook=FleetReport.ImportSnapshotXlsx(buffer.ToArray());
+                parsed=new(workbook.Data,workbook.Now,workbook.Maintenance,workbook.Shifts,workbook.RequireShifts,workbook.Reservations);
+            }else if(args.File.Name.EndsWith(".json",StringComparison.OrdinalIgnoreCase))parsed=await JsonSerializer.DeserializeAsync(stream,DemoJsonContext.Default.DemoSnapshot);
+            else{message="Choose a JSON or XLSX snapshot.";error=true;return;}
             var reason=SnapshotValidation.Check(parsed?.Data,parsed?.Now??default,parsed?.MaintenanceEntries,parsed?.DriverShifts,parsed?.VehicleReservations);
             if(reason is not null||parsed is null){message=reason??"Snapshot structure or clock is invalid.";error=true;return;}
             candidate=parsed;message="Snapshot validated. No records have changed.";
-        }catch(JsonException){message="Invalid demo JSON.";error=true;}
+        }catch(FormatException ex){message=ex.Message;error=true;}
+        catch(JsonException){message="Invalid demo JSON.";error=true;}
         catch(IOException){message="Unable to read the selected file.";error=true;}
         catch(InvalidOperationException){message="Unable to read the selected file.";error=true;}
         finally{busy=false;}

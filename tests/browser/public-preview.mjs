@@ -23,10 +23,11 @@ try {
     if(attempt<17)await new Promise(resolve=>setTimeout(resolve,5000));
   }
   assert.ok(verified,'Public build marker missing or stale');
+  const appUrl=url+'app/';
   const page=await context.newPage();
   const errors=[];
   page.on('pageerror',e=>errors.push(e.message));
-  const response=await page.goto(url,{waitUntil:'domcontentloaded',timeout:60000});
+  const response=await page.goto(appUrl,{waitUntil:'domcontentloaded',timeout:60000});
   assert.ok(response?.ok(),'Preview HTTP response failed');
   assert.equal(new URL(page.url()).origin,new URL(url).origin);
   await page.getByRole('heading',{name:'Operations overview',exact:true}).waitFor({timeout:90000});
@@ -36,12 +37,12 @@ try {
   await page.locator('.workload-donut').waitFor();
   await page.locator('.simulation-showcase').waitFor();
   {
-    const artwork=await (await context.request.get(url+'assets/neon/manifest.json?rev='+revision)).json();
+    const artwork=await (await context.request.get(appUrl+'assets/neon/manifest.json?rev='+revision)).json();
     assert.equal(artwork.mode,'committed');
     assert.equal(artwork.files.length,10);
     for(const asset of artwork.files){
       assert.match(asset.name,/^[a-z-]+\.webp$/);
-      const actual=await context.request.get(url+'assets/neon/'+asset.name+'?rev='+revision);
+      const actual=await context.request.get(appUrl+'assets/neon/'+asset.name+'?rev='+revision);
       assert.ok(actual.ok());
       assert.equal(createHash('sha256').update(await actual.body()).digest('hex'),asset.sha256);
       assert.ok(await page.evaluate(async name=>{const image=new Image();image.src='assets/neon/'+name;await image.decode();return image.naturalWidth>0;},asset.name));

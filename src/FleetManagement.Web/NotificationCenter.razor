@@ -1,0 +1,17 @@
+@using FleetManagement.Web
+<section class="panel notification-center">
+    <div class="registerhead"><div><h2>@T("Notification center")</h2><p class="muted">@T("Current operational alerts are recalculated from registered demo records. No alerts are dismissed or resolved automatically.")</p></div><button class="secondary" @onclick='()=>Open.InvokeAsync("Assistant")'>@T("Open intelligence assistant")</button></div>
+    <div class="metrics"><button class="metric secondary" aria-pressed="@(severity=="All"?"true":"false")" @onclick='()=>severity="All"'>@T("All alerts")<strong>@Alerts.Count</strong></button><button class="metric secondary" aria-pressed="@(severity=="High"?"true":"false")" @onclick='()=>severity="High"'>@T("High priority")<strong>@Alerts.Count(x=>x.Severity=="High")</strong></button><button class="metric secondary" aria-pressed="@(severity=="Medium"?"true":"false")" @onclick='()=>severity="Medium"'>@T("Review soon")<strong>@Alerts.Count(x=>x.Severity=="Medium")</strong></button></div>
+    <div class="actions registertools"><label>@T("Search alerts")<input type="search" aria-label="@T("Search alerts")" @bind="query" @bind:event="oninput" /></label><button class="secondary" @onclick="Clear">@T("Clear filters")</button></div>
+    <p class="muted" aria-live="polite">@Filtered.Count / @Alerts.Count @T("Alerts shown")</p>
+    <FleetAlertList Russian="Russian" Alerts="Filtered" Open="Open"/>
+</section>
+@code{
+    [Parameter] public bool Russian{get;set;}
+    [Parameter,EditorRequired] public IReadOnlyList<FleetAlert> Alerts{get;set;}=[];
+    [Parameter] public EventCallback<string> Open{get;set;}
+    private string severity="All",query="";
+    private string T(string value)=>DemoLocale.Text(value,Russian);
+    private IReadOnlyList<FleetAlert> Filtered=>Alerts.Where(a=>(severity=="All"||a.Severity==severity)&&(string.IsNullOrWhiteSpace(query)||new[]{a.Subject,a.Title,a.Evidence}.Any(x=>x.Contains(query.Trim(),StringComparison.OrdinalIgnoreCase)))).ToArray();
+    private void Clear(){severity="All";query="";}
+}

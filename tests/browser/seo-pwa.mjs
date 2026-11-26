@@ -1,0 +1,96 @@
+import { chromium } from 'playwright';
+import assert from 'node:assert/strict';
+import { mkdir, writeFile } from 'node:fs/promises';
+const root=process.env.FLEET_PREVIEW_URL;
+const canonical='https://violettancl.github.io/FleetManagement/';
+assert.ok([canonical,'http://127.0.0.1:8080/FleetManagement/'].includes(root));
+const browser=await chromium.launch();
+try{
+  const staticContext=await browser.newContext({javaScriptEnabled:false,viewport:{width:390,height:844},serviceWorkers:'block'});
+  const request=staticContext.request;
+  const xml=await (await request.get(root+'sitemap.xml')).text();
+  const urls=[...xml.matchAll(/<loc>(.*?)<\/loc>/g)].map(m=>m[1]);
+  assert.equal(urls.length,20);
+  assert.equal(new Set(urls).size,20);
+  const titles=new Set(),descriptions=new Set(),page=await staticContext.newPage();
+  const records=[];
+  for(const url of urls){
+    assert.ok(url.startsWith(canonical)&&!url.includes('/app/'));
+    const response=await page.goto(root+url.slice(canonical.length),{waitUntil:'load'});
+    assert.equal(response.status(),200);
+    assert.equal(await page.locator('h1').count(),1);
+    const title=await page.title(),description=await page.locator('meta[name=description]').getAttribute('content');
+    assert.ok(title&&description&&!titles.has(title)&&!descriptions.has(description));titles.add(title);descriptions.add(description);
+    assert.equal(await page.locator('link[rel=canonical]').getAttribute('href'),url);
+    assert.equal(await page.locator('link[rel=alternate][hreflang=en]').count(),1);
+    assert.equal(await page.locator('link[rel=alternate][hreflang=ru]').count(),1);
+    assert.equal(await page.locator('meta[name=robots]').getAttribute('content'),'index,follow');
+    assert.equal(await page.locator('script[src]').count(),0);
+    assert.ok(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth));
+    const links=await page.locator('a[href]').evaluateAll(nodes=>nodes.map(a=>a.href));
+    for(const link of links.filter(x=>x.startsWith(root)&&!x.includes('#'))){
+      assert.ok(link===root+'app/'||urls.includes(canonical+link.slice(root.length)),link);
+    }
+    const alternates=await page.locator('link[hreflang]').evaluateAll(nodes=>nodes.map(a=>a.href));
+    assert.ok(alternates.every(x=>urls.includes(x)));
+    const main=await page.locator('main').innerText();assert.ok(main.length>400);
+    const images=await page.locator('img').evaluateAll(nodes=>nodes.map(a=>a.src));
+    const performance=await page.evaluate(()=>({navigationMs:performance.getEntriesByType('navigation')[0]?.duration??0,transferBytes:performance.getEntriesByType('resource').reduce((n,r)=>n+r.transferSize,0),resources:performance.getEntriesByType('resource').length}));
+    assert.ok(performance.transferBytes<2500000,'Public page exceeded 2.5 MB unthrottled resource budget');
+    for(const image of new Set(images))assert.ok((await request.get(image)).ok(),image);
+    records.push({url,title,description,htmlBytes:(await response.body()).length,...performance});
+  }
+  const alternateMap=new Map();
+  for(const url of urls){
+    const response=await request.get(root+url.slice(canonical.length));
+    const html=await response.text();
+    const pairs=[...html.matchAll(/<link rel="alternate" hreflang="(en|ru)" href="([^"]+)">/g)];
+    assert.equal(pairs.length,2);
+    alternateMap.set(url,new Map(pairs.map(m=>[m[1],m[2]])));
+  }
+  for(const [url,pair] of alternateMap)for(const alt of pair.values()){
+    const reciprocal=alternateMap.get(alt);
+    assert.ok(reciprocal&&[...reciprocal.values()].includes(url),'Nonreciprocal hreflang '+url);
+  }
+  const missing=await request.get(root+'nonexistent-qa-v41/');
+  assert.equal(missing.status(),404);
+  const robots=await request.get(root+'robots.txt');assert.ok(robots.ok());assert.match(await robots.text(),/Sitemap: https:\/\/violettancl\.github\.io\/FleetManagement\/sitemap\.xml/);
+  await staticContext.close();
+  const a11y=await browser.newPage({viewport:{width:390,height:844}});
+  await a11y.goto(root);
+  await a11y.addScriptTag({path:new URL('./node_modules/axe-core/axe.min.js',import.meta.url).pathname});
+  const publicAudit=await a11y.evaluate(async()=>{const r=await axe.run({runOnly:{type:'tag',values:['wcag2a','wcag2aa','wcag21a','wcag21aa','wcag22aa']}});return r.violations.map(v=>({id:v.id,impact:v.impact,nodes:v.nodes.map(n=>n.target)}));});
+  assert.deepEqual(publicAudit,[],'Public landing accessibility violations');
+  await a11y.close();
+  const context=await browser.newContext({viewport:{width:390,height:844},isMobile:true,hasTouch:true,serviceWorkers:'allow'});
+  const demo=await context.newPage();const errors=[];demo.on('pageerror',e=>errors.push(e.message));
+  const manifest=await (await context.request.get(root+'app/manifest.webmanifest')).json();
+  assert.equal(manifest.scope,'./');assert.equal(manifest.start_url,'./');assert.equal(manifest.display,'standalone');assert.equal(manifest.icons.length,2);
+  for(const icon of manifest.icons)assert.ok((await context.request.get(root+'app/'+icon.src)).ok());
+  const began=Date.now();
+  await demo.goto(root+'app/');
+  await demo.getByRole('heading',{name:'Operations overview',exact:true}).waitFor({timeout:90000});
+  const startup=Date.now()-began;
+  const cold=await demo.evaluate(()=>({navigationMs:performance.getEntriesByType('navigation')[0]?.duration??0,resources:performance.getEntriesByType('resource').length,transferBytes:performance.getEntriesByType('resource').reduce((n,r)=>n+r.transferSize,0),decodedBytes:performance.getEntriesByType('resource').reduce((n,r)=>n+r.decodedBodySize,0)}));
+  assert.equal(await demo.locator('meta[name=robots]').getAttribute('content'),'noindex,follow');
+  await demo.waitForFunction(()=>!!navigator.serviceWorker.controller,null,{timeout:90000});
+  const cached=await demo.evaluate(async()=>{const names=await caches.keys();return names.filter(x=>x.startsWith('fleet-public-demo:')).length;});
+  assert.equal(cached,1);
+  const warmStart=Date.now();
+  await demo.reload();
+  await demo.getByRole('heading',{name:'Operations overview',exact:true}).waitFor({timeout:90000});
+  const warmMs=Date.now()-warmStart;
+  const warm=await demo.evaluate(()=>({resources:performance.getEntriesByType('resource').length,transferBytes:performance.getEntriesByType('resource').reduce((n,r)=>n+r.transferSize,0)}));
+  await context.setOffline(true);
+  const offlineStart=Date.now();
+  await demo.reload();
+  await demo.getByRole('heading',{name:'Operations overview',exact:true}).waitFor({timeout:90000});
+  const offlineMs=Date.now()-offlineStart;
+  await demo.getByRole('button',{name:'Mobile Fleet',exact:true}).click();
+  await demo.getByRole('heading',{name:'Vehicle register',exact:true}).waitFor();
+  assert.deepEqual(errors,[]);
+  await mkdir('browser-results',{recursive:true});
+  await demo.screenshot({path:'browser-results/v4-offline-mobile.png',fullPage:true});
+  await writeFile('browser-results/v4-seo-perf.json',JSON.stringify({environment:'Playwright Chromium, unthrottled, synthetic demo; not field CWV',startupMs:startup,cold,warmMs,warm,offlineMs,pages:records,offlineReload:true},null,2));
+  console.log('PASS: 20 no-JS indexable pages, unique metadata, links, app noindex, install manifest and offline navigation');
+}finally{await browser.close();}

@@ -97,3 +97,7 @@ erDiagram
 ```
 
 Audit actor/entity references and receipt actor IDs are logical references, not foreign keys: historical records survive deletion of operational entities. BatchReceipts also stores versioned ordinary fleet write receipts; see [receipt contract](batch-receipts.md). Current databases use explicit, verified additive upgrade from the known V2/V3 schemas, not a complete EF migration history. A future migration baseline requires provider-specific model snapshots, explicit operator adoption and tested preservation of all existing records; never run an initial create migration over an existing database.
+
+## ADR — V4 public discovery and scoped offline demo
+
+The Pages release packages static product pages at the project root and Russian equivalents under `/ru/`. The public copy is built from `site/pages.json`; `tools/build_public_site.py` generates canonical URLs, language alternatives, sitemap, metadata, structured data and semantic mapping. Only the public pages are indexable. The WASM demo moves to `/app/` in this packaging step, has a noindex directive and uses a service worker scoped to that directory. The connected ASP.NET Core workspace is not part of this package, and its tokens and server data are not cached by the PWA. Existing local and portable Windows entry points retain their original location. Shared business rules and storage boundaries are unchanged.

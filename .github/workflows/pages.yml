@@ -36,8 +36,15 @@ jobs:
           server=$!
           trap 'kill "$server" || true' EXIT
           node tests/browser/smoke.mjs
+          rm -rf preview/FleetManagement
+          python3 tools/build_public_site.py publish/wwwroot preview/FleetManagement
           FLEET_PREVIEW_URL=http://127.0.0.1:8080/FleetManagement/ node tests/browser/public-preview.mjs
-      - run: touch publish/wwwroot/.nojekyll
+          FLEET_PREVIEW_URL=http://127.0.0.1:8080/FleetManagement/ node tests/browser/seo-pwa.mjs
+      - name: Package indexable public site and installable app
+        env:
+          GOOGLE_SITE_VERIFICATION: ${{ vars.GOOGLE_SITE_VERIFICATION }}
+          YANDEX_VERIFICATION: ${{ vars.YANDEX_VERIFICATION }}
+        run: python3 tools/build_public_site.py publish/wwwroot public-site
       - name: Publish test link in workflow summary
         run: |
           echo '### FleetManagement browser preview' >> "$GITHUB_STEP_SUMMARY"
@@ -45,7 +52,7 @@ jobs:
           echo 'Link is verified only by the public smoke job after deployment.' >> "$GITHUB_STEP_SUMMARY"
       - uses: actions/upload-pages-artifact@v3
         with:
-          path: publish/wwwroot
+          path: public-site
           retention-days: 3
   evidence:
     runs-on: ubuntu-24.04
@@ -102,7 +109,9 @@ jobs:
       - name: Verify exact deployed revision and actual public UI
         env:
           FLEET_PREVIEW_URL: https://violettancl.github.io/FleetManagement/
-        run: node tests/browser/public-preview.mjs
+        run: |
+          node tests/browser/public-preview.mjs
+          node tests/browser/seo-pwa.mjs
       - name: Record verified public URL
         run: |
           echo '### Public preview verified' >> "$GITHUB_STEP_SUMMARY"

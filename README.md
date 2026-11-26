@@ -159,3 +159,6 @@ Optional local generative AI companion: [Ollama guide](docs/local-ai.md). No API
 **Online demo:** https://violettancl.github.io/FleetManagement/ — no download needed once GitHub Pages is enabled by the repository owner. The deployment workflow checks the exact public revision and actual browser UI after publication. If the address is unavailable, see [activation and verification](docs/deployment.md#enable-the-permanent-public-link).
 
 **Neon Command Center:** redesigned browser shell, dark/light themes, responsive navigation, interactive local WebGL scene and module cards. All ten owner WebP illustrations are committed and used by the application; eight in operational sections and two in the design gallery. No manual archive upload is needed. [Design and asset integration](docs/neon-design.md).
+
+## V4 public website and mobile workspace
+The Pages pipeline packages the public RU/EN static product site at the existing root and the interactive synthetic demo at `/app/`. The public demo supports an installable PWA where the browser permits, with scoped offline caching and explicit update confirmation. See [SEO and verification](docs/seo-v4.md) and [V4 audit](docs/v4-audit.md). Local development and portable Windows packaging retain the root interactive app.

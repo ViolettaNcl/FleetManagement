@@ -44,7 +44,7 @@ try{
   await page.getByRole('button',{name:'Dispatch',exact:true}).click();
   await page.getByLabel('Trip status filter',{exact:true}).selectOption('Scheduled');
   await page.getByLabel('Search trips',{exact:true}).fill('no-trip-qa-123');
-  await page.getByText('No matching trips.',{exact:true}).waitFor();
+  await page.getByRole('cell',{name:'No matching trips.',exact:true}).waitFor();
   await page.getByRole('button',{name:'Clear trip filters',exact:true}).click();
   assert.equal(await page.getByLabel('Trip status filter',{exact:true}).inputValue(),'');
   assert.equal(await page.getByLabel('Search trips',{exact:true}).inputValue(),'');
@@ -55,7 +55,9 @@ try{
   const sums=await periods.evaluateAll(rows=>rows.reduce((s,row)=>[s[0]+Number(row.dataset.trips),s[1]+Number(row.dataset.completed)],[0,0]));
   assert.ok(sums[0]>=sums[1]&&sums[1]>=0);
   assert.equal(sums[0],Number(await page.locator('.fleet-content .metrics .metric strong').first().innerText()));
-  await page.getByRole('button',{name:'Workspace alerts',exact:true}).click();
+  await page.getByRole('button',{name:/^Alerts \d+$/}).click();
+  await page.getByRole('heading',{name:'Notification center',exact:true}).waitFor();
+  await page.getByRole('button',{name:'Open intelligence assistant',exact:true}).click();
   await page.getByRole('heading',{name:'Fleet intelligence assistant',exact:true}).waitFor();
   await page.getByRole('button',{name:'Maintenance review',exact:true}).click();
   assert.equal(await page.getByRole('button',{name:'Maintenance review',exact:true}).getAttribute('aria-pressed'),'true');
@@ -98,7 +100,8 @@ try{
   await page.setViewportSize({width:320,height:760});
   await page.evaluate(()=>window.scrollTo(0,0));
   assert.ok(await page.locator('.workspace-header').evaluate(el=>el.getBoundingClientRect().height<=150),'Mobile toolbar must not consume the viewport');
-  for(const name of ['Quick search','Light theme','Workspace alerts','Reset demo'])assert.ok(await page.getByRole('button',{name,exact:true}).isVisible());
+  for(const name of ['Quick search','Light theme','Reset demo'])assert.ok(await page.getByRole('button',{name,exact:true}).isVisible());
+  assert.ok(await page.getByRole('button',{name:/^Alerts \d+$/}).isVisible());
   await page.screenshot({path:'browser-results/workspace-mobile-header.png',fullPage:false});
   await page.locator('.mobile-nav-toggle').click();
   await page.locator('#workspace-nav').getByRole('button',{name:'Vehicles',exact:true}).click();

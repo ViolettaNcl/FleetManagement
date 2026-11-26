@@ -1,5 +1,6 @@
 """Generate a scoped, exact-revision offline cache for public synthetic demo files only."""
 import json
+import hashlib
 import re
 import struct
 import zlib
@@ -53,11 +54,24 @@ def package(app):
     files=[]
     for path in sorted(app.rglob("*")):
         if path.is_file() and path.suffix not in (".br",".gz",".map") and not path.name.startswith(".") and path.name!="sw.js":
-            files.append("./"+quote(path.relative_to(app).as_posix(),safe="/-._~"))
+            files.append({"path":"./"+quote(path.relative_to(app).as_posix(),safe="/-._~"),"sha256":hashlib.sha256(path.read_bytes()).hexdigest()})
     worker="""const REV=__REV__,FILES=__FILES__;
 const scope=self.registration.scope,prefix='fleet-public-demo:'+scope+':',name=prefix+REV;
-const allowed=new Set(FILES.map(path=>new URL(path,scope).href));
-self.addEventListener('install',event=>event.waitUntil((async()=>{const cache=await caches.open(name);await cache.addAll(FILES.map(path=>new Request(new URL(path,scope),{cache:'reload'})));})()));
+const allowed=new Set(FILES.map(file=>new URL(file.path,scope).href));
+self.addEventListener('install',event=>event.waitUntil((async()=>{
+  const cache=await caches.open(name);
+  try{
+    // Bounded parallel fetches; exact hashes prevent stale CDN bytes from becoming an offline release.
+    for(let i=0;i<FILES.length;i+=6)await Promise.all(FILES.slice(i,i+6).map(async file=>{
+      const req=new Request(new URL(file.path,scope),{cache:'reload'});
+      const response=await fetch(req);
+      if(!response.ok||response.redirected)throw Error('Missing published asset');
+      const hash=Array.from(new Uint8Array(await crypto.subtle.digest('SHA-256',await response.clone().arrayBuffer())),b=>b.toString(16).padStart(2,'0')).join('');
+      if(hash!==file.sha256)throw Error('Published asset revision mismatch');
+      await cache.put(req,response);
+    }));
+  }catch(error){await caches.delete(name);throw error;}
+})()));
 self.addEventListener('activate',event=>event.waitUntil((async()=>{for(const key of await caches.keys())if(key.startsWith(prefix)&&key!==name)await caches.delete(key);await self.clients.claim();})()));
 self.addEventListener('message',event=>{if(event.data==='ACTIVATE_UPDATE'&&event.source?.url?.startsWith(scope))event.waitUntil(self.skipWaiting());});
 self.addEventListener('fetch',event=>{

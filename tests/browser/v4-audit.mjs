@@ -14,6 +14,7 @@ try{
  const errors=[];page.on('pageerror',e=>errors.push(e.message));
  await page.goto(root+'app/');
  await page.getByRole('heading',{name:'Operations overview',exact:true}).waitFor({timeout:90000});
+ await page.addScriptTag({path:axePath});
  for(const module of modules){
    await page.setViewportSize({width:1440,height:900});
    await page.locator('#workspace-nav').getByRole('button',{name:module,exact:true}).click();
@@ -23,7 +24,6 @@ try{
    await page.evaluate(()=>window.scrollTo(0,0));
    await page.screenshot({path:'browser-results/v4-modules/'+slug+'-desktop.png'});
    // Record all automated WCAG findings; do not claim manual AA conformance.
-   await page.addScriptTag({path:axePath});
    const findings=await page.evaluate(async()=>{const r=await axe.run({runOnly:{type:'tag',values:['wcag2a','wcag2aa','wcag21a','wcag21aa','wcag22aa']}});return r.violations.map(v=>({id:v.id,impact:v.impact,description:v.description,nodes:v.nodes.map(n=>({target:n.target,summary:n.failureSummary}))}));});
    await page.setViewportSize({width:390,height:844});await page.evaluate(()=>window.scrollTo(0,0));
    await page.screenshot({path:'browser-results/v4-modules/'+slug+'-mobile.png'});

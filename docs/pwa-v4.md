@@ -1,2 +1,4 @@
 # Browser installation and updates
 Open the public /app/ URL over HTTPS. On supported browsers, use the browser's Install app or Add to Home Screen command. Native iOS/Android apps are not provided. The worker's scope is app/ only; it preloads an exact revision of published static files, not server data. Once the first install completes, reload/navigation works offline. Demo records remain in localStorage. An update banner offers an explicit reload after confirming possible loss of unsaved form edits. If offline install fails due to storage limits or unavailable assets, ordinary online operation remains available. Do not register this worker on the connected API console.
+
+Each offline asset is verified against the SHA-256 of the packaged file before the worker can activate. Cache installation fails closed if the CDN serves stale bytes, retaining the current working cache. Compressed duplicate artifacts and source maps are excluded from offline storage.

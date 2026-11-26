@@ -21,6 +21,7 @@ jobs:
       - name: Test and import verified owner artwork
         run: |
           python3 tests/browser/test_asset_import.py
+          python3 tests/browser/test_public_site.py
           python3 tools/import_neon_assets.py publish/wwwroot
       - name: Upload static preview
         uses: actions/upload-artifact@v4

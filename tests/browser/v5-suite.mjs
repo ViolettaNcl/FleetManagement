@@ -1,12 +1,23 @@
 import {chromium} from 'playwright';
 import assert from 'node:assert/strict';
 import {mkdir} from 'node:fs/promises';
+import {createRequire} from 'node:module';
+const require=createRequire(import.meta.url);
+const axePath=require.resolve('axe-core/axe.min.js');
 const browser=await chromium.launch();
 try{
   const page=await browser.newPage({viewport:{width:1440,height:900},reducedMotion:'reduce',acceptDownloads:true});
   const errors=[];page.on('pageerror',e=>errors.push(e.message));
   await page.goto('http://127.0.0.1:8080/FleetManagement/');
   await page.getByRole('heading',{name:'Operations overview',exact:true}).waitFor({timeout:90000});
+  const audit=async(selector)=>{
+    if(!await page.evaluate(()=>typeof window.axe==='object'))await page.addScriptTag({path:axePath});
+    const violations=await page.evaluate(async selector=>{
+      const result=await axe.run(selector,{runOnly:{type:'tag',values:['wcag2a','wcag2aa','wcag21a','wcag21aa','wcag22aa']}});
+      return result.violations.map(v=>({id:v.id,nodes:v.nodes.map(n=>n.target)}));
+    },selector);
+    assert.deepEqual(violations,[],'V5 accessibility: '+selector);
+  };
   const go=async name=>{await page.locator('#workspace-nav').getByRole('button',{name,exact:true}).click();};
   await go('Intelligence');
   const ensemble=page.locator('section[aria-labelledby=ensemble-title]');
@@ -18,6 +29,7 @@ try{
   assert.equal(await ensemble.getByRole('region',{name:'Model input sensitivity',exact:true}).locator('tbody tr').count(),5);
   await mkdir('browser-results',{recursive:true});
   await ensemble.screenshot({path:'browser-results/v5-ensemble.png'});
+  await audit('section[aria-labelledby=ensemble-title]');
   await go('Cost Intelligence');
   const budget=page.locator('section[aria-labelledby=budget-scenario-title]');
   const baseline=await budget.getByTestId('budget-baseline').innerText();
@@ -27,6 +39,7 @@ try{
   await page.waitForFunction(()=>document.querySelector('[data-testid=budget-scenario]')?.textContent!==document.querySelector('[data-testid=budget-baseline]')?.textContent);
   assert.equal(await budget.getByTestId('budget-baseline').innerText(),baseline);
   await budget.screenshot({path:'browser-results/v5-budget-scenario.png'});
+  await audit('section[aria-labelledby=budget-scenario-title]');
   await budget.getByRole('button',{name:'Reset scenario',exact:true}).click();
   await page.waitForFunction(()=>document.querySelector('[data-testid=budget-scenario]')?.textContent===document.querySelector('[data-testid=budget-baseline]')?.textContent);
   await go('Analytics');
@@ -35,7 +48,10 @@ try{
   await report.getByLabel('Model',{exact:true}).uncheck();
   await report.getByLabel('Trip counts',{exact:true}).uncheck();
   await report.getByLabel('Completed distance',{exact:true}).uncheck();
+  await page.waitForFunction(()=>document.querySelectorAll('section[aria-labelledby=report-builder-title] thead th').length===2);
   assert.equal(await report.locator('thead th').count(),2);
+  await report.screenshot({path:'browser-results/v5-report-builder-populated.png'});
+  await audit('section[aria-labelledby=report-builder-title]');
   const download=page.waitForEvent('download');
   await report.getByRole('button',{name:'Export custom Excel',exact:true}).click();
   const file=await download;
@@ -49,6 +65,7 @@ try{
   await review.getByTestId('review-rule-status').waitFor();
   await review.getByLabel('Include medium alerts in queue',{exact:true}).uncheck();
   const high=Number(await page.locator('.notification-center .metric').nth(1).locator('strong').innerText());
+  await page.waitForFunction(expected=>Number(document.querySelector('[data-testid=review-queue-count]')?.textContent)===expected,high);
   assert.equal(Number(await review.getByTestId('review-queue-count').innerText()),high);
   await review.getByLabel('High alert threshold',{exact:true}).fill('99');
   await review.getByLabel('High alert threshold',{exact:true}).press('Tab');
@@ -59,6 +76,7 @@ try{
   await page.waitForFunction(()=>document.querySelector('section[aria-labelledby=review-policy-title] input[type=number]')?.value==='99');
   assert.equal(await review.getByLabel('Include medium alerts in queue',{exact:true}).isChecked(),false);
   await review.screenshot({path:'browser-results/v5-review-rules.png'});
+  await audit('section[aria-labelledby=review-policy-title]');
   await go('Assistant');
   await page.getByRole('button',{name:'Operational risk review',exact:true}).click();
   await page.locator('.advisor-answer').getByRole('heading',{name:'Operational risk review',exact:true}).waitFor();

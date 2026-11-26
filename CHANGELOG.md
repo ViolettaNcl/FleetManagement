@@ -3,6 +3,7 @@
 ## Unreleased — V4.2 release hardening
 
 - PWA update activation checks for other open demo windows and returns an actionable, retryable message instead of knowingly replacing their active worker. Adds a bounded confirmation timeout and accessible status feedback.
+- Public RU/EN pages now pass an explicit, validated language preference to the interactive workspace; the one-time query is removed and the preference survives reload. Added static and browser tests.
 - Browser fixture coverage for update refusal with two open tabs and retry after closing the second tab. Exact-revision CI is required; no release promotion implied.
 
 ## Unreleased — V4 UX, mobile, PWA and public SEO

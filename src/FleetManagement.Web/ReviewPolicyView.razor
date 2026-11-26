@@ -1,0 +1,44 @@
+@using FleetManagement.Web
+@inject IJSRuntime JS
+<section class="panel suite-panel" aria-labelledby="review-policy-title">
+    <div class="suite-heading"><div><span class="suite-kicker">@T("Automation preview")</span><h2 id="review-policy-title">@T("Operational review rules")</h2><p class="muted">@T("Configure a local escalation preview using current rule-based alerts. No messages are sent, records changed or critical alerts hidden.")</p></div><button class="secondary" @onclick="Save" disabled="@(!Policy.Valid)">@T("Save review settings")</button></div>
+    <div class="formgrid"><label>@T("High alert threshold")<input type="number" min="1" max="100" @bind="high"/></label><label>@T("Medium alert threshold")<input type="number" min="1" max="100" @bind="medium"/></label><label class="dashboard-check"><input type="checkbox" @bind="includeMedium"/><span>@T("Include medium alerts in queue")</span></label></div>
+    @if(!Policy.Valid){<p class="error" role="status">@T("Choose alert thresholds between 1 and 100.")</p>}
+    else{
+        var preview=ReviewAutomation.Preview(Alerts,Policy);
+        <div class="metrics suite-metrics"><div class="metric">@T("High priority")<strong>@preview.HighCount / @high</strong></div><div class="metric">@T("Review soon")<strong>@preview.MediumCount / @medium</strong></div><div class="metric">@T("Review queue")<strong data-testid="review-queue-count">@preview.Queue.Count</strong></div></div>
+        <p class="suite-note" role="status" data-testid="review-rule-status">@(preview.Escalate?T("Escalation threshold reached"):T("Escalation threshold not reached")) · @(preview.HighTriggered?T("High rule triggered"):T("High rule not triggered")) · @(preview.MediumTriggered?T("Medium rule triggered"):T("Medium rule not triggered"))</p>
+        <div class="suite-review-list">@foreach(var group in preview.Queue.GroupBy(a=>a.Destination)){
+            <button class="secondary" @onclick="()=>Open.InvokeAsync(group.Key)"><span>@T(group.Key)</span><strong>@group.Count()</strong></button>
+        }</div>
+        <p class="muted">@T("Queue counts include every high alert regardless of the medium-alert setting. Rules are evaluated only in the open demo.")</p>
+    }
+    @if(feedback.Length>0){<p class="notice" role="status">@T(feedback)</p>}
+</section>
+@code{
+    [Parameter] public bool Russian{get;set;}
+    [Parameter,EditorRequired] public IReadOnlyList<FleetAlert> Alerts{get;set;}=[];
+    [Parameter] public EventCallback<string> Open{get;set;}
+    private const string Key="fleetmanagement.preferences.review.v5";
+    private int high=1,medium=3;
+    private bool includeMedium=true;
+    private string feedback="";
+    private ReviewPolicy Policy=>new(high,medium,includeMedium);
+    private string T(string value)=>DemoLocale.Text(value,Russian);
+    protected override async Task OnAfterRenderAsync(bool firstRender){
+        if(!firstRender)return;
+        try{
+            var raw=await JS.InvokeAsync<string?>("localStorage.getItem",Key);
+            if(raw is null||raw.Length>32)return;
+            var parts=raw.Split('|');
+            if(parts.Length==3&&int.TryParse(parts[0],out var h)&&int.TryParse(parts[1],out var m)&&parts[2] is "0" or "1"){
+                var value=new ReviewPolicy(h,m,parts[2]=="1");if(value.Valid){high=h;medium=m;includeMedium=value.IncludeMedium;StateHasChanged();}
+            }
+        }catch(JSException){feedback="Review settings are session-only.";StateHasChanged();}
+    }
+    private async Task Save(){
+        if(!Policy.Valid)return;
+        try{await JS.InvokeVoidAsync("localStorage.setItem",Key,$"{high}|{medium}|{(includeMedium?1:0)}");feedback="Review settings saved.";}
+        catch(JSException){feedback="Review settings are session-only.";}
+    }
+}

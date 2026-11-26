@@ -85,8 +85,17 @@ public static class FleetAdvisor
             var summary=pair is null?L("No eligible vehicle/driver pair for the next one-hour planning window.","Нет подходящей пары автомобиля и водителя на ближайшее часовое окно."):L($"Suggested pair: {fleet.Vehicles.Single(v=>v.Id==pair.VehicleId).Plate} / {fleet.Drivers.Single(d=>d.Id==pair.DriverId).Name}.",$"Рекомендуемая пара: {fleet.Vehicles.Single(v=>v.Id==pair.VehicleId).Plate} / {fleet.Drivers.Single(d=>d.Id==pair.DriverId).Name}.");
             return new(L("Dispatch review","Проверка диспетчеризации"),summary+L($" Window: {start:HH:mm}–{end:HH:mm} (demo time). Recommendation only; verify assignment constraints.",$" Окно: {start:HH:mm}–{end:HH:mm} (время демо). Только рекомендация; проверьте ограничения."),alerts.Where(a=>a.Destination is "Dispatch" or "Resource Planning").ToArray());
         }
+        if(q is "alerts" or "risk" or "warnings" or "риски" or "предупреждения"){
+            var high=alerts.Count(a=>a.Severity=="High");var medium=alerts.Count(a=>a.Severity=="Medium");
+            return new(L("Operational risk review","Проверка операционных рисков"),L($"{high} high-priority and {medium} medium-priority alerts in the current register. No automatic changes; inspect the evidence.", $"Предупреждения: {high} высокого и {medium} среднего приоритета. Автоматических изменений нет; изучите основания."),alerts);
+        }
+        if(q is "calendar" or "agenda" or "today" or "календарь" or "сегодня"){
+            var events=FleetCalendar.Entries(fleet,now.Date,now.Date.AddDays(1),reservations);
+            var trips=events.Count(e=>e.Kind=="Trip");var bookings=events.Count(e=>e.Kind=="Reservation");var service=events.Count(e=>e.Kind=="Service due");
+            return new(L("Calendar review","Обзор календаря"),L($"Today ({now:yyyy-MM-dd} demo time): {trips} trip events, {bookings} reservations, {service} calendar service reminders. Open Calendar for the agenda.",$"Сегодня ({now:yyyy-MM-dd}, время демо): рейсы — {trips}, резервирования — {bookings}, напоминания ТО — {service}. Откройте календарь для просмотра расписания."),alerts.Where(a=>a.Destination is "Dispatch" or "Resource Planning" or "Maintenance").ToArray());
+        }
         if(q is "overview" or "summary" or "what needs attention?" or "обзор" or "сводка")
             return new(L("Fleet overview","Обзор автопарка"),L($"{fleet.Vehicles.Count} vehicles; {fleet.Drivers.Count} drivers; {fleet.Trips.Count(t=>FleetRules.TripStatus(t,now)=="In transit")} in transit; {alerts.Count} current rule-based alerts.",$"Автомобилей: {fleet.Vehicles.Count}; водителей: {fleet.Drivers.Count}; в пути: {fleet.Trips.Count(t=>FleetRules.TripStatus(t,now)=="In transit")}; предупреждений: {alerts.Count}."),alerts);
-        return new(L("Supported questions","Поддерживаемые вопросы"),L("This offline assistant uses fixed intents, not a language model. Try overview, maintenance or dispatch. No answer is generated for unsupported questions.","Автономный помощник использует фиксированные запросы, а не языковую модель. Попробуйте «обзор», «обслуживание» или «доступность». Ответ на неподдерживаемые вопросы не генерируется."),[]);
+        return new(L("Supported questions","Поддерживаемые вопросы"),L("This offline assistant uses fixed intents, not a language model. Try overview, maintenance, dispatch, alerts or calendar. No answer is generated for unsupported questions.","Автономный помощник использует фиксированные запросы, а не языковую модель. Попробуйте «обзор», «обслуживание», «доступность», «риски» или «календарь». Ответ на неподдерживаемые вопросы не генерируется."),[]);
     }
 }

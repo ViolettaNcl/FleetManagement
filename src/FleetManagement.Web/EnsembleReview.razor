@@ -1,0 +1,58 @@
+@using FleetManagement.Web
+<section class="panel suite-panel" aria-labelledby="ensemble-title">
+    <div class="suite-heading"><div><span class="suite-kicker">@T("Model evaluation")</span><h2 id="ensemble-title">@T("Maintenance ensemble lab")</h2><p class="muted">@T("Three logistic models trained on fixed vehicle subsamples. Select an alert threshold using validation labels, then evaluate on independent synthetic vehicles.")</p></div><button @onclick="Run" disabled="@(running||weight is <1 or >10)">@T("Evaluate ensemble")</button></div>
+    <div class="formgrid"><label>@T("Ensemble seed")<input type="number" @bind="seed"/></label><label>@T("False negative cost weight")<input type="number" min="1" max="10" @bind="weight"/></label></div>
+    @if(weight is <1 or >10){<p class="error" role="status">@T("Choose a cost weight between 1 and 10.")</p>}
+    @if(running){<p role="status">@T("Evaluating synthetic cohorts…")</p>}
+    @if(report is not null){
+        var e=report;
+        <p class="muted">@T("Evaluated seed"): @evaluatedSeed · @T("False negative cost weight"): @e.FalseNegativeWeight · @e.TrainRows / @e.ValidationRows / @e.TestRows @T("training / validation / test rows")</p>
+        <div class="metrics suite-metrics">
+            <div class="metric">@T("Selected threshold")<strong data-testid="ensemble-threshold">@e.Threshold.ToString("P0")</strong></div>
+            <div class="metric">@T("Validation weighted cost")<strong>@e.ValidationCost <small>/ @e.DefaultValidationCost</small></strong></div>
+            <div class="metric">@T("Ensemble test Brier")<strong>@e.EnsembleDefaultTest.Brier.ToString("F4")</strong></div>
+            <div class="metric">@T("Selected test recall")<strong>@e.EnsembleSelectedTest.Recall.ToString("P1")</strong></div>
+        </div>
+        <h3>@T("Independent test comparison")</h3>
+        <div class="tablewrap" tabindex="0" role="region" aria-label="@T("Independent test comparison")"><table><thead><tr><th>@T("Model")</th><th>F1</th><th>@T("Recall")</th><th>FP</th><th>FN</th><th>@T("Brier loss")</th></tr></thead><tbody>
+            @foreach(var row in new[]{("Single model at 50%",e.SingleTest),("Ensemble at 50%",e.EnsembleDefaultTest),("Ensemble at selected threshold",e.EnsembleSelectedTest)}){
+                <tr><td>@T(row.Item1)</td><td>@row.Item2.F1.ToString("P1")</td><td>@row.Item2.Recall.ToString("P1")</td><td>@row.Item2.FP</td><td>@row.Item2.FN</td><td>@row.Item2.Brier.ToString("F4")</td></tr>
+            }
+        </tbody></table></div>
+        <h3>@T("Calibration on held-out vehicles")</h3>
+        <div class="suite-calibration" data-testid="ensemble-calibration">
+            @for(var i=0;i<e.Calibration.Count;i++){
+                var bin=e.Calibration[i];
+                <div class="calibration-row"><strong>@(i*20)–@((i+1)*20)%</strong><span>@bin.Count @T("samples")</span>
+                @if(bin.Count>0){<div class="calibration-bars"><span>@T("Mean prediction") @bin.MeanProbability.ToString("P1")</span><div class="progress"><i style="@Width(bin.MeanProbability)"></i></div><span>@T("Observed synthetic label") @bin.ObservedRate.ToString("P1")</span><div class="progress"><i class="suite-observed" style="@Width(bin.ObservedRate)"></i></div></div>}
+                else{<span class="muted">@T("Empty bin")</span>}
+                </div>
+            }
+        </div>
+        @if(ValidFeatures){
+            var prediction=e.Model.Predict(Features);
+            <div class="suite-note"><h3>@T("Member agreement for the current snapshot")</h3><div class="metrics suite-metrics"><div class="metric">@T("Mean prediction")<strong>@prediction.Mean.ToString("P1")</strong></div><div class="metric">@T("Member score range")<strong>@prediction.Minimum.ToString("P0") – @prediction.Maximum.ToString("P0")</strong></div></div>
+            <p class="muted">@T("This range measures disagreement between the three members; it is not a confidence interval. The snapshot comes from the maintenance sandbox (defaults before training).")</p>
+            @for(var i=0;i<prediction.Members.Count;i++){<div class="reportbar"><div><span>@T("Member") @(i+1)</span><strong>@prediction.Members[i].ToString("P1")</strong></div><div class="progress"><i style="@Width(prediction.Members[i])"></i></div></div>}
+            </div>
+        }
+        <p class="muted">@T("Validation threshold selection is not a guarantee of better test results. Synthetic estimates are not real-world failure probabilities or safety decisions.")</p>
+    }
+</section>
+@code{
+    [Parameter] public bool Russian{get;set;}
+    [Parameter,EditorRequired] public TelemetryFeatures Features{get;set;}=default!;
+    [Parameter] public bool ValidFeatures{get;set;}
+    private string T(string value)=>DemoLocale.Text(value,Russian);
+    private int seed=42,weight=3,evaluatedSeed;
+    private bool running;
+    private EnsembleExperiment? report;
+    private async Task Run(){
+        if(running||weight is <1 or >10)return;
+        running=true;
+        var requestedSeed=seed;var requestedWeight=weight;
+        try{await Task.Yield();report=MaintenanceEnsemble.Run(requestedSeed,requestedWeight);evaluatedSeed=requestedSeed;}
+        finally{running=false;}
+    }
+    private static string Width(double value)=>"width:"+(100*value).ToString("F2",CultureInfo.InvariantCulture)+"%";
+}

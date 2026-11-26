@@ -32,6 +32,7 @@
         }else{<p class="error">@T("Enter finite values within the supported demonstration ranges.")</p>}
     </section>
 }
+<EnsembleReview Russian="Russian" Features="Features" ValidFeatures="ValidFeatures"/>
 @code{
     [Parameter] public bool Russian{get;set;}
     private string T(string value)=>DemoLocale.Text(value,Russian);

@@ -34,3 +34,8 @@ Staff-only role change and admin staff session revocation use protected Identity
 Connected workspace has a narrow same-origin SignalR JSON Long Polling subscriber for FleetChanged (no generic hub calls, no bearer in URL). It negotiates, handshakes, keeps alive and reconnects with bounded backoff; authenticated revision polling remains the fallback and detects cross-instance changes. On notification it checks the revision and offers explicit refresh without overwriting forms. Session exit aborts transport; revoked credentials are rejected on subsequent HTTP polls. No WebSocket client, distributed backplane or delivery guarantees.
 
 Server ID allocation for vehicles, drivers, trips (including batch), shifts and reservations uses the maximum of current IDs and retained fleet audit entity IDs under the provider write lock. It avoids reusing deleted identifiers in supported databases with intact audit. Maintenance work is append-only. Do not purge or rewrite audit rows; a dedicated persisted sequence would be required before retention cleanup or importing audit-free history. Offline demo still allocates local IDs from current records.
+
+
+## V6 candidate readiness
+
+`GET /health` checks process liveness. `GET /ready` probes operational tables and the user identity table with bounded cancellation/command timeouts; it returns `{"status":"ready"}` or HTTP 503 with `{"status":"not-ready"}`. It exposes no records or error details. Both responses disable caching. This is not a migration or a full database integrity check. Keep these operational endpoints on a restricted network in real deployments.

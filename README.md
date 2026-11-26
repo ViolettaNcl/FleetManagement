@@ -25,6 +25,10 @@ The browser edition runs C# in WebAssembly, uses synthetic data, and requires no
 - [How to run the demo and enable GitHub Pages](docs/deployment.md)
 - [V3 development pull request](https://github.com/ViolettaNcl/FleetManagement/pull/2)
 
+### V6.0 RC1 (development candidate)
+
+[Integrated V6 user guide, architecture, verification and release boundaries](docs/v6-release-candidate.md). Includes premium/classic workspace styles, safe local snapshot restore, K-means, isolation forest, grouped validation, calibrated FastForest, daily briefing, driver activity, report templates, browser PDF printing and review history. This is a draft branch, not a public release.
+
 ### V5 Intelligence Suite (development candidate)
 
 See [V5 workflows and limitations](docs/v5-intelligence-suite.md) and [Changelog](CHANGELOG.md). The latest development branch extends the personalized dashboard with a three-model synthetic maintenance ensemble, validation-selected alert thresholds, calibration, per-input sensitivity, ROC-AUC and average precision, experiment XLSX and local demo JSON export, hypothetical cost scenarios, adjacent-period analytics, sorted and paged selectable-column XLSX reports, local review-rule previews and queue snapshots and additional evidence-based assistant intents. The suite uses existing C# and Blazor components without an external AI service, paid runtime dependency or API key. The public preview is a separate release channel: exact-commit checks and explicit publication approval are required before promotion.

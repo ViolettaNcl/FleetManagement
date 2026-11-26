@@ -1,5 +1,14 @@
 # Changelog
 
+## Unreleased — V6.0 RC1 integrated candidate
+
+- Shared premium/classic visual style and workspace density, responsive polish, startup skeleton, reduced-motion support and illustrative 3D inspection companion.
+- Validated bounded demo JSON restore, preview/explicit confirmation and persist-before-replace semantics.
+- Vehicle clustering, driver cohort activity, isolation forest with independent normal validation, grouped cross-validation and hyperparameter comparison; calibrated ML.NET FastForest in registry.
+- Read-only daily briefing, bounded session follow-up context, local operational review history.
+- Built-in/custom report templates and full filtered browser print/PDF report.
+- Separate database readiness endpoint and expanded browser/core/ML/API checks. Final exact CI and manual release review required. No merge or deployment.
+
 ## Unreleased — V5.2 evaluation and data portability
 
 - Exact tie-aware ROC-AUC and step-wise average precision on the independent synthetic test cohort, with undefined single-class handling and a nine-threshold validation-only decision table.

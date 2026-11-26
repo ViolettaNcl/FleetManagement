@@ -26,7 +26,7 @@ try{
     await page.goto("http://127.0.0.1:8080/FleetManagement/");
     await page.getByRole("heading",{name:"Operations overview",exact:true}).waitFor({timeout:90000});
     await hold(2800);
-    await page.getByRole("button",{name:"Dark theme",exact:true}).click();await hold(1800);
+    await page.getByRole("button",{name:"Light theme",exact:true}).click();await hold(1800);
     await page.getByRole("button",{name:"Dark theme",exact:true}).click();
     await nav("Vehicles","Vehicle register");
     await page.getByRole("row").filter({hasText:"FM-102"}).getByRole("button",{name:"Passport",exact:true}).click();

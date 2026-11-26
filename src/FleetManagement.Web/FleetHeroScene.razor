@@ -1,0 +1,31 @@
+@using FleetManagement.Web
+@implements IAsyncDisposable
+@inject IJSRuntime JS
+<div class="hero-scene">
+    <div class="scene-stage" @ref="stage">
+        <svg class="scene-fallback" viewBox="0 0 480 270" aria-hidden="true"><defs><linearGradient id="scene-road" x1="0" x2="1" y1="0" y2="1"><stop stop-color="#a78bfa"/><stop offset="1" stop-color="#22d3ee"/></linearGradient></defs><g fill="none" stroke="#7867bf" opacity=".5"><path d="M30 160 240 38 450 160 240 255Z"/><path d="M30 160 240 255M240 38V255M100 120 310 215M170 80 380 175M100 200 310 80M170 230 380 120"/></g><path d="M90 150 180 100 270 150 360 100" stroke="url(#scene-road)" stroke-width="4" fill="none"/><g fill="#c4b5fd"><circle cx="90" cy="150" r="5"/><circle cx="360" cy="100" r="5"/></g><g transform="translate(217 124)"><path d="M0 0 55 -30 106 0 52 30Z" fill="#a78bfa"/><path d="M0 0 52 30 52 61 0 31Z" fill="#5b21b6"/><path d="M52 30 106 0 106 31 52 61Z" fill="#4338ca"/><path d="M-32 18 0 0 0 31 -32 49Z" fill="#38bdf8"/></g></svg>
+        <canvas @ref="canvas" aria-hidden="true"></canvas>
+    </div>
+    <div class="scene-meta"><span>@T("Illustrative scene · not live telemetry")</span><span class="scene-controls">
+    @if(available){<button class="secondary" @onclick="()=>Rotate(-1)" aria-label="@T("Rotate left")">←</button><button class="secondary" @onclick="()=>Rotate(1)" aria-label="@T("Rotate right")">→</button><button class="secondary" @onclick="Toggle" aria-label="@T(playing?"Pause 3D motion":"Play 3D motion")" aria-pressed="@(playing?"true":"false")">@(playing?"Ⅱ":"▶")</button>}else{<small>@T("Static illustration")</small>}
+    </span></div>
+</div>
+@code{
+    [Parameter] public bool Russian{get;set;}
+    private string T(string s)=>DemoLocale.Text(s,Russian);
+    private ElementReference canvas,stage;
+    private IJSObjectReference? module,scene;
+    private bool available,playing;
+    protected override async Task OnAfterRenderAsync(bool firstRender){
+        if(!firstRender)return;
+        try{
+            module=await JS.InvokeAsync<IJSObjectReference>("import","./js/fleet-scene.js");
+            scene=await module.InvokeAsync<IJSObjectReference?>("createScene",canvas,stage);
+            if(scene is not null){available=true;playing=await scene.InvokeAsync<bool>("isPlaying");}
+        }catch(JSException){}
+        StateHasChanged();
+    }
+    private async Task Rotate(int direction){if(scene is not null)try{await scene.InvokeVoidAsync("rotate",direction);}catch(JSException){}}
+    private async Task Toggle(){if(scene is not null)try{playing=await scene.InvokeAsync<bool>("toggle");}catch(JSException){}}
+    public async ValueTask DisposeAsync(){try{if(scene is not null){await scene.InvokeVoidAsync("dispose");await scene.DisposeAsync();}if(module is not null)await module.DisposeAsync();}catch(JSException){}}
+}

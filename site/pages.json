@@ -1,0 +1,262 @@
+[
+  [
+    "",
+    "hero",
+    "fleet management software",
+    "fleet management demo, fleet operations dashboard",
+    "система управления автопарком",
+    "программа учёта транспорта, управление рейсами",
+    [
+      "FleetManagement — fleet operations software demo",
+      "Fleet management, made understandable",
+      "Explore a working fleet operations demo: vehicle records, dispatch, maintenance, route algorithms and explainable analytics.",
+      "A practical workspace",
+      "Register vehicles and drivers, plan a trip and inspect its simulated progress. The scheduler checks overlapping assignments and reservations; service status helps review candidate vehicles.",
+      "An engineering portfolio, not a live fleet service",
+      "The public demo runs on synthetic records stored in your browser. The separate ASP.NET Core workspace provides server-backed records and role-based access when deployed locally. The public website does not connect to that API."
+    ],
+    [
+      "FleetManagement — система управления автопарком",
+      "Управление автопарком в единой рабочей среде",
+      "Интерактивная демонстрация учёта транспорта, диспетчеризации, обслуживания, оптимизации маршрутов и аналитики.",
+      "Практический рабочий процесс",
+      "Добавьте автомобиль и водителя, запланируйте рейс и проследите за его движением в симуляции. Планировщик проверяет пересечения назначений и бронирований, а статус ТО помогает оценить варианты.",
+      "Инженерный проект, а не сервис живой телематики",
+      "Публичное демо работает с синтетическими записями в вашем браузере. Отдельная серверная версия ASP.NET Core поддерживает работу с базой и ролями при локальном запуске. Публичный сайт к ней не подключён."
+    ]
+  ],
+  [
+    "features/",
+    "command-center",
+    "fleet management features",
+    "fleet dispatch, transport software",
+    "функции управления автопарком",
+    "диспетчеризация транспорта, автоматизация логистики",
+    [
+      "FleetManagement features — dispatch and analytics",
+      "Explore the fleet operations toolkit",
+      "See the available registers, scheduling, maintenance, optimization, analytics and machine learning experiments.",
+      "Plan operations",
+      "Use vehicle and driver records, the calendar, shift coverage, reservations and dispatch validation together. Batch dispatch provides a comparison of assignment strategies.",
+      "Evaluate decisions",
+      "Inspect route experiments, cost estimates, model registry evidence and drift analysis. Every experiment has a defined synthetic scenario; the results are not production performance guarantees."
+    ],
+    [
+      "Функции FleetManagement — диспетчеризация и аналитика",
+      "Инструменты управления автопарком",
+      "Реестры, расписание, ТО, оптимизация, аналитика и эксперименты машинного обучения в одном проекте.",
+      "Планируйте операции",
+      "Используйте реестры автомобилей и водителей, календарь, смены, бронирования и проверку назначений. Пакетная диспетчеризация сравнивает стратегии распределения.",
+      "Оценивайте решения",
+      "Изучайте маршруты, оценки затрат, реестр моделей и дрейф данных. Эксперименты имеют определённые синтетические сценарии; результаты не гарантируют эффективность в реальном автопарке."
+    ]
+  ],
+  [
+    "features/fleet-management/",
+    "maintenance",
+    "fleet management system",
+    "vehicle register, driver scheduling, transport management",
+    "учёт автомобилей и водителей",
+    "реестр автопарка, планирование транспорта",
+    [
+      "Fleet management system — vehicle and driver register",
+      "Vehicle and driver management",
+      "Create and review vehicle records, driver details, service intervals, availability and trip assignments.",
+      "Keep records together",
+      "The register stores registration, vehicle model, mileage and service intervals. Driver records include licence and experience. Search, sort and review maintenance status before selecting resources.",
+      "Coordinate assignments",
+      "Use the dispatch planner to select a vehicle, driver and time interval. The existing validation checks clashes and configured availability policies. Public changes stay on the device."
+    ],
+    [
+      "Учёт автомобилей и водителей — FleetManagement",
+      "Реестр транспорта и водителей",
+      "Добавляйте автомобили и водителей, проверяйте пробег, интервалы ТО, доступность и назначения на рейсы.",
+      "Единый реестр",
+      "Карточки содержат регистрационные данные, модель, пробег и интервалы ТО. Для водителей доступны сведения о правах и стаже. Поиск и сортировка помогают выбирать нужные записи.",
+      "Координация рейсов",
+      "В диспетчерской выберите транспорт, водителя и интервал времени. Валидация проверяет пересечения и настроенные правила доступности. Изменения публичного демо остаются на устройстве."
+    ]
+  ],
+  [
+    "features/route-optimization/",
+    "routes",
+    "fleet route optimization",
+    "delivery route planning, 2-opt, Held-Karp",
+    "оптимизация маршрутов доставки",
+    "планирование маршрутов, алгоритмы маршрутизации",
+    [
+      "Route optimization demo — FleetManagement",
+      "Compare route optimization algorithms",
+      "Compare greedy, 2-opt, multi-start and exact small-instance routing approaches on identical synthetic stops.",
+      "Understand the comparison",
+      "The route lab compares alternatives on the same generated locations. Distance and savings are computed for the selected route. For small instances an exact Held–Karp benchmark is available.",
+      "Use the result correctly",
+      "The laboratory uses a simplified distance model, not road traffic or commercial navigation. Compare route order and algorithm behavior before considering real geographic data and constraints."
+    ],
+    [
+      "Оптимизация маршрутов доставки — FleetManagement",
+      "Сравнение алгоритмов оптимизации маршрутов",
+      "Сравните жадный алгоритм, 2-opt, многозапусковый поиск и точный алгоритм на одинаковых синтетических точках.",
+      "Как сравниваются маршруты",
+      "Лаборатория рассчитывает альтернативы на одном наборе точек. Расстояние и экономия вычисляются для выбранного маршрута. Для небольших задач доступен точный эталон Held–Karp.",
+      "Ограничения эксперимента",
+      "Используется упрощённая модель расстояний, а не дорожные пробки или коммерческая навигация. Сравнивайте порядок посещения и поведение алгоритмов перед подключением реальных ограничений."
+    ]
+  ],
+  [
+    "features/predictive-maintenance/",
+    "maintenance",
+    "predictive fleet maintenance",
+    "vehicle maintenance management, service intervals",
+    "предиктивное обслуживание транспорта",
+    "контроль ТО, прогнозирование неисправностей",
+    [
+      "Predictive maintenance — fleet maintenance demo",
+      "Fleet maintenance and predictive experiments",
+      "Review mileage and service deadlines, record maintenance and explore machine learning experiments on telemetry.",
+      "Review scheduled maintenance",
+      "The operational assessment compares mileage and calendar intervals with the registered service plan. It explains why a vehicle is due or approaching service. Recorded work is available in the maintenance history.",
+      "Separate rules from learning",
+      "The ML laboratory trains an isolated classifier and reports held-out evaluation metrics. Imported CSV labels are user-supplied. Neither the rule-based assessment nor a model output certifies mechanical safety."
+    ],
+    [
+      "Предиктивное обслуживание транспорта — FleetManagement",
+      "Техобслуживание и прогнозные эксперименты",
+      "Контролируйте пробег и сроки ТО, регистрируйте работы и изучайте модели машинного обучения на телеметрии.",
+      "Контроль планового ТО",
+      "Рабочая оценка сравнивает пробег и календарные интервалы с планом обслуживания. Она поясняет причины приближающегося или просроченного ТО. История работ доступна в журнале.",
+      "Правила и машинное обучение",
+      "Лаборатория обучает отдельный классификатор и показывает метрики на отложенных данных. Метки импортированного CSV задаёт пользователь. Ни правила, ни модель не подтверждают техническую безопасность."
+    ]
+  ],
+  [
+    "features/fleet-tracking/",
+    "command-center",
+    "fleet tracking simulation",
+    "vehicle monitoring, trip progress",
+    "мониторинг автопарка",
+    "симуляция движения, отслеживание рейсов",
+    [
+      "Fleet tracking simulation — vehicle movement",
+      "Follow simulated fleet movement",
+      "Inspect trip progress, geographic replay and simulated operations without connecting live GPS devices.",
+      "Follow a trip",
+      "Advance the demonstration clock and observe how registered trips change status. Tracking displays movement based on the demo scenario rather than actual vehicle positions.",
+      "Explore geographic replay",
+      "The geographic laboratory visualizes synthetic movement and lets you inspect the sequence. Real-world GPS hardware, map routing and live telematics are not included in this public deployment."
+    ],
+    [
+      "Мониторинг автопарка — симуляция движения",
+      "Отслеживание рейсов в симуляции",
+      "Изучайте прогресс рейсов, географическое воспроизведение и движение транспорта без подключения GPS.",
+      "Просмотр рейса",
+      "Продвигайте время демонстрации и наблюдайте изменение статусов зарегистрированных рейсов. Отслеживание показывает сценарное движение, а не реальные координаты транспорта.",
+      "Географическое воспроизведение",
+      "Лаборатория визуализирует синтетическое движение и его последовательность. Реальные GPS-устройства, дорожная маршрутизация и живая телематика в публичное демо не входят."
+    ]
+  ],
+  [
+    "features/ai-analytics/",
+    "assistant",
+    "AI fleet management demo",
+    "machine learning fleet analytics, cost analysis",
+    "искусственный интеллект в логистике",
+    "машинное обучение в логистике, аналитика расходов",
+    [
+      "AI and fleet analytics — FleetManagement",
+      "Explainable intelligence for fleet operations",
+      "Explore rule-based alerts, telemetry models, forecasts and cost reports with clearly described limitations.",
+      "From records to insights",
+      "Operational charts use the registered demonstration data. Cost reports keep assumptions separate from recorded maintenance costs. The assistant presents rule-based observations and directs users to relevant modules.",
+      "Experiment with models",
+      "Train on synthetic telemetry or validated user CSV, review holdout results and compare model evidence. The optional local Ollama companion is separate from the public browser demo; no paid AI API is required."
+    ],
+    [
+      "AI и аналитика автопарка — FleetManagement",
+      "Объяснимая аналитика и машинное обучение",
+      "Изучайте предупреждения на основе правил, модели телеметрии, прогнозы и отчёты о расходах с описанием ограничений.",
+      "От записей к аналитике",
+      "Графики рассчитываются по зарегистрированным демонстрационным данным. Отчёты отделяют расчётные допущения от затрат на работы. Помощник объясняет правила и направляет к нужным модулям.",
+      "Эксперименты с моделями",
+      "Обучайте модель на синтетической телеметрии или проверенном CSV, изучайте отложенную выборку и сведения о моделях. Локальный помощник Ollama отделён от публичного браузера; платный AI API не нужен."
+    ]
+  ],
+  [
+    "features/digital-twin/",
+    "twin",
+    "fleet digital twin",
+    "vehicle simulation, what-if scenario",
+    "цифровой двойник автопарка",
+    "симуляция транспорта, сценарный анализ",
+    [
+      "Digital twin fleet simulation — FleetManagement",
+      "Explore a fleet digital twin",
+      "Run controlled synthetic vehicle and incident scenarios and inspect the resulting simulated telemetry.",
+      "Study a controlled scenario",
+      "The digital twin laboratory exposes simulated vehicle behavior and telemetry. Change scenario settings and compare outcomes without changing the registered operational records.",
+      "Visualization versus evidence",
+      "The interactive 3D illustration explains the fleet concept visually. It is separate from the simulation data and is not a real-time digital replica of physical vehicles."
+    ],
+    [
+      "Цифровой двойник автопарка — FleetManagement",
+      "Сценарная симуляция цифрового двойника",
+      "Запускайте управляемые синтетические сценарии движения и инцидентов и изучайте полученную телеметрию.",
+      "Контролируемый сценарий",
+      "Лаборатория показывает симулируемое поведение транспорта и телеметрию. Меняйте параметры и сравнивайте результаты без изменения рабочих записей.",
+      "Визуализация и данные",
+      "Интерактивная 3D-иллюстрация наглядно показывает концепцию автопарка. Она отделена от данных симуляции и не является цифровой копией физических автомобилей в реальном времени."
+    ]
+  ],
+  [
+    "docs/",
+    "abstract",
+    "fleet management demo user guide",
+    "fleet management documentation, PWA",
+    "инструкция FleetManagement",
+    "как пользоваться системой автопарка, установка PWA",
+    [
+      "FleetManagement documentation — user guide",
+      "Start using the interactive demo",
+      "Learn how to open the workspace, register a vehicle, create a trip, inspect alerts and install the browser app.",
+      "Your first workflow",
+      "Open the demo, select Register vehicle, enter a valid record and save it. Register a driver, then use New trip to enter departure and arrival. Try the suggested assignment and review any validation message.",
+      "Use the workspace on a phone",
+      "The bottom navigation provides access to the main modules and More opens the full menu. Use the browser installation option when available. The public demo is a PWA, not a native store application. Reset removes demonstration records after confirmation."
+    ],
+    [
+      "Документация FleetManagement — руководство",
+      "Как начать работу с демо",
+      "Откройте рабочую панель, добавьте автомобиль, создайте рейс, проверьте предупреждения и установите браузерное приложение.",
+      "Первый рабочий процесс",
+      "Откройте демо, выберите добавление автомобиля, заполните корректные поля и сохраните. Добавьте водителя и создайте рейс с временем отправления и прибытия. Попробуйте рекомендацию назначения и проверьте сообщения валидации.",
+      "Работа на телефоне",
+      "Нижнее меню открывает основные разделы, а «Ещё» — полный список. Используйте установку через браузер, если она доступна. Это PWA, не нативное приложение из магазина. Сброс удаляет демонстрационные записи после подтверждения."
+    ]
+  ],
+  [
+    "about/",
+    "abstract",
+    "FleetManagement .NET portfolio project",
+    "Blazor WebAssembly ASP.NET Core ML.NET",
+    "проект FleetManagement на .NET",
+    "Blazor WebAssembly, ASP.NET Core, ML.NET",
+    [
+      "About FleetManagement — .NET engineering project",
+      "An engineering portfolio for fleet operations",
+      "Learn about the C#, Blazor WebAssembly, ASP.NET Core and ML.NET architecture behind FleetManagement.",
+      "Architecture",
+      "The public demonstration runs entirely in the browser. The separate server-backed workspace uses ASP.NET Core, identity roles and database providers. Shared C# business rules support validation and reporting.",
+      "Quality and limitations",
+      "GitHub Actions runs build, browser, security and integration checks. Public deployment is tied to an exact tested revision. The project demonstrates engineering techniques; it is not marketed as a certified production fleet platform."
+    ],
+    [
+      "О проекте FleetManagement — разработка на .NET",
+      "Инженерный проект для управления автопарком",
+      "Архитектура C#, Blazor WebAssembly, ASP.NET Core и ML.NET в проекте FleetManagement.",
+      "Архитектура",
+      "Публичная демонстрация выполняется в браузере. Отдельная серверная панель использует ASP.NET Core, роли Identity и провайдеры баз данных. Общие правила C# поддерживают валидацию и отчётность.",
+      "Качество и ограничения",
+      "GitHub Actions запускает сборки, браузерные, интеграционные проверки и анализ безопасности. Публикация привязана к проверенной ревизии. Проект демонстрирует инженерные решения, а не сертифицированный промышленный сервис."
+    ]
+  ]
+]

@@ -57,6 +57,13 @@ jobs:
           rm -rf preview/FleetManagement
           python3 tools/build_public_site.py publish/wwwroot preview/FleetManagement
           FLEET_PREVIEW_URL=http://127.0.0.1:8080/FleetManagement/ node tests/browser/seo-pwa.mjs
+      - name: Upload packaged V4 website
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: fleetmanagement-v4-public-site
+          path: preview/FleetManagement
+          if-no-files-found: warn
       - name: Upload actual portfolio tour
         if: always()
         uses: actions/upload-artifact@v4

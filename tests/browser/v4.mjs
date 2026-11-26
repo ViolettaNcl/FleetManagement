@@ -24,6 +24,7 @@ try{
   await page.locator('.v4-context-actions').getByRole('button',{name:'Help & settings',exact:true}).click();
   await page.getByRole('heading',{name:'Help & settings',exact:true}).waitFor();
   await page.getByLabel('Appearance',{exact:true}).selectOption('system');
+  assert.equal(await page.getByLabel('Appearance',{exact:true}).inputValue(),'system');
   await page.emulateMedia({colorScheme:'light'});
   await page.locator('.demo-shell:not(.dark-theme)').waitFor();
   await page.emulateMedia({colorScheme:'dark'});

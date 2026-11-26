@@ -35,8 +35,10 @@ try{
     assert.ok(alternates.every(x=>urls.includes(x)));
     const main=await page.locator('main').innerText();assert.ok(main.length>400);
     const images=await page.locator('img').evaluateAll(nodes=>nodes.map(a=>a.src));
+    const performance=await page.evaluate(()=>({navigationMs:performance.getEntriesByType('navigation')[0]?.duration??0,transferBytes:performance.getEntriesByType('resource').reduce((n,r)=>n+r.transferSize,0),resources:performance.getEntriesByType('resource').length}));
+    assert.ok(performance.transferBytes<2500000,'Public page exceeded 2.5 MB unthrottled resource budget');
     for(const image of new Set(images))assert.ok((await request.get(image)).ok(),image);
-    records.push({url,title,description,htmlBytes:(await response.body()).length});
+    records.push({url,title,description,htmlBytes:(await response.body()).length,...performance});
   }
   await staticContext.close();
   const context=await browser.newContext({viewport:{width:390,height:844},isMobile:true,hasTouch:true,serviceWorkers:'allow'});

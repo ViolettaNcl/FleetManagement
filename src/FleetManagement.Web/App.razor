@@ -75,7 +75,7 @@
     }
     else if(section=="Help & settings"){
         <section class="panel v4-help"><h2>@T("Help & settings")</h2><p class="muted">@T("Choose a workflow. Demo records stay in this browser; no live GPS or private server data is connected.")</p>
-        <div class="formgrid"><label>@T("Appearance")<select @bind="themeMode" @bind:after="ApplyTheme"><option value="dark">@T("Dark")</option><option value="light">@T("Light")</option><option value="system">@T("System")</option></select></label></div>
+        <div class="formgrid"><label>@T("Appearance")<select aria-label="@T("Appearance")" @bind="themeMode" @bind:after="ApplyTheme"><option value="dark">@T("Dark")</option><option value="light">@T("Light")</option><option value="system">@T("System")</option></select></label></div>
         <div class="help-grid">@foreach(var h in HelpItems){<button class="secondary" @onclick="()=>Navigate(h.Section)"><strong>@T(h.Section)</strong><small>@T(h.Description)</small></button>}</div>
         <p class="muted">@T("Use Ctrl+K to search modules. On mobile, use the bottom navigation or More.")</p>
         </section>

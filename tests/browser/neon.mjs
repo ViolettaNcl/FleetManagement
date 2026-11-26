@@ -1,6 +1,7 @@
 import { chromium } from 'playwright';
 import assert from 'node:assert/strict';
-import { mkdir, readdir } from 'node:fs/promises';
+import { mkdir } from 'node:fs/promises';
+import { createHash } from 'node:crypto';
 const url='http://127.0.0.1:8080/FleetManagement/';
 const browser=await chromium.launch({headless:true,args:['--enable-webgl','--use-angle=swiftshader','--enable-unsafe-swiftshader']});
 try{
@@ -10,18 +11,23 @@ try{
   await page.goto(url);
   await page.getByRole('heading',{name:'Operations overview',exact:true}).waitFor({timeout:90000});
   await page.locator('.scene-stage[data-renderer="webgl"]').waitFor({timeout:20000});
-  const hasArchive=(await readdir('design')).some(name=>name.endsWith('.zip'));
   const artwork=await (await page.request.get(url+'assets/neon/manifest.json')).json();
-  assert.equal(artwork.mode,hasArchive?'imported':'fallback');
-  assert.equal(artwork.files.length,hasArchive?8:0);
-  if(hasArchive){
-    for(const asset of artwork.files){
-      assert.match(asset.name,/^[a-z-]+\.webp$/);
-      assert.ok(await page.evaluate(async name=>{const img=new Image();img.src='assets/neon/'+name;await img.decode();return img.naturalWidth>0;},asset.name));
-    }
-    assert.match(await page.locator('.art-routes').evaluate(el=>getComputedStyle(el).backgroundImage),/routes\.webp/);
-    assert.equal(await page.locator('.art-routes .art-glyph').isVisible(),false);
+  assert.equal(artwork.mode,'committed');
+  assert.equal(artwork.files.length,10);
+  for(const asset of artwork.files){
+    assert.match(asset.name,/^[a-z-]+\.webp$/);
+    const response=await page.request.get(url+'assets/neon/'+asset.name);
+    assert.ok(response.ok());
+    assert.equal(createHash('sha256').update(await response.body()).digest('hex'),asset.sha256);
+    assert.ok(await page.evaluate(async name=>{const img=new Image();img.src='assets/neon/'+name;await img.decode();return img.naturalWidth>0;},asset.name));
   }
+  for(const slot of ['routes','twin','maintenance','assistant','analytics','command-center']){
+    assert.match(await page.locator('.art-'+slot).evaluate(el=>getComputedStyle(el).backgroundImage),new RegExp(slot+'\\.webp'));
+  }
+  assert.match(await page.locator('.neon-hero').evaluate(el=>getComputedStyle(el).backgroundImage),/hero\.webp/);
+  await page.locator('.design-gallery summary').click();
+  for(const name of ['ui-mockup','style-board'])assert.ok(await page.locator('.design-gallery img[src$="'+name+'.webp"]').evaluate(async img=>{await img.decode();return img.naturalWidth>0;}));
+  await page.locator('.design-gallery summary').click();
   await page.keyboard.press('Control+k');
   await page.getByLabel('Find section',{exact:true}).fill('no-match-123');
   await page.getByText('No matching modules',{exact:true}).waitFor();

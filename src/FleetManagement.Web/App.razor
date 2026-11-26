@@ -60,6 +60,7 @@
         </div></section>
         <section class="panel"><div class="registerhead"><div><h2>@T("Intelligent alerts")</h2><p class="muted">@T("Live rule-based review of current demo records.")</p></div><button class="secondary" @onclick='()=>Navigate("Assistant")'>@T("Open alert center")</button></div><FleetAlertList Russian="@(language=="ru")" Alerts="@(FleetAdvisor.Assess(fleet,Now,driverShifts,requireShifts,vehicleReservations,russian:language=="ru").Take(3).ToArray())" Open="Navigate"/></section>
         <section class="panel"><h2>@T("Recent trips")</h2>@TripTable()</section>
+        <details class="panel design-gallery"><summary>@T("Design gallery")</summary><p class="muted">@T("Concept artwork and palette references — not live dashboard records.")</p><div class="design-gallery-grid"><figure><img src="assets/neon/ui-mockup.webp" alt="@T("Interface concept artwork")" loading="lazy" decoding="async" width="1200" height="675"/><figcaption>@T("Interface concept artwork")</figcaption></figure><figure><img src="assets/neon/style-board.webp" alt="@T("Neon design style board")" loading="lazy" decoding="async" width="1200" height="800"/><figcaption>@T("Neon design style board")</figcaption></figure></div></details>
     }
     else if (section == "Vehicles" || section == "Drivers")
     {
@@ -200,10 +201,15 @@
         "Intelligence"=>("maintenance","Machine learning workspace","Train and evaluate a classifier on isolated telemetry."),
         "Assistant"=>("assistant","Decision support workspace","Review rule-based evidence before making operational decisions."),
         "Analytics" or "Cost Intelligence"=>("analytics","Operational insights","Review calculated performance and financial estimates."),
-        "Tracking"=>("command-center","Movement workspace","Follow simulated trips and advance the scenario clock."),
+        "Tracking" or "Geo Map"=>("command-center","Movement workspace","Follow simulated trips and advance the scenario clock."),
+        "Multi Dispatch" or "Batch Dispatch" or "Dispatch"=>("routes","Dispatch workspace","Plan assignments and compare route alternatives."),
+        "What-if"=>("twin","Scenario workspace","Explore operational scenarios without changing real records."),
+        "Predictions" or "Demand Forecast" or "Model Drift" or "Model Registry" or "Data Quality"=>("analytics","Model evaluation workspace","Inspect model evidence, predictions and data quality."),
+        "Vehicle Passport" or "Vehicles"=>("maintenance","Vehicle register workspace","Review the registered fleet and service history."),
+        "Drivers" or "Resource Planning" or "Calendar"=>("abstract","Planning workspace","Review schedules, people and resource availability."),
         _=>("","","")
     };
-    private static readonly (string Section,string Art,string Title,string Description)[] Capabilities=[("Optimization","routes","Route optimization","Compare exact and heuristic routes."),("Digital Twin","twin","Digital Twin simulation","Explore simulated vehicle movement."),("Intelligence","maintenance","Maintenance ML","Train a model on synthetic telemetry."),("Assistant","assistant","Fleet intelligence","Review actionable rule-based alerts.")];
+    private static readonly (string Section,string Art,string Title,string Description)[] Capabilities=[("Optimization","routes","Route optimization","Compare exact and heuristic routes."),("Digital Twin","twin","Digital Twin simulation","Explore simulated vehicle movement."),("Intelligence","maintenance","Maintenance ML","Train a model on synthetic telemetry."),("Assistant","assistant","Fleet intelligence","Review actionable rule-based alerts."),("Analytics","analytics","Performance analytics","Explore calculated operational metrics."),("Tracking","command-center","Fleet tracking","Follow the simulated fleet.")];
     private static string ModuleIcon(string section)=>section switch{"Overview"=>"◈","Vehicles"=>"▣","Drivers"=>"◎","Vehicle Passport"=>"▤","Dispatch"=>"↗","Batch Dispatch"=>"⇄","Calendar"=>"▦","Resource Planning"=>"▧","Maintenance"=>"◇","Tracking"=>"⌖","Geo Map"=>"◉","Analytics"=>"▥","Cost Intelligence"=>"≋","Assistant"=>"✦","Optimization"=>"⤳","Multi Dispatch"=>"⇶","Digital Twin"=>"⬡","What-if"=>"◫","Intelligence"=>"⌁","Predictions"=>"∿","Demand Forecast"=>"↗","Model Registry"=>"▤","Data Quality"=>"✓","Model Drift"=>"≈",_=>"•"};
     private const string ThemeKey="fleetmanagement.preferences.theme.neon", LanguageKey="fleetmanagement.preferences.language";
     private async Task ToggleTheme(){darkTheme=!darkTheme;await PersistPreferences();}

@@ -8,3 +8,6 @@ Next refinement fixes the exact accessible name of the service-status select (pr
 Screenshot review of the previous CI build revealed that mobile header wrapping consumed substantial screen space. The toolbar now has an icon-first single control row, a distinct local-demo status line and unchanged accessible button names. Added 320px toolbar height assertion and screenshot. Desktop tables and navigation use slightly larger type.
 
 At 320px, compact header passed but the overview width still failed. Narrow layouts now explicitly shrink nested grid/flex children, stack the workload chart and legend, and keep tables within their own horizontal scrolling region. CI logs exact overflowing elements and captures the failing viewport before assertion; the width gate remains enforced. The focused responsive smoke runs before the longer regression tour.
+
+## Connected workspace (separate local API UI)
+The server-backed console uses the same graphite/light surface tokens, violet actions, compact sidebar, accessible current-page markers and keyboard-scrollable tables. The API authentication, role checks, memory-only tokens and CSP remain unchanged. No public backend deployment is implied. Connected login/viewer 320px and existing admin/Viewer/SignalR flows are covered by the connected browser test.

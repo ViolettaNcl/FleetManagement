@@ -8,6 +8,7 @@ const browser=await chromium.launch({headless:true});
 await mkdir("portfolio-video",{recursive:true});
 const context=await browser.newContext({viewport:{width:1280,height:800},recordVideo:{dir:"portfolio-video",size:{width:1280,height:800}}});
 const page=await context.newPage();
+  await page.addInitScript(()=>{if(!localStorage.getItem('fleetmanagement.preferences.navigation.v6'))localStorage.setItem('fleetmanagement.preferences.navigation.v6','all');});
 const video=page.video();
 const errors=[];
 page.on("pageerror",error=>errors.push(error.message));

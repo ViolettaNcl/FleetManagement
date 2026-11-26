@@ -18,6 +18,7 @@
         <label>@T("Vehicle")<select aria-label="@T("Vehicle")" @bind="vehicleId"><option value="0">@T("All vehicles")</option>@foreach(var v in Fleet.Vehicles){<option value="@v.Id">@v.Plate</option>}</select></label>
         <label>@T("Event type")<select aria-label="@T("Event type")" @bind="kind"><option value="All">@T("All events")</option><option value="Trip">@T("Trips")</option><option value="Service due">@T("Service deadlines")</option><option value="Reservation">@T("Vehicle reservations")</option></select></label>
     </div>
+    <div class="calendar-legend"><span><i class="calendar-dot trip" aria-hidden="true"></i>@T("Trips")</span><span><i class="calendar-dot service" aria-hidden="true"></i>@T("Service deadlines")</span><span><i class="calendar-dot reservation" aria-hidden="true"></i>@T("Vehicle reservations")</span></div>
     @if(view!="Day")
     {
         <div class="calendar-scroll" tabindex="0" role="region" aria-label="@T("Calendar dates")"><div class="calendar-grid @(view=="Month"?"month":"week")">
@@ -25,9 +26,9 @@
             @foreach(var date in Days)
             {
                 var entries=Events(date);
-                <button class="calendar-day @(date==selected.Date?"selected":"") @(date.Month!=selected.Month&&view=="Month"?"outside":"")" data-date="@date.ToString("yyyy-MM-dd")" aria-pressed="@(date==selected.Date?"true":"false")" @onclick="()=>selected=date">
-                    <span class="calendar-date">@date.Day</span><span class="calendar-event-count">@entries.Count</span>
-                    @foreach(var e in entries.Take(3)){<span class="calendar-chip @(e.Kind=="Trip"?"trip":"service")">@e.Title · @T(e.Kind)</span>}
+                <button class="calendar-day @(date==selected.Date?"selected":"") @(date.Month!=selected.Month&&view=="Month"?"outside":"") @(date==Now.Date?"calendar-today":"")" data-date="@date.ToString("yyyy-MM-dd")" aria-pressed="@(date==selected.Date?"true":"false")" @onclick="()=>selected=date">
+                    <span class="calendar-date">@date.Day</span><span class="calendar-event-count">@entries.Count</span><span class="calendar-mini-dots" aria-hidden="true">@foreach(var eventKind in new[]{"Trip","Service due","Reservation"}){if(entries.Any(e=>e.Kind==eventKind)){<i class="@("calendar-dot "+EventTone(eventKind))"></i>}}</span>
+                    @foreach(var e in entries.Take(3)){<span class="calendar-chip @EventTone(e.Kind)">@e.Title · @T(e.Kind)</span>}
                     @if(entries.Count>3){<small class="calendar-more">+ @(entries.Count-3) @T("More events")</small>}
                     <span class="v4-sr-only">@DateLabel(date,entries.Count)</span>
                 </button>
@@ -41,7 +42,7 @@
     @foreach(var entry in Events(selected))
     {
         <div class="agenda-row">
-            <span class="calendar-chip @(entry.Kind=="Trip"?"trip":"service")">@T(entry.Kind)</span>
+            <span class="calendar-chip @EventTone(entry.Kind)">@T(entry.Kind)</span>
             <div><strong>@entry.Title</strong><div class="muted">@T(entry.Detail)</div><small>@(entry.Kind!="Service due"?entry.Start.ToString("dd MMM HH:mm")+" – "+entry.End.ToString("dd MMM HH:mm"):T("All-day reminder"))</small></div>
             @if(entry.TripId is int id && Fleet.Trips.FirstOrDefault(t=>t.Id==id) is Trip trip && trip.Start>Now)
             {<button class="secondary" @onclick="()=>EditTrip.InvokeAsync(trip)">@T("Edit trip") #@id</button>}
@@ -65,6 +66,7 @@
     private DateTime GridStart=>view=="Month"?FleetCalendar.WeekStart(new DateTime(selected.Year,selected.Month,1)):FleetCalendar.WeekStart(selected);
     private IEnumerable<DateTime> Days=>Enumerable.Range(0,view=="Month"?42:7).Select(i=>GridStart.AddDays(i));
     private CultureInfo Locale=>CultureInfo.GetCultureInfo(Russian?"ru-RU":"en-US");
+    private static string EventTone(string kind)=>kind switch{"Trip"=>"trip","Reservation"=>"reservation",_=>"service"};
     private string DateLabel(DateTime date,int count)=>$"{date.ToString("D",Locale)} · {T("Events")}: {count}";
     private string Heading=>view=="Month"?selected.ToString("MMMM yyyy",Locale):view=="Day"?selected.ToString("dd MMM yyyy",Locale):$"{GridStart.ToString("dd MMM",Locale)} – {GridStart.AddDays(6).ToString("dd MMM yyyy",Locale)}";
     private IReadOnlyList<CalendarEntry> Events(DateTime date)=>FleetCalendar.Entries(Fleet,date.Date,date.Date.AddDays(1),Reservations).Where(e=>(vehicleId==0||e.VehicleId==vehicleId)&&(kind=="All"||e.Kind==kind)).ToList();

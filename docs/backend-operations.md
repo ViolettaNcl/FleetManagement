@@ -34,3 +34,23 @@ Staff-only role change and admin staff session revocation use protected Identity
 Connected workspace has a narrow same-origin SignalR JSON Long Polling subscriber for FleetChanged (no generic hub calls, no bearer in URL). It negotiates, handshakes, keeps alive and reconnects with bounded backoff; authenticated revision polling remains the fallback and detects cross-instance changes. On notification it checks the revision and offers explicit refresh without overwriting forms. Session exit aborts transport; revoked credentials are rejected on subsequent HTTP polls. No WebSocket client, distributed backplane or delivery guarantees.
 
 Server ID allocation for vehicles, drivers, trips (including batch), shifts and reservations uses the maximum of current IDs and retained fleet audit entity IDs under the provider write lock. It avoids reusing deleted identifiers in supported databases with intact audit. Maintenance work is append-only. Do not purge or rewrite audit rows; a dedicated persisted sequence would be required before retention cleanup or importing audit-free history. Offline demo still allocates local IDs from current records.
+
+
+## V6 candidate readiness
+
+`GET /health` checks process liveness. `GET /ready` probes operational tables and the user identity table with bounded cancellation/command timeouts; it returns `{"status":"ready"}` or HTTP 503 with `{"status":"not-ready"}`. It exposes no records or error details. Both responses disable caching. This is not a migration or a full database integrity check. Keep these operational endpoints on a restricted network in real deployments.
+
+
+## Opt-in scheduled operational review (V6 RC2)
+
+This read-only background worker runs while the local ASP.NET Core API process is running, even if the browser is closed. It does not send notifications, change assignments or resolve alerts. It is disabled by default.
+
+Set the following environment variables for a single dedicated local API instance:
+
+- Fleet__ScheduledReviewEnabled=true
+- Fleet__ScheduledReviewIntervalMinutes=60 (1–1440)
+- Fleet__ScheduledReviewPath to an absolute file path in a private, writable directory outside the web root and repository
+- Fleet__ScheduledReviewHighThreshold=1 and Fleet__ScheduledReviewMediumThreshold=3 (1–100)
+- Fleet__ScheduledReviewIncludeMedium=true
+
+The first eligible run starts at startup; future runs follow elapsed UTC time, with up to a minute of polling delay. Restart reloads the last successful run; missed periods do not generate catch-up records. A bounded consistent database read is followed by local computation. The worker keeps at most 20 aggregate count/threshold/UTC snapshots and persists them using a temporary file and same-directory replacement. No names, plates, notes or alert subjects are stored. Protect the file and directory with OS permissions; back it up separately if needed. If the stored history is malformed or the local file lease cannot be acquired, the worker stops without overwriting existing history. Retry database failures at minute granularity without a busy loop. The authenticated read-only endpoint GET /api/operations/scheduled-review exposes state and history; the existing FleetRead policy applies. A single process per history path is supported; this is not a distributed or highly available scheduler. No change to database schema.

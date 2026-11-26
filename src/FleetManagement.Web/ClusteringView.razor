@@ -1,0 +1,35 @@
+@using FleetManagement.Web
+<section class="panel suite-panel" aria-labelledby="cluster-title">
+    <div class="suite-heading"><div><span class="suite-kicker">@T("Unsupervised learning")</span><h2 id="cluster-title">@T("Vehicle activity clustering")</h2><p class="muted">@T("Group vehicles by standardized odometer mileage, completed trip count and completed distance in the selected departure cohort. Groups are descriptive, not safety or driver rankings.")</p></div><button @onclick="Run">@T("Run vehicle clustering")</button></div>
+    <div class="formgrid"><label>@T("Requested groups")<select aria-label="@T("Requested groups")" @bind="count">@for(int i=2;i<=6;i++){<option value="@i">@i</option>}</select></label></div>
+    @if(result is not null){
+        <p class="muted">@T("Computed for"): @evaluatedFrom.ToString("yyyy-MM-dd") – @evaluatedTo.ToString("yyyy-MM-dd") · @T("Simulation time"): @evaluatedNow.ToString("yyyy-MM-dd HH:mm") · @T("Requested groups"): @evaluatedCount</p>
+        <div class="metrics suite-metrics"><div class="metric">@T("Groups found")<strong data-testid="cluster-count">@result.Clusters.Count</strong></div><div class="metric">@T("Vehicles")<strong>@result.Members.Count</strong></div><div class="metric">@T("Iterations")<strong>@result.Iterations</strong></div><div class="metric">@T("Within-group squared distance")<strong>@result.Inertia.ToString("F2")</strong></div></div>
+        @if(result.Members.Count==0){<p class="muted">@T("No vehicles registered.")</p>}
+        else{
+            <div class="cluster-grid">
+            @foreach(var group in result.Clusters){<article class="period-comparison-card"><h3>@T("Group") @group.Number</h3><strong>@group.Count @T("Vehicles")</strong><div class="progress"><i style="@Width(group.Count,result.Members.Count)"></i></div><p>@T("Average mileage"): @group.MeanMileage.ToString("N0") km</p><p>@T("Average completed trips"): @group.MeanCompletedTrips.ToString("F1")</p><p>@T("Average completed distance"): @group.MeanCompletedKm.ToString("N0") km</p></article>}
+            </div>
+            <label>@T("Filter groups")<select aria-label="@T("Filter groups")" @bind="filter" @bind:after="ResetPage"><option value="0">@T("All")</option>@foreach(var group in result.Clusters){<option value="@group.Number">@T("Group") @group.Number</option>}</select></label>
+            var rows=result.Members.Where(m=>filter==0||m.Cluster==filter).ToArray();
+            var pages=Math.Max(1,(rows.Length+24)/25);var current=Math.Min(page,pages-1);
+            <div class="tablewrap" role="region" tabindex="0" aria-label="@T("Cluster members")"><table><thead><tr><th>@T("Registration")</th><th>@T("Group")</th><th>@T("Mileage")</th><th>@T("Completed")</th><th>@T("Completed distance")</th></tr></thead><tbody>@foreach(var row in rows.Skip(current*25).Take(25)){<tr><td>@row.Registration</td><td>@row.Cluster</td><td>@row.Mileage km</td><td>@row.CompletedTrips</td><td>@row.CompletedKm km</td></tr>}</tbody></table></div>
+            <div class="suite-pagination"><button class="secondary" disabled="@(current==0)" @onclick="()=>page=current-1">@T("Previous report page")</button><span>@T("Page") @(current+1) / @pages</span><button class="secondary" disabled="@(current+1>=pages)" @onclick="()=>page=current+1">@T("Next report page")</button></div>
+        }
+        <p class="muted">@T("Identical feature vectors may produce fewer groups than requested. Results are a snapshot; rerun after register or date changes.")</p>
+    }
+</section>
+@code{
+    [Parameter] public bool Russian{get;set;}
+    [Parameter,EditorRequired] public FleetData Fleet{get;set;}=default!;
+    [Parameter] public DateTime Now{get;set;}
+    [Parameter] public DateTime From{get;set;}
+    [Parameter] public DateTime To{get;set;}
+    private string T(string value)=>DemoLocale.Text(value,Russian);
+    private int count=3,filter,page,evaluatedCount;
+    private DateTime evaluatedNow,evaluatedFrom,evaluatedTo;
+    private ClusterResult? result;
+    private void ResetPage()=>page=0;
+    private void Run(){result=VehicleClustering.Run(Fleet,Now,From,To,count);filter=page=0;evaluatedCount=count;evaluatedNow=Now;evaluatedFrom=From;evaluatedTo=To;}
+    private static string Width(int n,int total)=>"width:"+(total==0?0:100.0*n/total).ToString("F2",CultureInfo.InvariantCulture)+"%";
+}

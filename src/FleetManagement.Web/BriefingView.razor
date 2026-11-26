@@ -1,0 +1,20 @@
+@using FleetManagement.Web
+<section class="panel suite-panel" aria-labelledby="briefing-title">
+    <div class="suite-heading"><div><span class="suite-kicker">@T("Decision support")</span><h2 id="briefing-title">@T("Operational briefing details")</h2><p class="muted">@T("Current registered demo data, not a forecast of demand or a safety clearance.") · @Now.ToString("yyyy-MM-dd HH:mm")</p></div><button class="secondary" @onclick='()=>Open.InvokeAsync("Calendar")'>@T("Full calendar")</button></div>
+    @{var b=FleetBriefing.Build(Fleet,Now,Shifts,Enforce,Reservations);}
+    <div class="metrics suite-metrics"><div class="metric">@T("Active trips")<strong>@b.ActiveTrips</strong></div><div class="metric">@T("Departures in next 24 hours")<strong data-testid="briefing-departures">@b.Next24Departures</strong></div><div class="metric">@T("Completed today")<strong>@b.CompletedToday</strong></div><div class="metric">@T("Vehicles available now")<strong>@b.AvailableNow</strong></div><div class="metric">@T("Service due")<strong>@b.ServiceDue</strong></div><div class="metric">@T("High priority")<strong>@b.HighAlerts</strong></div></div>
+    <h3>@T("Next departures (first 10)")</h3>
+    @if(b.Departures.Count==0){<p class="muted">@T("No upcoming departures in this window.")</p>}
+    else{<div class="tablewrap" role="region" tabindex="0" aria-label="@T("Next departures (first 10)")"><table><thead><tr><th>@T("Trip")</th><th>@T("Vehicle")</th><th>@T("Driver")</th><th>@T("Departure")</th><th>@T("Destination")</th><th>@T("Service due at departure")</th></tr></thead><tbody>@foreach(var row in b.Departures){<tr><td>#@row.TripId</td><td>@row.Vehicle</td><td>@row.Driver</td><td>@row.Start.ToString("dd MMM HH:mm")</td><td>@row.Destination</td><td>@T(row.ServiceDue?"Yes":"No")</td></tr>}</tbody></table></div>}
+    <p class="muted">@T("Availability excludes active trips, active reservations and overdue service; it does not guarantee a future assignment.")</p>
+</section>
+@code{
+    [Parameter] public bool Russian{get;set;}
+    [Parameter,EditorRequired] public FleetData Fleet{get;set;}=default!;
+    [Parameter] public DateTime Now{get;set;}
+    [Parameter] public IReadOnlyList<DriverShift> Shifts{get;set;}=[];
+    [Parameter] public bool Enforce{get;set;}
+    [Parameter] public IReadOnlyList<VehicleReservation> Reservations{get;set;}=[];
+    [Parameter] public EventCallback<string> Open{get;set;}
+    private string T(string value)=>DemoLocale.Text(value,Russian);
+}

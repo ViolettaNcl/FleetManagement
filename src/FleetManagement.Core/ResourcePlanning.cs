@@ -46,9 +46,13 @@ public static class ResourcePlanning
     public static IReadOnlyList<DriverDay> Day(FleetData fleet,IReadOnlyList<DriverShift> shifts,DateTime day)
     {
         var start=day.Date;var end=start.AddDays(1);
+        var byShift=shifts.Where(s=>s.Start<end&&start<s.End).ToLookup(s=>s.DriverId);
+        var byTrip=fleet.Trips.Where(t=>t.Start<end&&start<t.End).ToLookup(t=>t.DriverId);
         return fleet.Drivers.OrderBy(d=>d.Name).ThenBy(d=>d.Id).Select(d=>new DriverDay(d.Id,d.Name,
-            shifts.Where(s=>s.DriverId==d.Id&&s.Start<end&&start<s.End).OrderBy(s=>s.Start).ToArray(),
-            fleet.Trips.Where(t=>t.DriverId==d.Id&&t.Start<end&&start<t.End).OrderBy(t=>t.Start).ToArray())).ToArray();
+            byShift[d.Id].OrderBy(s=>s.Start).ToArray(),byTrip[d.Id].OrderBy(t=>t.Start).ToArray())).ToArray();
     }
-    public static IReadOnlyList<Trip> Uncovered(FleetData fleet,IReadOnlyList<DriverShift> shifts,DateTime now)=>fleet.Trips.Where(t=>t.End>now&&!Covers(shifts,t.DriverId,t.Start,t.End)).OrderBy(t=>t.Start).ThenBy(t=>t.Id).ToArray();
+    public static IReadOnlyList<Trip> Uncovered(FleetData fleet,IReadOnlyList<DriverShift> shifts,DateTime now){
+        var byDriver=shifts.ToLookup(s=>s.DriverId);
+        return fleet.Trips.Where(t=>t.End>now&&!Covers(byDriver[t.DriverId],t.DriverId,t.Start,t.End)).OrderBy(t=>t.Start).ThenBy(t=>t.Id).ToArray();
+    }
 }

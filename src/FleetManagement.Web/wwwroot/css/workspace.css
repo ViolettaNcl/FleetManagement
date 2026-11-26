@@ -130,3 +130,243 @@
 .demo-shell .nav-quick-access .recent-nav-heading button{width:auto;min-height:32px;min-width:44px;padding:4px 7px;font-size:11px}
 .demo-shell .fleet-sidebar button:focus-visible{outline:2px solid var(--focus);outline-offset:2px}
 @media(max-width:1000px){.nav-search-count{grid-column:1/-1}}
+
+
+/* V5 Intelligence Suite: shared responsive analytical panels, not decorative data. */
+.demo-shell .suite-panel{min-width:0;max-width:100%;border-radius:14px;box-shadow:var(--shadow);overflow-wrap:anywhere}
+.suite-heading{display:flex;align-items:flex-start;justify-content:space-between;gap:12px;flex-wrap:wrap;margin-bottom:16px}
+.suite-heading>div{flex:1 1 270px;min-width:0}
+.suite-heading h2{margin:4px 0 6px;font-size:clamp(17px,2vw,21px);line-height:1.35;letter-spacing:-.02em}
+.suite-heading p{margin:0;max-width:72ch;line-height:1.55}
+.suite-kicker{display:inline-block;font-size:11px;letter-spacing:.07em;text-transform:uppercase;font-weight:650;color:var(--accent)}
+.demo-shell .suite-heading>button{min-height:44px;max-width:100%;white-space:normal}
+.demo-shell .suite-metrics{grid-template-columns:repeat(auto-fit,minmax(min(150px,100%),1fr));gap:10px;margin:16px 0}
+.demo-shell .suite-metrics .metric{min-width:0;min-height:85px;background:var(--surface-2);border:1px solid var(--line);border-radius:10px;padding:12px}
+.demo-shell .suite-metrics .metric strong{font-size:clamp(19px,2.4vw,27px);line-height:1.28;overflow-wrap:anywhere}
+.demo-shell .suite-panel .formgrid{grid-template-columns:repeat(auto-fit,minmax(min(180px,100%),1fr));gap:12px}
+.demo-shell .suite-panel .formgrid>label{min-width:0}
+.demo-shell .suite-panel .formgrid input:not([type=checkbox]),.demo-shell .suite-panel .formgrid select{width:100%;min-width:0}
+.suite-fieldset{display:flex;flex-wrap:wrap;gap:6px 18px;border:1px solid var(--line);border-radius:10px;padding:10px 12px;margin:16px 0;min-width:0}
+.suite-fieldset legend{padding:0 6px;font-weight:650}
+.suite-fieldset .dashboard-check{flex:1 1 155px}
+.suite-note{padding:12px;border:1px solid var(--line);border-left:3px solid var(--accent);border-radius:10px;background:var(--surface-2);margin:14px 0;color:var(--ink);min-width:0}
+.suite-note h3{margin:0 0 8px}
+.suite-calibration{display:grid;gap:8px;margin:12px 0 18px;min-width:0}
+.calibration-row{display:grid;grid-template-columns:minmax(65px, .7fr) minmax(65px, .8fr) minmax(0, 3fr);gap:10px;padding:10px;border:1px solid var(--line);border-radius:8px;background:var(--surface-2);align-items:start}
+.calibration-row>span,.calibration-bars>span{font-size:12px;color:var(--muted)}
+.calibration-bars{display:grid;gap:5px;min-width:0}
+.calibration-bars .progress{height:6px;margin:0 0 4px}
+.demo-shell .suite-panel .suite-observed{background:var(--chart-green)}
+.suite-review-list{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(155px,100%),1fr));gap:8px}
+.demo-shell .suite-review-list button{display:flex;align-items:center;justify-content:space-between;gap:8px;min-width:0;min-height:44px;text-align:left;white-space:normal}
+.demo-shell .suite-panel .tablewrap{width:100%;max-width:100%;min-width:0;overflow:auto}
+.demo-shell .suite-panel .tablewrap:focus-visible{outline:2px solid var(--focus);outline-offset:3px}
+@media(max-width:720px){
+  .demo-shell .suite-panel{padding:12px}
+  .suite-heading{gap:10px}
+  .demo-shell .suite-heading>button{width:100%}
+  .demo-shell .suite-metrics{grid-template-columns:repeat(2,minmax(0,1fr));gap:6px}
+  .demo-shell .suite-metrics .metric{padding:9px;min-height:0}
+  .calibration-row{grid-template-columns:1fr 1fr;gap:7px}
+  .calibration-bars{grid-column:1/-1}
+}
+@media(prefers-reduced-motion:no-preference){
+ .demo-shell :is(.metric-action,.capability-card,.suite-review-list button){transition:background-color .18s ease,border-color .18s ease,box-shadow .18s ease,transform .18s ease}
+ .demo-shell :is(.metric-action,.capability-card):hover{transform:translateY(-2px);box-shadow:0 7px 22px #15102c19}
+ .demo-shell .suite-panel .progress>i{transition:width .25s ease}
+}
+@media(prefers-reduced-motion:reduce){
+ .demo-shell :is(.metric-action,.capability-card,.suite-review-list button,.suite-panel .progress>i){transition:none!important;transform:none!important}
+}
+
+
+/* V5.1: comparative analytics, report navigation and evidence disclosure. */
+.suite-period-dates{display:flex;flex-wrap:wrap;gap:8px 18px;font-size:12px;color:var(--muted);margin:8px 0 16px}
+.suite-period-dates span{display:flex;flex-wrap:wrap;gap:4px 8px;min-width:0}
+.suite-period-dates strong{color:var(--ink)}
+.period-comparison-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(210px,100%),1fr));gap:10px}
+.period-comparison-card{display:grid;gap:7px;min-width:0;padding:14px;background:var(--surface-2);border:1px solid var(--line);border-radius:11px}
+.period-comparison-card h3{margin:0;font-size:13px;font-weight:650}
+.period-comparison-card>strong{font-size:clamp(23px,3vw,30px);letter-spacing:-.03em;line-height:1.2}
+.period-comparison-card>.muted{font-size:12px}
+.period-bar-label{display:flex;justify-content:space-between;gap:8px;font-size:12px}
+.period-comparison-card .progress{height:6px;margin:0 0 4px}
+.demo-shell .period-comparison-card .period-previous{background:var(--chart-cyan)}
+.suite-pagination{display:flex;flex-wrap:wrap;justify-content:flex-end;align-items:center;gap:8px;margin-top:12px;font-size:12px;color:var(--muted)}
+.demo-shell .suite-pagination button{min-height:44px;white-space:normal}
+.suite-queue-details{border:1px solid var(--line);border-radius:10px;padding:10px 12px;margin:14px 0}
+.suite-queue-details summary{cursor:pointer;min-height:32px;font-weight:650}
+.suite-queue-details summary:focus-visible{outline:2px solid var(--focus);outline-offset:3px}
+@media(max-width:480px){.suite-pagination{justify-content:space-between}.suite-pagination span{order:-1;flex:1 1 100%;text-align:center}.suite-pagination button{flex:1 1 0;min-width:0}.period-comparison-card{padding:10px}}
+
+.demo-shell .suite-review-actions{display:flex;flex-wrap:wrap;gap:8px;max-width:100%}
+.demo-shell .suite-review-actions button{min-height:44px;white-space:normal;max-width:100%}
+@media(max-width:720px){.demo-shell .suite-review-actions{width:100%}.demo-shell .suite-review-actions button{flex:1 1 130px;min-width:0}}
+
+
+/* V5.2: shared assistant actions and analytical evidence. */
+.demo-shell .assistant-examples{display:flex;gap:8px;flex-wrap:wrap;margin:8px 0}
+.demo-shell .assistant-examples button,.demo-shell .advisor-destination{min-height:44px;white-space:normal;max-width:100%}
+.demo-shell .advisor-destination{margin:8px 0 12px}
+.demo-shell .suite-heading h3{margin:0 0 5px}
+.demo-shell .suite-queue-details .tablewrap{margin-top:8px}
+@media(max-width:600px){.demo-shell .assistant-examples button{flex:1 1 160px;min-width:0}}
+
+.demo-shell .assistant-intents{display:flex;flex-wrap:wrap;gap:8px;margin:12px 0}
+.demo-shell .assistant-intents button{min-height:44px;white-space:normal;max-width:100%;text-align:left}
+.demo-shell .assistant-intents button[aria-pressed=true]{border-color:var(--accent);box-shadow:inset 0 0 0 1px var(--accent)}
+@media(max-width:600px){.demo-shell .assistant-intents button{flex:1 1 140px;min-width:0}}
+
+
+/* V6 visual system: premium option shared across every browser workspace module.
+   Preserve existing semantic foreground tokens and classic mode. */
+.demo-shell.premium-workspace{
+ --bg:#f4f3fa;--surface:#fff;--surface-2:#f8f6fc;--line:#dcd8e9;--ink:#21263a;--muted:#586176;
+ --shadow:0 6px 24px #29224a0b,0 1px 3px #29224a08;
+ background:radial-gradient(ellipse at 82% 0,#e9e3fa 0,transparent 32rem),var(--bg);
+}
+.demo-shell.premium-workspace.dark-theme{
+ --bg:#10101c;--surface:#1a1b29;--surface-2:#222436;--line:#39374c;--ink:#edf0fa;--muted:#b3bace;
+ --shadow:0 6px 24px #08061040,0 1px 3px #08061035;
+ background:radial-gradient(ellipse at 84% 0,#26213e 0,transparent 36rem),var(--bg);
+}
+.demo-shell.premium-workspace .workspace-header{
+ background:var(--surface);box-shadow:0 3px 14px #2019360d;border-bottom-color:var(--line)
+}
+.demo-shell.premium-workspace .brandicon{border-radius:11px;box-shadow:0 0 0 1px var(--line),0 4px 12px #7754bd38}
+.demo-shell.premium-workspace .fleet-sidebar{background:var(--surface);border-right-color:var(--line)}
+.demo-shell.premium-workspace .nav-group button.active{border-left:3px solid var(--accent)}
+.demo-shell.premium-workspace .nav-group button:not(.active):not(:disabled):hover{background:var(--surface-2)}
+.demo-shell.premium-workspace .workspace-breadcrumb{padding:10px 12px;background:var(--surface);border:1px solid var(--line);border-radius:12px;box-shadow:var(--shadow)}
+.demo-shell.premium-workspace .workspace-clock{font-variant-numeric:tabular-nums}
+.demo-shell.premium-workspace .module-intro{min-height:110px;border-radius:15px;padding:20px 24px;background-position:center right;box-shadow:0 9px 26px #17112626}
+.demo-shell.premium-workspace .neon-hero{min-height:220px;border-radius:18px;padding:28px 30px;background-position:center 45%;box-shadow:0 10px 32px #1a14382c}
+.demo-shell.premium-workspace .neon-hero h2{font-size:clamp(28px,3.2vw,42px)}
+.demo-shell.premium-workspace .panel,.demo-shell.premium-workspace .metric{border-radius:15px}
+.demo-shell.premium-workspace .panel h2{font-size:clamp(18px,1.6vw,22px);font-weight:700}
+.demo-shell.premium-workspace .dashboard-kpis .metric{border-top:3px solid var(--accent);min-height:122px}
+.demo-shell.premium-workspace .dashboard-kpis .metric strong{font-variant-numeric:tabular-nums}
+.demo-shell.premium-workspace .tablewrap{border-radius:11px;border:1px solid var(--line)}
+.demo-shell.premium-workspace tbody tr:nth-child(even){background:var(--surface-2)}
+.demo-shell.premium-workspace tbody tr:hover{background:var(--surface-2);outline:1px solid var(--line);outline-offset:-1px}
+.demo-shell.premium-workspace .register-record{box-shadow:var(--shadow);border-radius:13px}
+.demo-shell.premium-workspace .capability-card{border-radius:14px;overflow:hidden}
+.demo-shell.premium-workspace .capability-copy{padding:15px}
+.demo-shell.premium-workspace .advisor-alert{border-radius:11px}
+.demo-shell.premium-workspace :is(.notice,.error){border-radius:10px;overflow-wrap:anywhere}
+.demo-shell.premium-workspace :is(button,input,select,textarea):focus-visible{outline:2px solid var(--focus);outline-offset:2px}
+.demo-shell.workspace-dense .fleet-content>.panel{padding:12px;margin-bottom:12px}
+.demo-shell.workspace-dense .fleet-content .tablewrap td,.demo-shell.workspace-dense .fleet-content .tablewrap th{padding-block:7px}
+.demo-shell.workspace-dense .fleet-content .metrics{gap:8px}
+.demo-shell.workspace-dense .fleet-content .metric{padding:10px}
+.cluster-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(185px,100%),1fr));gap:10px;margin:12px 0}
+.cluster-grid p{margin:0;font-size:12px}
+.snapshot-file-label{display:block;margin:10px 0 4px}
+.demo-shell input[type=file]{max-width:100%;width:100%;min-width:0;padding:8px}
+.demo-shell input[type=file]::file-selector-button{border:1px solid var(--line);background:var(--surface-2);color:var(--ink);border-radius:7px;padding:8px;margin-right:8px;cursor:pointer}
+@media(min-width:1001px) and (prefers-reduced-motion:no-preference){
+ .demo-shell.premium-workspace .nav-group button,.demo-shell.premium-workspace .metric-action,.demo-shell.premium-workspace .capability-card{transition:background-color .18s ease,border-color .18s ease,box-shadow .18s ease,transform .18s ease}
+ .demo-shell.premium-workspace .capability-card:hover{box-shadow:0 10px 25px #21143c2b}
+}
+@media(max-width:720px){
+ .demo-shell.premium-workspace .workspace-breadcrumb{padding:8px;gap:6px}
+ .demo-shell.premium-workspace .module-intro{min-height:0;padding:16px;background-position:65% center}
+ .demo-shell.premium-workspace .neon-hero{min-height:0;padding:18px;border-radius:15px}
+ .demo-shell.premium-workspace .neon-hero h2{font-size:29px}
+ .demo-shell.premium-workspace .dashboard-kpis .metric{min-height:108px;padding:10px}
+ .demo-shell.premium-workspace .panel{border-radius:13px}
+ .demo-shell.premium-workspace .registertools button,.demo-shell.premium-workspace .hero-actions button,.demo-shell.premium-workspace .register-pagination button{min-height:44px}
+ .demo-shell.workspace-dense .fleet-content>.panel{padding:12px}
+}
+
+
+/* Printable report contains the same complete filtered cohort as the workbook. */
+.fleet-print-document{display:none}
+.template-actions{gap:8px;flex-wrap:wrap}
+.demo-shell .template-actions button{min-height:44px;white-space:normal;max-width:100%}
+@media print{
+ html:has(.fleet-print-document),
+ body:has(.fleet-print-document){background:#fff!important;color:#111!important}
+ body:has(.fleet-print-document) .workspace-header,
+ body:has(.fleet-print-document) .fleet-sidebar,
+ body:has(.fleet-print-document) .mobile-nav-toggle,
+ body:has(.fleet-print-document) .skip-workspace,
+ body:has(.fleet-print-document) .v4-bottom-nav,
+ body:has(.fleet-print-document) .fleet-content>:not(.custom-report-panel),
+ body:has(.fleet-print-document) .custom-report-panel>:not(.fleet-print-document){display:none!important}
+ body:has(.fleet-print-document) :is(.demo-shell,.workspace-layout,.fleet-content,.custom-report-panel){
+  display:block!important;width:auto!important;max-width:none!important;margin:0!important;padding:0!important;min-height:0!important;
+  background:#fff!important;box-shadow:none!important;border:0!important;color:#111!important;overflow:visible!important
+ }
+ body:has(.fleet-print-document) .fleet-print-document{display:block!important;background:#fff!important;color:#111!important;font:11pt/1.45 Arial,sans-serif}
+ .fleet-print-document h1{font-size:23pt;margin:14pt 0 8pt;color:#151126!important}
+ .fleet-print-document .fleet-print-heading{display:flex;justify-content:space-between;align-items:center;border-bottom:2px solid #6540bd;padding:0 0 8pt;color:#151126}
+ .fleet-print-document p{font-size:10pt;margin:5pt 0}
+ .fleet-print-document table{width:100%;border-collapse:collapse;min-width:0!important;table-layout:auto;font-size:9pt!important}
+ .fleet-print-document th,.fleet-print-document td{padding:5pt!important;border:1px solid #b7b7c4!important;color:#111!important;background:#fff!important;white-space:normal!important;overflow-wrap:anywhere}
+ .fleet-print-document th{font-weight:bold;background:#eeeaf6!important}
+ .fleet-print-document thead{display:table-header-group}
+ .fleet-print-document tr{break-inside:avoid}
+ @page{size:A4 landscape;margin:12mm}
+}
+
+.demo-shell .gantt-scroll:focus-visible{outline:2px solid var(--focus);outline-offset:3px}
+
+
+/* V6.1 guided mode: keep navigation, labels and task actions predictable. */
+.navigation-mode{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:4px;padding:4px;border:1px solid var(--line);border-radius:10px;background:var(--surface-2)}
+.demo-shell .navigation-mode button{font-size:11px;min-height:36px;padding:5px 3px;white-space:normal;overflow-wrap:anywhere;color:var(--ink);border-color:transparent;background:transparent}
+.demo-shell .navigation-mode button[aria-pressed=true]{background:var(--surface);border-color:var(--line);color:var(--ink);font-weight:750;box-shadow:var(--shadow)}
+.guided-nav-note{margin:0;color:var(--muted);font-size:11px;line-height:1.5;padding:6px}
+.guided-kicker{display:block;color:var(--muted);font-size:11px;font-weight:650;letter-spacing:.06em;text-transform:uppercase;margin-bottom:5px}
+.demo-shell .guided-context{padding:18px 20px;display:grid;grid-template-columns:minmax(0,1fr);gap:10px}
+.guided-context p{margin:5px 0;color:var(--muted);max-width:80ch}
+.guided-context details{border-top:1px solid var(--line);padding-top:10px;min-width:0}
+.guided-context summary{cursor:pointer;font-weight:650;min-height:28px;color:var(--ink)}
+.guided-context details button{white-space:normal;max-width:100%;margin-top:5px}
+.guided-task-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(240px,100%),1fr));gap:10px;margin-top:12px}
+.demo-shell .guided-task{display:grid;grid-template-columns:38px minmax(0,1fr) 16px;align-items:center;text-align:left;gap:10px;min-height:84px;padding:12px;background:var(--surface-2);border:1px solid var(--line);color:var(--ink);border-radius:12px;white-space:normal}
+.guided-task-icon{display:grid;place-items:center;width:36px;height:36px;border-radius:10px;background:var(--surface);color:var(--accent);border:1px solid var(--line)}
+.guided-task strong,.guided-task small{display:block;overflow-wrap:anywhere}
+.guided-task strong{font-size:14px;line-height:1.4}.guided-task small{font-size:12px;line-height:1.45;color:var(--muted);margin-top:4px;font-weight:400}
+.guided-task-arrow{color:var(--muted)}
+.demo-shell.guided-workspace .workspace-header [hidden]{display:none!important}
+@media(min-width:1001px){.demo-shell.sidebar-collapsed .navigation-mode,.demo-shell.sidebar-collapsed .guided-nav-note{display:none}}
+@media(max-width:1000px){.demo-shell .fleet-sidebar.nav-open{grid-template-columns:minmax(0,1fr);max-height:62dvh}.demo-shell .navigation-mode button,.demo-shell .nav-group button{min-height:44px}.demo-shell .nav-group button{font-size:14px}.demo-shell .nav-search input{font-size:16px;min-height:44px}.demo-shell .guided-context summary{min-height:36px}}
+@media(max-width:720px){.demo-shell.guided-workspace .workspace-header>.actions{grid-template-columns:44px 44px minmax(72px,1fr) 48px}.demo-shell.guided-workspace .workspace-header .toolbar-icon-button{width:44px;height:44px;min-height:44px}.demo-shell.guided-workspace .workspace-header .header-alerts{height:44px}.demo-shell .guided-context{padding:14px}.demo-shell .guided-task{min-height:74px}.demo-shell .guided-task-grid{grid-template-columns:1fr}.demo-shell .guided-context details button{min-height:44px}.demo-shell .fleet-content{scroll-margin-top:12px}.demo-shell .formgrid :is(input:not([type=checkbox]),select,textarea){font-size:16px;min-height:44px;max-width:100%}}
+@media print{body:has(.fleet-print-document) .guided-context{display:none!important}}
+
+.demo-shell.guided-workspace .hero-actions{display:none}
+.demo-shell.guided-workspace .neon-hero{min-height:144px;padding:20px 24px}
+.demo-shell.guided-workspace .neon-hero h2{font-size:clamp(24px,3vw,34px)}
+.guided-section-name{display:block;color:var(--ink);font-size:15px}
+@media(max-width:720px){.demo-shell.guided-workspace .neon-hero{min-height:0;padding:16px}.demo-shell.guided-workspace .neon-hero h2{font-size:26px}}
+
+.demo-shell .trip-form-step{min-width:0;border:1px solid var(--line);border-radius:11px;padding:12px 14px;margin:12px 0;background:var(--surface-2)}
+.trip-form-step legend{font-weight:700;color:var(--ink);font-size:13px;padding:0 6px}
+.trip-form-step p{margin:0 0 8px}
+.demo-shell .trip-form-step .formgrid{margin:0;gap:12px}
+.demo-shell .trip-form-step select{width:100%;min-width:0;text-overflow:ellipsis}
+.demo-shell .trip-editor-actions{margin-top:16px}
+#record-editor-heading{scroll-margin-top:85px}
+@media(min-width:360px) and (max-width:720px){
+ .demo-shell .guided-task-grid{grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}
+ .demo-shell .guided-task{display:grid;grid-template-columns:28px minmax(0,1fr);align-content:start;align-items:start;gap:7px;min-height:110px;padding:10px}
+ .guided-task-icon{width:28px;height:28px;border-radius:8px}
+ .guided-task-arrow{display:none}
+ .guided-task strong{font-size:13px}
+ .guided-task small{font-size:11px}
+}
+@media(max-width:720px){
+ .demo-shell .trip-form-step{padding:10px;overflow:visible}
+ .demo-shell .trip-form-step .formgrid{grid-template-columns:minmax(0,1fr)}
+ .demo-shell .trip-editor-actions,.demo-shell .editor-actions{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(126px,100%),1fr));gap:8px}
+ .demo-shell .trip-editor-actions button,.demo-shell .editor-actions button{min-height:44px;white-space:normal}
+ #record-editor-heading{scroll-margin-top:14px}
+}
+
+/* Brand artwork is confined to the About/settings area, keeping operations uncluttered. */
+.workspace-brand-about{display:flex;align-items:center;gap:14px;min-width:0;margin-bottom:12px}
+.workspace-brand-about img{display:block;width:96px;height:96px;object-fit:contain;flex:0 0 96px;border-radius:12px;border:1px solid var(--line);background:#070611}
+.workspace-brand-about h2{margin:0 0 4px}.workspace-brand-about p{margin:0}
+@media(max-width:480px){.workspace-brand-about{gap:10px}.workspace-brand-about img{width:72px;height:72px;flex-basis:72px}}

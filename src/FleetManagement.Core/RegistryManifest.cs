@@ -6,7 +6,7 @@ public sealed record RegistryEntry(string RunId,DateTimeOffset CreatedUtc,int Se
     string MaintenanceTestHash,string EtaTestHash,int MaintenanceRows,int EtaRows,
     double LogisticF1,double FastTreeF1,double LogisticBrier,double FastTreeBrier,
     double LinearMae,double FastTreeMae,double LinearRmse,double FastTreeRmse,
-    string MaintenanceHash,string EtaHash,IReadOnlyList<RegistryImportance>? MaintenanceImportance=null,IReadOnlyList<RegistryImportance>? EtaImportance=null);
+    string MaintenanceHash,string EtaHash,IReadOnlyList<RegistryImportance>? MaintenanceImportance=null,IReadOnlyList<RegistryImportance>? EtaImportance=null,double? FastForestF1=null,double? FastForestBrier=null,string? FastForestHash=null);
 public static class RegistryManifest
 {
     public const int MaxBytes=65536;
@@ -26,9 +26,15 @@ public static class RegistryManifest
             ValidateClassification(ml,mr);ValidateClassification(mf,mr);
             var linearMae=Number(el,"Mae",0,1e6);var fastMae=Number(ef,"Mae",0,1e6);
             var linearRmse=Number(el,"Rmse",linearMae-1e-8,1e6);var fastRmse=Number(ef,"Rmse",fastMae-1e-8,1e6);
+            double? forestF1=null,forestBrier=null;string? forestHash=null;
+            if(m.TryGetProperty("fastForest",out var forest)){
+                ValidateClassification(forest,mr);
+                if(!m.GetProperty("fastForestReloadVerified").GetBoolean())throw new FormatException("FastForest reload not verified.");
+                forestF1=Number(forest,"F1",0,1);forestBrier=Number(forest,"Brier",0,1);forestHash=Hash(m.GetProperty("fastForestArtifact"),"sha256");
+            }
             return new(id,root.GetProperty("createdUtc").GetDateTimeOffset(),root.GetProperty("seed").GetInt32(),Text(root,"sourceRevision",100),Text(root,"mlNetVersion",30),
                 Hash(m,"testSha256"),Hash(e,"testSha256"),mr,er,Number(ml,"F1",0,1),Number(mf,"F1",0,1),Number(ml,"Brier",0,1),Number(mf,"Brier",0,1),
-                linearMae,fastMae,linearRmse,fastRmse,Hash(m.GetProperty("artifact"),"sha256"),Hash(e.GetProperty("artifact"),"sha256"),Importance(m,"Brier",LogisticMaintenanceModel.FeatureNames),Importance(e,"MAE (minutes)",["Free-flow minutes","Free-flow minutes × traffic","Stops","Free-flow minutes × load"]));
+                linearMae,fastMae,linearRmse,fastRmse,Hash(m.GetProperty("artifact"),"sha256"),Hash(e.GetProperty("artifact"),"sha256"),Importance(m,"Brier",LogisticMaintenanceModel.FeatureNames),Importance(e,"MAE (minutes)",["Free-flow minutes","Free-flow minutes × traffic","Stops","Free-flow minutes × load"]),forestF1,forestBrier,forestHash);
         }catch(Exception ex) when(ex is JsonException or InvalidOperationException or KeyNotFoundException or OverflowException or ArgumentException){
             throw new FormatException("Invalid or incomplete model manifest.",ex);
         }

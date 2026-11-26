@@ -408,4 +408,187 @@ Check(periodRows[0].From==periodFrom&&periodRows[^1].To==periodNow.Date,"report 
 Check(periodRows.Sum(p=>p.Trips)==periodSummary.Trips&&periodRows.Sum(p=>p.Completed)==periodSummary.Completed&&periodRows.Sum(p=>p.CompletedDistanceKm)==periodSummary.CompletedDistanceKm,"report period totals reconcile");
 Check(periodRows.Zip(periodRows.Skip(1)).All(p=>p.First.To.AddDays(1)==p.Second.From),"report periods contiguous");
 Check(FleetReport.Periods(new FleetData([],[],[]),periodNow,periodNow.Date,periodNow.Date).Single().Trips==0,"empty report period");
+
+var v5Ensemble=MaintenanceEnsemble.Run(42,3);
+Check(v5Ensemble.TrainRows==2400&&v5Ensemble.ValidationRows==720&&v5Ensemble.TestRows==720,"V5 ensemble independent cohort sizes");
+Check(v5Ensemble.Threshold>=.1&&v5Ensemble.Threshold<=.9&&v5Ensemble.ValidationCost<=v5Ensemble.DefaultValidationCost,"V5 threshold selected on validation grid");
+Check(v5Ensemble.Calibration.Count==5&&v5Ensemble.Calibration.Sum(b=>b.Count)==720&&v5Ensemble.Calibration.All(b=>b.MeanProbability is >=0 and <=1&&b.ObservedRate is >=0 and <=1),"V5 calibration bins reconcile");
+Check(v5Ensemble.EnsembleDefaultTest.Brier==v5Ensemble.EnsembleSelectedTest.Brier,"V5 threshold does not alter probability loss");
+var v5Prediction=v5Ensemble.Model.Predict(new(95,3.5,12.8,.8,3500));
+Check(v5Prediction.Members.Count==3&&v5Prediction.Minimum<=v5Prediction.Mean&&v5Prediction.Mean<=v5Prediction.Maximum&&v5Prediction.Members.All(p=>p is >=0 and <=1),"V5 ensemble member disagreement");
+var v5Snapshot=new TelemetryFeatures(50,0,16,2,20000);
+var v5Sensitivity=v5Ensemble.Model.Sensitivity(v5Snapshot);
+Check(v5Sensitivity.Count==5&&v5Sensitivity.All(s=>s.LowerValue<=s.UpperValue&&s.LowerScore is >=0 and <=1&&s.UpperScore is >=0 and <=1),"V5 bounded sensitivity scores");
+Check(v5Sensitivity[0].LowerValue==50&&v5Sensitivity[1].LowerValue==0&&v5Sensitivity[2].UpperValue==16&&v5Sensitivity[3].UpperValue==2&&v5Sensitivity[4].UpperValue==20000,"V5 sensitivity clipping at supported bounds");
+Check(v5Ensemble.EnsembleSelectedTest.TP+v5Ensemble.EnsembleSelectedTest.FP+v5Ensemble.EnsembleSelectedTest.TN+v5Ensemble.EnsembleSelectedTest.FN==720,"V5 final confusion totals");
+var v5Zero=BudgetSensitivity.Compare(budgetPlan,new(0,0,0));
+Check(v5Zero.Delta==0&&v5Zero.Headroom==budgetPlan.Headroom,"V5 unchanged budget scenario");
+var v5Stress=BudgetSensitivity.Compare(budgetPlan,new(20,10,50));
+Check(v5Stress.Delta==budgetPlan.FuelCost*.2m+budgetPlan.DriverCost*.1m+budgetPlan.FixedAllowance*.5m&&v5Stress.Headroom==budgetPlan.Budget-v5Stress.Scenario,"V5 scenario arithmetic");
+Check(!new BudgetScenario(101,0,0).Valid,"V5 scenario bound");
+var v5Policy=new ReviewPolicy(1,1,false);
+var v5Queue=ReviewAutomation.Preview(notices,v5Policy);
+Check(v5Queue.Escalate&&v5Queue.HighTriggered&&v5Queue.Queue.Count==notices.Count(a=>a.Severity=="High")&&v5Queue.Queue.All(a=>a.Severity=="High"),"V5 escalation preserves all high alerts");
+Check(!ReviewAutomation.Preview([],new(1,1,true)).Escalate,"V5 no false escalation for empty register");
+Check(!new ReviewPolicy(0,1,true).Valid,"V5 review thresholds bounded");
+var v5ReportOptions=new VehicleReportOptions("Due","",0,false,false,false,true);
+Check(FleetReport.FilterVehicles(report,v5ReportOptions).Count==report.VehicleRows.Count(v=>v.ServiceStatus=="Due"),"V5 report service filter");
+Check(FleetReport.FilterVehicles(report,v5ReportOptions with{Query="no-such-vehicle"}).Count==0,"V5 report search empty");
+var v5MaliciousOptions=new VehicleReportOptions("All","",0,false,false,false,false);
+using(var v5Stream=new MemoryStream(FleetReport.ExportVehicleXlsx(malicious,now,now,v5MaliciousOptions)))
+using(var v5Zip=new System.IO.Compression.ZipArchive(v5Stream)){
+    using var v5Reader=new StreamReader(v5Zip.GetEntry("xl/worksheets/sheet1.xml")!.Open());
+    var v5Xml=System.Xml.Linq.XDocument.Parse(v5Reader.ReadToEnd());
+    var v5Rows=v5Xml.Descendants().Where(x=>x.Name.LocalName=="row").ToArray();
+    Check(v5Rows.Length==5&&v5Rows[3].Elements().Count()==1&&v5Rows[4].Elements().Count()==1,"V5 custom workbook selected columns");
+    Check(v5Rows[4].Descendants().Any(x=>x.Name.LocalName=="t"&&x.Value=="=1+1")&&!v5Xml.Descendants().Any(x=>x.Name.LocalName=="f"),"V5 custom workbook user text never formula");
+}
+Check(FleetAdvisor.Answer(fleet,now,"риски",russian:true).Evidence.Select(a=>a.Key).SequenceEqual(notices.Select(a=>a.Key)),"V5 risk assistant canonical evidence");
+Check(FleetAdvisor.Answer(fleet,now,"calendar").Title=="Calendar review","V5 calendar assistant intent");
+var v5Scale=FleetReport.Build(scaleFleet,now,now.Date.AddDays(-29),now.Date);
+Check(v5Scale.Trips==scaleFleet.Trips.Count(t=>t.Start>=now.Date.AddDays(-29)&&t.Start<now.Date.AddDays(1))&&v5Scale.VehicleRows.Sum(v=>v.Trips)==v5Scale.Trips,"V5 indexed report cohort reconciliation");
+
+var v51Comparison=FleetReport.ComparePrevious(periodFleet,periodNow,periodFrom,periodNow.Date)!;
+Check(v51Comparison.Current.Trips==periodSummary.Trips&&v51Comparison.Current.Completed==periodSummary.Completed&&v51Comparison.Current.CompletedKm==periodSummary.CompletedDistanceKm,"V5.1 current comparison reconciles with report");
+Check((v51Comparison.Previous.To-v51Comparison.Previous.From).Days==(v51Comparison.Current.To-v51Comparison.Current.From).Days&&v51Comparison.Previous.To.AddDays(1)==v51Comparison.Current.From,"V5.1 equal contiguous periods");
+Check(PeriodComparison.Change(2,0)==null&&PeriodComparison.Change(0,2)==-1&&PeriodComparison.Change(3,2)==.5,"V5.1 zero baseline and percentage change");
+Check(FleetReport.ComparePrevious(periodFleet,periodNow,new DateTime(1900,1,1),new DateTime(1900,1,1))==null,"V5.1 comparison date boundary");
+var v51Sorted=FleetReport.FilterVehicles(v5Scale,v5MaliciousOptions with{Sort="Distance"});
+Check(v51Sorted.Count==v5Scale.VehicleRows.Count&&v51Sorted.Zip(v51Sorted.Skip(1)).All(p=>p.First.CompletedDistanceKm>=p.Second.CompletedDistanceKm),"V5.1 report distance sorting");
+var v51Service=FleetReport.FilterVehicles(report,v5MaliciousOptions with{Sort="Service"});
+Check(v51Service.First().ServiceStatus=="Due"&&!new VehicleReportOptions("All","",0,true,true,true,true,"Invalid").Valid,"V5.1 urgency ordering and sort validation");
+var v51ExportAlerts=new FleetAlert[]{new("x","High","=1+1","Check","Evidence","Review","Maintenance"),new("y","Medium","B","Check","Evidence","Review","Maintenance")};
+using(var v51Stream=new MemoryStream(FleetReport.ExportReviewXlsx(v51ExportAlerts,new(1,1,false),now,true)))
+using(var v51Zip=new System.IO.Compression.ZipArchive(v51Stream)){
+    using var v51Reader=new StreamReader(v51Zip.GetEntry("xl/worksheets/sheet1.xml")!.Open());
+    var v51Xml=System.Xml.Linq.XDocument.Parse(v51Reader.ReadToEnd());
+    var v51Rows=v51Xml.Descendants().Where(x=>x.Name.LocalName=="row").ToArray();
+    Check(v51Rows.Length==11&&v51Rows[^1].Elements().Count()==7,"V5.1 exported review queue matches policy");
+    Check(v51Rows[^1].Descendants().Any(x=>x.Name.LocalName=="t"&&x.Value=="=1+1")&&!v51Xml.Descendants().Any(x=>x.Name.LocalName=="f"),"V5.1 review workbook formula safety");
+}
+
+var v52Perfect=RankingEvaluation.Evaluate(new[]{(.9,true),(.1,false),(.8,true),(.2,false)});
+Check(v52Perfect.RocAuc==1&&v52Perfect.AveragePrecision==1,"V5.2 perfect ranking metrics");
+var v52Tied=RankingEvaluation.Evaluate(new[]{(.5,true),(.5,false),(.5,true),(.5,false)});
+Check(v52Tied.RocAuc==.5&&v52Tied.AveragePrecision==.5,"V5.2 tied scores and prevalence");
+var v52Reversed=RankingEvaluation.Evaluate(new[]{(.1,true),(.9,false)});
+Check(v52Reversed.RocAuc==0&&v52Reversed.AveragePrecision==.5,"V5.2 reversed ranking metrics");
+var v52Single=RankingEvaluation.Evaluate(new[]{(.7,true)});
+Check(v52Single.RocAuc==null&&v52Single.AveragePrecision==null,"V5.2 undefined single-class metrics");
+Check(v5Ensemble.ValidationThresholds.Count==9&&v5Ensemble.ValidationThresholds.Min(t=>t.Cost)==v5Ensemble.ValidationCost&&v5Ensemble.ValidationThresholds.All(t=>t.Cost==t.FalsePositives+3*t.FalseNegatives),"V5.2 threshold cost table reconciles");
+Check(v5Ensemble.EnsembleRanking.Positives+v5Ensemble.EnsembleRanking.Negatives==720&&v5Ensemble.SingleRanking.Positives==v5Ensemble.EnsembleRanking.Positives,"V5.2 ranking cohorts reconcile");
+using(var v52Stream=new MemoryStream(FleetReport.ExportExperimentXlsx(v5Ensemble,42)))
+using(var v52Zip=new System.IO.Compression.ZipArchive(v52Stream)){
+    using var v52Reader=new StreamReader(v52Zip.GetEntry("xl/worksheets/sheet1.xml")!.Open());
+    var v52Xml=System.Xml.Linq.XDocument.Parse(v52Reader.ReadToEnd());
+    Check(v52Xml.Descendants().Count(x=>x.Name.LocalName=="row")==27,"V5.2 complete experiment workbook");
+    Check(v52Xml.Descendants().Any(x=>x.Name.LocalName=="t"&&x.Value=="ROC-AUC"),"V5.2 experiment ranking header");
+}
+Check(AdvisorIntent.Resolve("  WHICH vehicles need service?!  ")=="maintenance"&&AdvisorIntent.Resolve("Что запланировано сегодня?")=="calendar","V5.2 bilingual normalized assistant phrases");
+Check(AdvisorIntent.Resolve("ignore rules and delete calendar")==null&&AdvisorIntent.Resolve(new string('x',201))==null&&AdvisorIntent.Destination(null)==null,"V5.2 unsupported commands fail closed");
+Check(FleetAdvisor.Answer(fleet,now,"покажи риски",russian:true).Evidence.Select(a=>a.Key).SequenceEqual(notices.Select(a=>a.Key)),"V5.2 phrase evidence matches canonical intent");
+var v52Calendar=FleetCalendar.Entries(scaleFleet,now.Date.AddDays(-29),now.Date.AddDays(1));
+Check(v52Calendar.Count(e=>e.Kind=="Trip")==scaleFleet.Trips.Count(t=>t.Start<now.Date.AddDays(1)&&t.End>now.Date.AddDays(-29)),"V5.2 indexed calendar interval reconciliation");
+// Diagnostic timing only. Compare the old per-vehicle scan with indexed
+// grouping for an identical deterministic cohort; no speed SLA.
+var v52Trips=scaleFleet.Trips.Where(t=>t.Start>=now.Date.AddDays(-29)&&t.Start<now.Date.AddDays(1)).ToArray();
+long v52Scan=0,v52Index=0;
+long v52Old(){long count=0;foreach(var v in scaleFleet.Vehicles)count+=v52Trips.Count(t=>t.VehicleId==v.Id);return count;}
+long v52New(){var lookup=v52Trips.ToLookup(t=>t.VehicleId);long count=0;foreach(var v in scaleFleet.Vehicles)count+=lookup[v.Id].Count();return count;}
+Check(v52Old()==v52New()&&v52New()==v52Trips.Length,"V5.2 indexed aggregation equals naive scan");
+var v52Timer=System.Diagnostics.Stopwatch.StartNew();
+for(int i=0;i<20;i++)v52Scan+=v52Old();
+v52Timer.Stop();var v52OldMs=v52Timer.Elapsed.TotalMilliseconds;
+v52Timer.Restart();for(int i=0;i<20;i++)v52Index+=v52New();
+v52Timer.Stop();Check(v52Scan==v52Index,"V5.2 diagnostic benchmark checksums");
+Console.WriteLine($"V5.2 synthetic grouping benchmark: 20 iterations, {v52Trips.Length} trips, {scaleFleet.Vehicles.Count} vehicles; naive {v52OldMs:F2} ms, indexed {v52Timer.Elapsed.TotalMilliseconds:F2} ms; no SLA.");
+
+var rcSample=FleetRules.Sample(now);
+Check(SnapshotValidation.Check(rcSample,now,[],[],[])==null,"RC valid demo snapshot");
+Check(SnapshotValidation.Check(new FleetData([],[],[]),now,[],[],[])==null,"RC empty demo snapshot");
+Check(SnapshotValidation.Check(rcSample,default,[],[],[])!=null,"RC invalid snapshot clock");
+Check(SnapshotValidation.Check(rcSample with{Vehicles=[..rcSample.Vehicles,rcSample.Vehicles[0]]},now,[],[],[])!=null,"RC rejects duplicate vehicle");
+Check(SnapshotValidation.Check(rcSample with{Trips=[..rcSample.Trips,rcSample.Trips[0] with{Id=500}]},now,[],[],[])!=null,"RC rejects overlapping trips");
+Check(SnapshotValidation.Check(rcSample with{Trips=[rcSample.Trips[0] with{DriverId=999}]},now,[],[],[])!=null,"RC rejects orphan trip");
+Check(SnapshotValidation.Check(rcSample,now,[],[],[new(1,rcSample.Trips[0].VehicleId,rcSample.Trips[0].Start,rcSample.Trips[0].End,"Repair","")])!=null,"RC rejects conflicting reservation");
+Check(SnapshotValidation.Check(rcSample,now,[new(1,999,now,0,"Repair","",null)],[],[])!=null,"RC rejects orphan maintenance");
+Check(SnapshotValidation.Check(rcSample,now,[],[new(1,1,now,now.AddHours(2)),new(2,1,now.AddHours(1),now.AddHours(3))],[])!=null,"RC rejects overlapping shifts");
+
+var rcClusters=VehicleClustering.Run(rcSample,now,now.Date.AddDays(-29),now.Date,3);
+Check(rcClusters.Members.Count==rcSample.Vehicles.Count&&rcClusters.Clusters.Sum(g=>g.Count)==rcSample.Vehicles.Count&&rcClusters.Clusters.Count<=3&&double.IsFinite(rcClusters.Inertia),"RC clustering partition");
+Check(rcClusters.Members.SequenceEqual(VehicleClustering.Run(rcSample,now,now.Date.AddDays(-29),now.Date,3).Members),"RC clustering deterministic");
+var rcIdentical=new FleetData([new(1,"A","M",100,0,now,1000,30),new(2,"B","M",100,0,now,1000,30)],[],[]);
+Check(VehicleClustering.Run(rcIdentical,now,now,now,6).Clusters.Count==1,"RC clustering identical vectors");
+Check(VehicleClustering.Run(new([],[],[]),now,now,now,3).Members.Count==0,"RC clustering empty fleet");
+var rcForest=IsolationLearning.Run(42,16);
+Check(rcForest.TrainRows==500&&rcForest.ValidationRows==240&&rcForest.TestRows==240&&rcForest.Samples.All(s=>s.Score is >=0 and <=1),"RC isolation cohort and scores");
+Check(rcForest.Forest.TP+rcForest.Forest.FP+rcForest.Forest.TN+rcForest.Forest.FN==240&&rcForest.Samples.Count(s=>s.Flagged)==rcForest.Forest.TP+rcForest.Forest.FP,"RC isolation confusion totals");
+Check(rcForest.Ranking.Positives==rcForest.Samples.Count(s=>s.Actual)&&rcForest.Samples.SequenceEqual(IsolationLearning.Run(42,16).Samples),"RC isolation ranking and deterministic forest");
+
+var rcCross=GroupValidation.Run(42);
+Check(rcCross.Candidates.Count==3&&rcCross.Candidates.All(c=>c.Folds.Count==4&&c.Folds.All(f=>f.TrainVehicles==30&&f.ValidationVehicles==10&&f.ValidationRows==600)),"RC four grouped validation folds");
+Check(rcCross.SelectedEpochs==rcCross.Candidates.OrderBy(c=>c.MeanBrier).ThenBy(c=>c.Epochs).First().Epochs&&rcCross.FinalRows==720,"RC selection only on grouped validation");
+Check(rcCross.Final.TP+rcCross.Final.FP+rcCross.Final.TN+rcCross.Final.FN==720,"RC final cohort confusion totals");
+var rcManifest=System.Text.Json.Nodes.JsonNode.Parse(manifestJson)!;
+rcManifest["maintenance"]!["fastForest"]=rcManifest["maintenance"]!["fastTree"]!.DeepClone();
+rcManifest["maintenance"]!["fastForestArtifact"]=new System.Text.Json.Nodes.JsonObject{["sha256"]=new string('d',64)};
+rcManifest["maintenance"]!["fastForestReloadVerified"]=true;
+Check(RegistryManifest.Parse(rcManifest.ToJsonString()).FastForestF1==.6&&registry.FastForestF1==null,"RC optional FastForest backward compatibility");
+rcManifest["maintenance"]!["fastForestReloadVerified"]=false;
+Check(RejectManifest(rcManifest.ToJsonString()),"RC FastForest rejects missing reload evidence");
+
+var rcBrief=FleetBriefing.Build(rcSample,now);
+Check(rcBrief.ActiveTrips==2&&rcBrief.Next24Departures==1&&rcBrief.AvailableNow==1&&rcBrief.CompletedToday==1,"RC briefing counts");
+Check(AdvisorIntent.ResolveFollowUp("Подробнее","briefing")=="briefing"&&AdvisorIntent.ResolveFollowUp("details",null)==null&&AdvisorIntent.ResolveFollowUp("delete data","briefing")==null,"RC supported follow-up only");
+Check(FleetAdvisor.Answer(rcSample,now,"daily briefing").Title=="Daily fleet briefing","RC daily briefing intent");
+var rcDriverRows=DriverActivity.Build(rcSample,now,now,now);
+Check(rcDriverRows.Sum(d=>d.Trips)==report.Trips&&rcDriverRows.Sum(d=>d.Completed)==report.Completed&&rcDriverRows.Sum(d=>d.CompletedKm)==report.CompletedDistanceKm,"RC driver activity reconciles");
+
+var rcTemplate=new VehicleReportOptions("Due","private search",2,true,false,true,false,"Service");
+Check(ReportTemplate.Decode(ReportTemplate.Encode(rcTemplate))==rcTemplate with{Query=""},"RC report template roundtrip excludes search");
+Check(ReportTemplate.Decode("Due|Service|2|10x1")==null&&ReportTemplate.Decode("No|Service|2|1001")==null,"RC invalid templates rejected");
+var rcRun=ReviewHistory.Capture(now,new(1,3,false),notices);
+Check(rcRun.Queue==notices.Count(a=>a.Severity=="High")&&rcRun.Escalate,"RC review history captures policy");
+var rcHistory=ReviewHistory.Add(ReviewHistory.Add([],rcRun),rcRun);
+Check(rcHistory.Count==1&&ReviewHistory.Decode(ReviewHistory.Encode(rcHistory)).SequenceEqual(rcHistory),"RC review history dedup and roundtrip");
+Check(ReviewHistory.Decode("invalid").Count==0&&ReviewHistory.Decode(new string('x',4097)).Count==0,"RC review history bounds");
+for(int i=1;i<=30;i++)rcHistory=ReviewHistory.Add(rcHistory,rcRun with{Clock=now.AddMinutes(i)});
+Check(rcHistory.Count==20&&rcHistory[0].Clock==now.AddMinutes(30),"RC review history bounded latest runs");
+
+var rcXlsxInput=new FleetWorkbookSnapshot(rcSample,now,[new(1,3,now,110800,"Repair","=literal note",12.34m)],[new(1,4,now.AddHours(2),now.AddHours(6))],true,[new(1,3,now.AddHours(1),now.AddHours(2),"Inspection","check")]);
+var rcXlsx=FleetReport.ExportSnapshotXlsx(rcXlsxInput);
+var rcXlsxBack=FleetReport.ImportSnapshotXlsx(rcXlsx);
+Check(rcXlsxBack.Data.Vehicles.SequenceEqual(rcSample.Vehicles)&&rcXlsxBack.Data.Drivers.SequenceEqual(rcSample.Drivers)&&rcXlsxBack.Data.Trips.SequenceEqual(rcSample.Trips)&&rcXlsxBack.Now==now&&rcXlsxBack.RequireShifts,"RC workbook roundtrip");
+Check(rcXlsxBack.Maintenance.SequenceEqual(rcXlsxInput.Maintenance)&&rcXlsxBack.Shifts.SequenceEqual(rcXlsxInput.Shifts)&&rcXlsxBack.Reservations.SequenceEqual(rcXlsxInput.Reservations),"RC workbook operational records and literal note");
+bool RejectSnapshotWorkbook(byte[] bytes){try{FleetReport.ImportSnapshotXlsx(bytes);return false;}catch(FormatException){return true;}}
+byte[] AlterSnapshotWorkbook(byte[] bytes,string path,Func<string,string> change){
+    using var memory=new MemoryStream();memory.Write(bytes);memory.Position=0;
+    using(var archive=new System.IO.Compression.ZipArchive(memory,System.IO.Compression.ZipArchiveMode.Update,true)){
+        var entry=archive.GetEntry(path)!;string xml;using(var reader=new StreamReader(entry.Open()))xml=reader.ReadToEnd();
+        entry.Delete();using var writer=new StreamWriter(archive.CreateEntry(path).Open());writer.Write(change(xml));
+    }
+    return memory.ToArray();
+}
+Check(RejectSnapshotWorkbook([1,2,3])&&RejectSnapshotWorkbook(new byte[FleetReport.WorkbookMaxBytes+1]),"RC invalid and oversized workbook");
+Check(RejectSnapshotWorkbook(AlterSnapshotWorkbook(rcXlsx,"xl/worksheets/sheet2.xml",x=>x.Replace("FM-205","FM-102"))),"RC workbook duplicate vehicle");
+Check(RejectSnapshotWorkbook(AlterSnapshotWorkbook(rcXlsx,"xl/worksheets/sheet2.xml",x=>x.Replace("<v>82400</v>","<f>1+1</f><v>82400</v>"))),"RC workbook formula rejection");
+Check(RejectSnapshotWorkbook(AlterSnapshotWorkbook(rcXlsx,"xl/worksheets/sheet2.xml",x=>x.Replace("<worksheet","<!DOCTYPE worksheet [<!ENTITY x SYSTEM 'file:///etc/passwd'>]><worksheet"))),"RC workbook DTD rejection");
+
+var rcShiftExpected=rcSample.Trips.Where(t=>t.End>now&&!ResourcePlanning.Covers(rcXlsxInput.Shifts,t.DriverId,t.Start,t.End)).OrderBy(t=>t.Start).ThenBy(t=>t.Id);
+Check(ResourcePlanning.Uncovered(rcSample,rcXlsxInput.Shifts,now).SequenceEqual(rcShiftExpected),"RC indexed shift coverage matches naive");
+byte[] SharedStringsFixture(byte[] bytes){
+    using var memory=new MemoryStream();memory.Write(bytes);memory.Position=0;
+    using(var archive=new System.IO.Compression.ZipArchive(memory,System.IO.Compression.ZipArchiveMode.Update,true)){
+        System.Xml.Linq.XNamespace ns="http://schemas.openxmlformats.org/spreadsheetml/2006/main";
+        var sheet=archive.GetEntry("xl/worksheets/sheet2.xml")!;System.Xml.Linq.XDocument doc;
+        using(var stream=sheet.Open())doc=System.Xml.Linq.XDocument.Load(stream);
+        var cell=doc.Descendants(ns+"c").Single(c=>(string?)c.Attribute("r")=="B2");
+        cell.SetAttributeValue("t","s");cell.RemoveNodes();cell.Add(new System.Xml.Linq.XElement(ns+"v","0"));
+        sheet.Delete();using(var stream=archive.CreateEntry("xl/worksheets/sheet2.xml").Open())doc.Save(stream);
+        using var shared=archive.CreateEntry("xl/sharedStrings.xml").Open();
+        new System.Xml.Linq.XElement(ns+"sst",new System.Xml.Linq.XElement(ns+"si",new System.Xml.Linq.XElement(ns+"t","FM-102"))).Save(shared);
+    }
+    return memory.ToArray();
+}
+Check(FleetReport.ImportSnapshotXlsx(SharedStringsFixture(rcXlsx)).Data.Vehicles.SequenceEqual(rcSample.Vehicles),"RC workbook shared string interoperability");
 Console.WriteLine("All business rule checks passed.");

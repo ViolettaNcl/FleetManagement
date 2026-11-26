@@ -5,7 +5,7 @@
 @if(message.Length>0){<p role="status" class="@(failed?"error":"notice")">@T(message)</p>}</section>
 <section class="panel"><h2>@T("Vehicle reservation register")</h2>
 <div class="actions"><label>@T("Reservation filter")<select @bind="filter"><option value="0">@T("All vehicles")</option>@foreach(var v in Fleet.Vehicles){<option value="@v.Id">@v.Plate</option>}</select></label><button class="secondary" @onclick='()=>Open.InvokeAsync("Calendar")'>@T("Open calendar")</button></div>
-<div class="tablewrap"><table><thead><tr><th>@T("Vehicle")</th><th>@T("Category")</th><th>@T("Start")</th><th>@T("End")</th><th>@T("Status")</th><th>@T("Notes")</th><th>@T("Action")</th></tr></thead><tbody>
+<div class="tablewrap" role="region" tabindex="0" aria-label="@T("Vehicle reservations")"><table><thead><tr><th>@T("Vehicle")</th><th>@T("Category")</th><th>@T("Start")</th><th>@T("End")</th><th>@T("Status")</th><th>@T("Notes")</th><th>@T("Action")</th></tr></thead><tbody>
 @foreach(var r in Reservations.Where(r=>filter==0||r.VehicleId==filter).OrderBy(r=>r.Start)){<tr><td>@(Fleet.Vehicles.FirstOrDefault(v=>v.Id==r.VehicleId)?.Plate??"Unknown")</td><td>@T(r.Kind)</td><td>@r.Start.ToString("dd MMM yyyy HH:mm")</td><td>@r.End.ToString("dd MMM yyyy HH:mm")</td><td>@T(VehicleReservations.Status(r,Now))</td><td style="white-space:normal;overflow-wrap:anywhere;max-width:260px">@r.Notes</td><td>@if(r.Start>Now){<button class="delete" @onclick="()=>Remove(r.Id)">@T("Cancel reservation")</button>}else{<small>@T("History")</small>}</td></tr>}
 </tbody></table></div><p class="muted">@T("Elapsed reservations do not reset service intervals. Only a separately registered scheduled service does.")</p></section>
 @code{

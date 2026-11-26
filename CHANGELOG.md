@@ -1,5 +1,72 @@
 # Changelog
 
+## Unreleased — V6.2 Atlas visual workspace
+
+- Use native content-derived accessible names for workload filters and a separate localized action description. Preserve visible status, count and percentage, keyboard activation, strict axe audit and filter regression. Independent browser suites now all run before the job returns failure, exposing subsequent regressions rather than stopping at the first one.
+
+- Route-inspired premium visual system, new actual next-departure card in the hero with safe edit action and an empty-state action, refreshed KPI and task cards.
+- Clickable trip-status chart legend opens the corresponding filtered register. Vehicle and driver registers gain responsive, table and card presentations with independent local preferences; service cards display real remaining mileage.
+- Calendar event legend, distinct reservation styling and today indicator; stronger selected alert filter states. Existing classic appearance, both themes and reduced-motion behavior preserved.
+- Browser tests cover actual demo departure, linked filters, card presentation persistence, responsive widths and accessibility. Exact candidate CI required.
+
+## Unreleased — V6.1 guided workspace candidate
+
+- Add three owner-requested generated Neon Violet branding compositions, optimized as WebP. English/Russian README hero, brand gallery, settings artwork and updated candidate links. Preserve existing small SVG favicon and PWA icons. Concept banner metrics are illustrative only.
+
+- Default Essentials navigation with ten everyday modules, all-tool search, persistent expert mode, task-first overview, section-specific bilingual guidance and next-step actions.
+- Preserve saved dashboard preferences, expert mode, advanced modules and data; move destructive reset into Help & settings in Essentials.
+- Mobile single-column navigation, larger touch controls, no automatic search keyboard on ordinary menu open; new guided-mode regression and axe tests alongside full expert coverage.
+- Three grouped trip-planning steps, missing-resource shortcuts, unsaved-draft indicators and keyboard focus on the register editor; mobile editor actions and compact task cards.
+
+## Unreleased — V6.0 RC2 release hardening
+
+- Restricted seven-sheet XLSX snapshot interchange with bounded ZIP/XML parsing, literal cells, shared strings, exact schema, validation and explicit atomic local restore.
+- Fix storage failure feedback with explicit JS boolean result and fault-injection regression.
+- Optional local server-side scheduled review (disabled by default), bounded persisted aggregate history, authenticated status endpoint and connected dashboard.
+- Expand browser audit to both themes on desktop/mobile and add named keyboard-focusable tables/timelines throughout populated states.
+- Protect unreadable stored snapshots from automatic overwrite, allow original download, tighten XML bounds, index driver shift lookups and verify readiness on missing schema.
+- Per-user unsigned Windows setup build with checksum, exact source metadata, install/launch/uninstall checks. No signing certificate or release supplied.
+
+## Unreleased — V6.0 RC1 integrated candidate
+
+- Shared premium/classic visual style and workspace density, responsive polish, startup skeleton, reduced-motion support and illustrative 3D inspection companion.
+- Validated bounded demo JSON restore, preview/explicit confirmation and persist-before-replace semantics.
+- Vehicle clustering, driver cohort activity, isolation forest with independent normal validation, grouped cross-validation and hyperparameter comparison; calibrated ML.NET FastForest in registry.
+- Read-only daily briefing, bounded session follow-up context, local operational review history.
+- Built-in/custom report templates and full filtered browser print/PDF report.
+- Separate database readiness endpoint and expanded browser/core/ML/API checks. Final exact CI and manual release review required. No merge or deployment.
+
+## Unreleased — V5.2 evaluation and data portability
+
+- Exact tie-aware ROC-AUC and step-wise average precision on the independent synthetic test cohort, with undefined single-class handling and a nine-threshold validation-only decision table.
+- Local experiment XLSX export containing seed, cohort sizes, cost weight, threshold, model metrics and calibration; no real-data certification or promotion.
+- Bilingual normalized full-phrase assistant matching, supported examples and explicit navigation actions; unknown requests do not create or modify records.
+- Demo JSON snapshot export from Help & settings, including the simulation clock and registered data, not UI preferences. Export only; no automatic import or server transfer.
+- Indexed calendar lookups and diagnostic naive/indexed aggregation comparison with equal checksums; no production timing claim.
+- Responsive assistant controls, core regression and populated browser acceptance coverage. Fresh exact CI required.
+
+
+## Unreleased — V5.1 comparative analytics and operational review
+
+- Fix explicit accessible names on custom report controls after the V5 browser timeout.
+- Compare equal adjacent departure periods using one simulation clock, with no fabricated percentage for a zero baseline.
+- Sort the same filtered vehicle rows in the preview and Excel export; page through 25 rows at a time; limit the distance chart to the top ten vehicles and compute its maximum once.
+- Review queue evidence disclosure and local XLSX snapshot with policy, clock, thresholds, counts and all included alerts; inline text only. Changing a rule clears stale save feedback.
+- Index vehicle lookup in the advisor while retaining first-match behavior. Shared responsive comparative cards and controls; RU/EN labels.
+- Regression checks for cohort boundaries, sorting, workbook contents and formula safety; browser coverage for comparison, controls, populated accessibility and review export. Exact CI required.
+
+
+## Unreleased — V5 Intelligence Suite
+
+- Fixed three-member logistic ensemble with vehicle-disjoint training, validation and final test cohorts, validation-only cost-weighted threshold selection, calibration, member disagreement and bounded one-input-at-a-time sensitivity. Synthetic experiment; not an operational safety model.
+- Budget sensitivity compares hypothetical fuel, driver and fixed-cost changes without modifying the registered trip cohort or original cost assumptions.
+- Configurable local review rules preview escalation and group the review queue; all high alerts remain included. No automatic messages or writes.
+- Vehicle report builder filters by status, minimum trips and search, selects columns, previews up to 25 rows and exports matching native XLSX with safe inline user text.
+- Assistant supports operational risk and calendar review intents; no generative inference or external API.
+- Shared bilingual analytical-panel styling, responsive layout, restrained motion with reduced-motion support. Indexed vehicle/period grouping avoids repeated full trip scans in report and financial aggregation.
+- Added deterministic core regression tests and Playwright acceptance for new workflows, screenshots and export. Exact CI required before publication.
+
+
 ## Unreleased — V4.3 personalized workspace
 
 - Dashboard presets: Full overview, Operations focus, Intelligence focus and individually selected optional panels. Core KPIs, readiness, agenda and alerts remain present. Compact density and reset affect layout only; preferences are stored separately from synthetic fleet records.

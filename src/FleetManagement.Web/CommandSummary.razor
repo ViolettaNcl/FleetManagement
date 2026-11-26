@@ -13,10 +13,18 @@
             <div class="workload-donut" style="@DonutStyle(statusCounts)" role="img" aria-label="@WorkloadLabel(statusCounts)"><div><strong>@Fleet.Trips.Count</strong><small>@T("Total trips")</small></div></div>
             <div class="workload-legend">
                 @foreach(var status in new[]{"In transit","Scheduled","Completed"}){
-                    <div class="workload-row"><span class="@("chart-dot "+Tone(status))"></span><span>@T(status)</span><strong>@statusCounts.GetValueOrDefault(status)</strong><small>@Percent(statusCounts.GetValueOrDefault(status),Fleet.Trips.Count)</small></div>
+                    var number=statusCounts.GetValueOrDefault(status);
+                    var share=Percent(number,Fleet.Trips.Count);
+                    <button type="button" class="secondary workload-row workload-filter" data-trip-status="@status" aria-describedby="workload-filter-description" @onclick="()=>FilterTrips.InvokeAsync(status)">
+                        <span class="@("chart-dot "+Tone(status))" aria-hidden="true"></span>
+                        <span>@T(status)</span>
+                        <strong>@number</strong>
+                        <small>@share</small>
+                    </button>
                 }
             </div>
         </div>
+        <p id="workload-filter-description" class="muted">@T("Select a status to show matching trips.")</p>
         <div class="availability-summary"><div><strong data-testid="available-now">@available <small>/ @Fleet.Vehicles.Count</small></strong><span>@T("Vehicles available now")</span></div><p class="muted">@T("No active trip, current reservation or overdue service. Future assignments still require validation.")</p><button class="secondary" @onclick='()=>Open.InvokeAsync("Dispatch")'>@T("Open dispatch")</button></div><div class="readiness-section"><h3>@T("Maintenance readiness")</h3>
         @foreach(var status in new[]{"Healthy","Soon","Due"}){
             var number=serviceCounts.GetValueOrDefault(status);
@@ -41,6 +49,7 @@
     [Parameter] public DateTime Now{get;set;}
     [Parameter] public IReadOnlyList<VehicleReservation> Reservations{get;set;}=[];
     [Parameter] public EventCallback<string> Open{get;set;}
+    [Parameter] public EventCallback<string> FilterTrips{get;set;}
     private static string Tone(string status)=>status switch{"In transit"=>"violet","Scheduled"=>"cyan","Completed" or "Healthy"=>"green","Soon"=>"amber",_=>"red"};
     private static double Share(int count,int total)=>total==0?0:100.0*count/total;
     private static string F(double n)=>n.ToString("F3",CultureInfo.InvariantCulture);

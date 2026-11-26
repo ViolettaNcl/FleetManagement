@@ -54,7 +54,7 @@ public static class MaintenanceLearning
         return Fit(train,test,seed,epochs);
     }
     // No held-out vehicle can contribute to normalization or gradient updates.
-    private static LearningExperiment Fit(IReadOnlyList<TelemetryObservation> train,IReadOnlyList<TelemetryObservation> test,int seed,int epochs){
+    internal static LearningExperiment Fit(IReadOnlyList<TelemetryObservation> train,IReadOnlyList<TelemetryObservation> test,int seed,int epochs){
         var vectors=train.Select(r=>r.Features.Vector()).ToArray();
         var mean=Enumerable.Range(0,5).Select(i=>vectors.Average(v=>v[i])).ToArray();
         var scale=Enumerable.Range(0,5).Select(i=>Math.Max(1e-9,Math.Sqrt(vectors.Average(v=>Math.Pow(v[i]-mean[i],2))))).ToArray();

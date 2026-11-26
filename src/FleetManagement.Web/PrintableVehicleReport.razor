@@ -1,0 +1,22 @@
+@using FleetManagement.Web
+<section class="fleet-print-document">
+    <div class="fleet-print-heading"><strong>FleetManagement</strong><span>@T("Demo operations report")</span></div>
+    <h1>@T("Vehicle report")</h1>
+    <p>@From.ToString("yyyy-MM-dd") – @To.ToString("yyyy-MM-dd") · @T("Simulation time"): @Now.ToString("yyyy-MM-dd HH:mm")</p>
+    @{var rows=FleetReport.FilterVehicles(Summary,Options);}
+    <p>@T("vehicles in report"): @rows.Count / @Summary.VehicleRows.Count · @T("Report service status"): @T(Options.Service) · @T("Minimum trips"): @Options.MinimumTrips</p>
+    <p>@T("Demo data only; service intervals are not safety certification.")</p>
+    <table><thead><tr><th>@T("Registration")</th>@if(Options.Model){<th>@T("Model")</th>}@if(Options.Counts){<th>@T("Trips")</th><th>@T("Completed")</th>}@if(Options.Distance){<th>@T("Completed distance")</th>}@if(Options.ServiceColumn){<th>@T("Service status")</th>}</tr></thead><tbody>
+    @foreach(var row in rows){<tr><td>@row.Registration</td>@if(Options.Model){<td>@row.Model</td>}@if(Options.Counts){<td>@row.Trips</td><td>@row.CompletedTrips</td>}@if(Options.Distance){<td>@row.CompletedDistanceKm km</td>}@if(Options.ServiceColumn){<td>@T(row.ServiceStatus)</td>}</tr>}
+    </tbody></table>
+    @if(rows.Count==0){<p>@T("No matching vehicles.")</p>}
+</section>
+@code{
+    [Parameter] public bool Russian{get;set;}
+    [Parameter,EditorRequired] public FleetSummary Summary{get;set;}=default!;
+    [Parameter,EditorRequired] public VehicleReportOptions Options{get;set;}=default!;
+    [Parameter] public DateTime From{get;set;}
+    [Parameter] public DateTime To{get;set;}
+    [Parameter] public DateTime Now{get;set;}
+    private string T(string value)=>DemoLocale.Text(value,Russian);
+}

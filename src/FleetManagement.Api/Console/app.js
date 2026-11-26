@@ -233,7 +233,7 @@ $("account-form").addEventListener("submit",event=>{event.preventDefault();const
 let calendarEntries=[];
 const calendarForm=$("calendar-form");
 calendarForm.elements.from.value=new Date().toISOString().slice(0,10);
-function clearDashboard(){calendarEntries=[];for(const id of ["trip-bars","service-bars","departure-bars","reserved-now","overview-time"])$(id).replaceChildren();$("calendar-filter").value="";calendarForm.reset();calendarForm.elements.from.value=new Date().toISOString().slice(0,10);}
+function clearDashboard(){calendarEntries=[];for(const id of ["trip-bars","service-bars","departure-bars","reserved-now","overview-time","scheduled-review-state","scheduled-review-clock","scheduled-review-history"])$(id).replaceChildren();$("calendar-filter").value="";calendarForm.reset();calendarForm.elements.from.value=new Date().toISOString().slice(0,10);}
 function barRows(id,items){
     const root=$(id);root.replaceChildren();const max=Math.max(1,...items.map(x=>x[1]));
     for(const [label,value] of items){const row=document.createElement("div");row.className="dashboard-bar";
@@ -241,13 +241,17 @@ function barRows(id,items){
         uiText(name,label);amount.textContent=String(value);bar.max=max;bar.value=value;bar.setAttribute("aria-label",translate(label));row.append(name,amount,bar);root.append(row);}
 }
 async function loadDashboard(){
-    const data=await api("/api/operations/overview");
+    const [data,scheduled]=await Promise.all([api("/api/operations/overview"),api("/api/operations/scheduled-review")]);
     barRows("trip-bars",[["Completed",data.trips.completed],["In transit",data.trips.active],["Scheduled",data.trips.scheduled]]);
     barRows("service-bars",[["Healthy",data.service.healthy],["Soon",data.service.soon],["Due",data.service.due]]);
     barRows("departure-bars",data.departures.map(d=>[d.date,d.count]));
     uiText($("reserved-now"),"Reserved now: "+data.reservedNow);
     uiText($("overview-time"),"Calculated at "+date(data.asOfUtc));
     table("overview-alerts",[["Severity",text("severity")],["Subject",text("subject")],["Alert",text("title")],["Evidence",text("evidence")],["Recommendation",text("recommendation")]],data.alerts);
+    const states={starting:"Scheduled review starting",idle:"Scheduled review idle",running:"Scheduled review running",error:"Scheduled review failed",unavailable:"Scheduled review unavailable",disabled:"Scheduled review disabled"};
+    uiText($("scheduled-review-state"),states[scheduled.state]??"Scheduled review unavailable");
+    $("scheduled-review-clock").textContent=scheduled.lastAttemptUtc?translate("Last attempt (UTC)")+": "+date(scheduled.lastAttemptUtc):"";
+    table("scheduled-review-history",[["Observation (UTC)",r=>date(r.clock)],["High priority",r=>r.high+" / "+r.highThreshold],["Review soon",r=>r.medium+" / "+r.mediumThreshold],["Review queue",text("queue")],["Escalation",r=>translate(r.escalate?"Yes":"No")]],scheduled.history);
 }
 async function loadCalendar(){
     if(!calendarForm.reportValidity())return;

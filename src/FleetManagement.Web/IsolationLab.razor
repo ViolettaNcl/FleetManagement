@@ -1,0 +1,21 @@
+@using FleetManagement.Web
+<section class="panel suite-panel" aria-labelledby="isolation-title">
+    <div class="suite-heading"><div><span class="suite-kicker">@T("Unsupervised learning")</span><h2 id="isolation-title">@T("Isolation forest lab")</h2><p class="muted">@T("Train randomized isolation trees on normal synthetic sensors and select the 95th-percentile threshold on a separate normal validation cohort. Compare with the fixed z-score detector on the same injected-fault test cohort.")</p></div><button @onclick="Run" disabled="@(trees is <16 or >64)">@T("Run isolation forest")</button></div>
+    <div class="formgrid"><label>@T("Isolation seed")<input type="number" @bind="seed"/></label><label>@T("Isolation trees")<input type="number" min="16" max="64" @bind="trees"/></label></div>
+    @if(report is not null){
+        var e=report;
+        <p class="muted">@T("Evaluated seed"): @evaluatedSeed · @T("Isolation trees"): @evaluatedTrees · @e.TrainRows / @e.ValidationRows / @e.TestRows @T("training / validation / test rows")</p>
+        <div class="metrics suite-metrics"><div class="metric">@T("Selected threshold")<strong data-testid="isolation-threshold">@e.Threshold.ToString("F3")</strong></div><div class="metric">@T("Test precision")<strong>@e.Forest.Precision.ToString("P1")</strong></div><div class="metric">@T("Test recall")<strong>@e.Forest.Recall.ToString("P1")</strong></div><div class="metric">ROC-AUC<strong>@(e.Ranking.RocAuc?.ToString("F3")??"—")</strong></div></div>
+        <div class="tablewrap" role="region" tabindex="0" aria-label="@T("Anomaly detector comparison")"><table><thead><tr><th>@T("Model")</th><th>F1</th><th>@T("Precision")</th><th>@T("Recall")</th><th>FP</th><th>FN</th></tr></thead><tbody>@foreach(var row in new[]{("Isolation forest",e.Forest),("Fixed z-score",e.ZScore)}){<tr><td>@T(row.Item1)</td><td>@row.Item2.F1.ToString("P1")</td><td>@row.Item2.Precision.ToString("P1")</td><td>@row.Item2.Recall.ToString("P1")</td><td>@row.Item2.FP</td><td>@row.Item2.FN</td></tr>}</tbody></table></div>
+        <h3>@T("Highest isolation scores")</h3>
+        <div class="tablewrap" role="region" tabindex="0" aria-label="@T("Highest isolation scores")"><table><thead><tr><th>@T("Sample")</th><th>@T("Score")</th><th>@T("Injected fault")</th><th>@T("Flagged")</th></tr></thead><tbody>@foreach(var sample in e.Samples.OrderByDescending(s=>s.Score).ThenBy(s=>s.Index).Take(12)){<tr><td>@sample.Index</td><td>@sample.Score.ToString("F3")</td><td>@T(sample.Actual?"Yes":"No")</td><td>@T(sample.Flagged?"Yes":"No")</td></tr>}</tbody></table></div>
+        <p class="muted">@T("Isolation scores are not calibrated failure probabilities. Neither detector is certified on real telemetry.")</p>
+    }
+</section>
+@code{
+    [Parameter] public bool Russian{get;set;}
+    private string T(string value)=>DemoLocale.Text(value,Russian);
+    private int seed=42,trees=32,evaluatedSeed,evaluatedTrees;
+    private IsolationResult? report;
+    private void Run(){if(trees is <16 or >64)return;report=IsolationLearning.Run(seed,trees);evaluatedSeed=seed;evaluatedTrees=trees;}
+}

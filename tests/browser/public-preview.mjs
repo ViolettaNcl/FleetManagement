@@ -25,6 +25,7 @@ try {
   assert.ok(verified,'Public build marker missing or stale');
   const appUrl=url+'app/';
   const page=await context.newPage();
+  await page.addInitScript(()=>{if(!localStorage.getItem('fleetmanagement.preferences.navigation.v6'))localStorage.setItem('fleetmanagement.preferences.navigation.v6','all');});
   const errors=[];
   page.on('pageerror',e=>errors.push(e.message));
   const response=await page.goto(appUrl,{waitUntil:'domcontentloaded',timeout:60000});

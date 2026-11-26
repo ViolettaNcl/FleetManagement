@@ -42,3 +42,11 @@ document.addEventListener('keydown',event=>{
     event.preventDefault();input.value='';input.dispatchEvent(new Event('input',{bubbles:true}));input.focus();
   }
 });
+
+
+// Explicit boolean result across JS interop. Resolve Storage.setItem at call time;
+// .NET can cache a previously bound function when using localStorage.setItem directly.
+window.fleetTrySaveSnapshot=(key,json)=>{
+  if(key!=='fleetmanagement.demo.v1'||typeof json!=='string')return false;
+  try{localStorage.setItem(key,json);return true;}catch{return false;}
+};

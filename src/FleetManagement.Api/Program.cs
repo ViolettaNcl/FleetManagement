@@ -54,13 +54,16 @@ builder.Services.AddRateLimiter(options=>{
 builder.Services.AddSingleton<FleetWriteGate>();
 builder.Services.AddSingleton(new OperationsPolicy(builder.Configuration.GetValue<bool>("Fleet:RequireShifts")));
 builder.Services.AddScoped<FleetStore>();
+builder.Services.AddSingleton(ScheduledReviewOptions.Read(builder.Configuration));
+builder.Services.AddSingleton<ScheduledReview>();
+builder.Services.AddHostedService<ScheduledReview>(services=>services.GetRequiredService<ScheduledReview>());
 builder.Services.AddOpenApi();
 builder.Services.AddSignalR();
 builder.Services.AddProblemDetails();
 var app=builder.Build();
 app.UseExceptionHandler();
 app.Use(async (context,next)=>{
-    if(context.Request.Path.StartsWithSegments("/api") || context.Request.Path.StartsWithSegments("/openapi")){
+    if(context.Request.Path.StartsWithSegments("/api") || context.Request.Path.StartsWithSegments("/openapi") || context.Request.Path=="/health" || context.Request.Path=="/ready"){
         context.Response.Headers.CacheControl="no-store";
         context.Response.Headers["X-Content-Type-Options"]="nosniff";
         if(context.Request.ContentLength>MaxRequestBytes){context.Response.StatusCode=413;await context.Response.WriteAsJsonAsync(new{error="Request body exceeds 256 KiB."});return;}
@@ -115,6 +118,26 @@ if(builder.Configuration.GetValue<bool>("Fleet:InitializeDatabase")){
 }
 ConnectedConsole.Map(app);
 app.MapGet("/health",()=>Results.Ok(new { status="ok" }));
+// Liveness is independent of storage; readiness verifies the operational tables.
+app.MapGet("/ready",async Task<IResult> (FleetDbContext db,CancellationToken cancel)=>{
+    using var timeout=CancellationTokenSource.CreateLinkedTokenSource(cancel);
+    timeout.CancelAfter(TimeSpan.FromSeconds(5));
+    db.Database.SetCommandTimeout(3);
+    try{
+        await db.Vehicles.AsNoTracking().Take(1).ToListAsync(timeout.Token);
+        await db.Drivers.AsNoTracking().Take(1).ToListAsync(timeout.Token);
+        await db.Trips.AsNoTracking().Take(1).ToListAsync(timeout.Token);
+        await db.MaintenanceEntries.AsNoTracking().Take(1).ToListAsync(timeout.Token);
+        await db.DriverShifts.AsNoTracking().Take(1).ToListAsync(timeout.Token);
+        await db.VehicleReservations.AsNoTracking().Take(1).ToListAsync(timeout.Token);
+        await db.BatchReceipts.AsNoTracking().Take(1).ToListAsync(timeout.Token);
+        await db.AuditEntries.AsNoTracking().Take(1).ToListAsync(timeout.Token);
+        await db.Users.AsNoTracking().Select(u=>u.Id).Take(1).ToListAsync(timeout.Token);
+        return Results.Ok(new{status="ready"});
+    }catch(Exception ex) when(ex is System.Data.Common.DbException or InvalidOperationException or OperationCanceledException){
+        return Results.Json(new{status="not-ready"},statusCode:503);
+    }
+});
 app.MapOpenApi().RequireAuthorization("FleetRead");
 app.MapHub<FleetHub>("/hubs/fleet",options=>{options.CloseOnAuthenticationExpiration=true;options.LongPolling.PollTimeout=TimeSpan.FromSeconds(20);}).RequireAuthorization("FleetRead");
 var api=app.MapGroup("/api").RequireAuthorization("FleetRead");
@@ -122,5 +145,6 @@ FleetEndpoints.Map(api);
 FinancialEndpoints.Map(api);
 OperationsEndpoints.Map(api);
 OverviewEndpoints.Map(api);
+api.MapGet("/operations/scheduled-review",(ScheduledReview worker)=>Results.Ok(worker.GetStatus()));
 IdentityEndpoints.Map(api);
 app.Run();

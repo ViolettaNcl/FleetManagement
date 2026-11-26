@@ -18,6 +18,7 @@ public static class FleetAdvisor
             "Within both service intervals"=>"В пределах обоих интервалов ТО",
             _=>reason}:reason;
         var alerts=new List<FleetAlert>();
+        var vehiclesById=fleet.Vehicles.ToLookup(v=>v.Id);
         foreach(var v in fleet.Vehicles.OrderBy(v=>v.Id)){
             var service=FleetRules.Assess(v,now);
             if(service.Status is "Due" or "Soon"){
@@ -29,14 +30,14 @@ public static class FleetAdvisor
             }
         }
         foreach(var trip in fleet.Trips.Where(t=>t.Start>now&&t.Start<=now.AddHours(24)).OrderBy(t=>t.Id)){
-            var v=fleet.Vehicles.FirstOrDefault(v=>v.Id==trip.VehicleId);
+            var v=vehiclesById[trip.VehicleId].FirstOrDefault();
             if(v is not null&&FleetRules.Assess(v,trip.Start).Status=="Due")
                 alerts.Add(new($"dispatch:{trip.Id}","High",L($"Trip #{trip.Id}",$"Рейс №{trip.Id}"),L("Scheduled with service-due vehicle","Назначен автомобиль с просроченным ТО"),
                     L($"{v.Plate}; departure {trip.Start:yyyy-MM-dd HH:mm} ({clockLabel}).",$"{v.Plate}; отправление {trip.Start:yyyy-MM-dd HH:mm} ({(clockLabel=="demo time"?"время демо":clockLabel)})."),
                     L("Review the vehicle and consider a different available assignment. No changes are made automatically.","Проверьте автомобиль и рассмотрите другое доступное назначение. Автоматических изменений нет."),"Dispatch"));
         }
         foreach(var r in (reservations??[]).Where(r=>r.End>now&&r.Start<=now.AddHours(24))){
-            var plate=fleet.Vehicles.FirstOrDefault(v=>v.Id==r.VehicleId)?.Plate??L("Unknown","Неизвестно");
+            var plate=vehiclesById[r.VehicleId].FirstOrDefault()?.Plate??L("Unknown","Неизвестно");
             var kind=russian?r.Kind switch{"Scheduled service"=>"Плановое ТО","Repair"=>"Ремонт","Inspection"=>"Осмотр","Unavailable"=>"Недоступен",_=>r.Kind}:r.Kind;
             alerts.Add(new($"reservation:{r.Id}","Medium",plate,L("Vehicle reserved","Автомобиль зарезервирован"),
                 $"{kind}; {r.Start:yyyy-MM-dd HH:mm} – {r.End:yyyy-MM-dd HH:mm}.",
@@ -73,7 +74,7 @@ public static class FleetAdvisor
     public static AdvisorAnswer Answer(FleetData fleet,DateTime now,string question,IReadOnlyList<DriverShift>? shifts=null,bool requireShifts=false,IReadOnlyList<VehicleReservation>? reservations=null,bool russian=false)
     {
         string L(string en,string ru)=>russian?ru:en;
-        var q=question.Trim().ToLowerInvariant();
+        var q=AdvisorIntent.Resolve(question);
         var alerts=Assess(fleet,now,shifts,requireShifts,reservations,russian:russian);
         if(q is "maintenance" or "service" or "what needs maintenance?" or "то" or "обслуживание"){
             var evidence=alerts.Where(a=>a.Destination=="Maintenance").ToArray();
@@ -85,8 +86,21 @@ public static class FleetAdvisor
             var summary=pair is null?L("No eligible vehicle/driver pair for the next one-hour planning window.","Нет подходящей пары автомобиля и водителя на ближайшее часовое окно."):L($"Suggested pair: {fleet.Vehicles.Single(v=>v.Id==pair.VehicleId).Plate} / {fleet.Drivers.Single(d=>d.Id==pair.DriverId).Name}.",$"Рекомендуемая пара: {fleet.Vehicles.Single(v=>v.Id==pair.VehicleId).Plate} / {fleet.Drivers.Single(d=>d.Id==pair.DriverId).Name}.");
             return new(L("Dispatch review","Проверка диспетчеризации"),summary+L($" Window: {start:HH:mm}–{end:HH:mm} (demo time). Recommendation only; verify assignment constraints.",$" Окно: {start:HH:mm}–{end:HH:mm} (время демо). Только рекомендация; проверьте ограничения."),alerts.Where(a=>a.Destination is "Dispatch" or "Resource Planning").ToArray());
         }
+        if(q is "alerts" or "risk" or "warnings" or "риски" or "предупреждения"){
+            var high=alerts.Count(a=>a.Severity=="High");var medium=alerts.Count(a=>a.Severity=="Medium");
+            return new(L("Operational risk review","Проверка операционных рисков"),L($"{high} high-priority and {medium} medium-priority alerts in the current register. No automatic changes; inspect the evidence.", $"Предупреждения: {high} высокого и {medium} среднего приоритета. Автоматических изменений нет; изучите основания."),alerts);
+        }
+        if(q is "calendar" or "agenda" or "today" or "календарь" or "сегодня"){
+            var events=FleetCalendar.Entries(fleet,now.Date,now.Date.AddDays(1),reservations);
+            var trips=events.Count(e=>e.Kind=="Trip");var bookings=events.Count(e=>e.Kind=="Reservation");var service=events.Count(e=>e.Kind=="Service due");
+            return new(L("Calendar review","Обзор календаря"),L($"Today ({now:yyyy-MM-dd} demo time): {trips} trip events, {bookings} reservations, {service} calendar service reminders. Open Calendar for the agenda.",$"Сегодня ({now:yyyy-MM-dd}, время демо): рейсы — {trips}, резервирования — {bookings}, напоминания ТО — {service}. Откройте календарь для просмотра расписания."),alerts.Where(a=>a.Destination is "Dispatch" or "Resource Planning" or "Maintenance").ToArray());
+        }
+        if(q=="briefing"){
+            var briefing=FleetBriefing.Build(fleet,now,shifts,requireShifts,reservations);
+            return new(L("Daily fleet briefing","Ежедневная сводка автопарка"),L($"At {now:yyyy-MM-dd HH:mm} (demo time): {briefing.ActiveTrips} active trips, {briefing.Next24Departures} departures in the next 24 hours, {briefing.AvailableNow} currently available vehicles, {briefing.HighAlerts} high-priority alerts. Review the register before assigning work.",$"На {now:yyyy-MM-dd HH:mm} (время демо): активных рейсов — {briefing.ActiveTrips}, отправлений в ближайшие 24 часа — {briefing.Next24Departures}, доступных автомобилей — {briefing.AvailableNow}, предупреждений высокого приоритета — {briefing.HighAlerts}. Проверьте реестр перед назначением."),alerts);
+        }
         if(q is "overview" or "summary" or "what needs attention?" or "обзор" or "сводка")
             return new(L("Fleet overview","Обзор автопарка"),L($"{fleet.Vehicles.Count} vehicles; {fleet.Drivers.Count} drivers; {fleet.Trips.Count(t=>FleetRules.TripStatus(t,now)=="In transit")} in transit; {alerts.Count} current rule-based alerts.",$"Автомобилей: {fleet.Vehicles.Count}; водителей: {fleet.Drivers.Count}; в пути: {fleet.Trips.Count(t=>FleetRules.TripStatus(t,now)=="In transit")}; предупреждений: {alerts.Count}."),alerts);
-        return new(L("Supported questions","Поддерживаемые вопросы"),L("This offline assistant uses fixed intents, not a language model. Try overview, maintenance or dispatch. No answer is generated for unsupported questions.","Автономный помощник использует фиксированные запросы, а не языковую модель. Попробуйте «обзор», «обслуживание» или «доступность». Ответ на неподдерживаемые вопросы не генерируется."),[]);
+        return new(L("Supported questions","Поддерживаемые вопросы"),L("This offline assistant uses fixed intents, not a language model. Try overview, maintenance, dispatch, alerts, calendar or briefing. No answer is generated for unsupported questions.","Автономный помощник использует фиксированные запросы, а не языковую модель. Попробуйте «обзор», «обслуживание», «доступность», «риски», «календарь» или «ежедневная сводка». Ответ на неподдерживаемые вопросы не генерируется."),[]);
     }
 }

@@ -9,7 +9,7 @@
 </section>
 <section class="panel"><h2>@T("Driver availability timeline")</h2><div class="actions"><button class="secondary" @onclick="()=>day=day.AddDays(-1)">@T("Previous day")</button><label>@T("Resource date")<input type="date" @bind="day"/></label><button class="secondary" @onclick="()=>day=day.AddDays(1)">@T("Next day")</button><button class="secondary" @onclick="()=>day=Now.Date">@T("Today")</button></div>
 <p class="muted">@T("Pale bars: registered shift availability. Purple bars: assigned trips. Cross-midnight intervals are clipped to the selected day.")</p>
-<div class="gantt-scroll"><div class="gantt-grid"><div></div><div class="gantt-axis">@foreach(var h in new[]{0,4,8,12,16,20,24}){<span>@($"{h:00}:00")</span>}</div>
+<div class="gantt-scroll" role="region" tabindex="0" aria-label="@T("Driver shift timeline")"><div class="gantt-grid"><div></div><div class="gantt-axis">@foreach(var h in new[]{0,4,8,12,16,20,24}){<span>@($"{h:00}:00")</span>}</div>
 @foreach(var row in ResourcePlanning.Day(Fleet,Shifts,day)){<strong>@row.Name</strong><div class="gantt-track" aria-label="@($"Daily schedule for {row.Name}")">
 @foreach(var shift in row.Shifts){<div class="gantt-away" style="@Span(shift.Start,shift.End)" title="@($"Shift {shift.Start:dd MMM HH:mm} – {shift.End:dd MMM HH:mm}")"></div>}
 @foreach(var trip in row.Trips){<div class="gantt-visit" style="@(Span(trip.Start,trip.End)+";background:"+(ResourcePlanning.Covers(Shifts,trip.DriverId,trip.Start,trip.End)?"#6A5ACD":"#BA55A7"))" title="@($"Trip #{trip.Id}: {trip.Start:dd MMM HH:mm} – {trip.End:dd MMM HH:mm}")"></div>}
@@ -18,9 +18,9 @@
 <section class="panel"><h2>@T("Uncovered assignments")</h2>
 @{var uncovered=ResourcePlanning.Uncovered(Fleet,Shifts,Now);}
 @if(uncovered.Count==0){<p>@T("All active and future trips have a covering shift.")</p>}else{
-<div class="tablewrap"><table><thead><tr><th>@T("Trip")</th><th>@T("Driver")</th><th>@T("Start")</th><th>@T("End")</th></tr></thead><tbody>@foreach(var t in uncovered){<tr><td>#@t.Id</td><td>@Name(t.DriverId)</td><td>@t.Start.ToString("dd MMM HH:mm")</td><td>@t.End.ToString("dd MMM HH:mm")</td></tr>}</tbody></table></div>}
+<div class="tablewrap" role="region" tabindex="0" aria-label="@T("Uncovered trips")"><table><thead><tr><th>@T("Trip")</th><th>@T("Driver")</th><th>@T("Start")</th><th>@T("End")</th></tr></thead><tbody>@foreach(var t in uncovered){<tr><td>#@t.Id</td><td>@Name(t.DriverId)</td><td>@t.Start.ToString("dd MMM HH:mm")</td><td>@t.End.ToString("dd MMM HH:mm")</td></tr>}</tbody></table></div>}
 <button class="secondary" @onclick='()=>Open.InvokeAsync("Dispatch")'>@T("Review dispatch")</button></section>
-<section class="panel"><h2>@T("Shift register")</h2><div class="tablewrap"><table><thead><tr><th>@T("Driver")</th><th>@T("Start")</th><th>@T("End")</th><th>@T("Hours")</th><th>@T("Action")</th></tr></thead><tbody>
+<section class="panel"><h2>@T("Shift register")</h2><div class="tablewrap" role="region" tabindex="0" aria-label="@T("Shift register")"><table><thead><tr><th>@T("Driver")</th><th>@T("Start")</th><th>@T("End")</th><th>@T("Hours")</th><th>@T("Action")</th></tr></thead><tbody>
 @foreach(var s in Shifts.OrderBy(s=>s.Start).ThenBy(s=>s.Id)){<tr><td>@Name(s.DriverId)</td><td>@s.Start.ToString("dd MMM yyyy HH:mm")</td><td>@s.End.ToString("dd MMM yyyy HH:mm")</td><td>@((s.End-s.Start).TotalHours.ToString("F1"))</td><td>@if(s.Start>Now){<button class="delete" @onclick="()=>Remove(s.Id)">@T("Remove shift")</button>}else{<small>@T("History")</small>}</td></tr>}
 </tbody></table></div>@if(Shifts.Count==0){<p>@T("No registered shifts.")</p>}</section>
 @code{

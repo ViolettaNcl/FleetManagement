@@ -9,10 +9,12 @@ public static class FleetCalendar
     {
         if(until<=from || (until-from).TotalDays>62) throw new ArgumentException("Invalid calendar window.");
         var result=new List<CalendarEntry>();
+        var vehicles=fleet.Vehicles.ToLookup(v=>v.Id);
+        var drivers=fleet.Drivers.ToLookup(d=>d.Id);
         foreach(var t in fleet.Trips.Where(t=>t.Start<until && from<t.End))
         {
-            var plate=fleet.Vehicles.FirstOrDefault(v=>v.Id==t.VehicleId)?.Plate??"Unknown";
-            var driver=fleet.Drivers.FirstOrDefault(d=>d.Id==t.DriverId)?.Name??"Unknown";
+            var plate=vehicles[t.VehicleId].FirstOrDefault()?.Plate??"Unknown";
+            var driver=drivers[t.DriverId].FirstOrDefault()?.Name??"Unknown";
             result.Add(new(plate,$"{t.Origin} → {t.Destination} · {driver}",t.Start,t.End,"Trip",t.Id,t.VehicleId));
         }
         foreach(var v in fleet.Vehicles)
@@ -22,7 +24,7 @@ public static class FleetCalendar
                 result.Add(new(v.Plate,"Calendar-based service deadline (not a booking)",due,due.AddDays(1),"Service due",null,v.Id));
         }
         foreach(var r in (reservations??[]).Where(r=>r.Start<until&&from<r.End)){
-            var plate=fleet.Vehicles.FirstOrDefault(v=>v.Id==r.VehicleId)?.Plate??"Unknown";
+            var plate=vehicles[r.VehicleId].FirstOrDefault()?.Plate??"Unknown";
             result.Add(new(plate,$"{r.Kind} · {r.Notes}",r.Start,r.End,"Reservation",null,r.VehicleId));
         }
         return result.OrderBy(e=>e.Start).ThenBy(e=>e.VehicleId).ToList();

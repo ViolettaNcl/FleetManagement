@@ -23,11 +23,22 @@ for section in (m, e):
     path = run / section["artifact"]["file"]
     assert path.is_file() and zipfile.is_zipfile(path)
     assert hashlib.sha256(path.read_bytes()).hexdigest() == section["artifact"]["sha256"]
-for key in ("baseline", "logistic", "fastTree"):
+assert m["fastForestReloadVerified"] is True
+calibration = m["fastForestCalibration"]
+assert calibration["method"] == "Platt" and calibration["rows"] == 720 and calibration["vehicles"] == 12
+assert len(calibration["sha256"]) == 64 and calibration["sha256"] not in (m["trainSha256"], m["testSha256"])
+forest_path = run / m["fastForestArtifact"]["file"]
+assert forest_path.is_file() and zipfile.is_zipfile(forest_path)
+assert hashlib.sha256(forest_path.read_bytes()).hexdigest() == m["fastForestArtifact"]["sha256"]
+for key in ("baseline", "logistic", "fastTree", "fastForest"):
     v = m[key]
     assert v["TP"] + v["FP"] + v["TN"] + v["FN"] == 720
     for field in ("Accuracy", "Precision", "Recall", "F1", "Brier"):
         assert 0 <= v[field] <= 1
+ranking = m["fastForestRanking"]
+assert ranking["Positives"] + ranking["Negatives"] == m["testRows"]
+for key in ("RocAuc", "AveragePrecision"):
+    assert ranking[key] is None or 0 <= ranking[key] <= 1
 for key in ("baseline", "linear", "fastTree"):
     v = e[key]
     assert math.isfinite(v["Mae"]) and 0 <= v["Mae"] <= v["Rmse"]

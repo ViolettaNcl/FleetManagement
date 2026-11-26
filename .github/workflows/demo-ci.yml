@@ -47,12 +47,19 @@ jobs:
           python3 -m http.server 8080 --bind 127.0.0.1 --directory preview &
           server=$!
           trap 'kill "$server" || true' EXIT
-          node tests/browser/pwa-update.mjs
-          node tests/browser/v4.mjs
-          node tests/browser/neon.mjs
-          node tests/browser/smoke.mjs
-          node tests/browser/cross-browser.mjs
-          node tests/browser/portfolio-tour.mjs
+          # Run independent scenarios even after a failure, preserving the failing job status.
+          browser_failed=0
+          for suite in pwa-update v6-ux v6-atlas v4 v5-suite v6-rc neon smoke cross-browser portfolio-tour; do
+            echo "::group::Browser suite: $suite"
+            if node "tests/browser/$suite.mjs"; then
+              echo "PASS: suite $suite"
+            else
+              echo "::error::Browser suite failed: $suite"
+              browser_failed=1
+            fi
+            echo "::endgroup::"
+          done
+          test "$browser_failed" -eq 0
           ffmpeg -hide_banner -loglevel error -y -i portfolio-video/fleetmanagement-v3-tour.webm -c:v libx264 -pix_fmt yuv420p -movflags +faststart portfolio-video/fleetmanagement-v3-tour.mp4
           python3 tests/browser/verify_media.py
           python3 tools/write_preview_manifest.py publish/wwwroot

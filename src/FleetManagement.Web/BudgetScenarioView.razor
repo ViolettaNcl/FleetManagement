@@ -1,0 +1,23 @@
+@using FleetManagement.Web
+<section class="panel suite-panel" aria-labelledby="budget-scenario-title">
+    <div class="suite-heading"><div><span class="suite-kicker">@T("Scenario analysis")</span><h2 id="budget-scenario-title">@T("Budget sensitivity")</h2><p class="muted">@T("Compare hypothetical changes in fuel, driver and fixed costs against the same registered trips. The original assumptions and records are not modified.")</p></div><button class="secondary" @onclick="Reset">@T("Reset scenario")</button></div>
+    <div class="formgrid"><label>@T("Fuel cost change (%)")<input type="number" step="5" min="-50" max="100" @bind="fuel"/></label><label>@T("Driver cost change (%)")<input type="number" step="5" min="-50" max="100" @bind="driver"/></label><label>@T("Fixed cost change (%)")<input type="number" step="5" min="-50" max="100" @bind="fixedCost"/></label></div>
+    @if(!Scenario.Valid){<p class="error" role="status">@T("Choose changes from -50% to 100%.")</p>}
+    else{
+        var result=BudgetSensitivity.Compare(Projection,Scenario);
+        <div class="metrics suite-metrics"><div class="metric">@T("Baseline total")<strong data-testid="budget-baseline">@Money(result.Baseline)</strong></div><div class="metric">@T("Scenario total")<strong data-testid="budget-scenario">@Money(result.Scenario)</strong></div><div class="metric">@T("Scenario difference")<strong data-testid="budget-delta">@Money(result.Delta)</strong></div><div class="metric">@T("Budget headroom")<strong>@Money(result.Headroom)</strong></div></div>
+        <div class="tablewrap" tabindex="0" role="region" aria-label="@T("Scenario cost breakdown")"><table><thead><tr><th>@T("Cost component")</th><th>@T("Baseline")</th><th>@T("Scenario")</th></tr></thead><tbody>
+        @foreach(var row in new[]{("Fuel",Projection.FuelCost,result.Fuel),("Driver time",Projection.DriverCost,result.Driver),("Fixed allowance",Projection.FixedAllowance,result.Fixed),("Maintenance allowance",Projection.MaintenanceAllowance,result.Maintenance)}){<tr><td>@T(row.Item1)</td><td>@Money(row.Item2)</td><td>@Money(row.Item3)</td></tr>}
+        </tbody></table></div>
+        <p class="muted">@T("Illustrative EUR estimates only. No extra trips, recorded maintenance expenses or actual cash flows are inferred.")</p>
+    }
+</section>
+@code{
+    [Parameter] public bool Russian{get;set;}
+    [Parameter,EditorRequired] public BudgetProjection Projection{get;set;}=default!;
+    private string T(string value)=>DemoLocale.Text(value,Russian);
+    private decimal fuel,driver,fixedCost;
+    private BudgetScenario Scenario=>new(fuel,driver,fixedCost);
+    private void Reset(){fuel=driver=fixedCost=0;}
+    private static string Money(decimal v)=>"€ "+v.ToString("N2");
+}

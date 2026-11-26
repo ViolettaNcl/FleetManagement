@@ -285,6 +285,7 @@
 .template-actions{gap:8px;flex-wrap:wrap}
 .demo-shell .template-actions button{min-height:44px;white-space:normal;max-width:100%}
 @media print{
+ html:has(.fleet-print-document),
  body:has(.fleet-print-document){background:#fff!important;color:#111!important}
  body:has(.fleet-print-document) .workspace-header,
  body:has(.fleet-print-document) .fleet-sidebar,

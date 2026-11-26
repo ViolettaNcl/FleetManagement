@@ -6,9 +6,10 @@
     <p class="muted" aria-live="polite">@Filtered.Count / @Alerts.Count @T("Alerts shown")</p>
     <FleetAlertList Russian="Russian" Alerts="Filtered" Open="Open"/>
 </section>
-<ReviewPolicyView Russian="Russian" Alerts="Alerts" Open="Open"/>
+<ReviewPolicyView Russian="Russian" Alerts="Alerts" Open="Open" Now="Now"/>
 @code{
     [Parameter] public bool Russian{get;set;}
+    [Parameter] public DateTime Now{get;set;}
     [Parameter,EditorRequired] public IReadOnlyList<FleetAlert> Alerts{get;set;}=[];
     [Parameter] public EventCallback<string> Open{get;set;}
     private string severity="All",query="";

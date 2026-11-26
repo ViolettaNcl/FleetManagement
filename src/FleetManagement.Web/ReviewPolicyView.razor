@@ -1,7 +1,7 @@
 @using FleetManagement.Web
 @inject IJSRuntime JS
 <section class="panel suite-panel" aria-labelledby="review-policy-title">
-    <div class="suite-heading"><div><span class="suite-kicker">@T("Automation preview")</span><h2 id="review-policy-title">@T("Operational review rules")</h2><p class="muted">@T("Configure a local escalation preview using current rule-based alerts. No messages are sent, records changed or critical alerts hidden.")</p></div><button class="secondary" @onclick="Save" disabled="@(!Policy.Valid)">@T("Save review settings")</button></div>
+    <div class="suite-heading"><div><span class="suite-kicker">@T("Automation preview")</span><h2 id="review-policy-title">@T("Operational review rules")</h2><p class="muted">@T("Configure a local escalation preview using current rule-based alerts. No messages are sent, records changed or critical alerts hidden.")</p></div><div class="actions suite-review-actions"><button class="secondary" @onclick="Save" disabled="@(!Policy.Valid)">@T("Save review settings")</button><button @onclick="Export" disabled="@(!Policy.Valid)">@T("Export review Excel")</button></div></div>
     <div class="formgrid"><label>@T("High alert threshold")<input type="number" min="1" max="100" @bind="high" @bind:after="ClearFeedback"/></label><label>@T("Medium alert threshold")<input type="number" min="1" max="100" @bind="medium" @bind:after="ClearFeedback"/></label><label class="dashboard-check"><input type="checkbox" @bind="includeMedium" @bind:after="ClearFeedback"/><span>@T("Include medium alerts in queue")</span></label></div>
     @if(!Policy.Valid){<p class="error" role="status">@T("Choose alert thresholds between 1 and 100.")</p>}
     else{
@@ -20,6 +20,7 @@
 </section>
 @code{
     [Parameter] public bool Russian{get;set;}
+    [Parameter] public DateTime Now{get;set;}
     [Parameter,EditorRequired] public IReadOnlyList<FleetAlert> Alerts{get;set;}=[];
     [Parameter] public EventCallback<string> Open{get;set;}
     private const string Key="fleetmanagement.preferences.review.v5";
@@ -39,6 +40,14 @@
                 var value=new ReviewPolicy(h,m,parts[2]=="1");if(value.Valid){high=h;medium=m;includeMedium=value.IncludeMedium;StateHasChanged();}
             }
         }catch(JSException){feedback="Review settings are session-only.";StateHasChanged();}
+    }
+    private async Task Export(){
+        if(!Policy.Valid)return;
+        try{
+            var bytes=FleetReport.ExportReviewXlsx(Alerts,Policy,Now,Russian);
+            await JS.InvokeVoidAsync("fleetDownload",Convert.ToBase64String(bytes),$"fleet-review-{Now:yyyy-MM-dd-HHmm}.xlsx");
+            feedback="Review workbook generated.";
+        }catch(JSException){feedback="Unable to download the workbook in this browser.";}
     }
     private async Task Save(){
         if(!Policy.Valid)return;

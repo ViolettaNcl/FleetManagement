@@ -1,5 +1,15 @@
 # Changelog
 
+## Unreleased — V5.1 comparative analytics and operational review
+
+- Fix explicit accessible names on custom report controls after the V5 browser timeout.
+- Compare equal adjacent departure periods using one simulation clock, with no fabricated percentage for a zero baseline.
+- Sort the same filtered vehicle rows in the preview and Excel export; page through 25 rows at a time; limit the distance chart to the top ten vehicles and compute its maximum once.
+- Review queue evidence disclosure and local XLSX snapshot with policy, clock, thresholds, counts and all included alerts; inline text only. Changing a rule clears stale save feedback.
+- Index vehicle lookup in the advisor while retaining first-match behavior. Shared responsive comparative cards and controls; RU/EN labels.
+- Regression checks for cohort boundaries, sorting, workbook contents and formula safety; browser coverage for comparison, controls, populated accessibility and review export. Exact CI required.
+
+
 ## Unreleased — V5 Intelligence Suite
 
 - Fixed three-member logistic ensemble with vehicle-disjoint training, validation and final test cohorts, validation-only cost-weighted threshold selection, calibration, member disagreement and bounded one-input-at-a-time sensitivity. Synthetic experiment; not an operational safety model.

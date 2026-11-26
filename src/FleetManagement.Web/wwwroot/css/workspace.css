@@ -198,3 +198,7 @@
 .suite-queue-details summary{cursor:pointer;min-height:32px;font-weight:650}
 .suite-queue-details summary:focus-visible{outline:2px solid var(--focus);outline-offset:3px}
 @media(max-width:480px){.suite-pagination{justify-content:space-between}.suite-pagination span{order:-1;flex:1 1 100%;text-align:center}.suite-pagination button{flex:1 1 0;min-width:0}.period-comparison-card{padding:10px}}
+
+.demo-shell .suite-review-actions{display:flex;flex-wrap:wrap;gap:8px;max-width:100%}
+.demo-shell .suite-review-actions button{min-height:44px;white-space:normal;max-width:100%}
+@media(max-width:720px){.demo-shell .suite-review-actions{width:100%}.demo-shell .suite-review-actions button{flex:1 1 130px;min-width:0}}

@@ -103,7 +103,7 @@
         <FleetRegister @ref="activeRegister" Russian="@(language=="ru")" @key="(section,recordAction)" StartNew="@(newRecordSection==section)" Fleet="fleet" IsVehicles="@(section == "Vehicles")" Today="Now" Changed="Persist" OpenPassport="OpenPassport" MaintenanceEntries="maintenanceEntries" Shifts="driverShifts" Reservations="vehicleReservations" />
     }
     else if(section=="Notifications"){
-        <NotificationCenter Russian="@(language=="ru")" Alerts="currentAlerts" Open="Navigate" />
+        <NotificationCenter Russian="@(language=="ru")" Alerts="currentAlerts" Open="Navigate" Now="Now" />
     }
     else if(section=="Help & settings"){
         <section class="panel v4-help"><h2>@T("Help & settings")</h2><p class="muted">@T("Choose a workflow. Demo records stay in this browser; no live GPS or private server data is connected.")</p>

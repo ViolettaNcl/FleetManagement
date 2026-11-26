@@ -447,4 +447,23 @@ Check(FleetAdvisor.Answer(fleet,now,"риски",russian:true).Evidence.Select(a
 Check(FleetAdvisor.Answer(fleet,now,"calendar").Title=="Calendar review","V5 calendar assistant intent");
 var v5Scale=FleetReport.Build(scaleFleet,now,now.Date.AddDays(-29),now.Date);
 Check(v5Scale.Trips==scaleFleet.Trips.Count(t=>t.Start>=now.Date.AddDays(-29)&&t.Start<now.Date.AddDays(1))&&v5Scale.VehicleRows.Sum(v=>v.Trips)==v5Scale.Trips,"V5 indexed report cohort reconciliation");
+
+var v51Comparison=FleetReport.ComparePrevious(periodFleet,periodNow,periodFrom,periodNow.Date)!;
+Check(v51Comparison.Current.Trips==periodSummary.Trips&&v51Comparison.Current.Completed==periodSummary.Completed&&v51Comparison.Current.CompletedKm==periodSummary.CompletedDistanceKm,"V5.1 current comparison reconciles with report");
+Check((v51Comparison.Previous.To-v51Comparison.Previous.From).Days==(v51Comparison.Current.To-v51Comparison.Current.From).Days&&v51Comparison.Previous.To.AddDays(1)==v51Comparison.Current.From,"V5.1 equal contiguous periods");
+Check(PeriodComparison.Change(2,0)==null&&PeriodComparison.Change(0,2)==-1&&PeriodComparison.Change(3,2)==.5,"V5.1 zero baseline and percentage change");
+Check(FleetReport.ComparePrevious(periodFleet,periodNow,new DateTime(1900,1,1),new DateTime(1900,1,1))==null,"V5.1 comparison date boundary");
+var v51Sorted=FleetReport.FilterVehicles(v5Scale,v5MaliciousOptions with{Sort="Distance"});
+Check(v51Sorted.Count==v5Scale.VehicleRows.Count&&v51Sorted.Zip(v51Sorted.Skip(1)).All(p=>p.First.CompletedDistanceKm>=p.Second.CompletedDistanceKm),"V5.1 report distance sorting");
+var v51Service=FleetReport.FilterVehicles(report,v5MaliciousOptions with{Sort="Service"});
+Check(v51Service.First().ServiceStatus=="Due"&&!new VehicleReportOptions("All","",0,true,true,true,true,"Invalid").Valid,"V5.1 urgency ordering and sort validation");
+var v51ExportAlerts=new FleetAlert[]{new("x","High","=1+1","Check","Evidence","Review","Maintenance"),new("y","Medium","B","Check","Evidence","Review","Maintenance")};
+using(var v51Stream=new MemoryStream(FleetReport.ExportReviewXlsx(v51ExportAlerts,new(1,1,false),now,true)))
+using(var v51Zip=new System.IO.Compression.ZipArchive(v51Stream)){
+    using var v51Reader=new StreamReader(v51Zip.GetEntry("xl/worksheets/sheet1.xml")!.Open());
+    var v51Xml=System.Xml.Linq.XDocument.Parse(v51Reader.ReadToEnd());
+    var v51Rows=v51Xml.Descendants().Where(x=>x.Name.LocalName=="row").ToArray();
+    Check(v51Rows.Length==11&&v51Rows[^1].Elements().Count()==7,"V5.1 exported review queue matches policy");
+    Check(v51Rows[^1].Descendants().Any(x=>x.Name.LocalName=="t"&&x.Value=="=1+1")&&!v51Xml.Descendants().Any(x=>x.Name.LocalName=="f"),"V5.1 review workbook formula safety");
+}
 Console.WriteLine("All business rule checks passed.");

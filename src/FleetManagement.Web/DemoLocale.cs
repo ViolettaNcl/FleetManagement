@@ -1010,6 +1010,8 @@ internal static class DemoLocale
         ["Zero previous values have no percentage change. Future departures may be included in the selected cohort."]="При нулевой базе процентное изменение не рассчитывается. Выбранный период может включать будущие отправления.",
         ["Top 10 vehicles"]="Топ-10 автомобилей",
         ["Review queue evidence"]="Основания для проверки",
+        ["Export review Excel"]="Экспорт очереди проверки в Excel",
+        ["Review workbook generated."]="Отчёт очереди проверки сформирован.",
     };
     public static string Text(string value,bool russian)=>russian&&Russian.TryGetValue(value,out var translated)?translated:value;
 }

@@ -27,7 +27,7 @@ The browser edition runs C# in WebAssembly, uses synthetic data, and requires no
 
 ### V5 Intelligence Suite (development candidate)
 
-See [V5 workflows and limitations](docs/v5-intelligence-suite.md) and [Changelog](CHANGELOG.md). The latest development branch extends the personalized dashboard with a three-model synthetic maintenance ensemble, validation-selected alert thresholds, calibration and per-input sensitivity, hypothetical cost scenarios, selectable-column XLSX reports, local review-rule previews and additional evidence-based assistant intents. The suite uses existing C# and Blazor components without an external AI service, paid runtime dependency or API key. The public preview is a separate release channel: exact-commit checks and explicit publication approval are required before promotion.
+See [V5 workflows and limitations](docs/v5-intelligence-suite.md) and [Changelog](CHANGELOG.md). The latest development branch extends the personalized dashboard with a three-model synthetic maintenance ensemble, validation-selected alert thresholds, calibration and per-input sensitivity, hypothetical cost scenarios, adjacent-period analytics, sorted and paged selectable-column XLSX reports, local review-rule previews and queue snapshots and additional evidence-based assistant intents. The suite uses existing C# and Blazor components without an external AI service, paid runtime dependency or API key. The public preview is a separate release channel: exact-commit checks and explicit publication approval are required before promotion.
 
 ### Guided demo
 

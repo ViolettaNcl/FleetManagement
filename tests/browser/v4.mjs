@@ -12,7 +12,42 @@ try{
   assert.ok(counts&&Number(counts[1])<=Number(counts[2]));
   await page.getByRole('button',{name:'Collapse sidebar',exact:true}).click();
   assert.equal(await page.locator('.sidebar-collapsed').count(),1);
+  await page.reload();
+  await page.getByRole('heading',{name:'Operations overview',exact:true}).waitFor({timeout:90000});
+  await page.locator('.sidebar-collapsed').waitFor();
   await page.getByRole('button',{name:'Expand sidebar',exact:true}).click();
+  await page.getByRole('button',{name:'Customize dashboard',exact:true}).click();
+  const preset=page.getByLabel('Dashboard preset',{exact:true});
+  await preset.selectOption('operations');
+  await page.locator('.simulation-showcase').waitFor({state:'detached'});
+  assert.equal(await page.locator('.recent-trips').count(),1);
+  assert.equal(await page.locator('.dashboard-kpis .metric-action').count(),4);
+  assert.equal(await page.getByRole('heading',{name:'Intelligent alerts',exact:true}).count(),1);
+  await preset.selectOption('intelligence');
+  await page.locator('.simulation-showcase').waitFor();
+  assert.equal(await page.locator('.recent-trips').count(),0);
+  await page.getByLabel('Recent trips',{exact:true}).check();
+  await page.locator('.recent-trips').waitFor();
+  assert.equal(await preset.inputValue(),'custom');
+  await page.getByLabel('Compact dashboard',{exact:true}).check();
+  await page.locator('.dashboard-compact').waitFor();
+  await page.reload();
+  await page.getByRole('heading',{name:'Operations overview',exact:true}).waitFor({timeout:90000});
+  await page.locator('.dashboard-compact').waitFor();
+  await page.getByRole('button',{name:'Customize dashboard',exact:true}).click();
+  assert.equal(await preset.inputValue(),'custom');
+  assert.equal(await page.getByLabel('Recent trips',{exact:true}).isChecked(),true);
+  assert.equal(await page.getByLabel('Try a guided scenario',{exact:true}).isChecked(),false);
+  for(const width of [320,390,768,1440]){
+    await page.setViewportSize({width,height:900});
+    assert.ok(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth),'Dashboard settings overflow '+width);
+  }
+  await page.getByRole('button',{name:'Restore default layout',exact:true}).click();
+  await page.locator('.dashboard-compact').waitFor({state:'detached'});
+  assert.equal(await preset.inputValue(),'full');
+  assert.equal(await page.getByLabel('Try a guided scenario',{exact:true}).isChecked(),true);
+  await page.getByRole('button',{name:'Customize dashboard',exact:true}).click();
+
   await page.locator('.v4-context-actions').getByRole('button',{name:'Quick actions',exact:false}).click();
   await page.locator('.v4-context-actions').getByRole('button',{name:'Register vehicle',exact:true}).click();
   await page.getByRole('heading',{name:'New record',exact:true}).waitFor();

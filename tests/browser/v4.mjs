@@ -57,7 +57,13 @@ try{
     for(const mode of ['Day','Week','Month']){
       await page.getByRole('button',{name:mode,exact:true}).click();
       assert.ok(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth),'Calendar '+mode+' overflow '+width);
-      if(mode!=='Day')await page.locator('.calendar-day').first().click();
+      if(mode!=='Day'){
+        await page.locator('.calendar-day').first().click();
+        const selected=page.locator('.calendar-day.selected');
+        assert.equal(await selected.getAttribute('aria-pressed'),'true');
+        assert.match(await selected.ariaSnapshot(),/Events: \d+/);
+        assert.equal(await selected.getAttribute('aria-label'),null);
+      }
       assert.ok(await page.locator('.calendar-agenda').isVisible());
     }
   }

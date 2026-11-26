@@ -15,10 +15,16 @@
                 @foreach(var status in new[]{"In transit","Scheduled","Completed"}){
                     var number=statusCounts.GetValueOrDefault(status);
                     var share=Percent(number,Fleet.Trips.Count);
-                    <button class="secondary workload-row workload-filter" aria-label="@($"{T(status)} {number} {share} — {T("Show trips")}")" @onclick="()=>FilterTrips.InvokeAsync(status)"><span class="@("chart-dot "+Tone(status))" aria-hidden="true"></span><span>@T(status)</span><strong>@number</strong><small>@share</small></button>
+                    <button type="button" class="secondary workload-row workload-filter" data-trip-status="@status" aria-describedby="workload-filter-description" @onclick="()=>FilterTrips.InvokeAsync(status)">
+                        <span class="@("chart-dot "+Tone(status))" aria-hidden="true"></span>
+                        <span>@T(status)</span>
+                        <strong>@number</strong>
+                        <small>@share</small>
+                    </button>
                 }
             </div>
         </div>
+        <p id="workload-filter-description" class="muted">@T("Select a status to show matching trips.")</p>
         <div class="availability-summary"><div><strong data-testid="available-now">@available <small>/ @Fleet.Vehicles.Count</small></strong><span>@T("Vehicles available now")</span></div><p class="muted">@T("No active trip, current reservation or overdue service. Future assignments still require validation.")</p><button class="secondary" @onclick='()=>Open.InvokeAsync("Dispatch")'>@T("Open dispatch")</button></div><div class="readiness-section"><h3>@T("Maintenance readiness")</h3>
         @foreach(var status in new[]{"Healthy","Soon","Due"}){
             var number=serviceCounts.GetValueOrDefault(status);

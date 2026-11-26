@@ -1315,6 +1315,7 @@ internal static class DemoLocale
         ["Table view"]="Таблица",
         ["Card view"]="Карточки",
         ["Service mileage remaining"]="Остаток пробега до ТО",
+        ["Select a status to show matching trips."]="Выберите статус, чтобы открыть соответствующие рейсы.",
     };
     public static string Text(string value,bool russian)=>russian&&Russian.TryGetValue(value,out var translated)?translated:value;
 }

@@ -2,7 +2,7 @@
 
 ## Unreleased — V6.2 Atlas visual workspace
 
-- Fix workload filter accessible names to include the visible status, count and percentage in reading order; retain action hint, strict axe audit and exact filter navigation regression.
+- Use native content-derived accessible names for workload filters and a separate localized action description. Preserve visible status, count and percentage, keyboard activation, strict axe audit and filter regression. Independent browser suites now all run before the job returns failure, exposing subsequent regressions rather than stopping at the first one.
 
 - Route-inspired premium visual system, new actual next-departure card in the hero with safe edit action and an empty-state action, refreshed KPI and task cards.
 - Clickable trip-status chart legend opens the corresponding filtered register. Vehicle and driver registers gain responsive, table and card presentations with independent local preferences; service cards display real remaining mileage.

@@ -25,12 +25,17 @@ try{
  await go('Overview');
  // The accessible name must include every visible value in reading order.
  for(const [status,count,share] of [['In transit',2,'50%'],['Scheduled',1,'25%'],['Completed',1,'25%']]){
-   const legend=page.getByRole('button',{name:status+' '+count+' '+share+' — Show trips',exact:true});
+   // Native name is derived from the status, count and percentage. A separate
+   // description explains the action, without overriding the label.
+   const legend=page.getByRole('button',{name:new RegExp('^'+status+'\\s*'+count+'\\s*'+share+'$')});
    await legend.waitFor();
+   assert.equal(await legend.getAttribute('aria-label'),null);
+   assert.equal(await legend.getAttribute('aria-describedby'),'workload-filter-description');
+   assert.equal(await legend.getAttribute('data-trip-status'),status);
    assert.equal(await legend.locator('strong').innerText(),String(count));
    assert.equal(await legend.locator('small').innerText(),share);
  }
- await page.getByRole('button',{name:'Scheduled 1 25% — Show trips',exact:true}).click();
+ await page.getByRole('button',{name:/^Scheduled\s*1\s*25%$/}).click();
  await page.getByLabel('Trip status filter',{exact:true}).waitFor();
  assert.equal(await page.getByLabel('Trip status filter',{exact:true}).inputValue(),'Scheduled');
  assert.equal(await page.locator('.trip-table tbody tr').count(),1);
@@ -44,6 +49,8 @@ try{
  assert.match(await card.locator('.record-service strong').innerText(),/3[\s,]?600/);
  await audit('Atlas vehicle cards');await fit(register);
  await page.screenshot({path:'browser-results/v6-atlas-register.png',fullPage:true});
+ await page.waitForURL(u=>u.searchParams.get('module')==='Vehicles');
+ await page.waitForFunction(()=>localStorage.getItem('fleetmanagement.preferences.register-view.vehicles')==='cards');
  await page.reload();await register.locator('.register-cards .vehicle-record').first().waitFor({timeout:90000});
  await page.addScriptTag({path:axePath});
  await switcher.getByRole('button',{name:'Table view',exact:true}).click();

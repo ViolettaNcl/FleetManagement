@@ -54,6 +54,9 @@ builder.Services.AddRateLimiter(options=>{
 builder.Services.AddSingleton<FleetWriteGate>();
 builder.Services.AddSingleton(new OperationsPolicy(builder.Configuration.GetValue<bool>("Fleet:RequireShifts")));
 builder.Services.AddScoped<FleetStore>();
+builder.Services.AddSingleton(ScheduledReviewOptions.Read(builder.Configuration));
+builder.Services.AddSingleton<ScheduledReview>();
+builder.Services.AddHostedService<ScheduledReview>(services=>services.GetRequiredService<ScheduledReview>());
 builder.Services.AddOpenApi();
 builder.Services.AddSignalR();
 builder.Services.AddProblemDetails();
@@ -142,5 +145,6 @@ FleetEndpoints.Map(api);
 FinancialEndpoints.Map(api);
 OperationsEndpoints.Map(api);
 OverviewEndpoints.Map(api);
+api.MapGet("/operations/scheduled-review",(ScheduledReview worker)=>Results.Ok(worker.GetStatus()));
 IdentityEndpoints.Map(api);
 app.Run();

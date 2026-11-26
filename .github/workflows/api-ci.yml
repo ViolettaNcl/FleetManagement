@@ -114,6 +114,13 @@ jobs:
           start_api
           python3 tests/api/smoke.py --verify-persistence
           python3 tests/api/performance.py "$RUNNER_TEMP/fleet-performance.json"
+          kill "$pid"; wait "$pid" || true; unset pid
+          export Fleet__ScheduledReviewEnabled=true Fleet__ScheduledReviewPath="$RUNNER_TEMP/fleet-review.txt" Fleet__ScheduledReviewIntervalMinutes=60
+          start_api
+          python3 tests/api/scheduled_review.py
+          kill "$pid"; wait "$pid" || true; unset pid
+          start_api
+          python3 tests/api/scheduled_review.py --restart
           if [ "$Fleet__Provider" = "Sqlite" ]; then
             kill "$pid"; wait "$pid" || true; unset pid
             python3 tests/api/recovery.py "$RUNNER_TEMP/fleet-test.db"

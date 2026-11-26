@@ -41,3 +41,6 @@ The backend migration-baseline jobs must pass for both providers. Their artifact
 Windows launcher CI includes both fresh SecureString initialization and existing database restart. The actual interactive secure prompt remains a manual check. Never pass a plaintext password on the command line.
 
 Review media-validation.json and schema-parity.json from the intended candidate. The automated media check verifies actual video decodability and selected screenshot dimensions; schema parity never authorizes EF history adoption on an existing database. Receipt pressure can be monitored through the Admin-only /api/admin/receipt-capacity endpoint. No purge or implicit upgrade is performed.
+
+## Portable Windows preview
+The Windows portable demo workflow publishes a self-contained win-x64 loopback static server with the tested WASM assets and launch instructions. Extract the complete artifact and run FleetManagement.Demo.exe; no SDK/Python is required. It is unsigned, not an MSI installer, and does not include the connected API. Browser origin uses an ephemeral port, so saved demo records are not guaranteed to persist across launcher restarts. Only the portable executable's HTTP acceptance is automated; manually review opening the default browser and stopping the process.

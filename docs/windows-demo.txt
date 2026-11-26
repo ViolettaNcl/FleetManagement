@@ -1,0 +1,15 @@
+FleetManagement V3 — portable Windows x64 demo
+================================================
+1. Extract the entire ZIP into a new folder.
+2. Double-click FleetManagement.Demo.exe.
+3. The app opens your default browser. Keep the console open; Ctrl+C stops it.
+4. No .NET SDK, Python, credentials, external API or database required.
+5. The demo uses synthetic records and browser storage. It is NOT the connected API.
+6. Delete the extracted folder to remove the executable. Browser storage is separate.
+7. This is an unsigned development artifact, not a signed Windows installer. Verify the
+   originating GitHub Actions run before opening. No administrator privileges required.
+
+Русский: распакуйте весь архив, запустите FleetManagement.Demo.exe.
+Приложение откроется в браузере; не закрывайте консоль до завершения.
+Для остановки нажмите Ctrl+C. Это автономное демо, не серверная версия.
+Архив не подписан и не является MSI-установщиком.

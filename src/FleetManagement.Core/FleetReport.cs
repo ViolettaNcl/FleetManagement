@@ -8,6 +8,8 @@ namespace FleetManagement.Core;
 public sealed record VehicleReportRow(string Registration,string Model,int Trips,int CompletedTrips,long CompletedDistanceKm,string ServiceStatus);
 public sealed record FleetSummary(int Vehicles,int Drivers,int Trips,int Completed,int Active,int Scheduled,long CompletedDistanceKm,long PlannedDistanceKm,int ServiceDue,int ServiceSoon,List<VehicleReportRow> VehicleRows);
 
+public sealed record TripPeriod(DateTime From,DateTime To,int Trips,int Completed,long CompletedDistanceKm);
+
 public static partial class FleetReport
 {
     public static bool ValidRange(DateTime from, DateTime to) => from.Year >= 1900 && to.Year < 9999 && from.Date <= to.Date && (to.Date-from.Date).TotalDays <= 365;
@@ -27,6 +29,22 @@ public static partial class FleetReport
             trips.Count(t=>t.Start<=now && t.End>now),trips.Count(t=>t.Start>now),
             completed.Sum(t=>(long)t.Distance),trips.Sum(t=>(long)t.Distance),
             rows.Count(r=>r.ServiceStatus=="Due"),rows.Count(r=>r.ServiceStatus=="Soon"),rows);
+    }
+
+    // Fixed-width calendar buckets, bounded to 12, matching the inclusive report cohort.
+    public static IReadOnlyList<TripPeriod> Periods(FleetData data,DateTime now,DateTime from,DateTime to)
+    {
+        if(!ValidRange(from,to))throw new ArgumentException("Choose a valid range of up to 366 calendar days.");
+        int days=(to.Date-from.Date).Days+1;
+        int size=(days+11)/12;
+        var periods=new List<TripPeriod>();
+        for(int offset=0;offset<days;offset+=size){
+            var start=from.Date.AddDays(offset);var end=from.Date.AddDays(Math.Min(offset+size,days));
+            var trips=data.Trips.Where(t=>t.Start>=start&&t.Start<end).ToArray();
+            var completed=trips.Where(t=>t.End<=now).ToArray();
+            periods.Add(new(start,end.AddDays(-1),trips.Length,completed.Length,completed.Sum(t=>(long)t.Distance)));
+        }
+        return periods;
     }
 
     // Small dependency-free Open XML workbook. User text is always an inline

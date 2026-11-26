@@ -7,11 +7,11 @@
     </div>
     <div class="actions registertools">
         <label>@T("Search")<input type="search" placeholder="@T("Search records…")" @bind="query" @bind:event="oninput" /></label>
-        <label>@T("Sort by")<select @bind="sort"><option value="id">ID</option><option value="name">@T("Name / registration")</option><option value="metric">@T(IsVehicles ? "Mileage" : "Experience")</option></select></label>
-        @if(IsVehicles){<label>@T("Service status")<select @bind="healthFilter"><option value="">@T("All statuses")</option>@foreach(var status in new[]{"Healthy","Soon","Due"}){<option value="@status">@T(status)</option>}</select></label>}
+        <label>@T("Sort by")<select aria-label="@T("Sort by")" @bind="sort"><option value="id">ID</option><option value="name">@T("Name / registration")</option><option value="metric">@T(IsVehicles ? "Mileage" : "Experience")</option></select></label>
+        @if(IsVehicles){<label>@T("Service status")<select id="register-health" aria-label="@T("Service status")" @bind="healthFilter"><option value="">@T("All statuses")</option>@foreach(var status in new[]{"Healthy","Soon","Due"}){<option value="@status">@T(status)</option>}</select></label>}
         <button class="secondary" @onclick="()=>descending=!descending">@T(descending ? "Descending ↓" : "Ascending ↑")</button>
     </div>
-    <div class="register-result-bar"><span>@(IsVehicles?Vehicles.Count():Drivers.Count()) / @(IsVehicles?Fleet.Vehicles.Count:Fleet.Drivers.Count) @T("Records shown")</span><button class="secondary" @onclick="ClearFilters" disabled="@(query.Length==0&&healthFilter.Length==0&&sort=="id"&&!descending)">@T("Clear filters")</button></div>
+    <div class="register-result-bar"><span aria-live="polite">@(IsVehicles?Vehicles.Count():Drivers.Count()) / @(IsVehicles?Fleet.Vehicles.Count:Fleet.Drivers.Count) @T("Records shown")</span><button class="secondary" @onclick="ClearFilters" disabled="@(query.Length==0&&healthFilter.Length==0&&sort=="id"&&!descending)">@T("Clear filters")</button></div>
     @if (feedback.Length > 0) { <p role="status" class="@(error ? "error" : "notice")">@T(feedback)</p> }
     @if (editing)
     {
@@ -40,14 +40,14 @@
             <div class="actions"><button @onclick="Save">@T("Save record")</button><button class="secondary" @onclick="Cancel">@T("Cancel")</button></div>
         </div>
     }
-    <div class="tablewrap"><table>
+    <div class="tablewrap register-table" tabindex="0" role="region" aria-label="@T(IsVehicles?"Vehicle register":"Driver register")"><table>
     @if (IsVehicles)
     {
         <thead><tr><th>ID</th><th>@T("Registration")</th><th>@T("Model")</th><th>@T("Mileage")</th><th>@T("Last service")</th><th>@T("Health")</th><th>@T("Actions")</th></tr></thead>
         <tbody>
         @foreach(var v in Vehicles)
         {
-            <tr @key="v.Id"><td>@v.Id</td><td>@v.Plate</td><td>@v.Model</td><td>@v.Mileage.ToString("N0") km</td><td>@v.LastService.ToString("dd MMM yyyy")</td><td><span class="pill @FleetRules.Assess(v,Today).Status.ToLowerInvariant()">@T(FleetRules.Assess(v,Today).Status)</span></td><td><div class="actions"><button class="secondary" @onclick="()=>OpenPassport.InvokeAsync(v.Id)">@T("Passport")</button><button class="secondary" @onclick="()=>EditVehicle(v)">@T("Edit")</button><button class="delete" @onclick="()=>Remove(v.Id)">@T("Delete")</button></div></td></tr>
+            <tr @key="v.Id"><td class="record-id">@v.Id</td><td><strong class="record-primary">@v.Plate</strong></td><td>@v.Model</td><td>@v.Mileage.ToString("N0") km</td><td>@v.LastService.ToString("dd MMM yyyy")</td><td><span class="pill @FleetRules.Assess(v,Today).Status.ToLowerInvariant()">@T(FleetRules.Assess(v,Today).Status)</span></td><td><div class="actions"><button class="secondary" @onclick="()=>OpenPassport.InvokeAsync(v.Id)">@T("Passport")</button><button class="secondary" @onclick="()=>EditVehicle(v)">@T("Edit")</button><button class="delete" @onclick="()=>Remove(v.Id)">@T("Delete")</button></div></td></tr>
         }
         @if(!Vehicles.Any()){<tr><td colspan="7">@T("No matching vehicles.")</td></tr>}
         </tbody>
@@ -58,7 +58,7 @@
         <tbody>
         @foreach(var d in Drivers)
         {
-            <tr @key="d.Id"><td>@d.Id</td><td>@d.Name</td><td>@d.License</td><td>@d.Experience years</td><td>@Fleet.Trips.Count(t=>t.DriverId==d.Id)</td><td>@Fleet.Trips.Count(t=>t.DriverId==d.Id && FleetRules.TripStatus(t,Today)=="In transit")</td><td><div class="actions"><button class="secondary" @onclick="()=>EditDriver(d)">@T("Edit")</button><button class="delete" @onclick="()=>Remove(d.Id)">@T("Delete")</button></div></td></tr>
+            <tr @key="d.Id"><td class="record-id">@d.Id</td><td><strong class="record-primary">@d.Name</strong></td><td>@d.License</td><td>@d.Experience years</td><td>@Fleet.Trips.Count(t=>t.DriverId==d.Id)</td><td>@Fleet.Trips.Count(t=>t.DriverId==d.Id && FleetRules.TripStatus(t,Today)=="In transit")</td><td><div class="actions"><button class="secondary" @onclick="()=>EditDriver(d)">@T("Edit")</button><button class="delete" @onclick="()=>Remove(d.Id)">@T("Delete")</button></div></td></tr>
         }
         @if(!Drivers.Any()){<tr><td colspan="7">@T("No matching drivers.")</td></tr>}
         </tbody>

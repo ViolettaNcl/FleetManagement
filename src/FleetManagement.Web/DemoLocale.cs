@@ -826,6 +826,18 @@ internal static class DemoLocale
         ["Clear filters"]="Сбросить фильтры",
         ["Original distance"]="Исходное расстояние",
         ["Selected distance"]="Выбранное расстояние",
+        ["Workspace alerts"]="Предупреждения рабочей области",
+        ["Alerts"]="Предупреждения",
+        ["Latest eight trips by departure time."]="Последние восемь рейсов по времени отправления.",
+        ["View trip schedule"]="Открыть расписание рейсов",
+        ["Review assignments and filter the current trip register."]="Просматривайте назначения и фильтруйте текущий реестр рейсов.",
+        ["Clear trip filters"]="Сбросить фильтры рейсов",
+        ["Search trips"]="Поиск рейсов",
+        ["Route, vehicle or driver"]="Маршрут, автомобиль или водитель",
+        ["Trip status filter"]="Фильтр статуса рейса",
+        ["Trips shown"]="рейсов показано",
+        ["Trip activity by period"]="Рейсы по периодам",
+        ["Actual trips in the selected departure-date cohort. Zero periods are retained."]="Рейсы в выбранном диапазоне дат отправления. Периоды без рейсов также показаны.",
     };
     public static string Text(string value,bool russian)=>russian&&Russian.TryGetValue(value,out var translated)?translated:value;
 }

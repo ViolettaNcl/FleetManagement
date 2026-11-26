@@ -9,7 +9,7 @@
 </header>
 <main lang="@language">
     <nav class="fleet-sidebar" aria-label="@T("Fleet sections")">
-        <label class="nav-search">@T("Find section")<input type="search" @bind="navQuery" @bind:event="oninput" placeholder="@T("Search modules")"/></label>
+        <label class="nav-search">@T("Find section")<input type="search" @bind="navQuery" @bind:event="oninput" placeholder="@T("Search modules")" aria-describedby="nav-hint" @onkeydown="SearchKey"/><small id="nav-hint">@T("Enter to open a single match; Escape clears search.")</small></label>
         @foreach(var group in NavigationGroups.Where(g=>g.Items.Any(MatchesSection)))
         {
             <div class="nav-group">
@@ -23,7 +23,7 @@
     </nav>
     <div class="fleet-content">
     @if(language=="ru"){<p class="muted">@T("Russian navigation and overview; detailed modules and reports remain English.")</p>}
-    @if (!string.IsNullOrEmpty(storageMessage)) { <p class="notice">@storageMessage</p> }
+    @if (!string.IsNullOrEmpty(storageMessage)) { <p class="notice">@T(storageMessage)</p> }
     @if (section == "Overview")
     {
         <div class="metrics">
@@ -123,24 +123,24 @@
     }
     else if (section == "Tracking")
     {
-        <section class="panel"><h2>Live fleet tracking</h2><p class="muted">Simulated positions on a schematic route network, not real GPS or geographic coordinates. Advance the simulation or select a trip.</p>
-            <div class="actions"><button @onclick="ToggleSimulation">@(playing ? "Pause simulation" : "Play simulation")</button><button class="secondary" @onclick="Advance">+ 15 minutes</button><small>Simulation time: @Now.ToString("dd MMM · HH:mm")</small></div>
+        <section class="panel"><h2>@T("Live fleet tracking")</h2><p class="muted">@T("Simulated positions on a schematic route network, not real GPS or geographic coordinates. Advance the simulation or select a trip.")</p>
+            <div class="actions"><button @onclick="ToggleSimulation">@T(playing ? "Pause simulation" : "Play simulation")</button><button class="secondary" @onclick="Advance">@T("+ 15 minutes")</button><small>@T("Simulation time"): @Now.ToString("dd MMM · HH:mm")</small></div>
             <div class="split" style="margin-top:16px">
-                <svg class="map" viewBox="0 0 600 340" role="img" aria-label="Schematic routes and simulated vehicle positions">
+                <svg class="map" viewBox="0 0 600 340" role="img" aria-label="@T("Schematic routes and simulated vehicle positions")">
                     @for (int x = 30; x < 600; x+=45) { <line class="road" x1="@x" y1="0" x2="@x" y2="340"/> }
                     @for (int y = 30; y < 340; y+=45) { <line class="road" x1="0" y1="@y" x2="600" y2="@y"/> }
                     <path class="track" d="M110 55 L300 160"/><path class="track" d="M65 165 L535 105"/><path class="track" d="M300 160 L420 285"/>
                     <g fill="#fff" stroke="#6a5acd" stroke-width="2"><circle cx="110" cy="55" r="9"/><circle cx="300" cy="160" r="9"/><circle cx="65" cy="165" r="9"/><circle cx="535" cy="105" r="9"/><circle cx="420" cy="285" r="9"/></g>
-                    <text x="120" y="45">North depot</text><text x="310" y="185">Central hub</text><text x="30" y="150">West depot</text><text x="465" y="85">East terminal</text><text x="430" y="310">South depot</text>
+                    <text x="120" y="45">@T("North depot")</text><text x="310" y="185">@T("Central hub")</text><text x="30" y="150">@T("West depot")</text><text x="465" y="85">@T("East terminal")</text><text x="430" y="310">@T("South depot")</text>
                     @foreach (var t in fleet.Trips.Where(t => t.Track is >= 0 and <= 2 && FleetRules.TripStatus(t, Now) == "In transit"))
                     {
                         var point=Position(t); <g><circle cx="@point.X" cy="@point.Y" r="@(selectedTrip==t.Id?13:9)" fill="#6a0dad" stroke="white" stroke-width="3"/><text x="@(point.X+15)" y="@(point.Y-10)">@VehicleName(t.VehicleId)</text></g>
                     }
                 </svg>
                 <div class="tripselect"><h3>@T("Trips")</h3>
-                @foreach (var t in fleet.Trips.Where(t => t.Track >= 0)) { <button class="@(selectedTrip==t.Id?"":"secondary")" @onclick="()=>selectedTrip=t.Id">#@t.Id · @VehicleName(t.VehicleId)<br/><small style="color:inherit">@FleetRules.TripStatus(t,Now)</small></button> }
+                @foreach (var t in fleet.Trips.Where(t => t.Track >= 0)) { <button class="@(selectedTrip==t.Id?"":"secondary")" @onclick="()=>selectedTrip=t.Id">#@t.Id · @VehicleName(t.VehicleId)<br/><small style="color:inherit">@T(FleetRules.TripStatus(t,Now))</small></button> }
                 @if (fleet.Trips.FirstOrDefault(t=>t.Id==selectedTrip) is Trip selected) {
-                    <p>@selected.Origin → @selected.Destination<br/><small>Progress: @((FleetRules.Progress(selected,Now)*100).ToString("0"))% · ETA @selected.End.ToString("HH:mm")</small></p>
+                    <p>@selected.Origin → @selected.Destination<br/><small>@T("Progress"): @((FleetRules.Progress(selected,Now)*100).ToString("0"))% · @T("ETA") @selected.End.ToString("HH:mm")</small></p>
                     <div class="progress"><i style="width:@((FleetRules.Progress(selected,Now)*100).ToString("0",CultureInfo.InvariantCulture) + "%")"></i></div>
                 }
                 </div>
@@ -149,7 +149,7 @@
     }
     else if (section == "Dispatch")
     {
-        <section class="panel"><h2>@T("Intelligent dispatch planner")</h2>@if (editingTripId.HasValue) { <p class="notice">Editing trip #@editingTripId</p> }<p class="muted">@T("Find an available vehicle and driver. The C# scheduler checks overlapping assignments and reservations, and avoids vehicles with overdue service when recommending a pair.") @T(requireShifts?"Strict shift coverage is enabled.":"Shift coverage is advisory.")</p>
+        <section class="panel"><h2>@T("Intelligent dispatch planner")</h2>@if (editingTripId.HasValue) { <p class="notice">@T("Editing trip") #@editingTripId</p> }<p class="muted">@T("Find an available vehicle and driver. The C# scheduler checks overlapping assignments and reservations, and avoids vehicles with overdue service when recommending a pair.") @T(requireShifts?"Strict shift coverage is enabled.":"Shift coverage is advisory.")</p>
         <div class="formgrid">
             <label>@T("Origin")<input @bind="origin" /></label><label>@T("Destination")<input @bind="destination" /></label><label>@T("Distance (km)")<input type="number" min="1" @bind="distance" /></label>
             <label>@T("Start")<input type="datetime-local" @bind="start" /></label><label>@T("End")<input type="datetime-local" @bind="end" /></label>
@@ -157,15 +157,15 @@
             <label>@T("Driver")<select @bind="driverId"><option value="0">@T("Select driver")</option>@foreach(var d in fleet.Drivers){<option value="@d.Id">@d.Name</option>}</select></label>
         </div>
         <div class="actions"><button class="secondary" @onclick="Recommend">@T("Suggest assignment")</button><button @onclick="SaveTrip" disabled="@(fleet.Vehicles.Count == 0 || fleet.Drivers.Count == 0)">@T(editingTripId.HasValue ? "Save changes" : "Create trip")</button>@if(editingTripId.HasValue){<button class="secondary" @onclick="CancelEdit">@T("Cancel edit")</button>}</div>
-        @if(!string.IsNullOrEmpty(feedback)){<p role="status" class="@(isError?"error":"notice")">@feedback</p>}
+        @if(!string.IsNullOrEmpty(feedback)){<p role="status" class="@(isError?"error":"notice")">@T(feedback)</p>}
         </section><section class="panel"><h2>@T("Trip schedule")</h2>@TripTable()</section>
     }
     else if(section=="Maintenance")
     {
-        <section class="panel"><h2>Predictive maintenance · rule-based</h2><p class="muted">Explainable assessment based on service mileage and time intervals. Not a trained ML model or a safety certification.</p>
-        <div class="tablewrap"><table><thead><tr><th>@T("Vehicle")</th><th>Remaining km</th><th>Remaining days</th><th>@T("Health")</th><th>Explanation</th><th>Action</th></tr></thead><tbody>
-        @foreach(var v in fleet.Vehicles){var a=FleetRules.Assess(v,Now);<tr><td>@v.Plate · @v.Model</td><td>@a.RemainingKm.ToString("N0")</td><td>@a.RemainingDays</td><td><span class="pill @a.Status.ToLowerInvariant()">@a.Status</span></td><td>@a.Reason</td><td><button class="secondary" @onclick="()=>RecordService(v.Id)">Record service</button></td></tr>}
-        </tbody></table></div>@if(maintenanceFeedback.Length>0){<p role="status" class="notice">@maintenanceFeedback</p>}</section>
+        <section class="panel"><h2>@T("Predictive maintenance · rule-based")</h2><p class="muted">@T("Explainable assessment based on service mileage and time intervals. Not a trained ML model or a safety certification.")</p>
+        <div class="tablewrap"><table><thead><tr><th>@T("Vehicle")</th><th>@T("Remaining km")</th><th>@T("Remaining days")</th><th>@T("Health")</th><th>@T("Explanation")</th><th>@T("Action")</th></tr></thead><tbody>
+        @foreach(var v in fleet.Vehicles){var a=FleetRules.Assess(v,Now);<tr><td>@v.Plate · @v.Model</td><td>@a.RemainingKm.ToString("N0")</td><td>@a.RemainingDays</td><td><span class="pill @a.Status.ToLowerInvariant()">@T(a.Status)</span></td><td>@T(a.Reason)</td><td><button class="secondary" @onclick="()=>RecordService(v.Id)">@T("Record service")</button></td></tr>}
+        </tbody></table></div>@if(maintenanceFeedback.Length>0){<p role="status" class="notice">@T(maintenanceFeedback)</p>}</section>
         <VehicleReservationView Russian="@(language=="ru")" Fleet="fleet" Reservations="vehicleReservations" Now="Now" Changed="Persist" Open="Navigate"/>
         <MaintenanceJournalView Russian="@(language=="ru")" Fleet="fleet" Entries="maintenanceEntries" Now="Now" Changed="Persist"/>
     }
@@ -177,6 +177,12 @@
     private bool darkTheme;
     private string navQuery="";
     private bool MatchesSection(string item)=>string.IsNullOrWhiteSpace(navQuery)||item.Contains(navQuery.Trim(),StringComparison.OrdinalIgnoreCase)||T(item).Contains(navQuery.Trim(),StringComparison.OrdinalIgnoreCase);
+    private void SearchKey(KeyboardEventArgs e){
+        if(e.Key=="Escape"){navQuery="";return;}
+        if(e.Key!="Enter"||string.IsNullOrWhiteSpace(navQuery))return;
+        var matches=NavigationGroups.SelectMany(g=>g.Items).Where(MatchesSection).ToArray();
+        if(matches.Length==1){Navigate(matches[0]);navQuery="";}
+    }
     private string language="en";
     private string T(string value)=>DemoLocale.Text(value,language=="ru");
     private readonly (string Name,string[] Items)[] NavigationGroups = [
@@ -215,15 +221,15 @@
     private void Navigate(string item){if(item=="Vehicle Passport"&&!fleet.Vehicles.Any(v=>v.Id==passportId))passportId=fleet.Vehicles.FirstOrDefault()?.Id??0;section=item;feedback="";if(item=="Dispatch"){if(!fleet.Vehicles.Any(v=>v.Id==vehicleId))vehicleId=fleet.Vehicles.FirstOrDefault()?.Id??0;if(!fleet.Drivers.Any(d=>d.Id==driverId))driverId=fleet.Drivers.FirstOrDefault()?.Id??0;}}
     private async Task ToggleSimulation(){playing=!playing;if(!playing)await Persist();}
     private async Task Advance(){Now=Now.AddMinutes(15);await Persist();}
-    private async Task Reset(){if(!await JS.InvokeAsync<bool>("confirm","Reset all demo data?"))return;playing=false;Now=DateTime.Now;fleet=FleetRules.Sample(Now);maintenanceEntries.Clear();driverShifts.Clear();vehicleReservations.Clear();requireShifts=false;maintenanceFeedback="";start=Now.AddHours(1);end=Now.AddHours(2);vehicleId=driverId=1;selectedTrip=101;editingTripId=null;feedback="";await Persist();}
+    private async Task Reset(){if(!await JS.InvokeAsync<bool>("confirm",T("Reset all demo data?")))return;playing=false;Now=DateTime.Now;fleet=FleetRules.Sample(Now);maintenanceEntries.Clear();driverShifts.Clear();vehicleReservations.Clear();requireShifts=false;maintenanceFeedback="";start=Now.AddHours(1);end=Now.AddHours(2);vehicleId=driverId=1;selectedTrip=101;editingTripId=null;feedback="";await Persist();}
     private string VehicleName(int id)=>fleet.Vehicles.FirstOrDefault(v=>v.Id==id)?.Plate??"Unknown";
     private string DriverName(int id)=>fleet.Drivers.FirstOrDefault(d=>d.Id==id)?.Name??"Unknown";
     private async Task SetRequireShifts(bool value){requireShifts=value;await Persist();}
-    private void Recommend(){var a=ResourcePlanning.Recommend(fleet,start,end,Now,driverShifts,requireShifts,editingTripId,vehicleReservations);isError=a is null;if(a is null){feedback="No available service-ready assignment for this interval.";return;}vehicleId=a.VehicleId;driverId=a.DriverId;feedback=$"Suggested {VehicleName(vehicleId)} and {DriverName(driverId)}.";}
+    private void Recommend(){var a=ResourcePlanning.Recommend(fleet,start,end,Now,driverShifts,requireShifts,editingTripId,vehicleReservations);isError=a is null;if(a is null){feedback="No available service-ready assignment for this interval.";return;}vehicleId=a.VehicleId;driverId=a.DriverId;feedback=language=="ru"?$"Рекомендуем {VehicleName(vehicleId)} и {DriverName(driverId)}.":$"Suggested {VehicleName(vehicleId)} and {DriverName(driverId)}.";}
     private void EditTrip(Trip trip){if(FleetRules.CanChangeTrip(fleet,trip.Id,Now) is string invalid){feedback=invalid;isError=true;return;}editingTripId=trip.Id;origin=trip.Origin;destination=trip.Destination;distance=trip.Distance;start=trip.Start;end=trip.End;vehicleId=trip.VehicleId;driverId=trip.DriverId;feedback="";section="Dispatch";}
     private void PlanFromCalendar(DateTime date){CancelEdit();start=date.Date.AddHours(9);if(start<=Now)start=Now.AddHours(1);end=start.AddHours(1);Navigate("Dispatch");}
     private void CancelEdit(){editingTripId=null;origin="North depot";destination="Central hub";distance=132;start=Now.AddHours(1);end=Now.AddHours(2);feedback="";}
-    private async Task DeleteTrip(Trip trip){if(FleetRules.CanChangeTrip(fleet,trip.Id,Now) is string invalid){feedback=invalid;isError=true;return;}if(!await JS.InvokeAsync<bool>("confirm",$"Delete scheduled trip #{trip.Id}?"))return;fleet.Trips.RemoveAll(t=>t.Id==trip.Id);if(editingTripId==trip.Id)CancelEdit();feedback=$"Trip #{trip.Id} deleted.";isError=false;await Persist();}
+    private async Task DeleteTrip(Trip trip){if(FleetRules.CanChangeTrip(fleet,trip.Id,Now) is string invalid){feedback=invalid;isError=true;return;}if(!await JS.InvokeAsync<bool>("confirm",language=="ru"?$"Удалить запланированный рейс #{trip.Id}?":$"Delete scheduled trip #{trip.Id}?"))return;fleet.Trips.RemoveAll(t=>t.Id==trip.Id);if(editingTripId==trip.Id)CancelEdit();feedback=language=="ru"?$"Рейс #{trip.Id} удалён.":$"Trip #{trip.Id} deleted.";isError=false;await Persist();}
     private async Task SaveTrip(){
         if(editingTripId is int existingId && FleetRules.CanChangeTrip(fleet,existingId,Now) is string invalid){feedback=invalid;isError=true;return;}
         if(start<=Now){feedback="A new or edited trip must start in the future.";isError=true;return;}
@@ -233,12 +239,12 @@
         var trip=new Trip(id,vehicleId,driverId,origin.Trim(),destination.Trim(),start,end,distance,track);
         var error=ResourcePlanning.ValidateTrip(fleet,trip,driverShifts,requireShifts,vehicleReservations);isError=error is not null;if(error is not null){feedback=error;return;}
         if(old is null)fleet.Trips.Add(trip);else fleet.Trips[fleet.Trips.FindIndex(t=>t.Id==id)]=trip;
-        CancelEdit();feedback=$"Trip #{id} saved.";await Persist();
+        CancelEdit();feedback=language=="ru"?$"Рейс #{id} сохранён.":$"Trip #{id} saved.";await Persist();
     }
     private async Task RecordService(int id){var error=MaintenanceJournal.Record(fleet,maintenanceEntries,new(id,"Scheduled service","",null),Now);maintenanceFeedback=error??"Service recorded; cost unknown.";if(error is null)await Persist();}
     private (int X,int Y) Position(Trip t){var p=FleetRules.Progress(t,Now);var (x1,y1,x2,y2)=t.Track switch{0=>(110,55,300,160),1=>(65,165,535,105),_=>(300,160,420,285)};return ((int)(x1+(x2-x1)*p),(int)(y1+(y2-y1)*p));}
-    private RenderFragment TripTable()=> @<div class="tablewrap"><table><thead><tr><th>@T("Trip")</th><th>Route</th><th>@T("Vehicle")</th><th>@T("Driver")</th><th>@T("Start")</th><th>@T("End")</th><th>Distance</th><th>Status</th>@if(section=="Dispatch"){<th>@T("Actions")</th>}</tr></thead><tbody>
-    @foreach(var t in fleet.Trips.OrderByDescending(t=>t.Start)){var status=FleetRules.TripStatus(t,Now);<tr><td>#@t.Id</td><td>@t.Origin → @t.Destination</td><td>@VehicleName(t.VehicleId)</td><td>@DriverName(t.DriverId)</td><td>@t.Start.ToString("dd MMM HH:mm")</td><td>@t.End.ToString("dd MMM HH:mm")</td><td>@t.Distance km</td><td><span class="pill @status.Replace(" ","").ToLowerInvariant()">@status</span></td>@if(section=="Dispatch"){<td>@if(status=="Scheduled"){<div class="actions"><button class="secondary" @onclick="()=>EditTrip(t)">@T("Edit")</button><button class="delete" @onclick="()=>DeleteTrip(t)">@T("Delete")</button></div>}else{<small>History</small>}</td>}</tr>}
+    private RenderFragment TripTable()=> @<div class="tablewrap"><table><thead><tr><th>@T("Trip")</th><th>@T("Route")</th><th>@T("Vehicle")</th><th>@T("Driver")</th><th>@T("Start")</th><th>@T("End")</th><th>@T("Distance")</th><th>@T("Status")</th>@if(section=="Dispatch"){<th>@T("Actions")</th>}</tr></thead><tbody>
+    @foreach(var t in fleet.Trips.OrderByDescending(t=>t.Start)){var status=FleetRules.TripStatus(t,Now);<tr><td>#@t.Id</td><td>@t.Origin → @t.Destination</td><td>@VehicleName(t.VehicleId)</td><td>@DriverName(t.DriverId)</td><td>@t.Start.ToString("dd MMM HH:mm")</td><td>@t.End.ToString("dd MMM HH:mm")</td><td>@t.Distance km</td><td><span class="pill @status.Replace(" ","").ToLowerInvariant()">@T(status)</span></td>@if(section=="Dispatch"){<td>@if(status=="Scheduled"){<div class="actions"><button class="secondary" @onclick="()=>EditTrip(t)">@T("Edit")</button><button class="delete" @onclick="()=>DeleteTrip(t)">@T("Delete")</button></div>}else{<small>@T("History")</small>}</td>}</tr>}
     </tbody></table></div>;
     public async ValueTask DisposeAsync(){cts.Cancel();timer?.Dispose();if(timerTask is not null)await timerTask;cts.Dispose();}
 }

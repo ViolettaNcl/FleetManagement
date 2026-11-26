@@ -15,7 +15,9 @@ try {
   await page.getByRole('button',{name:'Dark theme',exact:true}).click();
   await page.getByLabel('Find section',{exact:true}).fill('Model Drift');
   assert.equal(await page.getByRole('button',{name:'Vehicles',exact:true}).count(),0);
-  await page.getByLabel('Find section',{exact:true}).fill('');
+  await page.getByLabel('Find section',{exact:true}).press('Enter');
+  await page.getByRole('button',{name:'Model Drift',exact:true,pressed:true}).waitFor();
+  await page.getByRole('button',{name:'Overview',exact:true}).click();
   await page.getByLabel('Language',{exact:true}).selectOption('ru');
   await page.getByRole('button',{name:'Автомобили',exact:true}).waitFor();
   await page.getByRole('heading',{name:'Загрузка рейсами'}).waitFor();
@@ -27,7 +29,10 @@ try {
   await page.getByRole('heading',{name:'Цифровой паспорт автомобиля'}).waitFor();
   await page.getByRole('button',{name:'Планирование ресурсов',exact:true}).click();
   await page.getByRole('heading',{name:'Планирование ресурсов водителей'}).waitFor();
+  await page.getByRole('button',{name:'Отслеживание',exact:true}).click();
+  await page.getByRole('heading',{name:'Отслеживание автопарка',exact:true}).waitFor();
   await page.getByRole('button',{name:'Обслуживание',exact:true}).click();
+  await page.getByRole('heading',{name:'Прогнозное обслуживание · по правилам',exact:true}).waitFor();
   await page.getByRole('heading',{name:'Журнал работ по обслуживанию'}).waitFor();
   assert.equal(await page.getByLabel('Категория работы',{exact:true}).inputValue(),'Scheduled service');
   await page.getByRole('button',{name:'Прогноз неисправностей',exact:true}).click();

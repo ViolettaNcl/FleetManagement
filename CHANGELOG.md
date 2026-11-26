@@ -1,5 +1,10 @@
 # Changelog
 
+## Unreleased — V4.2 release hardening
+
+- PWA update activation checks for other open demo windows and returns an actionable, retryable message instead of knowingly replacing their active worker. Adds a bounded confirmation timeout and accessible status feedback.
+- Browser fixture coverage for update refusal with two open tabs and retry after closing the second tab. Exact-revision CI is required; no release promotion implied.
+
 ## Unreleased — V4 UX, mobile, PWA and public SEO
 
 - Separate bilingual public product site (20 static pages) and synthetic interactive app under `/app/` on Pages; unchanged local and portable Windows entry points.

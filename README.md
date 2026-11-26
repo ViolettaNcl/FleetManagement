@@ -19,7 +19,7 @@
 
 ## Try the application
 
-The browser edition runs C# in WebAssembly, uses synthetic data, and requires no backend, account, API key, or paid hosting. The GitHub Pages deployment is prepared but not yet verified live.
+The browser edition runs C# in WebAssembly, uses synthetic data, and requires no backend, account, API key, or paid hosting. The GitHub Pages workflow supports the dedicated `preview/fleetops-v3` branch without merging master. [Expected demo URL](https://violettancl.github.io/FleetManagement/) is not certified live until deployment succeeds.
 
 - [Latest browser builds, screenshots and actual screen-recorded portfolio tour](https://github.com/ViolettaNcl/FleetManagement/actions/workflows/demo-ci.yml)
 - [How to run the demo and enable GitHub Pages](docs/deployment.md)

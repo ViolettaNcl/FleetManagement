@@ -8,7 +8,7 @@
 
 ## Enable the permanent public link
 
-The repository owner must set [Settings → Pages](https://github.com/ViolettaNcl/FleetManagement/settings/pages) → Build and deployment → Source → GitHub Actions. The repository's Pages workflow is already provided. After the reviewed branch is merged into master, the workflow builds and browser-tests the static output before uploading and deploying it. It can also be started manually on master after Pages is configured.
+The repository owner must set [Settings → Pages](https://github.com/ViolettaNcl/FleetManagement/settings/pages) → Build and deployment → Source → GitHub Actions. The repository's Pages workflow is already provided. For an isolated public portfolio preview, use the dedicated `preview/fleetops-v3` branch. It can point at a reviewed V3 commit without merging `master`. In Settings → Environments → github-pages, allow this exact branch if the default protection allows only master. Then push the reviewed commit to that branch; the workflow builds and browser-tests the static output before deployment. If the workflow is not on the default branch, the Actions manual-dispatch button may be unavailable; an actual push to the preview branch triggers it. Only one Pages site exists per repository: a later master deployment can replace this preview. No API, account data or keys are included.
 
 Expected URL: https://violettancl.github.io/FleetManagement/
 
@@ -24,7 +24,7 @@ Treat it as live only after the deployment succeeds and the URL is verified. The
 - [ ] Review the V3 security limitations and ensure no credentials, backup files or account data are in release artifacts.
 - [ ] Review the generated screenshots on desktop and mobile and the actual offline screen recording from the exact release commit.
 - [ ] Review security boundaries and the pull request.
-- [ ] Enable Pages and merge the reviewed change.
+- [ ] Enable Pages, permit the dedicated preview branch, and deploy a reviewed commit; master merge is a separate owner decision.
 - [ ] Confirm the deployment status and open the actual public URL in a fresh browser.
 - [ ] Update README with the verified live link and create a versioned GitHub Release.
 - [ ] Add the verified link to the portfolio or CV.

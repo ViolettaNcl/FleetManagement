@@ -1,24 +1,16 @@
-name: Publish FleetManagement demo
+name: Publish FleetManagement demo (Pages)
 on:
   push:
-    branches: [master]
-    paths:
-      - 'src/FleetManagement.Core/**'
-      - 'src/FleetManagement.Web/**'
-      - 'tests/FleetManagement.Core.Checks/**'
-      - 'tests/browser/**'
-      - '.github/workflows/pages.yml'
+    branches: [master, 'preview/fleetops-v3']
   workflow_dispatch:
 permissions:
   contents: read
-  pages: write
-  id-token: write
 concurrency:
   group: pages
   cancel-in-progress: false
 jobs:
   build:
-    if: github.ref == 'refs/heads/master'
+    if: github.ref == 'refs/heads/master' || github.ref == 'refs/heads/preview/fleetops-v3'
     runs-on: ubuntu-24.04
     steps:
       - uses: actions/checkout@v4
@@ -38,12 +30,17 @@ jobs:
           trap 'kill "$server" || true' EXIT
           node tests/browser/smoke.mjs
       - run: touch publish/wwwroot/.nojekyll
-      - uses: actions/configure-pages@v5
       - uses: actions/upload-pages-artifact@v3
         with:
           path: publish/wwwroot
+          retention-days: 3
   deploy:
+    if: github.ref == 'refs/heads/master' || github.ref == 'refs/heads/preview/fleetops-v3'
     needs: build
+    permissions:
+      pages: write
+      id-token: write
+      contents: read
     runs-on: ubuntu-24.04
     environment:
       name: github-pages

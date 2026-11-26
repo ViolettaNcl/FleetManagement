@@ -47,6 +47,25 @@ try{
   assert.equal(await preset.inputValue(),'full');
   assert.equal(await page.getByLabel('Try a guided scenario',{exact:true}).isChecked(),true);
   await page.getByRole('button',{name:'Customize dashboard',exact:true}).click();
+  await page.keyboard.press('Control+k');
+  const search=page.getByLabel('Find section',{exact:true});
+  await search.fill('Calendar');
+  await page.getByRole('status').filter({hasText:'Matching commands: 1'}).waitFor();
+  await search.press('ArrowDown');
+  const calendarResult=page.locator('#workspace-nav').getByRole('button',{name:'Calendar',exact:true});
+  assert.equal(await calendarResult.evaluate(el=>el===document.activeElement),true);
+  await calendarResult.press('Enter');
+  await page.getByRole('heading',{name:'Fleet calendar',exact:true}).waitFor();
+  await page.waitForURL(/module=Calendar/);
+  await page.waitForFunction(()=>localStorage.getItem('fleetmanagement.preferences.recent.v4')?.split('|').includes('Calendar'));
+  await page.reload();
+  await page.getByRole('heading',{name:'Fleet calendar',exact:true}).waitFor({timeout:90000});
+  await page.getByRole('button',{name:'Recent: Calendar',exact:true}).waitFor();
+  await page.getByRole('button',{name:'Clear recent',exact:true}).click();
+  await page.getByRole('button',{name:'Recent: Calendar',exact:true}).waitFor({state:'detached'});
+  await page.waitForFunction(()=>localStorage.getItem('fleetmanagement.preferences.recent.v4')==='');
+  await page.getByRole('button',{name:'Overview',exact:true}).click();
+  await page.getByRole('heading',{name:'Operations overview',exact:true}).waitFor();
 
   await page.locator('.v4-context-actions').getByRole('button',{name:'Quick actions',exact:false}).click();
   await page.locator('.v4-context-actions').getByRole('button',{name:'Register vehicle',exact:true}).click();

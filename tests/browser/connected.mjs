@@ -129,8 +129,10 @@ try{
     await page.locator("#shifts").getByText("No records.",{exact:true}).waitFor();
     await page.getByRole("button",{name:"Trips",exact:true}).click();
     const trip=page.locator("#trip-form");
-    const future=new Date(Date.now()+5*86400000).toISOString().slice(0,19);
-    const arrival=new Date(Date.now()+5*86400000+3600000).toISOString().slice(0,19);
+    // Use deterministic nonzero seconds: Chromium normalizes :00 away, which can make Playwright fill reject the value.
+    const futureDate=new Date(Date.now()+5*86400000);futureDate.setUTCSeconds(17,0);
+    const future=futureDate.toISOString().slice(0,19);
+    const arrival=new Date(futureDate.getTime()+3600000).toISOString().slice(0,19);
     await trip.getByLabel("Trip vehicle").selectOption("4");
     await trip.getByLabel("Trip driver").selectOption("3");
     await trip.getByLabel("Trip origin").fill("QA console trip");

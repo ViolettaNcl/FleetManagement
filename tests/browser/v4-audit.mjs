@@ -12,6 +12,7 @@ const themeAudit=[];
 await mkdir('browser-results/v4-modules',{recursive:true});
 try{
  const page=await browser.newPage({viewport:{width:1440,height:900},reducedMotion:'reduce'});
+  await page.addInitScript(()=>{if(!localStorage.getItem('fleetmanagement.preferences.navigation.v6'))localStorage.setItem('fleetmanagement.preferences.navigation.v6','all');});
  const errors=[];page.on('pageerror',e=>errors.push(e.message));
  await page.goto(root+'app/');
  await page.getByRole('heading',{name:'Operations overview',exact:true}).waitFor({timeout:90000});

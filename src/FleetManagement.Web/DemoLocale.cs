@@ -1296,6 +1296,7 @@ internal static class DemoLocale
         ["Choose language, appearance and navigation preferences; export or restore demo records."]="Выберите язык, вид и уровень навигации; экспортируйте или восстановите демо.",
         ["Back up your demo before resetting or replacing data."]="Сохраните копию перед сбросом или заменой.",
         ["Return to overview"]="Вернуться к обзору",
+        ["Section guide"]="Помощь по разделу",
     };
     public static string Text(string value,bool russian)=>russian&&Russian.TryGetValue(value,out var translated)?translated:value;
 }

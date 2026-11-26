@@ -40,7 +40,7 @@
             <button class="secondary" @onclick='()=>Navigate("Help & settings")'>@T("Help & settings")</button>
         </div>
     </div>
-    @if(navigationMode=="essentials"&&section!="Overview"){var guide=WorkspaceGuides.For(section);<section class="panel guided-context" aria-labelledby="guided-context-title"><div><span class="guided-kicker">@T("You are here")</span><h2 id="guided-context-title">@T(guide.Title)</h2><p>@T(guide.Description)</p></div><details><summary>@T("How to use this section")</summary><p>@T(guide.Hint)</p><button class="secondary" @onclick="()=>Navigate(guide.Next)">@T(guide.Action)</button></details></section>}
+    @if(navigationMode=="essentials"&&section!="Overview"){var guide=WorkspaceGuides.For(section);<section class="panel guided-context" aria-labelledby="guided-context-title"><div><span class="guided-kicker">@T("You are here")</span><h2 id="guided-context-title">@T("Section guide")</h2><strong class="guided-section-name">@T(guide.Title)</strong><p>@T(guide.Description)</p></div><details><summary>@T("How to use this section")</summary><p>@T(guide.Hint)</p><button class="secondary" @onclick="()=>Navigate(guide.Next)">@T(guide.Action)</button></details></section>}
     @if(language=="ru"){<p class="localization-note">@T("Some technical labels and generated records remain in English.")</p>}
     @if (!string.IsNullOrEmpty(storageMessage)) { <p class="notice">@T(storageMessage)</p> }
     @if(recoveryRaw is not null){<p class="error" role="status">@T(RecoveryWarning)</p>}
@@ -55,6 +55,16 @@
             <div class="hero-art-space" aria-hidden="true"></div>
         </section>
         @if(navigationMode=="essentials"){<section class="panel guided-start" aria-labelledby="guided-start-title"><div class="suite-heading"><div><span class="guided-kicker">@T("Quick start")</span><h2 id="guided-start-title">@T("What would you like to do?")</h2><p class="muted">@T("Choose a task. You can open every advanced tool from the navigation.")</p></div></div><div class="guided-task-grid">@foreach(var task in GuidedTasks){<button class="secondary guided-task" @onclick="()=>RunQuickAction(task.Key)"><span class="guided-task-icon" aria-hidden="true"><WorkspaceIcon Name="@task.Icon"/></span><span><strong>@T(task.Title)</strong><small>@T(task.Description)</small></span><span class="guided-task-arrow" aria-hidden="true">↗</span></button>}</div></section>}
+        <div class="metrics dashboard-kpis">
+            @foreach(var metric in OverviewMetrics()){
+                <button class="metric metric-action secondary" @onclick="()=>Navigate(metric.Section)">
+                    <span class="metric-top"><span>@T(metric.Label)</span><span class="@("kpi-icon "+metric.Tone)" aria-hidden="true"><WorkspaceIcon Name="@metric.Section" /></span></span>
+                    <strong>@metric.Value</strong><span class="metric-bottom"><small>@T(metric.Detail)</small><span aria-hidden="true">↗</span></span>
+                </button>
+            }
+        </div>
+        <CommandSummary Russian="@(language=="ru")" Reservations="vehicleReservations" Fleet="fleet" Now="Now" Open="Navigate" />
+        <section class="panel"><div class="registerhead"><div><h2>@T("Intelligent alerts")</h2><p class="muted">@T("Live rule-based review of current demo records.")</p></div><button class="secondary" @onclick='()=>Navigate("Notifications")'>@T("Open alert center")</button></div><FleetAlertList Russian="@(language=="ru")" Alerts="@(currentAlerts.Take(3).ToArray())" Open="Navigate"/></section>
         <section class="panel dashboard-preferences" aria-labelledby="dashboard-preferences-title">
             <div class="dashboard-preference-heading"><div><h2 id="dashboard-preferences-title">@T("Dashboard layout")</h2><p class="muted">@T("Choose a workspace view. Core metrics and alerts stay visible.")</p></div>
                 <button class="secondary" aria-expanded="@(dashboardSettingsOpen?"true":"false")" aria-controls="dashboard-preferences-fields" @onclick="()=>dashboardSettingsOpen=!dashboardSettingsOpen"><WorkspaceIcon Name="Overview"/> @T("Customize dashboard")</button>
@@ -68,16 +78,6 @@
                 <button class="secondary dashboard-reset" @onclick="ResetDashboardPreferences">@T("Restore default layout")</button>
             </div>
         </section>
-        <div class="metrics dashboard-kpis">
-            @foreach(var metric in OverviewMetrics()){
-                <button class="metric metric-action secondary" @onclick="()=>Navigate(metric.Section)">
-                    <span class="metric-top"><span>@T(metric.Label)</span><span class="@("kpi-icon "+metric.Tone)" aria-hidden="true"><WorkspaceIcon Name="@metric.Section" /></span></span>
-                    <strong>@metric.Value</strong><span class="metric-bottom"><small>@T(metric.Detail)</small><span aria-hidden="true">↗</span></span>
-                </button>
-            }
-        </div>
-        <CommandSummary Russian="@(language=="ru")" Reservations="vehicleReservations" Fleet="fleet" Now="Now" Open="Navigate" />
-        <section class="panel"><div class="registerhead"><div><h2>@T("Intelligent alerts")</h2><p class="muted">@T("Live rule-based review of current demo records.")</p></div><button class="secondary" @onclick='()=>Navigate("Notifications")'>@T("Open alert center")</button></div><FleetAlertList Russian="@(language=="ru")" Alerts="@(currentAlerts.Take(3).ToArray())" Open="Navigate"/></section>
         @if(dashboardPanels.Contains("trips")){
         <section class="panel recent-trips"><div class="registerhead"><div><h2>@T("Recent trips")</h2><p class="muted">@T("Latest eight trips by departure time.")</p></div><button class="secondary" @onclick='()=>Navigate("Dispatch")'>@T("View trip schedule")</button></div>@TripTable()</section>}
         @if(dashboardPanels.Contains("simulation")){

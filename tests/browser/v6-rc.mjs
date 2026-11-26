@@ -4,6 +4,7 @@ import {mkdir,readFile} from 'node:fs/promises';
 const browser=await chromium.launch();
 try{
  const page=await browser.newPage({viewport:{width:1440,height:900},reducedMotion:'reduce',acceptDownloads:true});
+  await page.addInitScript(()=>{if(!localStorage.getItem('fleetmanagement.preferences.navigation.v6'))localStorage.setItem('fleetmanagement.preferences.navigation.v6','all');});
  const errors=[];page.on('pageerror',e=>errors.push(e.message));
  await page.goto('http://127.0.0.1:8080/FleetManagement/');
  await page.getByRole('heading',{name:'Operations overview',exact:true}).waitFor({timeout:90000});

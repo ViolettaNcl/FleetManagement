@@ -335,3 +335,9 @@
 @media(max-width:1000px){.demo-shell .fleet-sidebar.nav-open{grid-template-columns:minmax(0,1fr);max-height:62dvh}.demo-shell .navigation-mode button,.demo-shell .nav-group button{min-height:44px}.demo-shell .nav-group button{font-size:14px}.demo-shell .nav-search input{font-size:16px;min-height:44px}.demo-shell .guided-context summary{min-height:36px}}
 @media(max-width:720px){.demo-shell.guided-workspace .workspace-header>.actions{grid-template-columns:44px 44px minmax(72px,1fr) 48px}.demo-shell.guided-workspace .workspace-header .toolbar-icon-button{width:44px;height:44px;min-height:44px}.demo-shell.guided-workspace .workspace-header .header-alerts{height:44px}.demo-shell .guided-context{padding:14px}.demo-shell .guided-task{min-height:74px}.demo-shell .guided-task-grid{grid-template-columns:1fr}.demo-shell .guided-context details button{min-height:44px}.demo-shell .fleet-content{scroll-margin-top:12px}.demo-shell .formgrid :is(input:not([type=checkbox]),select,textarea){font-size:16px;min-height:44px;max-width:100%}}
 @media print{body:has(.fleet-print-document) .guided-context{display:none!important}}
+
+.demo-shell.guided-workspace .hero-actions{display:none}
+.demo-shell.guided-workspace .neon-hero{min-height:144px;padding:20px 24px}
+.demo-shell.guided-workspace .neon-hero h2{font-size:clamp(24px,3vw,34px)}
+.guided-section-name{display:block;color:var(--ink);font-size:15px}
+@media(max-width:720px){.demo-shell.guided-workspace .neon-hero{min-height:0;padding:16px}.demo-shell.guided-workspace .neon-hero h2{font-size:26px}}

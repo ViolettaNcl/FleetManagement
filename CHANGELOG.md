@@ -1,5 +1,11 @@
 # Changelog
 
+## Unreleased — V6.1 guided workspace candidate
+
+- Default Essentials navigation with ten everyday modules, all-tool search, persistent expert mode, task-first overview, section-specific bilingual guidance and next-step actions.
+- Preserve saved dashboard preferences, expert mode, advanced modules and data; move destructive reset into Help & settings in Essentials.
+- Mobile single-column navigation, larger touch controls, no automatic search keyboard on ordinary menu open; new guided-mode regression and axe tests alongside full expert coverage.
+
 ## Unreleased — V6.0 RC2 release hardening
 
 - Restricted seven-sheet XLSX snapshot interchange with bounded ZIP/XML parsing, literal cells, shared strings, exact schema, validation and explicit atomic local restore.

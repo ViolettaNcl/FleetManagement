@@ -26,6 +26,7 @@ const browser=await chromium.launch({headless:true,args:['--enable-webgl','--use
 try{
   await mkdir('browser-results',{recursive:true});
   const page=await browser.newPage({viewport:{width:1440,height:900},reducedMotion:'reduce'});
+  await page.addInitScript(()=>{if(!localStorage.getItem('fleetmanagement.preferences.navigation.v6'))localStorage.setItem('fleetmanagement.preferences.navigation.v6','all');});
   const errors=[];page.on('pageerror',e=>errors.push(e.message));
   await page.goto(url);
   await page.getByRole('heading',{name:'Operations overview',exact:true}).waitFor({timeout:90000});
@@ -118,6 +119,7 @@ try{
   assert.deepEqual(errors,[]);
   // Force unavailable WebGL before application startup; the SVG must remain visible.
   const fallback=await browser.newPage({viewport:{width:768,height:1024}});
+  await fallback.addInitScript(()=>localStorage.setItem('fleetmanagement.preferences.navigation.v6','all'));
   await fallback.addInitScript(()=>{const original=HTMLCanvasElement.prototype.getContext;HTMLCanvasElement.prototype.getContext=function(type,...args){return type.startsWith('webgl')?null:original.call(this,type,...args);};});
   await fallback.goto(url);
   await fallback.getByRole('heading',{name:'Operations overview',exact:true}).waitFor({timeout:90000});

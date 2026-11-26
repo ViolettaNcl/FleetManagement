@@ -45,7 +45,7 @@ function table(id,columns,rows){
 const date=x=>typeof x==="string"?x.replace("T"," ").replace(/Z$/," UTC"):"—";
 const text=key=>row=>row[key];
 function options(select,rows,label){const old=select.value;select.replaceChildren();const blank=document.createElement("option");blank.value="";uiText(blank,"Select");select.append(blank);for(const r of rows){const o=document.createElement("option");o.value=String(r.id);o.textContent=label(r);select.append(o);}if([...select.options].some(o=>o.value===old))select.value=old;}
-function tab(name){currentPage=name;for(const item of document.querySelectorAll("[data-page]"))item.hidden=item.dataset.page!==name;for(const button of document.querySelectorAll("[data-tab]"))button.setAttribute("aria-pressed",String(button.dataset.tab===name));}
+function tab(name){currentPage=name;for(const item of document.querySelectorAll("[data-page]"))item.hidden=item.dataset.page!==name;for(const button of document.querySelectorAll("[data-tab]")){const selected=button.dataset.tab===name;button.setAttribute("aria-pressed",String(selected));if(selected)button.setAttribute("aria-current","page");else button.removeAttribute("aria-current");}}
 async function refresh(){
     const active=generation;
     const checkpoint=await api("/api/operations/revision");

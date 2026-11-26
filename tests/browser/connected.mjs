@@ -22,6 +22,10 @@ try{
     await mkdir("browser-results",{recursive:true});
     await page.goto(base+"/console");
     await page.getByRole("heading",{name:"Sign in to the fleet server"}).waitFor();
+    await page.setViewportSize({width:320,height:760});
+    assert.ok(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth),"Connected login fits 320px");
+    await page.screenshot({path:"browser-results/connected-login-mobile.png",fullPage:true});
+    await page.setViewportSize({width:1366,height:900});
     await page.locator("#language").selectOption("ru");
     await page.getByRole("heading",{name:"Вход в систему автопарка"}).waitFor();
     assert.equal(await page.locator("html").getAttribute("lang"),"ru");
@@ -43,6 +47,7 @@ try{
     await page.getByLabel("Find section",{exact:true}).fill("");
     assert.equal(await page.locator("#vehicles-count").innerText(),"4");
     await page.getByRole("button",{name:"Dashboard",exact:true}).click();
+    assert.equal(await page.getByRole("button",{name:"Dashboard",exact:true}).getAttribute("aria-current"),"page");
     await page.locator("#trip-bars progress").first().waitFor();
     assert.equal(await page.locator("#service-bars progress").count(),3);
     await page.getByRole("button",{name:"Calendar",exact:true}).click();
@@ -236,6 +241,8 @@ try{
     const download=await downloadPromise;
     assert.match(download.suggestedFilename(),/^fleet-finance-.*\.xlsx$/);
     await download.saveAs("browser-results/connected-finance.xlsx");
+    await page.setViewportSize({width:320,height:760});
+    assert.equal(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth),true);
     await page.setViewportSize({width:390,height:844});
     assert.equal(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth),true);
     await page.screenshot({path:"browser-results/connected-viewer-mobile.png",fullPage:true});

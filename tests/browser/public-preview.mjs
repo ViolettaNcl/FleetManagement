@@ -30,6 +30,9 @@ try {
   assert.ok(response?.ok(),'Preview HTTP response failed');
   assert.equal(new URL(page.url()).origin,new URL(url).origin);
   await page.getByRole('heading',{name:'Operations overview',exact:true}).waitFor({timeout:90000});
+  assert.equal(await page.locator('.dashboard-kpis .metric-action').count(),4);
+  await page.locator('.workload-donut').waitFor();
+  await page.locator('.simulation-showcase').waitFor();
   {
     const artwork=await (await context.request.get(url+'assets/neon/manifest.json?rev='+revision)).json();
     assert.equal(artwork.mode,'committed');

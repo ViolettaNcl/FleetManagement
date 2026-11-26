@@ -812,6 +812,20 @@ internal static class DemoLocale
         ["Explore calculated operational metrics."]="Изучайте рассчитанные операционные показатели.",
         ["Fleet tracking"]="Мониторинг автопарка",
         ["Follow the simulated fleet."]="Следите за симулируемым автопарком.",
+        ["Fleet operations workspace"]="Рабочая область автопарка",
+        ["Interactive fleet visualization"]="Интерактивная визуализация автопарка",
+        ["Inspect the illustrative 3D scene, then open the digital twin for actual simulated telemetry and incident scenarios."]="Изучите 3D-сцену и откройте цифровой двойник для симуляции телеметрии и инцидентов.",
+        ["Open simulation"]="Открыть симуляцию",
+        ["Total trips"]="Всего рейсов",
+        ["Scheduled events"]="событий в расписании",
+        ["More events in calendar"]="других событий в календаре",
+        ["Manage fleet records, search and review operational status. All records are synthetic."]="Управляйте реестром, ищите записи и проверяйте состояние автопарка. Все данные синтетические.",
+        ["Service status"]="Состояние ТО",
+        ["All statuses"]="Все статусы",
+        ["Records shown"]="записей показано",
+        ["Clear filters"]="Сбросить фильтры",
+        ["Original distance"]="Исходное расстояние",
+        ["Selected distance"]="Выбранное расстояние",
     };
     public static string Text(string value,bool russian)=>russian&&Russian.TryGetValue(value,out var translated)?translated:value;
 }

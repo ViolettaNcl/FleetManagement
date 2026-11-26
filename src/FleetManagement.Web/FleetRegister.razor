@@ -2,14 +2,16 @@
 @inject IJSRuntime JS
 <section class="panel">
     <div class="registerhead">
-        <div><h2>@T(IsVehicles ? "Vehicle register" : "Driver register")</h2><p class="muted">@T("Manage synthetic records in the original spreadsheet-style interface.")</p></div>
+        <div><h2>@T(IsVehicles ? "Vehicle register" : "Driver register")</h2><p class="muted">@T("Manage fleet records, search and review operational status. All records are synthetic.")</p></div>
         <button @onclick="NewRecord">@T(IsVehicles ? "+ Add vehicle" : "+ Add driver")</button>
     </div>
     <div class="actions registertools">
         <label>@T("Search")<input type="search" placeholder="@T("Search records…")" @bind="query" @bind:event="oninput" /></label>
         <label>@T("Sort by")<select @bind="sort"><option value="id">ID</option><option value="name">@T("Name / registration")</option><option value="metric">@T(IsVehicles ? "Mileage" : "Experience")</option></select></label>
+        @if(IsVehicles){<label>@T("Service status")<select @bind="healthFilter"><option value="">@T("All statuses")</option>@foreach(var status in new[]{"Healthy","Soon","Due"}){<option value="@status">@T(status)</option>}</select></label>}
         <button class="secondary" @onclick="()=>descending=!descending">@T(descending ? "Descending ↓" : "Ascending ↑")</button>
     </div>
+    <div class="register-result-bar"><span>@(IsVehicles?Vehicles.Count():Drivers.Count()) / @(IsVehicles?Fleet.Vehicles.Count:Fleet.Drivers.Count) @T("Records shown")</span><button class="secondary" @onclick="ClearFilters" disabled="@(query.Length==0&&healthFilter.Length==0&&sort=="id"&&!descending)">@T("Clear filters")</button></div>
     @if (feedback.Length > 0) { <p role="status" class="@(error ? "error" : "notice")">@T(feedback)</p> }
     @if (editing)
     {
@@ -74,13 +76,14 @@
     [Parameter] public IReadOnlyList<MaintenanceEntry> MaintenanceEntries {get;set;}=[];
     [Parameter] public IReadOnlyList<DriverShift> Shifts {get;set;}=[];
     [Parameter] public IReadOnlyList<VehicleReservation> Reservations {get;set;}=[];
-    private string query="",sort="id",name="",plate="",license="",feedback="";
+    private string query="",healthFilter="",sort="id",name="",plate="",license="",feedback="";
     private bool descending,editing,error;
     private int editId,mileage,serviceMileage,intervalKm=10000,intervalDays=180,experience;
     private DateTime serviceDate=DateTime.Today;
+    private void ClearFilters(){query="";healthFilter="";sort="id";descending=false;}
     private bool Match(string text)=>text.Contains(query.Trim(),StringComparison.OrdinalIgnoreCase);
     private IEnumerable<Vehicle> Vehicles {
-        get { var rows=Fleet.Vehicles.Where(v=>Match(v.Plate)||Match(v.Model)||Match(v.Id.ToString()));var ordered=sort switch{"name"=>rows.OrderBy(v=>v.Plate),"metric"=>rows.OrderBy(v=>v.Mileage),_=>rows.OrderBy(v=>v.Id)};return descending?ordered.Reverse():ordered; }
+        get { var rows=Fleet.Vehicles.Where(v=>(Match(v.Plate)||Match(v.Model)||Match(v.Id.ToString()))&&(healthFilter.Length==0||FleetRules.Assess(v,Today).Status==healthFilter));var ordered=sort switch{"name"=>rows.OrderBy(v=>v.Plate),"metric"=>rows.OrderBy(v=>v.Mileage),_=>rows.OrderBy(v=>v.Id)};return descending?ordered.Reverse():ordered; }
     }
     private IEnumerable<Driver> Drivers {
         get { var rows=Fleet.Drivers.Where(d=>Match(d.Name)||Match(d.License)||Match(d.Id.ToString()));var ordered=sort switch{"name"=>rows.OrderBy(d=>d.Name),"metric"=>rows.OrderBy(d=>d.Experience),_=>rows.OrderBy(d=>d.Id)};return descending?ordered.Reverse():ordered; }

@@ -1,7 +1,7 @@
 name: ML training and model registry
 on:
   push:
-    branches: [master, 'feature/**']
+    branches: [master, 'feature/**', 'preview/fleetops-v3']
   pull_request:
     paths: ['tools/FleetManagement.ModelTrainer/**', 'src/FleetManagement.Core/**', '.github/workflows/ml-ci.yml', 'tests/ml/**', 'tools/local_ai.py']
   workflow_dispatch:

@@ -1,7 +1,7 @@
 name: Windows portable demo
 on:
   push:
-    branches: [master, 'feature/**']
+    branches: [master, 'feature/**', 'preview/fleetops-v3']
   pull_request:
   workflow_dispatch:
 permissions:

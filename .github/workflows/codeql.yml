@@ -1,7 +1,7 @@
 name: CodeQL
 on:
   push:
-    branches: [master, 'feature/**']
+    branches: [master, 'feature/**', 'preview/fleetops-v3']
   pull_request:
     branches: [master]
   workflow_dispatch:

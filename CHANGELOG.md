@@ -2,7 +2,7 @@
 
 ## Unreleased — V5 Intelligence Suite
 
-- Fixed three-member logistic ensemble with vehicle-disjoint training, validation and final test cohorts, validation-only cost-weighted threshold selection, calibration and member disagreement. Synthetic experiment; not an operational safety model.
+- Fixed three-member logistic ensemble with vehicle-disjoint training, validation and final test cohorts, validation-only cost-weighted threshold selection, calibration, member disagreement and bounded one-input-at-a-time sensitivity. Synthetic experiment; not an operational safety model.
 - Budget sensitivity compares hypothetical fuel, driver and fixed-cost changes without modifying the registered trip cohort or original cost assumptions.
 - Configurable local review rules preview escalation and group the review queue; all high alerts remain included. No automatic messages or writes.
 - Vehicle report builder filters by status, minimum trips and search, selects columns, previews up to 25 rows and exports matching native XLSX with safe inline user text.

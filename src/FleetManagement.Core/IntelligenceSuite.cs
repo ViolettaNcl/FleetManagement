@@ -2,6 +2,7 @@ namespace FleetManagement.Core;
 
 // All cohorts are synthetic and vehicle-disjoint. No automatic promotion.
 public sealed record CalibrationBin(int Count,double MeanProbability,double ObservedRate);
+public sealed record FeatureSensitivity(string Feature,double LowerValue,double UpperValue,double LowerScore,double UpperScore);
 public sealed record EnsemblePrediction(double Mean,double Minimum,double Maximum,IReadOnlyList<double> Members);
 public sealed record EnsembleExperiment(
     MaintenanceEnsemble Model, int TrainRows,int ValidationRows,int TestRows,int FalseNegativeWeight,
@@ -19,6 +20,25 @@ public sealed class MaintenanceEnsemble
         return new(scores.Average(),scores.Min(),scores.Max(),scores);
     }
     private double Score(TelemetryFeatures features)=>members.Average(m=>m.Predict(features));
+    // One-at-a-time hypothetical input variation, not causal effects.
+    public IReadOnlyList<FeatureSensitivity> Sensitivity(TelemetryFeatures snapshot)
+    {
+        if(snapshot.Temperature is not (>=50 and <=150)||snapshot.Vibration is not (>=0 and <=15)||
+            snapshot.BatteryVoltage is not (>=8 and <=16)||snapshot.ServiceFraction is not (>=0 and <=2)||
+            snapshot.EngineHours is not (>=0 and <=20000))throw new ArgumentException("Snapshot outside supported demonstration ranges.");
+        FeatureSensitivity Compare(string feature,double value,double step,double min,double max,Func<double,TelemetryFeatures> vary)
+        {
+            var low=Math.Max(min,value-step);var high=Math.Min(max,value+step);
+            return new(feature,low,high,Score(vary(low)),Score(vary(high)));
+        }
+        return [
+            Compare("Temperature",snapshot.Temperature,5,50,150,x=>snapshot with{Temperature=x}),
+            Compare("Vibration",snapshot.Vibration,1,0,15,x=>snapshot with{Vibration=x}),
+            Compare("Battery voltage",snapshot.BatteryVoltage,.3,8,16,x=>snapshot with{BatteryVoltage=x}),
+            Compare("Service interval used",snapshot.ServiceFraction,.1,0,2,x=>snapshot with{ServiceFraction=x}),
+            Compare("Engine hours",snapshot.EngineHours,500,0,20000,x=>snapshot with{EngineHours=x})
+        ];
+    }
     public static EnsembleExperiment Run(int seed=42,int falseNegativeWeight=3)
     {
         if(falseNegativeWeight is <1 or >10)throw new ArgumentOutOfRangeException(nameof(falseNegativeWeight));

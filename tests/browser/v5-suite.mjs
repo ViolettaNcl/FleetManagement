@@ -15,6 +15,7 @@ try{
   assert.equal(await ensemble.getByTestId('ensemble-calibration').locator('.calibration-row').count(),5);
   assert.match(await ensemble.getByTestId('ensemble-threshold').innerText(),/\d/);
   await ensemble.getByRole('heading',{name:'Member agreement for the current snapshot',exact:true}).waitFor();
+  assert.equal(await ensemble.getByRole('region',{name:'Model input sensitivity',exact:true}).locator('tbody tr').count(),5);
   await mkdir('browser-results',{recursive:true});
   await ensemble.screenshot({path:'browser-results/v5-ensemble.png'});
   await go('Cost Intelligence');

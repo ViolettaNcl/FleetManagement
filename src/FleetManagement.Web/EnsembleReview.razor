@@ -35,6 +35,11 @@
             <p class="muted">@T("This range measures disagreement between the three members; it is not a confidence interval. The snapshot comes from the maintenance sandbox (defaults before training).")</p>
             @for(var i=0;i<prediction.Members.Count;i++){<div class="reportbar"><div><span>@T("Member") @(i+1)</span><strong>@prediction.Members[i].ToString("P1")</strong></div><div class="progress"><i style="@Width(prediction.Members[i])"></i></div></div>}
             </div>
+            <h3>@T("Model input sensitivity")</h3>
+            <p class="muted">@T("Vary one sensor input at a time within fixed demonstration bounds. The table shows model responses, not causal effects or maintenance instructions.")</p>
+            <div class="tablewrap" tabindex="0" role="region" aria-label="@T("Model input sensitivity")"><table><thead><tr><th>@T("Feature")</th><th>@T("Input interval")</th><th>@T("Score at lower input")</th><th>@T("Score at higher input")</th></tr></thead><tbody>
+            @foreach(var row in e.Model.Sensitivity(Features)){<tr><td>@T(row.Feature)</td><td>@row.LowerValue.ToString("0.##") – @row.UpperValue.ToString("0.##")</td><td>@row.LowerScore.ToString("P1")</td><td>@row.UpperScore.ToString("P1")</td></tr>}
+            </tbody></table></div>
         }
         <p class="muted">@T("Validation threshold selection is not a guarantee of better test results. Synthetic estimates are not real-world failure probabilities or safety decisions.")</p>
     }

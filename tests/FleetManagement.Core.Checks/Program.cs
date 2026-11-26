@@ -416,6 +416,10 @@ Check(v5Ensemble.Calibration.Count==5&&v5Ensemble.Calibration.Sum(b=>b.Count)==7
 Check(v5Ensemble.EnsembleDefaultTest.Brier==v5Ensemble.EnsembleSelectedTest.Brier,"V5 threshold does not alter probability loss");
 var v5Prediction=v5Ensemble.Model.Predict(new(95,3.5,12.8,.8,3500));
 Check(v5Prediction.Members.Count==3&&v5Prediction.Minimum<=v5Prediction.Mean&&v5Prediction.Mean<=v5Prediction.Maximum&&v5Prediction.Members.All(p=>p is >=0 and <=1),"V5 ensemble member disagreement");
+var v5Snapshot=new TelemetryFeatures(50,0,16,2,20000);
+var v5Sensitivity=v5Ensemble.Model.Sensitivity(v5Snapshot);
+Check(v5Sensitivity.Count==5&&v5Sensitivity.All(s=>s.LowerValue<=s.UpperValue&&s.LowerScore is >=0 and <=1&&s.UpperScore is >=0 and <=1),"V5 bounded sensitivity scores");
+Check(v5Sensitivity[0].LowerValue==50&&v5Sensitivity[1].LowerValue==0&&v5Sensitivity[2].UpperValue==16&&v5Sensitivity[3].UpperValue==2&&v5Sensitivity[4].UpperValue==20000,"V5 sensitivity clipping at supported bounds");
 Check(v5Ensemble.EnsembleSelectedTest.TP+v5Ensemble.EnsembleSelectedTest.FP+v5Ensemble.EnsembleSelectedTest.TN+v5Ensemble.EnsembleSelectedTest.FN==720,"V5 final confusion totals");
 var v5Zero=BudgetSensitivity.Compare(budgetPlan,new(0,0,0));
 Check(v5Zero.Delta==0&&v5Zero.Headroom==budgetPlan.Headroom,"V5 unchanged budget scenario");

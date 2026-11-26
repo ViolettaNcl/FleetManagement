@@ -988,6 +988,11 @@ internal static class DemoLocale
         ["Ensemble at selected threshold"]="Ансамбль с выбранным порогом",
         ["Operational risk review"]="Проверка операционных рисков",
         ["Calendar review"]="Обзор календаря",
+        ["Model input sensitivity"]="Чувствительность модели к входным данным",
+        ["Vary one sensor input at a time within fixed demonstration bounds. The table shows model responses, not causal effects or maintenance instructions."]="Изменяйте по одному показателю датчиков в заданных пределах. Таблица отражает реакцию модели, а не причинные связи или инструкции по обслуживанию.",
+        ["Input interval"]="Интервал входного значения",
+        ["Score at lower input"]="Оценка на нижней границе",
+        ["Score at higher input"]="Оценка на верхней границе",
     };
     public static string Text(string value,bool russian)=>russian&&Russian.TryGetValue(value,out var translated)?translated:value;
 }

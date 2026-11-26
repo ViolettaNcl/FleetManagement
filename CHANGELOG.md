@@ -1,5 +1,16 @@
 # Changelog
 
+## Unreleased — V5 Intelligence Suite
+
+- Fixed three-member logistic ensemble with vehicle-disjoint training, validation and final test cohorts, validation-only cost-weighted threshold selection, calibration and member disagreement. Synthetic experiment; not an operational safety model.
+- Budget sensitivity compares hypothetical fuel, driver and fixed-cost changes without modifying the registered trip cohort or original cost assumptions.
+- Configurable local review rules preview escalation and group the review queue; all high alerts remain included. No automatic messages or writes.
+- Vehicle report builder filters by status, minimum trips and search, selects columns, previews up to 25 rows and exports matching native XLSX with safe inline user text.
+- Assistant supports operational risk and calendar review intents; no generative inference or external API.
+- Shared bilingual analytical-panel styling, responsive layout, restrained motion with reduced-motion support. Indexed vehicle/period grouping avoids repeated full trip scans in report and financial aggregation.
+- Added deterministic core regression tests and Playwright acceptance for new workflows, screenshots and export. Exact CI required before publication.
+
+
 ## Unreleased — V4.3 personalized workspace
 
 - Dashboard presets: Full overview, Operations focus, Intelligence focus and individually selected optional panels. Core KPIs, readiness, agenda and alerts remain present. Compact density and reset affect layout only; preferences are stored separately from synthetic fleet records.

@@ -408,4 +408,39 @@ Check(periodRows[0].From==periodFrom&&periodRows[^1].To==periodNow.Date,"report 
 Check(periodRows.Sum(p=>p.Trips)==periodSummary.Trips&&periodRows.Sum(p=>p.Completed)==periodSummary.Completed&&periodRows.Sum(p=>p.CompletedDistanceKm)==periodSummary.CompletedDistanceKm,"report period totals reconcile");
 Check(periodRows.Zip(periodRows.Skip(1)).All(p=>p.First.To.AddDays(1)==p.Second.From),"report periods contiguous");
 Check(FleetReport.Periods(new FleetData([],[],[]),periodNow,periodNow.Date,periodNow.Date).Single().Trips==0,"empty report period");
+
+var v5Ensemble=MaintenanceEnsemble.Run(42,3);
+Check(v5Ensemble.TrainRows==2400&&v5Ensemble.ValidationRows==720&&v5Ensemble.TestRows==720,"V5 ensemble independent cohort sizes");
+Check(v5Ensemble.Threshold>=.1&&v5Ensemble.Threshold<=.9&&v5Ensemble.ValidationCost<=v5Ensemble.DefaultValidationCost,"V5 threshold selected on validation grid");
+Check(v5Ensemble.Calibration.Count==5&&v5Ensemble.Calibration.Sum(b=>b.Count)==720&&v5Ensemble.Calibration.All(b=>b.MeanProbability is >=0 and <=1&&b.ObservedRate is >=0 and <=1),"V5 calibration bins reconcile");
+Check(v5Ensemble.EnsembleDefaultTest.Brier==v5Ensemble.EnsembleSelectedTest.Brier,"V5 threshold does not alter probability loss");
+var v5Prediction=v5Ensemble.Model.Predict(new(95,3.5,12.8,.8,3500));
+Check(v5Prediction.Members.Count==3&&v5Prediction.Minimum<=v5Prediction.Mean&&v5Prediction.Mean<=v5Prediction.Maximum&&v5Prediction.Members.All(p=>p is >=0 and <=1),"V5 ensemble member disagreement");
+Check(v5Ensemble.EnsembleSelectedTest.TP+v5Ensemble.EnsembleSelectedTest.FP+v5Ensemble.EnsembleSelectedTest.TN+v5Ensemble.EnsembleSelectedTest.FN==720,"V5 final confusion totals");
+var v5Zero=BudgetSensitivity.Compare(budgetPlan,new(0,0,0));
+Check(v5Zero.Delta==0&&v5Zero.Headroom==budgetPlan.Headroom,"V5 unchanged budget scenario");
+var v5Stress=BudgetSensitivity.Compare(budgetPlan,new(20,10,50));
+Check(v5Stress.Delta==budgetPlan.FuelCost*.2m+budgetPlan.DriverCost*.1m+budgetPlan.FixedAllowance*.5m&&v5Stress.Headroom==budgetPlan.Budget-v5Stress.Scenario,"V5 scenario arithmetic");
+Check(!new BudgetScenario(101,0,0).Valid,"V5 scenario bound");
+var v5Policy=new ReviewPolicy(1,1,false);
+var v5Queue=ReviewAutomation.Preview(notices,v5Policy);
+Check(v5Queue.Escalate&&v5Queue.HighTriggered&&v5Queue.Queue.Count==notices.Count(a=>a.Severity=="High")&&v5Queue.Queue.All(a=>a.Severity=="High"),"V5 escalation preserves all high alerts");
+Check(!ReviewAutomation.Preview([],new(1,1,true)).Escalate,"V5 no false escalation for empty register");
+Check(!new ReviewPolicy(0,1,true).Valid,"V5 review thresholds bounded");
+var v5ReportOptions=new VehicleReportOptions("Due","",0,false,false,false,true);
+Check(FleetReport.FilterVehicles(report,v5ReportOptions).Count==report.VehicleRows.Count(v=>v.ServiceStatus=="Due"),"V5 report service filter");
+Check(FleetReport.FilterVehicles(report,v5ReportOptions with{Query="no-such-vehicle"}).Count==0,"V5 report search empty");
+var v5MaliciousOptions=new VehicleReportOptions("All","",0,false,false,false,false);
+using(var v5Stream=new MemoryStream(FleetReport.ExportVehicleXlsx(malicious,now,now,v5MaliciousOptions)))
+using(var v5Zip=new System.IO.Compression.ZipArchive(v5Stream)){
+    using var v5Reader=new StreamReader(v5Zip.GetEntry("xl/worksheets/sheet1.xml")!.Open());
+    var v5Xml=System.Xml.Linq.XDocument.Parse(v5Reader.ReadToEnd());
+    var v5Rows=v5Xml.Descendants().Where(x=>x.Name.LocalName=="row").ToArray();
+    Check(v5Rows.Length==5&&v5Rows[3].Elements().Count()==1&&v5Rows[4].Elements().Count()==1,"V5 custom workbook selected columns");
+    Check(v5Rows[4].Descendants().Any(x=>x.Name.LocalName=="t"&&x.Value=="=1+1")&&!v5Xml.Descendants().Any(x=>x.Name.LocalName=="f"),"V5 custom workbook user text never formula");
+}
+Check(FleetAdvisor.Answer(fleet,now,"риски",russian:true).Evidence.Select(a=>a.Key).SequenceEqual(notices.Select(a=>a.Key)),"V5 risk assistant canonical evidence");
+Check(FleetAdvisor.Answer(fleet,now,"calendar").Title=="Calendar review","V5 calendar assistant intent");
+var v5Scale=FleetReport.Build(scaleFleet,now,now.Date.AddDays(-29),now.Date);
+Check(v5Scale.Trips==scaleFleet.Trips.Count(t=>t.Start>=now.Date.AddDays(-29)&&t.Start<now.Date.AddDays(1))&&v5Scale.VehicleRows.Sum(v=>v.Trips)==v5Scale.Trips,"V5 indexed report cohort reconciliation");
 Console.WriteLine("All business rule checks passed.");

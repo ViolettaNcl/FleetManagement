@@ -1,0 +1,14 @@
+# V5 Intelligence Suite — development candidate
+
+## User workflows
+- Intelligence → Maintenance ensemble lab: train three fixed logistic members on 80% vehicle subsamples, compare with full-cohort single model, select threshold on validation by weighted false negatives (1–10) plus false positives, evaluate on separate 12 test vehicles. Display F1, recall, confusion counts, Brier and five calibration bins. Member min/max are disagreement only, not confidence intervals. Synthetic labels, no real fleet failure validation, no automatic model promotion. Existing ML.NET and imported CSV workflows remain unchanged.
+- Cost Intelligence → Budget sensitivity: fixed registered-trip cohort; hypothetical percent changes in fuel, driver and fixed costs from −50 to +100; estimated maintenance allowance unchanged. No extra trip demand, invoices, or actual cash flow claims.
+- Analytics → Vehicle report builder: filter the existing date cohort by service status, search and minimum trip count. Registration required; select the other columns. Preview up to 25 rows; workbook includes all matching rows and period/row-count metadata. XLSX user values are inline text, not formulas.
+- Notifications → Operational review rules: set high and medium count thresholds and whether to include medium alerts in the preview queue. All high alerts remain present. Explicit save is browser-local. Preview runs only in the open demo, no external notification, assignment, automatic cancellation or data modification.
+- Assistant → operational risk and calendar review: deterministic intent, computed register evidence, no language model or paid API.
+
+## Design and performance
+Uses existing dark/light tokens and all existing artwork. New shared analytical panel styling, responsive controls and tables, bilingual labels, keyboard focus and reduced-motion behavior. No new runtime dependency or external service. Core report and economics aggregations now index trips by vehicle and report period instead of repeatedly scanning all trips. No quantitative speedup claim without measured comparison.
+
+## Verification and release policy
+V4.3 baseline 59522f2 passed the browser and Windows portable PR workflows. V5 core and browser tests include independent cohort arithmetic, calibration reconciliation, scenario arithmetic, high-alert preservation, custom workbook column count and formula safety, indexed report totals, UI controls, download, persisted rules, assistant intents, responsive widths and screenshot evidence. The first core-only candidate failed C# compilation at ambiguous collection initializers in the custom workbook; corrected with explicit object arrays. Exact final CI, security, full module accessibility audit and actual Pages release evidence are required before promotion. This branch is separate from master. No production API deployment or real fleet data; manual physical-device and real-world ML validation remain outstanding.

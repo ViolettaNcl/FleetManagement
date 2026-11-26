@@ -130,3 +130,51 @@
 .demo-shell .nav-quick-access .recent-nav-heading button{width:auto;min-height:32px;min-width:44px;padding:4px 7px;font-size:11px}
 .demo-shell .fleet-sidebar button:focus-visible{outline:2px solid var(--focus);outline-offset:2px}
 @media(max-width:1000px){.nav-search-count{grid-column:1/-1}}
+
+
+/* V5 Intelligence Suite: shared responsive analytical panels, not decorative data. */
+.demo-shell .suite-panel{min-width:0;max-width:100%;border-radius:14px;box-shadow:var(--shadow);overflow-wrap:anywhere}
+.suite-heading{display:flex;align-items:flex-start;justify-content:space-between;gap:12px;flex-wrap:wrap;margin-bottom:16px}
+.suite-heading>div{flex:1 1 270px;min-width:0}
+.suite-heading h2{margin:4px 0 6px;font-size:clamp(17px,2vw,21px);line-height:1.35;letter-spacing:-.02em}
+.suite-heading p{margin:0;max-width:72ch;line-height:1.55}
+.suite-kicker{display:inline-block;font-size:11px;letter-spacing:.07em;text-transform:uppercase;font-weight:650;color:var(--accent)}
+.demo-shell .suite-heading>button{min-height:44px;max-width:100%;white-space:normal}
+.demo-shell .suite-metrics{grid-template-columns:repeat(auto-fit,minmax(min(150px,100%),1fr));gap:10px;margin:16px 0}
+.demo-shell .suite-metrics .metric{min-width:0;min-height:85px;background:var(--surface-2);border:1px solid var(--line);border-radius:10px;padding:12px}
+.demo-shell .suite-metrics .metric strong{font-size:clamp(19px,2.4vw,27px);line-height:1.28;overflow-wrap:anywhere}
+.demo-shell .suite-panel .formgrid{grid-template-columns:repeat(auto-fit,minmax(min(180px,100%),1fr));gap:12px}
+.demo-shell .suite-panel .formgrid>label{min-width:0}
+.demo-shell .suite-panel .formgrid input:not([type=checkbox]),.demo-shell .suite-panel .formgrid select{width:100%;min-width:0}
+.suite-fieldset{display:flex;flex-wrap:wrap;gap:6px 18px;border:1px solid var(--line);border-radius:10px;padding:10px 12px;margin:16px 0;min-width:0}
+.suite-fieldset legend{padding:0 6px;font-weight:650}
+.suite-fieldset .dashboard-check{flex:1 1 155px}
+.suite-note{padding:12px;border:1px solid var(--line);border-left:3px solid var(--accent);border-radius:10px;background:var(--surface-2);margin:14px 0;color:var(--ink);min-width:0}
+.suite-note h3{margin:0 0 8px}
+.suite-calibration{display:grid;gap:8px;margin:12px 0 18px;min-width:0}
+.calibration-row{display:grid;grid-template-columns:minmax(65px, .7fr) minmax(65px, .8fr) minmax(0, 3fr);gap:10px;padding:10px;border:1px solid var(--line);border-radius:8px;background:var(--surface-2);align-items:start}
+.calibration-row>span,.calibration-bars>span{font-size:12px;color:var(--muted)}
+.calibration-bars{display:grid;gap:5px;min-width:0}
+.calibration-bars .progress{height:6px;margin:0 0 4px}
+.demo-shell .suite-panel .suite-observed{background:var(--chart-green)}
+.suite-review-list{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(155px,100%),1fr));gap:8px}
+.demo-shell .suite-review-list button{display:flex;align-items:center;justify-content:space-between;gap:8px;min-width:0;min-height:44px;text-align:left;white-space:normal}
+.demo-shell .suite-panel .tablewrap{width:100%;max-width:100%;min-width:0;overflow:auto}
+.demo-shell .suite-panel .tablewrap:focus-visible{outline:2px solid var(--focus);outline-offset:3px}
+@media(max-width:720px){
+  .demo-shell .suite-panel{padding:12px}
+  .suite-heading{gap:10px}
+  .demo-shell .suite-heading>button{width:100%}
+  .demo-shell .suite-metrics{grid-template-columns:repeat(2,minmax(0,1fr));gap:6px}
+  .demo-shell .suite-metrics .metric{padding:9px;min-height:0}
+  .calibration-row{grid-template-columns:1fr 1fr;gap:7px}
+  .calibration-bars{grid-column:1/-1}
+}
+@media(prefers-reduced-motion:no-preference){
+ .demo-shell :is(.metric-action,.capability-card,.suite-review-list button){transition:background-color .18s ease,border-color .18s ease,box-shadow .18s ease,transform .18s ease}
+ .demo-shell :is(.metric-action,.capability-card):hover{transform:translateY(-2px);box-shadow:0 7px 22px #15102c19}
+ .demo-shell .suite-panel .progress>i{transition:width .25s ease}
+}
+@media(prefers-reduced-motion:reduce){
+ .demo-shell :is(.metric-action,.capability-card,.suite-review-list button,.suite-panel .progress>i){transition:none!important;transform:none!important}
+}

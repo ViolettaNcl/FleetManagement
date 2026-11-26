@@ -51,6 +51,10 @@ public static class MaintenanceLearning
         if(epochs is <10 or >500)throw new ArgumentOutOfRangeException(nameof(epochs));
         // Test vehicles never appear in training; independent RNG stream.
         var train=Generate(seed,0,40,60);var test=Generate(unchecked(seed^0x5A17),1000,12,60);
+        return Fit(train,test,seed,epochs);
+    }
+    // No held-out vehicle can contribute to normalization or gradient updates.
+    private static LearningExperiment Fit(IReadOnlyList<TelemetryObservation> train,IReadOnlyList<TelemetryObservation> test,int seed,int epochs){
         var vectors=train.Select(r=>r.Features.Vector()).ToArray();
         var mean=Enumerable.Range(0,5).Select(i=>vectors.Average(v=>v[i])).ToArray();
         var scale=Enumerable.Range(0,5).Select(i=>Math.Max(1e-9,Math.Sqrt(vectors.Average(v=>Math.Pow(v[i]-mean[i],2))))).ToArray();
@@ -72,7 +76,20 @@ public static class MaintenanceLearning
         }
         var model=new LogisticMaintenanceModel(w,mean,scale,b);
         var prevalence=train.Count(r=>r.FailureWithin7Days)/(double)train.Count;
-        return new(model,Evaluate(test,_=>prevalence),Evaluate(test,r=>model.Predict(r.Features)),train.Count,test.Count,40,12,test.Count(r=>r.FailureWithin7Days),history,seed);
+        return new(model,Evaluate(test,_=>prevalence),Evaluate(test,r=>model.Predict(r.Features)),train.Count,test.Count,train.Select(r=>r.VehicleId).Distinct().Count(),test.Select(r=>r.VehicleId).Distinct().Count(),test.Count(r=>r.FailureWithin7Days),history,seed);
+    }
+    public static LearningExperiment TrainImported(string csv,int seed=42){
+        var rows=TelemetryCsv.ReadValidated(csv);
+        var ids=rows.Select(r=>r.VehicleId).Distinct().Order().ToArray();
+        if(ids.Length<6||rows.Count<60)throw new FormatException("Training requires at least 6 vehicles and 60 valid rows.");
+        var rng=new Random(seed);
+        for(int i=ids.Length-1;i>0;i--){int j=rng.Next(i+1);(ids[i],ids[j])=(ids[j],ids[i]);}
+        var holdout=ids.Take(Math.Max(2,ids.Length/4)).ToHashSet();
+        var train=rows.Where(r=>!holdout.Contains(r.VehicleId)).OrderBy(r=>r.VehicleId).ThenBy(r=>r.Day).ToArray();
+        var test=rows.Where(r=>holdout.Contains(r.VehicleId)).OrderBy(r=>r.VehicleId).ThenBy(r=>r.Day).ToArray();
+        if(train.Length<30||test.Length<20||new[]{train,test}.Any(part=>part.Count(r=>r.FailureWithin7Days)<5||part.Count(r=>!r.FailureWithin7Days)<5))
+            throw new FormatException("Both cohorts require enough rows and at least five labels of each class. No automatic resplitting.");
+        return Fit(train,test,seed,120);
     }
     public static LearningMetrics Evaluate(IReadOnlyList<TelemetryObservation> rows,Func<TelemetryObservation,double> predict,double threshold=.5)
     {

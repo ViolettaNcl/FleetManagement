@@ -9,7 +9,14 @@ public static class TelemetryCsv
     public const int MaxBytes=1024*1024, MaxRows=10000;
     public const string Header="vehicle_id,day,temperature,vibration,battery_voltage,service_fraction,engine_hours,failure_within_7_days";
     // Intentionally strict numeric CSV: no quoted values, embedded lines or locale-specific decimals.
-    public static CsvInspection Inspect(string content)
+    public static CsvInspection Inspect(string content)=>Parse(content,null);
+    public static IReadOnlyList<TelemetryObservation> ReadValidated(string content){
+        var accepted=new List<TelemetryObservation>();
+        var report=Parse(content,accepted);
+        if(report.InvalidRows!=0)throw new FormatException("Training requires every CSV row to pass validation.");
+        return accepted;
+    }
+    private static CsvInspection Parse(string content,List<TelemetryObservation>? accepted)
     {
         if(Encoding.UTF8.GetByteCount(content)>MaxBytes)throw new FormatException("CSV exceeds 1 MiB.");
         using var reader=new StringReader(content.TrimStart('\uFEFF'));
@@ -30,7 +37,9 @@ public static class TelemetryCsv
             else if(!keys.Add((id,day)))issue="Duplicate vehicle/day observation.";
             else{
                 var positive=cells[7]=="1";valid++;if(positive)positives++;vehicles.Add(id);
-                if(preview.Count<20)preview.Add(new(id,day,new(temp,vib,voltage,service,hours),positive));
+                var observation=new TelemetryObservation(id,day,new(temp,vib,voltage,service,hours),positive);
+                if(preview.Count<20)preview.Add(observation);
+                accepted?.Add(observation);
             }
             if(issue is not null&&issues.Count<50)issues.Add(new(line,issue));
         }

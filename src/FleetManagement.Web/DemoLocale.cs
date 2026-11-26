@@ -701,6 +701,20 @@ internal static class DemoLocale
         ["Current clock or mileage precedes recorded work."]="Текущее время или пробег предшествует зарегистрированной работе.",
         ["This work entry is already recorded."]="Эта работа уже зарегистрирована.",
         ["Enter to open a single match; Escape clears search."]="Enter открывает единственный найденный раздел; Escape очищает поиск.",
+        ["Inspect a strict numeric CSV and optionally train an isolated experimental model locally. No upload, persistent storage or automatic model promotion. Ranges are demo schema bounds, not vehicle safety limits."]="Проверьте числовой CSV и при желании обучите отдельную экспериментальную модель локально. Без загрузки в сеть, хранения или автоматического внедрения. Диапазоны — ограничения схемы, не нормы безопасности.",
+        ["Imported dataset experiment"]="Эксперимент на загруженных данных",
+        ["Explicit local training; fixed vehicle-disjoint split and fixed settings. Supplied labels are not independently verified. No operational model is changed."]="Явное локальное обучение с фиксированным разделением по автомобилям и параметрами. Метки независимо не проверены. Рабочие модели не изменяются.",
+        ["Train imported model"]="Обучить модель на CSV",
+        ["Baseline"]="Базовая модель",
+        ["Experimental model trained; no promotion."]="Экспериментальная модель обучена, без внедрения.",
+        ["Training requires every CSV row to pass validation."]="Для обучения все строки CSV должны пройти проверку.",
+        ["Training requires at least 6 vehicles and 60 valid rows."]="Для обучения нужно не менее 6 автомобилей и 60 корректных строк.",
+        ["Both cohorts require enough rows and at least five labels of each class. No automatic resplitting."]="В обеих выборках нужно достаточно строк и не менее пяти меток каждого класса. Автоматического переразбиения нет.",
+        ["Expected eight unquoted numeric fields."]="Ожидается восемь числовых полей без кавычек.",
+        ["Invalid vehicle_id or day."]="Недопустимый vehicle_id или day.",
+        ["Missing, non-finite or out-of-range feature."]="Пропущенный, неконечный или выходящий за диапазон признак.",
+        ["Label must be 0 or 1."]="Метка должна быть 0 или 1.",
+        ["Duplicate vehicle/day observation."]="Повтор наблюдения автомобиля за день.",
     };
     public static string Text(string value,bool russian)=>russian&&Russian.TryGetValue(value,out var translated)?translated:value;
 }

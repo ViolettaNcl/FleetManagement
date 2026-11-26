@@ -216,6 +216,14 @@ bool RejectCsv(string value){try{TelemetryCsv.Inspect(value);return false;}catch
 Check(RejectCsv("wrong_header\n"),"CSV schema rejection");
 Check(RejectCsv(new string('x',TelemetryCsv.MaxBytes+1)),"CSV byte bound");
 Check(RejectCsv(TelemetryCsv.Header+"\n"+string.Concat(Enumerable.Repeat("1,0,84,2.1,13.6,0.3,1200,0\n",10001))),"CSV row bound");
+bool RejectImported(string value){try{MaintenanceLearning.TrainImported(value);return false;}catch(FormatException){return true;}}
+Check(RejectImported(csv),"imported training rejects invalid rows");
+Check(RejectImported(TelemetryCsv.Header),"imported training rejects empty data");
+var importedCsv=TelemetryCsv.Header+"\n"+string.Join("\n",from id in Enumerable.Range(1,8) from day in Enumerable.Range(0,20) select $"{id},{day},{80+day},2,13,0.5,1000,{day%2}");
+var imported=MaintenanceLearning.TrainImported(importedCsv);
+Check(imported.TrainVehicles==6&&imported.TestVehicles==2&&imported.TrainRows==120&&imported.TestRows==40,"imported fixed disjoint cohort sizes");
+Check(imported.Test==MaintenanceLearning.TrainImported(importedCsv).Test,"imported model reproducibility");
+Check(imported.Test.TP+imported.Test.FP+imported.Test.TN+imported.Test.FN==40,"imported evaluation coverage");
 var passport=VehiclePassports.Build(fleet,1,now)!;
 Check(passport.Vehicle.Plate=="FM-102"&&passport.Trips.Count==2,"passport correct vehicle trips");
 Check(passport.CompletedTrips==1&&passport.CompletedDistance==112&&passport.ActiveTrips==1,"passport completed distance and activity");
@@ -381,4 +389,4 @@ Check(retraining.SelectedEpochs==retraining.Candidates.OrderBy(c=>c.Validation.B
 Check(retraining.CandidateEvaluation.TP+retraining.CandidateEvaluation.FP+retraining.CandidateEvaluation.TN+retraining.CandidateEvaluation.FN==720,"retraining final cohort");
 Check(retraining.IncumbentEvaluation.Brier is >=0 and <=1&&retraining.CandidateEvaluation.Brier is >=0 and <=1,"retraining bounded scores");
 Console.WriteLine($"Synthetic retraining review: selected={retraining.SelectedEpochs} epochs; incumbent Brier={retraining.IncumbentEvaluation.Brier:F4}; candidate Brier={retraining.CandidateEvaluation.Brier:F4}.");
-Console.WriteLine("All 249 business rule checks passed.");
+Console.WriteLine("All business rule checks passed.");

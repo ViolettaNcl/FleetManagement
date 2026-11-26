@@ -22,6 +22,8 @@ jobs:
           dotnet-version: '10.0.x'
       - run: dotnet run --project tests/FleetManagement.Core.Checks -c Release
       - run: dotnet publish src/FleetManagement.Web -c Release -o publish
+      - name: Import verified owner artwork
+        run: python3 tools/import_neon_assets.py publish/wwwroot
       - name: Add exact revision marker
         run: python3 tools/write_preview_manifest.py publish/wwwroot
       - name: Validate published browser build

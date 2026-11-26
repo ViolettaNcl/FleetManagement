@@ -3,38 +3,62 @@
 @inject IJSRuntime JS
 
 <div class="demo-shell @(darkTheme?"dark-theme":"")">
-<header lang="@language">
-    <div class="brand"><img class="brandicon" src="favicon.svg" alt="" /><div><h1>FleetManagement</h1><small>@T("Fleet operations • interactive portfolio")</small></div></div>
-    <div class="actions"><button class="secondary" aria-pressed="@(darkTheme?"true":"false")" @onclick="ToggleTheme">@T("Dark theme")</button><label class="demo-language">@T("Language") <select @bind="language" @bind:after="PersistPreferences" aria-label="@T("Language")"><option value="en">English</option><option value="ru">Русский</option></select></label><span class="pill">@T("Demo mode · local data")</span><button class="secondary" @onclick="Reset">@T("Reset demo")</button></div>
+<a class="skip-workspace" href="#fleet-content">@T("Skip to content")</a>
+<header class="workspace-header" lang="@language">
+    <div class="brand"><img class="brandicon" src="favicon.svg" alt="" /><div><h1>FleetManagement</h1><small>@T("Fleet operations workspace")</small></div></div>
+    <div class="actions"><button class="secondary command-search toolbar-icon-button" data-command-search="true" @onclick="OpenSearch" aria-label="@T("Quick search")" title="@T("Quick search")"><WorkspaceIcon Name="Search" /><span class="toolbar-label">@T("Quick search")</span><kbd aria-hidden="true">Ctrl K</kbd></button><button class="secondary theme-action toolbar-icon-button" aria-pressed="@(darkTheme?"true":"false")" @onclick="ToggleTheme" aria-label="@T(darkTheme?"Light theme":"Dark theme")" title="@T(darkTheme?"Light theme":"Dark theme")"><WorkspaceIcon Name="@(darkTheme?"Sun":"Moon")"/><span class="toolbar-label">@T(darkTheme?"Light theme":"Dark theme")</span></button><label class="demo-language"><span class="toolbar-language-label">@T("Language")</span><select @bind="language" @bind:after="PersistPreferences" aria-label="@T("Language")"><option value="en">English</option><option value="ru">Русский</option></select></label><span class="pill demo-status"><span class="signal-dot" aria-hidden="true"></span>@T("Demo mode · local data")</span><button class="secondary header-alerts" @onclick='()=>Navigate("Assistant")' aria-label="@T("Workspace alerts")"><WorkspaceIcon Name="Assistant"/><span>@T("Alerts")</span><strong class="alert-counter">@AlertCount()</strong></button><button class="secondary reset-action toolbar-icon-button" @onclick="Reset" aria-label="@T("Reset demo")" title="@T("Reset demo")"><WorkspaceIcon Name="Reset"/><span class="toolbar-label">@T("Reset demo")</span></button></div>
 </header>
-<main lang="@language">
-    <nav class="fleet-sidebar" aria-label="@T("Fleet sections")">
-        <label class="nav-search">@T("Find section")<input type="search" @bind="navQuery" @bind:event="oninput" placeholder="@T("Search modules")" aria-label="@T("Find section")" aria-describedby="nav-hint" @onkeydown="SearchKey"/><small id="nav-hint">@T("Enter to open a single match; Escape clears search.")</small></label>
+<main lang="@language" class="workspace-layout">
+    <button class="mobile-nav-toggle secondary" aria-expanded="@(mobileNav?"true":"false")" aria-controls="workspace-nav" @onclick="()=>mobileNav=!mobileNav"><span aria-hidden="true">☰</span> @T("Modules") · @T(section)</button>
+    <nav id="workspace-nav" class="fleet-sidebar @(mobileNav?"nav-open":"")" aria-label="@T("Fleet sections")">
+        <div class="nav-eyebrow">@T("Workspace")</div><label class="nav-search">@T("Find section")<input @ref="navInput" type="search" @bind="navQuery" @bind:event="oninput" placeholder="@T("Search modules")" aria-label="@T("Find section")" aria-describedby="nav-hint" @onkeydown="SearchKey"/><small id="nav-hint">@T("Enter to open a single match; Escape clears search.")</small></label>
+        @if(!NavigationGroups.SelectMany(g=>g.Items).Any(MatchesSection)){<div class="nav-empty"><p>@T("No matching modules")</p><button class="secondary" @onclick="()=>navQuery=string.Empty">@T("Clear search")</button></div>}
         @foreach(var group in NavigationGroups.Where(g=>g.Items.Any(MatchesSection)))
         {
             <div class="nav-group">
                 <h2>@T(group.Name)</h2>
                 @foreach(var item in group.Items.Where(MatchesSection))
                 {
-                    <button class="@(section == item ? "active" : "")" aria-pressed="@(section == item ? "true" : "false")" @onclick="() => Navigate(item)">@T(item)</button>
+                    <button class="@(section == item ? "active" : "")" aria-pressed="@(section == item ? "true" : "false")" aria-current="@(section == item ? "page" : null)" @onclick="() => Navigate(item)"><span class="nav-icon" aria-hidden="true"><WorkspaceIcon Name="@item" /></span><span>@T(item)</span></button>
                 }
             </div>
         }
     </nav>
-    <div class="fleet-content">
-    @if(language=="ru"){<p class="muted">@T("Russian navigation and overview; detailed modules and reports remain English.")</p>}
+    <div class="fleet-content" id="fleet-content" tabindex="-1" @ref="contentRoot">
+    <div class="workspace-breadcrumb"><span>@T("Fleet workspace")</span><span aria-hidden="true">/</span><strong>@T(section)</strong><span class="workspace-clock">@T("Simulation time") · @Now.ToString("HH:mm")</span>@if(buildRevision.Length==7){<span class="build-revision" title="Published source revision" data-testid="build-revision">@buildRevision</span>}</div>
+    @if(language=="ru"){<p class="localization-note">@T("Some technical labels and generated records remain in English.")</p>}
     @if (!string.IsNullOrEmpty(storageMessage)) { <p class="notice">@T(storageMessage)</p> }
+    @if(ModuleBanner(section) is var banner && banner.Art.Length>0){
+        <div class="@("module-intro module-art-"+banner.Art)"><div><span class="module-kicker">@T("Workspace")</span><strong>@T(banner.Title)</strong><p>@T(banner.Description)</p></div><span class="module-watermark" aria-hidden="true">@ModuleIcon(section)</span></div>
+    }
     @if (section == "Overview")
     {
-        <div class="metrics">
-            <div class="metric">@T("Vehicles")<strong>@fleet.Vehicles.Count</strong></div>
-            <div class="metric">@T("Drivers")<strong>@fleet.Drivers.Count</strong></div>
-            <div class="metric">@T("In transit")<strong>@fleet.Trips.Count(t => FleetRules.TripStatus(t, Now) == "In transit")</strong></div>
-            <div class="metric">@T("Service due")<strong>@fleet.Vehicles.Count(v => FleetRules.Assess(v, Now).Status == "Due")</strong></div>
+        <section class="panel command-hero neon-hero">
+            <div class="hero-copy"><span class="hero-kicker"><i aria-hidden="true"></i> @T("Operations command center")</span><h2>@T("Operations overview")</h2><p class="muted">@T("Fleet command center · monitor schedules, maintenance and operational exceptions in one place. Synthetic records, local browser storage.")</p>
+            <div class="actions hero-actions"><button @onclick='() => Navigate("Tracking")'>@T("Open live tracking") <span aria-hidden="true">↗</span></button><button class="secondary" @onclick='() => Navigate("Dispatch")'>@T("Plan a trip")</button><button class="secondary" @onclick='() => Navigate("Maintenance")'>@T("Review maintenance")</button></div></div>
+            <div class="hero-art-space" aria-hidden="true"></div>
+        </section>
+        <div class="metrics dashboard-kpis">
+            @foreach(var metric in OverviewMetrics()){
+                <button class="metric metric-action secondary" @onclick="()=>Navigate(metric.Section)">
+                    <span class="metric-top"><span>@T(metric.Label)</span><span class="@("kpi-icon "+metric.Tone)" aria-hidden="true"><WorkspaceIcon Name="@metric.Section" /></span></span>
+                    <strong>@metric.Value</strong><span class="metric-bottom"><small>@T(metric.Detail)</small><span aria-hidden="true">↗</span></span>
+                </button>
+            }
         </div>
-        <section class="panel command-hero"><h2>@T("Operations overview")</h2><p class="muted">@T("Fleet command center · monitor schedules, maintenance and operational exceptions in one place. Synthetic records, local browser storage.")</p>
-        <div class="actions"><button @onclick='() => Navigate("Tracking")'>@T("Open live tracking")</button><button @onclick='() => Navigate("Dispatch")'>@T("Plan a trip")</button><button @onclick='() => Navigate("Maintenance")'>@T("Review maintenance")</button></div></section>
         <CommandSummary Russian="@(language=="ru")" Reservations="vehicleReservations" Fleet="fleet" Now="Now" Open="Navigate" />
+        <section class="panel"><div class="registerhead"><div><h2>@T("Intelligent alerts")</h2><p class="muted">@T("Live rule-based review of current demo records.")</p></div><button class="secondary" @onclick='()=>Navigate("Assistant")'>@T("Open alert center")</button></div><FleetAlertList Russian="@(language=="ru")" Alerts="@(FleetAdvisor.Assess(fleet,Now,driverShifts,requireShifts,vehicleReservations,russian:language=="ru").Take(3).ToArray())" Open="Navigate"/></section>
+        <section class="panel recent-trips"><div class="registerhead"><div><h2>@T("Recent trips")</h2><p class="muted">@T("Latest eight trips by departure time.")</p></div><button class="secondary" @onclick='()=>Navigate("Dispatch")'>@T("View trip schedule")</button></div>@TripTable()</section>
+        <section class="panel simulation-showcase">
+            <div class="simulation-copy"><span class="module-kicker">@T("Simulation workspace")</span><h2>@T("Interactive fleet visualization")</h2><p class="muted">@T("Inspect the illustrative 3D scene, then open the digital twin for actual simulated telemetry and incident scenarios.")</p><button class="secondary" @onclick='()=>Navigate("Digital Twin")'>@T("Open simulation") <span aria-hidden="true">↗</span></button></div>
+            <FleetHeroScene Russian="@(language=="ru")" />
+        </section>
+        <section class="panel capability-panel"><div class="registerhead"><div><h2>@T("Explore intelligence")</h2><p class="muted">@T("Open a working laboratory with synthetic data and explainable results.")</p></div></div>
+        <div class="capability-grid">
+            @foreach(var tile in Capabilities){
+                <button class="capability-card secondary" @onclick="()=>Navigate(tile.Section)"><span class="@("capability-art art-"+tile.Art)" aria-hidden="true"><span class="art-glyph">@ModuleIcon(tile.Section)</span></span><span class="capability-copy"><strong>@T(tile.Title)</strong><small>@T(tile.Description)</small><span class="capability-link">@T("Open module") <span aria-hidden="true">↗</span></span></span></button>
+            }
+        </div></section>
         <section class="panel"><h2>@T("Try a guided scenario")</h2><p class="muted">@T("All records are synthetic. Changes are stored only in this browser, so you can experiment safely.")</p>
         <div class="demojourney">
             <button class="secondary" @onclick='() => Navigate("Vehicles")'><strong>@T("01 · Register")</strong><small>@T("Add a vehicle and test search or validation.")</small></button>
@@ -42,8 +66,7 @@
             <button class="secondary" @onclick='() => Navigate("Tracking")'><strong>@T("03 · Track")</strong><small>@T("Advance the simulated clock.")</small></button>
             <button class="secondary" @onclick='() => Navigate("Analytics")'><strong>@T("04 · Report")</strong><small>@T("Export an Excel workbook.")</small></button>
         </div></section>
-        <section class="panel"><div class="registerhead"><div><h2>@T("Intelligent alerts")</h2><p class="muted">@T("Live rule-based review of current demo records.")</p></div><button class="secondary" @onclick='()=>Navigate("Assistant")'>@T("Open alert center")</button></div><FleetAlertList Russian="@(language=="ru")" Alerts="@(FleetAdvisor.Assess(fleet,Now,driverShifts,requireShifts,vehicleReservations,russian:language=="ru").Take(3).ToArray())" Open="Navigate"/></section>
-        <section class="panel"><h2>@T("Recent trips")</h2>@TripTable()</section>
+        <details class="panel design-gallery"><summary>@T("Design gallery")</summary><p class="muted">@T("Concept artwork and palette references — not live dashboard records.")</p><div class="design-gallery-grid"><figure><img src="assets/neon/ui-mockup.webp" alt="@T("Interface concept artwork")" loading="lazy" decoding="async" width="1200" height="675"/><figcaption>@T("Interface concept artwork")</figcaption></figure><figure><img src="assets/neon/style-board.webp" alt="@T("Neon design style board")" loading="lazy" decoding="async" width="1200" height="800"/><figcaption>@T("Neon design style board")</figcaption></figure></div></details>
     }
     else if (section == "Vehicles" || section == "Drivers")
     {
@@ -158,7 +181,7 @@
         </div>
         <div class="actions"><button class="secondary" @onclick="Recommend">@T("Suggest assignment")</button><button @onclick="SaveTrip" disabled="@(fleet.Vehicles.Count == 0 || fleet.Drivers.Count == 0)">@T(editingTripId.HasValue ? "Save changes" : "Create trip")</button>@if(editingTripId.HasValue){<button class="secondary" @onclick="CancelEdit">@T("Cancel edit")</button>}</div>
         @if(!string.IsNullOrEmpty(feedback)){<p role="status" class="@(isError?"error":"notice")">@T(feedback)</p>}
-        </section><section class="panel"><h2>@T("Trip schedule")</h2>@TripTable()</section>
+        </section><section class="panel"><div class="registerhead"><div><h2>@T("Trip schedule")</h2><p class="muted">@T("Review assignments and filter the current trip register.")</p></div><button class="secondary" @onclick="ClearTripFilters" disabled="@(tripQuery.Length==0&&tripStatus.Length==0)">@T("Clear trip filters")</button></div><div class="trip-filter-grid"><label>@T("Search trips")<input type="search" aria-label="@T("Search trips")" @bind="tripQuery" @bind:event="oninput" placeholder="@T("Route, vehicle or driver")"/></label><label>@T("Trip status filter")<select aria-label="@T("Trip status filter")" @bind="tripStatus"><option value="">@T("All statuses")</option>@foreach(var status in new[]{"Scheduled","In transit","Completed"}){<option value="@status">@T(status)</option>}</select></label></div><p class="register-result-bar" aria-live="polite">@FilteredTrips().Count() / @fleet.Trips.Count @T("Trips shown")</p>@TripTable()</section>
     }
     else if(section=="Maintenance")
     {
@@ -169,13 +192,37 @@
         <VehicleReservationView Russian="@(language=="ru")" Fleet="fleet" Reservations="vehicleReservations" Now="Now" Changed="Persist" Open="Navigate"/>
         <MaintenanceJournalView Russian="@(language=="ru")" Fleet="fleet" Entries="maintenanceEntries" Now="Now" Changed="Persist"/>
     }
-    <footer class="footer">FleetManagement · WPF-inspired .NET WebAssembly demo · synthetic data only · <a href="https://github.com/ViolettaNcl/FleetManagement">Source repository</a></footer>
+    <footer class="footer">FleetManagement · Neon Command Center · .NET WebAssembly · synthetic data only · <a href="https://github.com/ViolettaNcl/FleetManagement">Source repository</a></footer>
     </div>
 </main>
 </div>
 @code {
-    private bool darkTheme;
-    private const string ThemeKey="fleetmanagement.preferences.theme", LanguageKey="fleetmanagement.preferences.language";
+    private bool darkTheme=true,mobileNav,focusSearch,focusContent;
+    private ElementReference navInput,contentRoot;
+    private void OpenSearch(){mobileNav=true;navQuery="";focusSearch=true;}
+    private static (string Art,string Title,string Description) ModuleBanner(string name)=>name switch{
+        "Optimization"=>("routes","Route intelligence","Compare routing algorithms using an identical synthetic scenario."),
+        "Digital Twin"=>("twin","Simulation workspace","Explore movement and telemetry in a controlled simulation."),
+        "Maintenance"=>("maintenance","Vehicle health workspace","Review service intervals and recorded maintenance."),
+        "Intelligence"=>("maintenance","Machine learning workspace","Train and evaluate a classifier on isolated telemetry."),
+        "Assistant"=>("assistant","Decision support workspace","Review rule-based evidence before making operational decisions."),
+        "Analytics" or "Cost Intelligence"=>("analytics","Operational insights","Review calculated performance and financial estimates."),
+        "Tracking" or "Geo Map"=>("command-center","Movement workspace","Follow simulated trips and advance the scenario clock."),
+        "Multi Dispatch" or "Batch Dispatch" or "Dispatch"=>("routes","Dispatch workspace","Plan assignments and compare route alternatives."),
+        "What-if"=>("twin","Scenario workspace","Explore operational scenarios without changing real records."),
+        "Predictions" or "Demand Forecast" or "Model Drift" or "Model Registry" or "Data Quality"=>("analytics","Model evaluation workspace","Inspect model evidence, predictions and data quality."),
+        "Vehicle Passport" or "Vehicles"=>("maintenance","Vehicle register workspace","Review the registered fleet and service history."),
+        "Drivers" or "Resource Planning" or "Calendar"=>("abstract","Planning workspace","Review schedules, people and resource availability."),
+        _=>("","","")
+    };
+    private static readonly (string Section,string Art,string Title,string Description)[] Capabilities=[("Optimization","routes","Route optimization","Compare exact and heuristic routes."),("Digital Twin","twin","Digital Twin simulation","Explore simulated vehicle movement."),("Intelligence","maintenance","Maintenance ML","Train a model on synthetic telemetry."),("Assistant","assistant","Fleet intelligence","Review actionable rule-based alerts."),("Analytics","analytics","Performance analytics","Explore calculated operational metrics."),("Tracking","command-center","Fleet tracking","Follow the simulated fleet.")];
+    private static string ModuleIcon(string section)=>section switch{"Overview"=>"◈","Vehicles"=>"▣","Drivers"=>"◎","Vehicle Passport"=>"▤","Dispatch"=>"↗","Batch Dispatch"=>"⇄","Calendar"=>"▦","Resource Planning"=>"▧","Maintenance"=>"◇","Tracking"=>"⌖","Geo Map"=>"◉","Analytics"=>"▥","Cost Intelligence"=>"≋","Assistant"=>"✦","Optimization"=>"⤳","Multi Dispatch"=>"⇶","Digital Twin"=>"⬡","What-if"=>"◫","Intelligence"=>"⌁","Predictions"=>"∿","Demand Forecast"=>"↗","Model Registry"=>"▤","Data Quality"=>"✓","Model Drift"=>"≈",_=>"•"};
+    private (string Label,int Value,string Detail,string Section,string Tone)[] OverviewMetrics()=>[
+        ("Vehicles",fleet.Vehicles.Count,"Registered fleet","Vehicles","violet"),
+        ("Drivers",fleet.Drivers.Count,"Registered drivers","Drivers","blue"),
+        ("In transit",fleet.Trips.Count(t=>FleetRules.TripStatus(t,Now)=="In transit"),"Active trips","Tracking","cyan"),
+        ("Service due",fleet.Vehicles.Count(v=>FleetRules.Assess(v,Now).Status=="Due"),"Review required","Maintenance","attention")];
+    private const string ThemeKey="fleetmanagement.preferences.theme.neon", LanguageKey="fleetmanagement.preferences.language";
     private async Task ToggleTheme(){darkTheme=!darkTheme;await PersistPreferences();}
     private async Task PersistPreferences(){
         try{
@@ -191,7 +238,7 @@
         var matches=NavigationGroups.SelectMany(g=>g.Items).Where(MatchesSection).ToArray();
         if(matches.Length==1){Navigate(matches[0]);navQuery="";}
     }
-    private string language="en";
+    private string language="en",buildRevision="";
     private string T(string value)=>DemoLocale.Text(value,language=="ru");
     private readonly (string Name,string[] Items)[] NavigationGroups = [
         ("Operations",["Overview","Vehicles","Drivers","Vehicle Passport","Dispatch","Batch Dispatch","Calendar","Resource Planning","Maintenance"]),
@@ -218,9 +265,12 @@
     private Task? timerTask;
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
+        if(focusSearch){focusSearch=false;try{await navInput.FocusAsync();}catch(JSException){}}
+        if(focusContent){focusContent=false;try{await contentRoot.FocusAsync();}catch(JSException){}}
         if(!firstRender)return;
+        try{var revision=await JS.InvokeAsync<string?>("fleetBuildRevision");if(revision is not null&&revision.Length==40&&revision.All(Uri.IsHexDigit))buildRevision=revision[..7];}catch(JSException){}
         try{
-            darkTheme=await JS.InvokeAsync<string?>("localStorage.getItem",ThemeKey)=="dark";
+            darkTheme=await JS.InvokeAsync<string?>("localStorage.getItem",ThemeKey)!="light";
             language=await JS.InvokeAsync<string?>("localStorage.getItem",LanguageKey)=="ru"?"ru":"en";
         }catch(JSException){storageMessage="Local storage is unavailable; changes are session-only.";}
         try { var json=await JS.InvokeAsync<string?>("localStorage.getItem",Key); if(!string.IsNullOrWhiteSpace(json)){var saved=JsonSerializer.Deserialize(json, DemoJsonContext.Default.DemoSnapshot); if(saved?.Data is not null && saved.Data.Vehicles is not null && saved.Data.Drivers is not null && saved.Data.Trips is not null){fleet=saved.Data;maintenanceEntries=saved.MaintenanceEntries??[];driverShifts=saved.DriverShifts??[];requireShifts=saved.RequireShifts;vehicleReservations=saved.VehicleReservations??[];Now=saved.Now;start=Now.AddHours(1);end=Now.AddHours(2);}} }
@@ -230,15 +280,15 @@
     private async Task RunClock(){try{while(await timer!.WaitForNextTickAsync(cts.Token)){await InvokeAsync(()=>{if(playing){Now=Now.AddMinutes(2);StateHasChanged();}});}}catch(OperationCanceledException){}}
     private async Task Persist(){try{await JS.InvokeVoidAsync("localStorage.setItem",Key,JsonSerializer.Serialize(new DemoSnapshot(fleet,Now,maintenanceEntries,driverShifts,requireShifts,vehicleReservations), DemoJsonContext.Default.DemoSnapshot));}catch(Exception){storageMessage="Unable to save locally; changes are session-only.";}}
     private void OpenPassport(int id){passportId=id;Navigate("Vehicle Passport");}
-    private void Navigate(string item){if(item=="Vehicle Passport"&&!fleet.Vehicles.Any(v=>v.Id==passportId))passportId=fleet.Vehicles.FirstOrDefault()?.Id??0;section=item;feedback="";if(item=="Dispatch"){if(!fleet.Vehicles.Any(v=>v.Id==vehicleId))vehicleId=fleet.Vehicles.FirstOrDefault()?.Id??0;if(!fleet.Drivers.Any(d=>d.Id==driverId))driverId=fleet.Drivers.FirstOrDefault()?.Id??0;}}
+    private void Navigate(string item){mobileNav=false;navQuery="";focusContent=true;if(item=="Vehicle Passport"&&!fleet.Vehicles.Any(v=>v.Id==passportId))passportId=fleet.Vehicles.FirstOrDefault()?.Id??0;section=item;feedback="";if(item=="Dispatch"){if(!fleet.Vehicles.Any(v=>v.Id==vehicleId))vehicleId=fleet.Vehicles.FirstOrDefault()?.Id??0;if(!fleet.Drivers.Any(d=>d.Id==driverId))driverId=fleet.Drivers.FirstOrDefault()?.Id??0;}}
     private async Task ToggleSimulation(){playing=!playing;if(!playing)await Persist();}
     private async Task Advance(){Now=Now.AddMinutes(15);await Persist();}
-    private async Task Reset(){if(!await JS.InvokeAsync<bool>("confirm",T("Reset all demo data?")))return;playing=false;Now=DateTime.Now;fleet=FleetRules.Sample(Now);maintenanceEntries.Clear();driverShifts.Clear();vehicleReservations.Clear();requireShifts=false;maintenanceFeedback="";start=Now.AddHours(1);end=Now.AddHours(2);vehicleId=driverId=1;selectedTrip=101;editingTripId=null;feedback="";await Persist();}
+    private async Task Reset(){if(!await JS.InvokeAsync<bool>("confirm",T("Reset all demo data?")))return;ClearTripFilters();playing=false;Now=DateTime.Now;fleet=FleetRules.Sample(Now);maintenanceEntries.Clear();driverShifts.Clear();vehicleReservations.Clear();requireShifts=false;maintenanceFeedback="";start=Now.AddHours(1);end=Now.AddHours(2);vehicleId=driverId=1;selectedTrip=101;editingTripId=null;feedback="";await Persist();}
     private string VehicleName(int id)=>fleet.Vehicles.FirstOrDefault(v=>v.Id==id)?.Plate??"Unknown";
     private string DriverName(int id)=>fleet.Drivers.FirstOrDefault(d=>d.Id==id)?.Name??"Unknown";
     private async Task SetRequireShifts(bool value){requireShifts=value;await Persist();}
     private void Recommend(){var a=ResourcePlanning.Recommend(fleet,start,end,Now,driverShifts,requireShifts,editingTripId,vehicleReservations);isError=a is null;if(a is null){feedback="No available service-ready assignment for this interval.";return;}vehicleId=a.VehicleId;driverId=a.DriverId;feedback=language=="ru"?$"Рекомендуем {VehicleName(vehicleId)} и {DriverName(driverId)}.":$"Suggested {VehicleName(vehicleId)} and {DriverName(driverId)}.";}
-    private void EditTrip(Trip trip){if(FleetRules.CanChangeTrip(fleet,trip.Id,Now) is string invalid){feedback=invalid;isError=true;return;}editingTripId=trip.Id;origin=trip.Origin;destination=trip.Destination;distance=trip.Distance;start=trip.Start;end=trip.End;vehicleId=trip.VehicleId;driverId=trip.DriverId;feedback="";section="Dispatch";}
+    private void EditTrip(Trip trip){if(FleetRules.CanChangeTrip(fleet,trip.Id,Now) is string invalid){feedback=invalid;isError=true;return;}editingTripId=trip.Id;origin=trip.Origin;destination=trip.Destination;distance=trip.Distance;start=trip.Start;end=trip.End;vehicleId=trip.VehicleId;driverId=trip.DriverId;feedback="";section="Dispatch";mobileNav=false;}
     private void PlanFromCalendar(DateTime date){CancelEdit();start=date.Date.AddHours(9);if(start<=Now)start=Now.AddHours(1);end=start.AddHours(1);Navigate("Dispatch");}
     private void CancelEdit(){editingTripId=null;origin="North depot";destination="Central hub";distance=132;start=Now.AddHours(1);end=Now.AddHours(2);feedback="";}
     private async Task DeleteTrip(Trip trip){if(FleetRules.CanChangeTrip(fleet,trip.Id,Now) is string invalid){feedback=invalid;isError=true;return;}if(!await JS.InvokeAsync<bool>("confirm",language=="ru"?$"Удалить запланированный рейс #{trip.Id}?":$"Delete scheduled trip #{trip.Id}?"))return;fleet.Trips.RemoveAll(t=>t.Id==trip.Id);if(editingTripId==trip.Id)CancelEdit();feedback=language=="ru"?$"Рейс #{trip.Id} удалён.":$"Trip #{trip.Id} deleted.";isError=false;await Persist();}
@@ -255,8 +305,13 @@
     }
     private async Task RecordService(int id){var error=MaintenanceJournal.Record(fleet,maintenanceEntries,new(id,"Scheduled service","",null),Now);maintenanceFeedback=error??"Service recorded; cost unknown.";if(error is null)await Persist();}
     private (int X,int Y) Position(Trip t){var p=FleetRules.Progress(t,Now);var (x1,y1,x2,y2)=t.Track switch{0=>(110,55,300,160),1=>(65,165,535,105),_=>(300,160,420,285)};return ((int)(x1+(x2-x1)*p),(int)(y1+(y2-y1)*p));}
-    private RenderFragment TripTable()=> @<div class="tablewrap"><table><thead><tr><th>@T("Trip")</th><th>@T("Route")</th><th>@T("Vehicle")</th><th>@T("Driver")</th><th>@T("Start")</th><th>@T("End")</th><th>@T("Distance")</th><th>@T("Status")</th>@if(section=="Dispatch"){<th>@T("Actions")</th>}</tr></thead><tbody>
-    @foreach(var t in fleet.Trips.OrderByDescending(t=>t.Start)){var status=FleetRules.TripStatus(t,Now);<tr><td>#@t.Id</td><td>@t.Origin → @t.Destination</td><td>@VehicleName(t.VehicleId)</td><td>@DriverName(t.DriverId)</td><td>@t.Start.ToString("dd MMM HH:mm")</td><td>@t.End.ToString("dd MMM HH:mm")</td><td>@t.Distance km</td><td><span class="pill @status.Replace(" ","").ToLowerInvariant()">@T(status)</span></td>@if(section=="Dispatch"){<td>@if(status=="Scheduled"){<div class="actions"><button class="secondary" @onclick="()=>EditTrip(t)">@T("Edit")</button><button class="delete" @onclick="()=>DeleteTrip(t)">@T("Delete")</button></div>}else{<small>@T("History")</small>}</td>}</tr>}
+    private string tripQuery="",tripStatus="";
+    private void ClearTripFilters(){tripQuery="";tripStatus="";}
+    private int AlertCount()=>FleetAdvisor.Assess(fleet,Now,driverShifts,requireShifts,vehicleReservations,russian:language=="ru").Count;
+    private IEnumerable<Trip> FilteredTrips(){var rows=fleet.Trips.OrderByDescending(t=>t.Start).AsEnumerable();if(section!="Dispatch")return rows.Take(8);var q=tripQuery.Trim();return rows.Where(t=>(tripStatus.Length==0||FleetRules.TripStatus(t,Now)==tripStatus)&&(q.Length==0||new[]{t.Id.ToString(CultureInfo.InvariantCulture),t.Origin,t.Destination,VehicleName(t.VehicleId),DriverName(t.DriverId)}.Any(x=>x.Contains(q,StringComparison.OrdinalIgnoreCase))));}
+    private RenderFragment TripTable()=> @<div class="tablewrap" tabindex="0" role="region" aria-label="@T("Trip schedule")"><table><thead><tr><th>@T("Trip")</th><th>@T("Route")</th><th>@T("Vehicle")</th><th>@T("Driver")</th><th>@T("Start")</th><th>@T("End")</th><th>@T("Distance")</th><th>@T("Status")</th>@if(section=="Dispatch"){<th>@T("Actions")</th>}</tr></thead><tbody>
+    @if(!FilteredTrips().Any()){<tr><td colspan="@(section=="Dispatch"?9:8)" class="empty-state">@T("No matching trips.")</td></tr>}
+    @foreach(var t in FilteredTrips()){var status=FleetRules.TripStatus(t,Now);<tr><td>#@t.Id</td><td>@t.Origin → @t.Destination</td><td>@VehicleName(t.VehicleId)</td><td>@DriverName(t.DriverId)</td><td>@t.Start.ToString("dd MMM HH:mm")</td><td>@t.End.ToString("dd MMM HH:mm")</td><td>@t.Distance km</td><td><span class="pill @status.Replace(" ","").ToLowerInvariant()">@T(status)</span></td>@if(section=="Dispatch"){<td>@if(status=="Scheduled"){<div class="actions"><button class="secondary" @onclick="()=>EditTrip(t)">@T("Edit")</button><button class="delete" @onclick="()=>DeleteTrip(t)">@T("Delete")</button></div>}else{<small>@T("History")</small>}</td>}</tr>}
     </tbody></table></div>;
     public async ValueTask DisposeAsync(){cts.Cancel();timer?.Dispose();if(timerTask is not null)await timerTask;cts.Dispose();}
 }

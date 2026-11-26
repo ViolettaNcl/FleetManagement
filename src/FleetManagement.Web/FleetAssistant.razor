@@ -1,10 +1,10 @@
 @using FleetManagement.Web
 <section class="panel"><div class="registerhead"><div><h2>@T("Fleet intelligence assistant")</h2><p class="muted">@T("Offline expert system. Answers use current demo records and fixed supported intents, not a generative language model. It never changes records.")</p></div></div>
-<div class="actions"><button class="secondary" @onclick='()=>Ask("overview")'>@T("Fleet overview")</button><button class="secondary" @onclick='()=>Ask("maintenance")'>@T("Maintenance review")</button><button class="secondary" @onclick='()=>Ask("dispatch")'>@T("Dispatch availability")</button></div>
-<div class="actions registertools"><label>@T("Ask a supported question")<input maxlength="200" @bind="question" placeholder="@T("What needs attention?")"/></label><button @onclick="()=>Ask(question)">@T("Ask assistant")</button></div>
+<div class="actions"><button class="secondary intent-button" aria-pressed="@(this.intent=="overview"?"true":"false")" @onclick='()=>Ask("overview")'>@T("Fleet overview")</button><button class="secondary intent-button" aria-pressed="@(this.intent=="maintenance"?"true":"false")" @onclick='()=>Ask("maintenance")'>@T("Maintenance review")</button><button class="secondary intent-button" aria-pressed="@(this.intent=="dispatch"?"true":"false")" @onclick='()=>Ask("dispatch")'>@T("Dispatch availability")</button></div>
+<div class="actions registertools"><label>@T("Ask a supported question")<input maxlength="200" @bind="question" @bind:event="oninput" @onkeydown="AskKey" placeholder="@T("What needs attention?")"/></label><button @onclick="()=>Ask(question)" disabled="@string.IsNullOrWhiteSpace(question)">@T("Ask assistant")</button></div>
 @if(intent is not null){var answer=FleetAdvisor.Answer(Fleet,Now,intent,Shifts,RequireShifts,Reservations,Russian);<div class="advisor-answer" role="status"><h3>@answer.Title</h3><p>@answer.Summary</p></div><FleetAlertList Russian="Russian" Alerts="answer.Evidence" Open="Open"/>}
 </section>
-<section class="panel"><div class="registerhead"><div><h2>@T("Smart alert center")</h2><p class="muted">@T("Computed from current register data, service intervals and upcoming trips. Digital Twin alerts stay in their own sandbox.")</p></div><label>@T("Severity")<select @bind="severity"><option value="All">@T("All")</option><option value="High">@T("High")</option><option value="Medium">@T("Medium")</option></select></label></div>
+<section class="panel"><div class="registerhead"><div><h2>@T("Smart alert center")</h2><p class="muted">@T("Computed from current register data, service intervals and upcoming trips. Digital Twin alerts stay in their own sandbox.")</p></div><label>@T("Severity")<select aria-label="@T("Severity")" @bind="severity"><option value="All">@T("All")</option><option value="High">@T("High")</option><option value="Medium">@T("Medium")</option></select></label></div>
 @{var all=FleetAdvisor.Assess(Fleet,Now,Shifts,RequireShifts,Reservations,russian:Russian);}
 <div class="metrics"><div class="metric">@T("All alerts")<strong>@all.Count</strong></div><div class="metric">@T("High priority")<strong>@all.Count(a=>a.Severity=="High")</strong></div><div class="metric">@T("Review soon")<strong>@all.Count(a=>a.Severity=="Medium")</strong></div></div>
 <FleetAlertList Russian="Russian" Alerts="@(all.Where(a=>severity=="All"||a.Severity==severity).ToArray())" Open="Open"/>
@@ -20,5 +20,6 @@
     [Parameter] public EventCallback<string> Open{get;set;}
     private string question="",severity="All";
     private string? intent;
-    private void Ask(string text){question=text;intent=text;}
+    private void Ask(string text){if(string.IsNullOrWhiteSpace(text))return;question=text.Trim();intent=question;}
+    private void AskKey(KeyboardEventArgs args){if(args.Key=="Enter")Ask(question);}
 }

@@ -1,7 +1,7 @@
 name: Windows portable demo
 on:
   push:
-    branches: [master, 'feature/**']
+    branches: [master, 'feature/**', 'preview/fleetops-v3']
   pull_request:
   workflow_dispatch:
 permissions:
@@ -20,6 +20,8 @@ jobs:
         run: |
           dotnet publish src/FleetManagement.Web -c Release -o "$env:RUNNER_TEMP/web"
           if ($LASTEXITCODE) { throw 'Web publish failed' }
+          python tools/import_neon_assets.py "$env:RUNNER_TEMP/web/wwwroot"
+          if ($LASTEXITCODE) { throw 'Artwork import failed' }
           dotnet publish tools/FleetManagement.DemoLauncher -c Release -r win-x64 --self-contained true -o "$env:RUNNER_TEMP/portable"
           if ($LASTEXITCODE) { throw 'Launcher publish failed' }
           Copy-Item "$env:RUNNER_TEMP/web/wwwroot" "$env:RUNNER_TEMP/portable/wwwroot" -Recurse

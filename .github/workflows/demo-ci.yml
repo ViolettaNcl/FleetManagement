@@ -1,7 +1,7 @@
 name: Browser demo CI
 on:
   push:
-    branches: [master, 'feature/**']
+    branches: [master, 'feature/**', 'preview/fleetops-v3']
   pull_request:
   workflow_dispatch:
 permissions:
@@ -18,6 +18,10 @@ jobs:
         run: dotnet run --project tests/FleetManagement.Core.Checks -c Release
       - name: Publish browser demo
         run: dotnet publish src/FleetManagement.Web -c Release -o publish
+      - name: Test and import verified owner artwork
+        run: |
+          python3 tests/browser/test_asset_import.py
+          python3 tools/import_neon_assets.py publish/wwwroot
       - name: Upload static preview
         uses: actions/upload-artifact@v4
         with:
@@ -42,6 +46,7 @@ jobs:
           python3 -m http.server 8080 --bind 127.0.0.1 --directory preview &
           server=$!
           trap 'kill "$server" || true' EXIT
+          node tests/browser/neon.mjs
           node tests/browser/smoke.mjs
           node tests/browser/cross-browser.mjs
           node tests/browser/portfolio-tour.mjs

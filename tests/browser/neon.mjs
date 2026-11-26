@@ -1,0 +1,124 @@
+import { chromium } from 'playwright';
+import assert from 'node:assert/strict';
+import { mkdir } from 'node:fs/promises';
+import { createHash } from 'node:crypto';
+const url='http://127.0.0.1:8080/FleetManagement/';
+async function assertFits(page,label){
+  const report=await page.evaluate(()=>{
+    const width=innerWidth;
+    const items=[...document.querySelectorAll('body *')].flatMap(el=>{
+      const rect=el.getBoundingClientRect();
+      if(!rect.width||rect.right<=width+.5)return [];
+      // Ignore descendants of intentional internal scroll/clipping regions, not the overflowing region itself.
+      for(let p=el.parentElement;p&&p!==document.body;p=p.parentElement){
+        const r=p.getBoundingClientRect(),style=getComputedStyle(p);
+        if(['auto','scroll','hidden','clip'].includes(style.overflowX)&&r.right<=width+.5&&r.left>=-.5)return [];
+      }
+      return [{tag:el.tagName,cls:typeof el.className==='string'?el.className:'svg',id:el.id,left:Math.round(rect.left),right:Math.round(rect.right),width:Math.round(rect.width),text:(el.textContent||'').trim().slice(0,65)}];
+    });
+    return {viewport:width,document:document.documentElement.scrollWidth,offenders:items.slice(0,25)};
+  });
+  console.log('LAYOUT '+label+' '+JSON.stringify(report));
+  if(report.document>report.viewport)await page.screenshot({path:'browser-results/overflow-'+label+'.png',fullPage:true});
+  assert.ok(report.document<=report.viewport,label+' exceeds viewport: '+JSON.stringify(report));
+}
+const browser=await chromium.launch({headless:true,args:['--enable-webgl','--use-angle=swiftshader','--enable-unsafe-swiftshader']});
+try{
+  await mkdir('browser-results',{recursive:true});
+  const page=await browser.newPage({viewport:{width:1440,height:900},reducedMotion:'reduce'});
+  const errors=[];page.on('pageerror',e=>errors.push(e.message));
+  await page.goto(url);
+  await page.getByRole('heading',{name:'Operations overview',exact:true}).waitFor({timeout:90000});
+  await page.locator('.simulation-showcase').scrollIntoViewIfNeeded();
+  await page.locator('.scene-stage[data-renderer="webgl"]').waitFor({timeout:20000});
+  assert.equal(await page.locator('.dashboard-kpis .metric-action').count(),4);
+  assert.equal(await page.locator('.workload-donut').count(),1);
+  await page.locator('.dashboard-kpis .metric-action').first().click();
+  await page.getByRole('heading',{name:'Vehicle register',exact:true}).waitFor();
+  await page.getByLabel('Service status',{exact:true}).selectOption('Due');
+  const filtered=page.locator('.tablewrap tbody tr');
+  assert.ok(await filtered.count()>=1);
+  assert.equal(await filtered.locator('.pill.due').count(),await filtered.count());
+  await page.getByRole('button',{name:'Clear filters',exact:true}).click();
+  assert.equal(await page.getByLabel('Service status',{exact:true}).inputValue(),'');
+  await page.getByRole('button',{name:'Dispatch',exact:true}).click();
+  await page.getByLabel('Trip status filter',{exact:true}).selectOption('Scheduled');
+  await page.getByLabel('Search trips',{exact:true}).fill('no-trip-qa-123');
+  await page.getByText('No matching trips.',{exact:true}).waitFor();
+  await page.getByRole('button',{name:'Clear trip filters',exact:true}).click();
+  assert.equal(await page.getByLabel('Trip status filter',{exact:true}).inputValue(),'');
+  assert.equal(await page.getByLabel('Search trips',{exact:true}).inputValue(),'');
+  await page.getByRole('button',{name:'Analytics',exact:true}).click();
+  await page.getByRole('heading',{name:'Trip activity by period',exact:true}).waitFor();
+  const periods=page.getByTestId('trip-period');
+  assert.ok(await periods.count()>0&&await periods.count()<=12);
+  const sums=await periods.evaluateAll(rows=>rows.reduce((s,row)=>[s[0]+Number(row.dataset.trips),s[1]+Number(row.dataset.completed)],[0,0]));
+  assert.ok(sums[0]>=sums[1]&&sums[1]>=0);
+  assert.equal(sums[0],Number(await page.locator('.fleet-content .metrics .metric strong').first().innerText()));
+  await page.getByRole('button',{name:'Workspace alerts',exact:true}).click();
+  await page.getByRole('heading',{name:'Fleet intelligence assistant',exact:true}).waitFor();
+  await page.getByRole('button',{name:'Maintenance review',exact:true}).click();
+  assert.equal(await page.getByRole('button',{name:'Maintenance review',exact:true}).getAttribute('aria-pressed'),'true');
+  await page.getByRole('button',{name:'Overview',exact:true}).click();
+  await page.locator('.simulation-showcase').scrollIntoViewIfNeeded();
+  await page.locator('.scene-stage[data-renderer="webgl"]').waitFor({timeout:20000});
+  const artwork=await (await page.request.get(url+'assets/neon/manifest.json')).json();
+  assert.equal(artwork.mode,'committed');
+  assert.equal(artwork.files.length,10);
+  for(const asset of artwork.files){
+    assert.match(asset.name,/^[a-z-]+\.webp$/);
+    const response=await page.request.get(url+'assets/neon/'+asset.name);
+    assert.ok(response.ok());
+    assert.equal(createHash('sha256').update(await response.body()).digest('hex'),asset.sha256);
+    assert.ok(await page.evaluate(async name=>{const img=new Image();img.src='assets/neon/'+name;await img.decode();return img.naturalWidth>0;},asset.name));
+  }
+  for(const slot of ['routes','twin','maintenance','assistant','analytics','command-center']){
+    assert.match(await page.locator('.art-'+slot).evaluate(el=>getComputedStyle(el).backgroundImage),new RegExp(slot+'\\.webp'));
+  }
+  assert.match(await page.locator('.neon-hero').evaluate(el=>getComputedStyle(el).backgroundImage),/hero\.webp/);
+  await page.locator('.design-gallery summary').click();
+  for(const name of ['ui-mockup','style-board'])assert.ok(await page.locator('.design-gallery img[src$="'+name+'.webp"]').evaluate(async img=>{await img.decode();return img.naturalWidth>0;}));
+  await page.locator('.design-gallery summary').click();
+  await page.keyboard.press('Control+k');
+  await page.getByLabel('Find section',{exact:true}).fill('no-match-123');
+  await page.getByText('No matching modules',{exact:true}).waitFor();
+  await page.getByRole('button',{name:'Clear search',exact:true}).click();
+  await page.getByRole('button',{name:'Vehicles',exact:true}).waitFor();
+  assert.equal(await page.getByRole('button',{name:'Play 3D motion',exact:true}).count(),1);
+  await page.getByRole('button',{name:'Rotate right',exact:true}).click();
+  await page.getByRole('button',{name:'Play 3D motion',exact:true}).click();
+  await page.getByRole('button',{name:'Pause 3D motion',exact:true}).click();
+  await page.screenshot({path:'browser-results/neon-desktop.png',fullPage:true});
+  await page.locator('.capability-card').filter({hasText:'Route optimization'}).click();
+  await page.getByRole('heading',{name:'Route optimization lab',exact:true}).waitFor();
+  assert.equal(await page.locator('.hero-scene').count(),0);
+  await page.locator('.module-intro').getByText('Route intelligence',{exact:true}).waitFor();
+  await page.getByRole('button',{name:'Overview',exact:true}).click();
+  await page.locator('.scene-stage[data-renderer="webgl"]').waitFor();
+  await page.setViewportSize({width:320,height:760});
+  await page.evaluate(()=>window.scrollTo(0,0));
+  assert.ok(await page.locator('.workspace-header').evaluate(el=>el.getBoundingClientRect().height<=150),'Mobile toolbar must not consume the viewport');
+  for(const name of ['Quick search','Light theme','Workspace alerts','Reset demo'])assert.ok(await page.getByRole('button',{name,exact:true}).isVisible());
+  await page.screenshot({path:'browser-results/workspace-mobile-header.png',fullPage:false});
+  await page.locator('.mobile-nav-toggle').click();
+  await page.locator('#workspace-nav').getByRole('button',{name:'Vehicles',exact:true}).click();
+  await page.getByRole('heading',{name:'Vehicle register',exact:true}).waitFor();
+  assert.equal(await page.locator('.mobile-nav-toggle').getAttribute('aria-expanded'),'false');
+  await assertFits(page,'vehicle-register-320');
+  await page.locator('.mobile-nav-toggle').click();
+  await page.locator('#workspace-nav').getByRole('button',{name:'Overview',exact:true}).click();
+  await page.getByRole('heading',{name:'Operations overview',exact:true}).waitFor();
+  await page.locator('.mobile-nav-toggle[aria-expanded="false"]').waitFor();
+  await page.evaluate(()=>window.scrollTo(0,0));
+  await page.screenshot({path:'browser-results/neon-mobile-320.png',fullPage:true});
+  await assertFits(page,'overview-320');
+  assert.deepEqual(errors,[]);
+  // Force unavailable WebGL before application startup; the SVG must remain visible.
+  const fallback=await browser.newPage({viewport:{width:768,height:1024}});
+  await fallback.addInitScript(()=>{const original=HTMLCanvasElement.prototype.getContext;HTMLCanvasElement.prototype.getContext=function(type,...args){return type.startsWith('webgl')?null:original.call(this,type,...args);};});
+  await fallback.goto(url);
+  await fallback.getByRole('heading',{name:'Operations overview',exact:true}).waitFor({timeout:90000});
+  await fallback.locator('.scene-fallback').waitFor({state:'visible'});
+  assert.equal(await fallback.locator('.scene-stage[data-renderer="webgl"]').count(),0);
+  console.log('PASS: 3D, reduced motion, module cards, 320px navigation, fallback');
+}finally{await browser.close();}

@@ -157,3 +157,5 @@ The dedicated `preview/fleetops-v3` branch builds a synthetic static site, check
 Optional local generative AI companion: [Ollama guide](docs/local-ai.md). No API key, no cloud or database access; separate from the public browser. The Data Quality module also supports isolated CSV model training with vehicle-disjoint holdout (no promotion).
 
 **Online demo:** https://violettancl.github.io/FleetManagement/ — no download needed once GitHub Pages is enabled by the repository owner. The deployment workflow checks the exact public revision and actual browser UI after publication. If the address is unavailable, see [activation and verification](docs/deployment.md#enable-the-permanent-public-link).
+
+**Neon Command Center:** redesigned browser shell, dark/light themes, responsive navigation, interactive local WebGL scene and module cards. All ten owner WebP illustrations are committed and used by the application; eight in operational sections and two in the design gallery. No manual archive upload is needed. [Design and asset integration](docs/neon-design.md).

@@ -1,0 +1,2 @@
+# Neon visual assets — owner upload slot
+Upload exactly one ZIP here: the original FleetManagement-Neon-Violet-Assets(1).zip (21,313,680 bytes) or the optimized FleetManagement-Neon-Web-Assets.zip (481,232 bytes). The build verifies the exact SHA-256 and extracts eight allowlisted WebP images only. The ZIP, PNG originals, mock dashboard and style board are not published. Until the archive is present, procedural artwork is used. Do not upload secrets or private records to this public repository.

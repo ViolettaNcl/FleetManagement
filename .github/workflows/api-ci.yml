@@ -1,7 +1,7 @@
 name: Backend API integration
 on:
   push:
-    branches: [master, 'feature/**']
+    branches: [master, 'feature/**', 'preview/fleetops-v3']
   pull_request:
     paths: ['src/FleetManagement.Core/**','src/FleetManagement.Api/**','tests/api/**','tools/sqlite_recovery.py','tools/migration-baseline.sh','tools/FleetManagement.SchemaInspector/**','tests/FleetManagement.Realtime.Checks/**','.github/workflows/api-ci.yml']
   workflow_dispatch:

@@ -398,4 +398,14 @@ Check(retraining.SelectedEpochs==retraining.Candidates.OrderBy(c=>c.Validation.B
 Check(retraining.CandidateEvaluation.TP+retraining.CandidateEvaluation.FP+retraining.CandidateEvaluation.TN+retraining.CandidateEvaluation.FN==720,"retraining final cohort");
 Check(retraining.IncumbentEvaluation.Brier is >=0 and <=1&&retraining.CandidateEvaluation.Brier is >=0 and <=1,"retraining bounded scores");
 Console.WriteLine($"Synthetic retraining review: selected={retraining.SelectedEpochs} epochs; incumbent Brier={retraining.IncumbentEvaluation.Brier:F4}; candidate Brier={retraining.CandidateEvaluation.Brier:F4}.");
+var periodNow=new DateTime(2026,1,15,12,0,0);
+var periodFrom=periodNow.Date.AddDays(-29);
+var periodFleet=FleetRules.Sample(periodNow);
+var periodSummary=FleetReport.Build(periodFleet,periodNow,periodFrom,periodNow.Date);
+var periodRows=FleetReport.Periods(periodFleet,periodNow,periodFrom,periodNow.Date);
+Check(periodRows.Count<=12&&periodRows.Count>0,"report periods bounded");
+Check(periodRows[0].From==periodFrom&&periodRows[^1].To==periodNow.Date,"report periods cover inclusive range");
+Check(periodRows.Sum(p=>p.Trips)==periodSummary.Trips&&periodRows.Sum(p=>p.Completed)==periodSummary.Completed&&periodRows.Sum(p=>p.CompletedDistanceKm)==periodSummary.CompletedDistanceKm,"report period totals reconcile");
+Check(periodRows.Zip(periodRows.Skip(1)).All(p=>p.First.To.AddDays(1)==p.Second.From),"report periods contiguous");
+Check(FleetReport.Periods(new FleetData([],[],[]),periodNow,periodNow.Date,periodNow.Date).Single().Trips==0,"empty report period");
 Console.WriteLine("All business rule checks passed.");

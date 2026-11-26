@@ -7,8 +7,14 @@
 @if(results.Count>0){
     var original=results[0].DistanceKm;
     var active=results[selected];
+    <div class="metrics route-metrics">
+        <div class="metric">@T("Original distance")<strong>@original.ToString("F1") <small>km</small></strong></div>
+        <div class="metric">@T("Selected distance")<strong>@active.DistanceKm.ToString("F1") <small>km</small></strong></div>
+        <div class="metric">@T("Savings vs original")<strong class="@(Savings(active,original)>=0?"metric-positive":"metric-negative")">@Savings(active,original).ToString("F1")%</strong></div>
+        <div class="metric">@T("Delivery stops")<strong>@(active.Stops.Count-2)</strong></div>
+    </div>
     <section class="panel"><h2>@T("Algorithm comparison")</h2><div class="tablewrap"><table><thead><tr><th>@T("Algorithm")</th><th>@T("Distance")</th><th>@T("Savings vs original")</th><th>@T("2-opt swaps")</th></tr></thead><tbody>
-        @foreach(var result in results){<tr><td>@T(result.Algorithm)</td><td>@result.DistanceKm.ToString("F2") km</td><td>@Savings(result,original).ToString("F1")%</td><td>@result.Improvements</td></tr>}
+        @foreach(var result in results){<tr class="@(result==active?"selected-result":"")"><td>@T(result.Algorithm)</td><td>@result.DistanceKm.ToString("F2") km</td><td>@Savings(result,original).ToString("F1")%</td><td>@result.Improvements</td></tr>}
     </tbody></table></div><p class="muted">@T("Multi-start 2-opt improves or matches the single-start tour. Held–Karp gives the exact minimum for at most 11 delivery stops. No capacity or delivery windows.")</p></section>
     <section class="panel"><div class="registerhead"><h2>@T("Route preview")</h2><div class="actions">@for(int i=0;i<results.Count;i++){var index=i;<button class="@(selected==index?"":"secondary")" aria-pressed="@(selected==index)" @onclick="()=>selected=index">@T(results[index].Algorithm)</button>}</div></div>
         <svg class="map route-lab-map" viewBox="0 0 600 390" role="img" aria-label="Calculated synthetic route">

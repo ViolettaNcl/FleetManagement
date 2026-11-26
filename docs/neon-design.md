@@ -1,0 +1,7 @@
+# Neon Command Center — owner artwork integrated
+
+All ten generated images are committed as optimized WebP files in `src/FleetManagement.Web/wwwroot/assets/neon/`. Eight operational illustrations are integrated into the hero, capability cards, tracking, analytics, navigation background and module headers. The UI mockup and style board are displayed in the collapsible Design gallery, clearly identified as concept art, not real operational records. No archive upload is needed. All ten files total about 690 KiB; originals are not altered. Local development, Windows portable package and GitHub Pages use the same files.
+
+`tools/import_neon_assets.py` now validates committed WebP bytes against exact expected Git blob SHA-1s and writes a SHA-256 manifest. It fails closed if a required file or stylesheet slot is missing or changed. The browser and public smoke tests decode and verify all ten actual images. No external image hosting or new dependencies.
+
+The redesign includes default neon dark mode, light mode, keyboard quick search, responsive navigation, functional capability cards, illustrated headers, accessible forms and tables, motion-reduction support, and native WebGL 3D with SVG fallback. The scene is illustrative rather than live telemetry. Existing business logic remains intact. The public Pages branch can be advanced without merging master; deployment must pass exact-revision evidence and live verification.

@@ -1,18 +1,25 @@
 @using FleetManagement.Web
+@{
+    var statusCounts=Fleet.Trips.GroupBy(t=>FleetRules.TripStatus(t,Now)).ToDictionary(g=>g.Key,g=>g.Count());
+    var serviceCounts=Fleet.Vehicles.GroupBy(v=>FleetRules.Assess(v,Now).Status).ToDictionary(g=>g.Key,g=>g.Count());
+    var activeIds=Fleet.Trips.Where(t=>t.Start<=Now&&Now<t.End).Select(t=>t.VehicleId).ToHashSet();
+    var reservedIds=Reservations.Where(r=>r.Start<=Now&&Now<r.End).Select(r=>r.VehicleId).ToHashSet();
+    var available=Fleet.Vehicles.Count(v=>!activeIds.Contains(v.Id)&&!reservedIds.Contains(v.Id)&&FleetRules.Assess(v,Now).Status!="Due");
+}
 <div class="split command-summary">
     <section class="panel workload-panel">
         <div class="registerhead"><div><h2>@T("Fleet workload")</h2><p class="muted">@T("Current register") · @Now.ToString("dd MMM yyyy HH:mm")</p></div><button class="secondary" @onclick='()=>Open.InvokeAsync("Analytics")'>@T("View analytics")</button></div>
         <div class="workload-overview">
-            <div class="workload-donut" style="@DonutStyle()" role="img" aria-label="@WorkloadLabel()"><div><strong>@Fleet.Trips.Count</strong><small>@T("Total trips")</small></div></div>
+            <div class="workload-donut" style="@DonutStyle(statusCounts)" role="img" aria-label="@WorkloadLabel(statusCounts)"><div><strong>@Fleet.Trips.Count</strong><small>@T("Total trips")</small></div></div>
             <div class="workload-legend">
                 @foreach(var status in new[]{"In transit","Scheduled","Completed"}){
-                    <div class="workload-row"><span class="@("chart-dot "+Tone(status))"></span><span>@T(status)</span><strong>@TripCount(status)</strong><small>@Percent(TripCount(status),Fleet.Trips.Count)</small></div>
+                    <div class="workload-row"><span class="@("chart-dot "+Tone(status))"></span><span>@T(status)</span><strong>@statusCounts.GetValueOrDefault(status)</strong><small>@Percent(statusCounts.GetValueOrDefault(status),Fleet.Trips.Count)</small></div>
                 }
             </div>
         </div>
-        <div class="readiness-section"><h3>@T("Maintenance readiness")</h3>
+        <div class="availability-summary"><div><strong data-testid="available-now">@available <small>/ @Fleet.Vehicles.Count</small></strong><span>@T("Vehicles available now")</span></div><p class="muted">@T("No active trip, current reservation or overdue service. Future assignments still require validation.")</p><button class="secondary" @onclick='()=>Open.InvokeAsync("Dispatch")'>@T("Open dispatch")</button></div><div class="readiness-section"><h3>@T("Maintenance readiness")</h3>
         @foreach(var status in new[]{"Healthy","Soon","Due"}){
-            var number=Fleet.Vehicles.Count(v=>FleetRules.Assess(v,Now).Status==status);
+            var number=serviceCounts.GetValueOrDefault(status);
             <div class="reportbar readiness-bar"><div><span>@T(status)</span><strong>@number / @Fleet.Vehicles.Count</strong></div><div class="progress"><i class="@Tone(status)" style="@Width(number,Fleet.Vehicles.Count)"></i></div></div>
         }
         <p class="muted">@T("Configured service intervals, not mechanical safety certification.")</p></div>
@@ -34,12 +41,11 @@
     [Parameter] public DateTime Now{get;set;}
     [Parameter] public IReadOnlyList<VehicleReservation> Reservations{get;set;}=[];
     [Parameter] public EventCallback<string> Open{get;set;}
-    private int TripCount(string status)=>Fleet.Trips.Count(t=>FleetRules.TripStatus(t,Now)==status);
     private static string Tone(string status)=>status switch{"In transit"=>"violet","Scheduled"=>"cyan","Completed" or "Healthy"=>"green","Soon"=>"amber",_=>"red"};
     private static double Share(int count,int total)=>total==0?0:100.0*count/total;
     private static string F(double n)=>n.ToString("F3",CultureInfo.InvariantCulture);
     private static string Percent(int count,int total)=>Share(count,total).ToString("F0",CultureInfo.InvariantCulture)+"%";
     private static string Width(int count,int total)=>"width:"+F(Share(count,total))+"%";
-    private string DonutStyle(){if(Fleet.Trips.Count==0)return "background:var(--line)";var a=Share(TripCount("In transit"),Fleet.Trips.Count);var b=a+Share(TripCount("Scheduled"),Fleet.Trips.Count);return $"background:conic-gradient(var(--chart-violet) 0 {F(a)}%,var(--chart-cyan) {F(a)}% {F(b)}%,var(--chart-green) {F(b)}% 100%)";}
-    private string WorkloadLabel()=>string.Join(", ",new[]{"In transit","Scheduled","Completed"}.Select(s=>$"{T(s)}: {TripCount(s)}"));
+    private string DonutStyle(IReadOnlyDictionary<string,int> counts){if(Fleet.Trips.Count==0)return "background:var(--line)";var a=Share(counts.GetValueOrDefault("In transit"),Fleet.Trips.Count);var b=a+Share(counts.GetValueOrDefault("Scheduled"),Fleet.Trips.Count);return $"background:conic-gradient(var(--chart-violet) 0 {F(a)}%,var(--chart-cyan) {F(a)}% {F(b)}%,var(--chart-green) {F(b)}% 100%)";}
+    private string WorkloadLabel(IReadOnlyDictionary<string,int> counts)=>string.Join(", ",new[]{"In transit","Scheduled","Completed"}.Select(s=>$"{T(s)}: {counts.GetValueOrDefault(s)}"));
 }

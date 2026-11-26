@@ -28,12 +28,18 @@ try{
    await page.setViewportSize({width:390,height:844});await page.evaluate(()=>window.scrollTo(0,0));
    await page.screenshot({path:'browser-results/v4-modules/'+slug+'-mobile.png'});
    const layout=await page.evaluate(()=>({viewport:innerWidth,document:document.documentElement.scrollWidth,offenders:[...document.querySelectorAll("body *")].filter(el=>{const r=el.getBoundingClientRect();return r.width>0&&r.right>innerWidth+1&&getComputedStyle(el).position!=="fixed";}).slice(0,15).map(el=>({tag:el.tagName,className:String(el.className).slice(0,120),right:Math.round(el.getBoundingClientRect().right)}))}));
-   result.push({module,layout,findings});
+   const layouts=[layout];
+   for(const width of [320,480,768,1024,1280,1920,2560]){
+     await page.setViewportSize({width,height:844});
+     layouts.push(await page.evaluate(()=>({viewport:innerWidth,document:document.documentElement.scrollWidth})));
+     if(width===768)await page.screenshot({path:'browser-results/v4-modules/'+slug+'-tablet.png'});
+   }
+   result.push({module,layout,layouts,findings});
  }
  await writeFile('browser-results/v4-accessibility.json',JSON.stringify({scope:'Automated checks; full manual WCAG evaluation not claimed',modules:result,errors},null,2));
  assert.deepEqual(errors,[]);
- const overflow=result.filter(x=>x.layout.document>x.layout.viewport);
- assert.deepEqual(overflow.map(x=>({module:x.module,layout:x.layout})),[],'Module mobile overflow');
+ const overflow=result.flatMap(x=>x.layouts.filter(l=>l.document>l.viewport).map(layout=>({module:x.module,layout})));
+ assert.deepEqual(overflow,[],'Module responsive overflow');
  assert.deepEqual(result.flatMap(x=>x.findings.map(f=>({module:x.module,rule:f.id,nodes:f.nodes.map(n=>n.target)}))),[],'Automated accessibility violations on audited module states');
  console.log('PASS: screenshot, mobile-width and automated accessibility audit for '+modules.length+' modules.');
 }finally{await browser.close();}

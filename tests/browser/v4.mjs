@@ -7,6 +7,9 @@ try{
   const errors=[];page.on('pageerror',e=>errors.push(e.message));
   await page.goto('http://127.0.0.1:8080/FleetManagement/');
   await page.getByRole('heading',{name:'Operations overview',exact:true}).waitFor({timeout:90000});
+  const availability=await page.getByTestId('available-now').innerText();
+  const counts=availability.match(/(\d+)\s*\/\s*(\d+)/);
+  assert.ok(counts&&Number(counts[1])<=Number(counts[2]));
   await page.getByRole('button',{name:'Collapse sidebar',exact:true}).click();
   assert.equal(await page.locator('.sidebar-collapsed').count(),1);
   await page.getByRole('button',{name:'Expand sidebar',exact:true}).click();

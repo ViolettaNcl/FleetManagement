@@ -892,6 +892,9 @@ internal static class DemoLocale
         ["More events"]="других событий",
         ["Discard unsaved changes?"]="Отменить несохранённые изменения?",
         ["Pagination"]="Разбиение на страницы",
+        ["Vehicles available now"]="Автомобили доступны сейчас",
+        ["No active trip, current reservation or overdue service. Future assignments still require validation."]="Нет активного рейса, текущего бронирования или просроченного ТО. Будущие назначения требуют проверки.",
+        ["Open dispatch"]="Открыть диспетчерскую",
     };
     public static string Text(string value,bool russian)=>russian&&Russian.TryGetValue(value,out var translated)?translated:value;
 }

@@ -3,6 +3,25 @@ import assert from 'node:assert/strict';
 import { mkdir } from 'node:fs/promises';
 import { createHash } from 'node:crypto';
 const url='http://127.0.0.1:8080/FleetManagement/';
+async function assertFits(page,label){
+  const report=await page.evaluate(()=>{
+    const width=innerWidth;
+    const items=[...document.querySelectorAll('body *')].flatMap(el=>{
+      const rect=el.getBoundingClientRect();
+      if(!rect.width||rect.right<=width+.5)return [];
+      // Ignore descendants of intentional internal scroll/clipping regions, not the overflowing region itself.
+      for(let p=el.parentElement;p&&p!==document.body;p=p.parentElement){
+        const r=p.getBoundingClientRect(),style=getComputedStyle(p);
+        if(['auto','scroll','hidden','clip'].includes(style.overflowX)&&r.right<=width+.5&&r.left>=-.5)return [];
+      }
+      return [{tag:el.tagName,cls:typeof el.className==='string'?el.className:'svg',id:el.id,left:Math.round(rect.left),right:Math.round(rect.right),width:Math.round(rect.width),text:(el.textContent||'').trim().slice(0,65)}];
+    });
+    return {viewport:width,document:document.documentElement.scrollWidth,offenders:items.slice(0,25)};
+  });
+  console.log('LAYOUT '+label+' '+JSON.stringify(report));
+  if(report.document>report.viewport)await page.screenshot({path:'browser-results/overflow-'+label+'.png',fullPage:true});
+  assert.ok(report.document<=report.viewport,label+' exceeds viewport: '+JSON.stringify(report));
+}
 const browser=await chromium.launch({headless:true,args:['--enable-webgl','--use-angle=swiftshader','--enable-unsafe-swiftshader']});
 try{
   await mkdir('browser-results',{recursive:true});
@@ -85,11 +104,14 @@ try{
   await page.locator('#workspace-nav').getByRole('button',{name:'Vehicles',exact:true}).click();
   await page.getByRole('heading',{name:'Vehicle register',exact:true}).waitFor();
   assert.equal(await page.locator('.mobile-nav-toggle').getAttribute('aria-expanded'),'false');
-  assert.ok(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth));
+  await assertFits(page,'vehicle-register-320');
   await page.locator('.mobile-nav-toggle').click();
   await page.locator('#workspace-nav').getByRole('button',{name:'Overview',exact:true}).click();
-  assert.ok(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth));
+  await page.getByRole('heading',{name:'Operations overview',exact:true}).waitFor();
+  await page.locator('.mobile-nav-toggle[aria-expanded="false"]').waitFor();
+  await page.evaluate(()=>window.scrollTo(0,0));
   await page.screenshot({path:'browser-results/neon-mobile-320.png',fullPage:true});
+  await assertFits(page,'overview-320');
   assert.deepEqual(errors,[]);
   // Force unavailable WebGL before application startup; the SVG must remain visible.
   const fallback=await browser.newPage({viewport:{width:768,height:1024}});

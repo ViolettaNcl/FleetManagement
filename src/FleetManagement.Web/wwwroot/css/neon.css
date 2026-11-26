@@ -14,3 +14,15 @@
 @media(max-width:1000px){.demo-shell .workspace-header{position:static}.demo-shell .workspace-layout{grid-template-columns:minmax(0,1fr);gap:12px;padding:14px}.demo-shell .mobile-nav-toggle{display:flex;align-items:center;justify-content:space-between;text-align:left;gap:12px;width:100%}.demo-shell .fleet-sidebar{display:none;position:static;max-height:58vh;overflow:auto;grid-template-columns:repeat(2,minmax(0,1fr));padding:12px;gap:8px}.demo-shell .fleet-sidebar.nav-open{display:grid}.demo-shell .nav-group{display:grid;gap:4px}.demo-shell .nav-search,.nav-eyebrow{grid-column:1/-1}.demo-shell .nav-group button{width:100%;min-height:42px}.demo-shell .neon-hero{min-height:0}.workspace-clock{margin-left:0}}
 @media(max-width:650px){.demo-shell .workspace-header{padding:12px}.demo-shell .workspace-header>.actions{gap:6px}.demo-shell .workspace-header>.actions button{font-size:12px;padding:8px 10px}.demo-shell .brand h1{font-size:19px}.demo-shell .neon-hero{grid-template-columns:minmax(0,1fr);padding:20px}.scene-stage{min-height:0;max-height:220px}.demo-shell .metrics{gap:9px}.demo-shell .panel,.demo-shell .metric{border-radius:14px;padding:14px}.demo-shell .capability-card{padding:0}.capability-copy{padding:10px}.capability-copy strong{font-size:13px}.demo-shell .workspace-clock{width:100%}.demo-shell .hero-actions button{font-size:12px}.demo-shell .tablewrap button{min-height:34px}.demo-shell .brand small{font-size:10px}}
 @media(prefers-reduced-motion:reduce){.demo-shell *{animation:none!important;transition:none!important;scroll-behavior:auto!important}}
+
+/* Keep sidebar and destructive actions semantically distinct from primary actions. */
+.demo-shell.dark-theme .fleet-sidebar button:not(.active){background:transparent;color:var(--muted);border-color:transparent;box-shadow:none}
+.demo-shell.dark-theme .fleet-sidebar button:not(.active):hover{background:var(--surface-2);color:var(--ink)}
+.demo-shell .fleet-sidebar button.active{background:linear-gradient(100deg,#6d28d9,#5230a8);color:white;border-color:#8b5cf6}
+.demo-shell button.delete,.demo-shell.dark-theme button.delete:not(.secondary){background:#9f1239;border-color:#be3459;color:#fff}
+.demo-shell .hero-actions button.secondary,.demo-shell .scene-controls button.secondary{background:#ffffff0d;color:#f3e9ff;border-color:#73608d}
+.demo-shell .capability-card:hover .art-glyph{transform:scale(1.08);transition:transform .2s}
+.demo-shell .capability-card:hover{border-color:var(--accent)}
+.demo-shell .error{background:#ffe4e6;color:#9f1239}.demo-shell.dark-theme .error{background:#471d30;color:#fda4af}
+.demo-shell :is(.calendar-chip.trip,.confusion .correct){background:#ded4fa;color:#42248c}.dark-theme :is(.calendar-chip.trip,.confusion .correct){background:#382755;color:#e9ddff}
+.demo-shell .calendar-chip.service{background:#fce7f3;color:#9d174d}.dark-theme .calendar-chip.service{background:#49243f;color:#f9a8d4}

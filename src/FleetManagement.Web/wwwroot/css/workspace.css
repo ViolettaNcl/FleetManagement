@@ -202,3 +202,12 @@
 .demo-shell .suite-review-actions{display:flex;flex-wrap:wrap;gap:8px;max-width:100%}
 .demo-shell .suite-review-actions button{min-height:44px;white-space:normal;max-width:100%}
 @media(max-width:720px){.demo-shell .suite-review-actions{width:100%}.demo-shell .suite-review-actions button{flex:1 1 130px;min-width:0}}
+
+
+/* V5.2: shared assistant actions and analytical evidence. */
+.demo-shell .assistant-examples{display:flex;gap:8px;flex-wrap:wrap;margin:8px 0}
+.demo-shell .assistant-examples button,.demo-shell .advisor-destination{min-height:44px;white-space:normal;max-width:100%}
+.demo-shell .advisor-destination{margin:8px 0 12px}
+.demo-shell .suite-heading h3{margin:0 0 5px}
+.demo-shell .suite-queue-details .tablewrap{margin-top:8px}
+@media(max-width:600px){.demo-shell .assistant-examples button{flex:1 1 160px;min-width:0}}

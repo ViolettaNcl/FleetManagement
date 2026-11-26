@@ -74,7 +74,7 @@ public static class FleetAdvisor
     public static AdvisorAnswer Answer(FleetData fleet,DateTime now,string question,IReadOnlyList<DriverShift>? shifts=null,bool requireShifts=false,IReadOnlyList<VehicleReservation>? reservations=null,bool russian=false)
     {
         string L(string en,string ru)=>russian?ru:en;
-        var q=question.Trim().ToLowerInvariant();
+        var q=AdvisorIntent.Resolve(question);
         var alerts=Assess(fleet,now,shifts,requireShifts,reservations,russian:russian);
         if(q is "maintenance" or "service" or "what needs maintenance?" or "то" or "обслуживание"){
             var evidence=alerts.Where(a=>a.Destination=="Maintenance").ToArray();

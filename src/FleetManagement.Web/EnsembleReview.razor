@@ -1,4 +1,5 @@
 @using FleetManagement.Web
+@inject IJSRuntime JS
 <section class="panel suite-panel" aria-labelledby="ensemble-title">
     <div class="suite-heading"><div><span class="suite-kicker">@T("Model evaluation")</span><h2 id="ensemble-title">@T("Maintenance ensemble lab")</h2><p class="muted">@T("Three logistic models trained on fixed vehicle subsamples. Select an alert threshold using validation labels, then evaluate on independent synthetic vehicles.")</p></div><button @onclick="Run" disabled="@(running||weight is <1 or >10)">@T("Evaluate ensemble")</button></div>
     <div class="formgrid"><label>@T("Ensemble seed")<input type="number" @bind="seed"/></label><label>@T("False negative cost weight")<input type="number" min="1" max="10" @bind="weight"/></label></div>
@@ -13,12 +14,26 @@
             <div class="metric">@T("Ensemble test Brier")<strong>@e.EnsembleDefaultTest.Brier.ToString("F4")</strong></div>
             <div class="metric">@T("Selected test recall")<strong>@e.EnsembleSelectedTest.Recall.ToString("P1")</strong></div>
         </div>
-        <h3>@T("Independent test comparison")</h3>
+        <div class="suite-heading"><div><h3>@T("Independent test comparison")</h3><p class="muted">@T("ROC-AUC evaluates ranking; average precision (AP) summarizes the step-wise precision-recall curve. Both are unavailable if either class is absent.")</p></div><button class="secondary" @onclick="Export" disabled="@running">@T("Export experiment Excel")</button></div>
+        @if(exportFeedback.Length>0){<p role="status">@T(exportFeedback)</p>}
+        <div class="metrics suite-metrics">
+            <div class="metric">@T("Single ROC-AUC")<strong>@Metric(e.SingleRanking.RocAuc)</strong></div>
+            <div class="metric">@T("Ensemble ROC-AUC")<strong>@Metric(e.EnsembleRanking.RocAuc)</strong></div>
+            <div class="metric">@T("Single average precision")<strong>@Metric(e.SingleRanking.AveragePrecision)</strong></div>
+            <div class="metric">@T("Ensemble average precision")<strong>@Metric(e.EnsembleRanking.AveragePrecision)</strong></div>
+        </div>
+        <p class="muted">@T("Test label prevalence"): @((e.EnsembleRanking.Positives/(double)e.TestRows).ToString("P1")) · @e.EnsembleRanking.Positives / @e.TestRows</p>
         <div class="tablewrap" tabindex="0" role="region" aria-label="@T("Independent test comparison")"><table><thead><tr><th>@T("Model")</th><th>F1</th><th>@T("Recall")</th><th>FP</th><th>FN</th><th>@T("Brier loss")</th></tr></thead><tbody>
             @foreach(var row in new[]{("Single model at 50%",e.SingleTest),("Ensemble at 50%",e.EnsembleDefaultTest),("Ensemble at selected threshold",e.EnsembleSelectedTest)}){
                 <tr><td>@T(row.Item1)</td><td>@row.Item2.F1.ToString("P1")</td><td>@row.Item2.Recall.ToString("P1")</td><td>@row.Item2.FP</td><td>@row.Item2.FN</td><td>@row.Item2.Brier.ToString("F4")</td></tr>
             }
         </tbody></table></div>
+        <details class="suite-queue-details"><summary>@T("Validation threshold comparison")</summary>
+            <p class="muted">@T("Nine fixed thresholds are ranked by false positives plus weighted false negatives, using validation labels only.")</p>
+            <div class="tablewrap" tabindex="0" role="region" aria-label="@T("Validation threshold comparison")"><table><thead><tr><th>@T("Threshold")</th><th>FP</th><th>FN</th><th>@T("Validation weighted cost")</th><th>@T("Selection")</th></tr></thead><tbody>
+            @foreach(var row in e.ValidationThresholds){<tr><td>@row.Threshold.ToString("P0")</td><td>@row.FalsePositives</td><td>@row.FalseNegatives</td><td>@row.Cost</td><td>@(row.Threshold==e.Threshold?T("Selected threshold"):"—")</td></tr>}
+            </tbody></table></div>
+        </details>
         <h3>@T("Calibration on held-out vehicles")</h3>
         <div class="suite-calibration" data-testid="ensemble-calibration">
             @for(var i=0;i<e.Calibration.Count;i++){
@@ -51,13 +66,23 @@
     private string T(string value)=>DemoLocale.Text(value,Russian);
     private int seed=42,weight=3,evaluatedSeed;
     private bool running;
+    private string exportFeedback="";
+    private static string Metric(double? value)=>value?.ToString("F3")??"—";
     private EnsembleExperiment? report;
     private async Task Run(){
         if(running||weight is <1 or >10)return;
-        running=true;
+        running=true;exportFeedback="";
         var requestedSeed=seed;var requestedWeight=weight;
         try{await Task.Yield();report=MaintenanceEnsemble.Run(requestedSeed,requestedWeight);evaluatedSeed=requestedSeed;}
         finally{running=false;}
+    }
+    private async Task Export(){
+        if(report is null||running)return;
+        try{
+            var bytes=FleetReport.ExportExperimentXlsx(report,evaluatedSeed,Russian);
+            await JS.InvokeVoidAsync("fleetDownload",Convert.ToBase64String(bytes),$"fleet-ensemble-{evaluatedSeed}.xlsx");
+            exportFeedback="Experiment workbook generated.";
+        }catch(JSException){exportFeedback="Unable to download the workbook in this browser.";}
     }
     private static string Width(double value)=>"width:"+(100*value).ToString("F2",CultureInfo.InvariantCulture)+"%";
 }

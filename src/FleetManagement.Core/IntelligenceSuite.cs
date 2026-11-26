@@ -8,7 +8,7 @@ public sealed record EnsembleExperiment(
     MaintenanceEnsemble Model, int TrainRows,int ValidationRows,int TestRows,int FalseNegativeWeight,
     double Threshold,LearningMetrics SingleTest,LearningMetrics EnsembleDefaultTest,
     LearningMetrics EnsembleSelectedTest,IReadOnlyList<CalibrationBin> Calibration,
-    int ValidationCost,int DefaultValidationCost);
+    int ValidationCost,int DefaultValidationCost,RankingMetrics SingleRanking,RankingMetrics EnsembleRanking,IReadOnlyList<ThresholdEvaluation> ValidationThresholds);
 
 public sealed class MaintenanceEnsemble
 {
@@ -59,8 +59,9 @@ public sealed class MaintenanceEnsemble
             models.Add(MaintenanceLearning.Fit(rows,validation,seed,120).Model);
         }
         var ensemble=new MaintenanceEnsemble(models.ToArray());
-        var validationScores=validation.Select(r=>(Row:r,Score:ensemble.Score(r.Features))).ToArray();
-        int Cost(double threshold)=>validationScores.Sum(x=>x.Row.FailureWithin7Days?(x.Score<threshold?falseNegativeWeight:0):(x.Score>=threshold?1:0));
+        var validationScores=validation.Select(r=>(Score:ensemble.Score(r.Features),Actual:r.FailureWithin7Days)).ToArray();
+        var thresholds=RankingEvaluation.Thresholds(validationScores,falseNegativeWeight);
+        int Cost(double threshold)=>thresholds.Single(t=>t.Threshold==threshold).Cost;
         // Select threshold on validation only; final test labels are not consulted.
         var threshold=Enumerable.Range(1,9).Select(i=>i/10.0).OrderBy(Cost).ThenBy(t=>Math.Abs(t-.5)).ThenBy(t=>t).First();
         var testScores=test.Select(r=>(Score:ensemble.Score(r.Features),Actual:r.FailureWithin7Days)).ToArray();
@@ -72,7 +73,7 @@ public sealed class MaintenanceEnsemble
             MaintenanceLearning.Evaluate(test,r=>incumbent.Predict(r.Features)),
             MaintenanceLearning.Evaluate(test,r=>ensemble.Score(r.Features)),
             MaintenanceLearning.Evaluate(test,r=>ensemble.Score(r.Features),threshold),
-            bins,Cost(threshold),Cost(.5));
+            bins,Cost(threshold),Cost(.5),RankingEvaluation.Evaluate(test.Select(r=>(incumbent.Predict(r.Features),r.FailureWithin7Days))),RankingEvaluation.Evaluate(testScores),thresholds);
     }
 }
 

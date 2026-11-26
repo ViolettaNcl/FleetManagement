@@ -111,6 +111,7 @@
         <div class="help-grid">@foreach(var h in HelpItems){<button class="secondary" @onclick="()=>Navigate(h.Section)"><strong>@T(h.Section)</strong><small>@T(h.Description)</small></button>}</div>
         <p class="muted">@T("Use Ctrl+K to search modules. On mobile, use the bottom navigation or More.")</p>
         </section>
+        <section class="panel suite-panel" aria-labelledby="snapshot-export-title"><div class="suite-heading"><div><span class="suite-kicker">@T("Local data portability")</span><h2 id="snapshot-export-title">@T("Export demo snapshot")</h2><p class="muted">@T("Download the current demo records and clock as JSON. This file may contain names, notes and registrations. No server upload, preferences or automatic restore.")</p></div><button @onclick="ExportSnapshot">@T("Download demo JSON")</button></div><div class="metrics suite-metrics"><div class="metric">@T("Vehicles")<strong>@fleet.Vehicles.Count</strong></div><div class="metric">@T("Drivers")<strong>@fleet.Drivers.Count</strong></div><div class="metric">@T("Trips")<strong>@fleet.Trips.Count</strong></div></div>@if(snapshotFeedback.Length>0){<p role="status">@T(snapshotFeedback)</p>}</section>
     }
     else if (section == "Batch Dispatch")
     {
@@ -439,6 +440,14 @@
         timer=new PeriodicTimer(TimeSpan.FromSeconds(1)); timerTask=RunClock(); StateHasChanged();
     }
     private async Task RunClock(){try{while(await timer!.WaitForNextTickAsync(cts.Token)){await InvokeAsync(()=>{if(playing){Now=Now.AddMinutes(2);StateHasChanged();}});}}catch(OperationCanceledException){}}
+    private string snapshotFeedback="";
+    private async Task ExportSnapshot(){
+        try{
+            var json=JsonSerializer.SerializeToUtf8Bytes(new DemoSnapshot(fleet,Now,maintenanceEntries,driverShifts,requireShifts,vehicleReservations),DemoJsonContext.Default.DemoSnapshot);
+            await JS.InvokeVoidAsync("fleetDownload",Convert.ToBase64String(json),$"fleet-demo-{Now:yyyy-MM-dd-HHmm}.json","application/json");
+            snapshotFeedback="Demo JSON generated.";
+        }catch(JSException){snapshotFeedback="Unable to download the demo snapshot.";}
+    }
     private async Task Persist(){try{await JS.InvokeVoidAsync("localStorage.setItem",Key,JsonSerializer.Serialize(new DemoSnapshot(fleet,Now,maintenanceEntries,driverShifts,requireShifts,vehicleReservations), DemoJsonContext.Default.DemoSnapshot));}catch(Exception){storageMessage="Unable to save locally; changes are session-only.";}}
     private void OpenPassport(int id){passportId=id;Navigate("Vehicle Passport");}
     private void Navigate(string item){if(section!=item){if(!CanLeaveRegister()||!CanDiscardTrip())return;if(section=="Dispatch")CancelEdit();}NavigateCore(item);}

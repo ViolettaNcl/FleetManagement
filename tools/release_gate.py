@@ -10,7 +10,7 @@ import urllib.parse
 import urllib.request
 import urllib.error
 
-required=("demo-ci.yml","api-ci.yml","connected-ci.yml","ml-ci.yml","codeql.yml","dependency-review.yml","windows-launcher.yml")
+required=("demo-ci.yml","api-ci.yml","connected-ci.yml","ml-ci.yml","codeql.yml","dependency-review.yml","windows-launcher.yml","windows-demo.yml")
 repo=os.environ["GITHUB_REPOSITORY"]
 sha=os.environ["GITHUB_SHA"]
 token=os.environ["GH_TOKEN"]

@@ -34,9 +34,35 @@ jobs:
         with:
           path: publish/wwwroot
           retention-days: 3
+  evidence:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 17
+    permissions:
+      contents: read
+      actions: read
+      checks: read
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - name: Wait for exact-commit CI evidence (bounded)
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          for attempt in $(seq 1 30); do
+            if python3 tools/release_gate.py "$RUNNER_TEMP/release-evidence.json"; then exit 0; fi
+            if [ "$attempt" -lt 30 ]; then sleep 30; fi
+          done
+          exit 1
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: pages-release-evidence
+          path: ${{ runner.temp }}/release-evidence.json
+          if-no-files-found: error
   deploy:
     if: github.ref == 'refs/heads/master' || github.ref == 'refs/heads/preview/fleetops-v3'
-    needs: build
+    needs: [build, evidence]
     permissions:
       pages: write
       id-token: write

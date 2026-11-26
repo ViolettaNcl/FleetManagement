@@ -9,7 +9,7 @@
 </header>
 <main lang="@language">
     <nav class="fleet-sidebar" aria-label="@T("Fleet sections")">
-        <label class="nav-search">@T("Find section")<input type="search" @bind="navQuery" @bind:event="oninput" placeholder="@T("Search modules")" aria-describedby="nav-hint" @onkeydown="SearchKey"/><small id="nav-hint">@T("Enter to open a single match; Escape clears search.")</small></label>
+        <label class="nav-search">@T("Find section")<input type="search" @bind="navQuery" @bind:event="oninput" placeholder="@T("Search modules")" aria-label="@T("Find section")" aria-describedby="nav-hint" @onkeydown="SearchKey"/><small id="nav-hint">@T("Enter to open a single match; Escape clears search.")</small></label>
         @foreach(var group in NavigationGroups.Where(g=>g.Items.Any(MatchesSection)))
         {
             <div class="nav-group">

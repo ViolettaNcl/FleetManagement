@@ -50,3 +50,7 @@ The Pages workflow automatically runs the same read-only evidence gate before de
 The new Pages pipeline emits a non-sensitive `preview-build.json` containing the exact commit and verifies it before testing the actual public URL in Chromium after deployment. The same probe runs locally before upload. A green deploy alone does not certify the current site; the verify-live job must also pass.
 
 Neon artwork: all ten optimized WebP files are committed under wwwroot/assets/neon. The build validates exact file hashes and writes a manifest; the public test verifies the exact revision, hashes and image decoding. No archive upload is required. Never commit the source ZIP under wwwroot.
+
+## V4 Pages package and verification
+
+The project root becomes a static public product site; `/ru/` opens Russian pages and `/app/` opens the synthetic interactive demo. The Pages workflow validates the ordinary WASM build, creates and tests the split package, then verifies exact-commit CI evidence before publishing. The post-deploy job checks the real public URL, build revision, public navigation and offline behavior. The previous working deployment is not replaced if the pre-deployment gate fails. See [SEO verification](seo-v4.md) for owner-supplied Google/Yandex variables and [installation](pwa-v4.md) for PWA behavior. The domain-root robots.txt is outside this project repository; its project-level copy is informational. Do not edit other repositories to change the domain root.

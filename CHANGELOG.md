@@ -1,5 +1,14 @@
 # Changelog
 
+## Unreleased — V4 UX, mobile, PWA and public SEO
+
+- Separate bilingual public product site (20 static pages) and synthetic interactive app under `/app/` on Pages; unchanged local and portable Windows entry points.
+- Collapsible desktop navigation, mobile bottom navigation, favorites, recent modules, deep links, quick actions and contextual search; system/light/dark appearance and bilingual UI.
+- Responsive vehicle, driver and trip cards, paginated registers, actionable filters and a dedicated notification center with actual rule-based alerts.
+- Installable scoped demo PWA with content-hash-verified offline cache, revision marker and update confirmation; no connected API data or credentials in the cache.
+- Canonical URLs, language alternates, social metadata, structured data, sitemap and intent-based semantic map; owner-provided search verification values only.
+- Browser regression tests at 13 viewport widths, per-module screenshots, automated accessibility checks, static HTML and offline checks, and Lighthouse lab evidence. Deployment still requires exact-commit CI and post-deployment checks.
+
 ## Unreleased — V3 intelligence development
 
 - Fleet calendar: day/week/month, vehicle/event filters, cross-midnight agenda, service date reminders and links to dispatch.

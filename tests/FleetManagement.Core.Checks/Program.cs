@@ -513,4 +513,15 @@ Check(SnapshotValidation.Check(rcSample with{Trips=[rcSample.Trips[0] with{Drive
 Check(SnapshotValidation.Check(rcSample,now,[],[],[new(1,rcSample.Trips[0].VehicleId,rcSample.Trips[0].Start,rcSample.Trips[0].End,"Repair","")])!=null,"RC rejects conflicting reservation");
 Check(SnapshotValidation.Check(rcSample,now,[new(1,999,now,0,"Repair","",null)],[],[])!=null,"RC rejects orphan maintenance");
 Check(SnapshotValidation.Check(rcSample,now,[],[new(1,1,now,now.AddHours(2)),new(2,1,now.AddHours(1),now.AddHours(3))],[])!=null,"RC rejects overlapping shifts");
+
+var rcClusters=VehicleClustering.Run(rcSample,now,now.Date.AddDays(-29),now.Date,3);
+Check(rcClusters.Members.Count==rcSample.Vehicles.Count&&rcClusters.Clusters.Sum(g=>g.Count)==rcSample.Vehicles.Count&&rcClusters.Clusters.Count<=3&&double.IsFinite(rcClusters.Inertia),"RC clustering partition");
+Check(rcClusters.Members.SequenceEqual(VehicleClustering.Run(rcSample,now,now.Date.AddDays(-29),now.Date,3).Members),"RC clustering deterministic");
+var rcIdentical=new FleetData([new(1,"A","M",100,0,now,1000,30),new(2,"B","M",100,0,now,1000,30)],[],[]);
+Check(VehicleClustering.Run(rcIdentical,now,now,now,6).Clusters.Count==1,"RC clustering identical vectors");
+Check(VehicleClustering.Run(new([],[],[]),now,now,now,3).Members.Count==0,"RC clustering empty fleet");
+var rcForest=IsolationLearning.Run(42,16);
+Check(rcForest.TrainRows==500&&rcForest.ValidationRows==240&&rcForest.TestRows==240&&rcForest.Samples.All(s=>s.Score is >=0 and <=1),"RC isolation cohort and scores");
+Check(rcForest.Forest.TP+rcForest.Forest.FP+rcForest.Forest.TN+rcForest.Forest.FN==240&&rcForest.Samples.Count(s=>s.Flagged)==rcForest.Forest.TP+rcForest.Forest.FP,"RC isolation confusion totals");
+Check(rcForest.Ranking.Positives==rcForest.Samples.Count(s=>s.Actual)&&rcForest.Samples.SequenceEqual(IsolationLearning.Run(42,16).Samples),"RC isolation ranking and deterministic forest");
 Console.WriteLine("All business rule checks passed.");

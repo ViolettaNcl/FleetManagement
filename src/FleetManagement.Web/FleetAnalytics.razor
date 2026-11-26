@@ -55,6 +55,7 @@
         @foreach(var row in data.VehicleRows){<tr><td>@row.Registration</td><td>@row.Model</td><td>@row.Trips</td><td>@row.CompletedTrips</td><td>@row.CompletedDistanceKm km</td><td><span class="pill @row.ServiceStatus.ToLowerInvariant()">@T(row.ServiceStatus)</span></td></tr>}
     </tbody></table></div></section>
     <VehicleReportBuilder Russian="Russian" Summary="data" From="from" To="to"/>
+    <ClusteringView Russian="Russian" Fleet="Fleet" Now="Now" From="from" To="to"/>
 }
 @code{
     [Parameter] public bool Russian{get;set;}

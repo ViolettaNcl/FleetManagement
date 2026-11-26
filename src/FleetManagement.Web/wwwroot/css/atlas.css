@@ -106,3 +106,21 @@
  .demo-shell.premium-workspace .guided-task:hover{transform:translateY(-2px);border-color:var(--atlas-accent);box-shadow:var(--atlas-elevation)}
 }
 @media print{body:has(.fleet-print-document) .demo-shell.premium-workspace .fleet-content .custom-report-panel{box-shadow:none!important;border:0!important}}
+
+/* Semantic calendar colors and explicit selected states. Dots are supplementary to textual labels. */
+.calendar-legend{display:flex;flex-wrap:wrap;gap:8px 14px;margin:12px 0;color:var(--muted);font-size:11px}
+.calendar-legend>span{display:flex;align-items:center;gap:6px}
+.calendar-dot{display:inline-block;width:7px;height:7px;border-radius:50%;background:var(--chart-violet);flex:none}
+.calendar-dot.trip{background:var(--chart-cyan)}.calendar-dot.service{background:var(--chart-amber)}.calendar-dot.reservation{background:var(--chart-violet)}
+.calendar-mini-dots{display:flex;gap:3px;min-height:7px;justify-content:center}
+.calendar-mini-dots .calendar-dot{width:5px;height:5px}
+.demo-shell .calendar-chip.reservation{background:#eee6ff;color:#5830a4;border-color:#d6c6f7}
+.demo-shell.dark-theme .calendar-chip.reservation{background:#372851;color:#e3d3ff;border-color:#725998}
+.demo-shell .calendar-day.calendar-today:not(.selected){box-shadow:inset 0 0 0 1px var(--accent)}
+.demo-shell.premium-workspace .calendar-day{border-radius:11px}
+.demo-shell.premium-workspace .calendar-day.selected{box-shadow:inset 0 0 0 1px var(--accent)}
+.demo-shell .notification-center .alert-filter{position:relative;text-align:left;border-left:3px solid var(--line);overflow-wrap:anywhere;white-space:normal}
+.demo-shell .notification-center .alert-filter-high{border-left-color:var(--chart-red)}
+.demo-shell .notification-center .alert-filter-medium{border-left-color:var(--chart-amber)}
+.demo-shell .notification-center .alert-filter[aria-pressed=true]{border-color:var(--accent);box-shadow:inset 0 0 0 1px var(--accent);background:var(--surface-2)}
+@media(max-width:720px){.calendar-legend{gap:6px 10px}.calendar-mini-dots{min-height:5px}.calendar-mini-dots .calendar-dot{width:4px;height:4px}}

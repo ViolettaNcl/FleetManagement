@@ -49,6 +49,7 @@ jobs:
           trap 'kill "$server" || true' EXIT
           node tests/browser/pwa-update.mjs
           node tests/browser/v6-ux.mjs
+          node tests/browser/v6-atlas.mjs
           node tests/browser/v4.mjs
           node tests/browser/v5-suite.mjs
           node tests/browser/v6-rc.mjs

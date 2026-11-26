@@ -28,6 +28,10 @@ The browser edition runs C# in WebAssembly, uses synthetic data, and requires no
 - [Current development pull request — V6.1](https://github.com/ViolettaNcl/FleetManagement/pull/8)
 - [Original V3 development pull request](https://github.com/ViolettaNcl/FleetManagement/pull/2)
 
+### V6.2 Atlas visual workspace (development candidate)
+
+Route-inspired premium design with a next-departure focus card, interactive trip workload links, responsive table/card registers and calendar event markers. Both themes and Classic remain available. All displayed values come from the local demo records.
+
 ### V6.1 — Guided Workspace (development candidate)
 
 New profiles open in Essentials: ten everyday sections, six quick actions and contextual English/Russian guidance. All tools reveals all 26 modules, while global search can find any tool in either mode. Trip planning has three grouped steps, draft safeguards, larger mobile controls and remembered preferences. See [the integrated guide](docs/v6-release-candidate.md#v61-guided-workspace-candidate). The candidate remains separate from the published preview.

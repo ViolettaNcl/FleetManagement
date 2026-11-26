@@ -1,5 +1,12 @@
 # Changelog
 
+## Unreleased — V6.2 Atlas visual workspace
+
+- Route-inspired premium visual system, new actual next-departure card in the hero with safe edit action and an empty-state action, refreshed KPI and task cards.
+- Clickable trip-status chart legend opens the corresponding filtered register. Vehicle and driver registers gain responsive, table and card presentations with independent local preferences; service cards display real remaining mileage.
+- Calendar event legend, distinct reservation styling and today indicator; stronger selected alert filter states. Existing classic appearance, both themes and reduced-motion behavior preserved.
+- Browser tests cover actual demo departure, linked filters, card presentation persistence, responsive widths and accessibility. Exact candidate CI required.
+
 ## Unreleased — V6.1 guided workspace candidate
 
 - Add three owner-requested generated Neon Violet branding compositions, optimized as WebP. English/Russian README hero, brand gallery, settings artwork and updated candidate links. Preserve existing small SVG favicon and PWA icons. Concept banner metrics are illustrative only.

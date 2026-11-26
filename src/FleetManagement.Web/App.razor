@@ -52,18 +52,18 @@
         <section class="panel command-hero neon-hero">
             <div class="hero-copy"><span class="hero-kicker"><i aria-hidden="true"></i> @T("Operations command center")</span><h2>@T("Operations overview")</h2><p class="muted">@T("Fleet command center · monitor schedules, maintenance and operational exceptions in one place. Synthetic records, local browser storage.")</p>
             <div class="actions hero-actions"><button @onclick='() => Navigate("Tracking")'>@T("Open live tracking") <span aria-hidden="true">↗</span></button><button class="secondary" @onclick='() => Navigate("Dispatch")'>@T("Plan a trip")</button><button class="secondary" @onclick='() => Navigate("Maintenance")'>@T("Review maintenance")</button></div></div>
-            <div class="hero-art-space" aria-hidden="true"></div>
+            @if(visualMode=="premium"){<DepartureFocus Russian="@(language=="ru")" Fleet="fleet" Now="Now" Edit="EditTrip" Create="NewTripAction"/>}else{<div class="hero-art-space" aria-hidden="true"></div>}
         </section>
         @if(navigationMode=="essentials"){<section class="panel guided-start" aria-labelledby="guided-start-title"><div class="suite-heading"><div><span class="guided-kicker">@T("Quick start")</span><h2 id="guided-start-title">@T("What would you like to do?")</h2><p class="muted">@T("Choose a task. You can open every advanced tool from the navigation.")</p></div></div><div class="guided-task-grid">@foreach(var task in GuidedTasks){<button class="secondary guided-task" @onclick="()=>RunQuickAction(task.Key)"><span class="guided-task-icon" aria-hidden="true"><WorkspaceIcon Name="@task.Icon"/></span><span><strong>@T(task.Title)</strong><small>@T(task.Description)</small></span><span class="guided-task-arrow" aria-hidden="true">↗</span></button>}</div></section>}
         <div class="metrics dashboard-kpis">
             @foreach(var metric in OverviewMetrics()){
-                <button class="metric metric-action secondary" @onclick="()=>Navigate(metric.Section)">
+                <button class="@("metric metric-action secondary metric-tone-"+metric.Tone)" @onclick="()=>Navigate(metric.Section)">
                     <span class="metric-top"><span>@T(metric.Label)</span><span class="@("kpi-icon "+metric.Tone)" aria-hidden="true"><WorkspaceIcon Name="@metric.Section" /></span></span>
                     <strong>@metric.Value</strong><span class="metric-bottom"><small>@T(metric.Detail)</small><span aria-hidden="true">↗</span></span>
                 </button>
             }
         </div>
-        <CommandSummary Russian="@(language=="ru")" Reservations="vehicleReservations" Fleet="fleet" Now="Now" Open="Navigate" />
+        <CommandSummary Russian="@(language=="ru")" Reservations="vehicleReservations" Fleet="fleet" Now="Now" Open="Navigate" FilterTrips="OpenTripStatus" />
         <section class="panel"><div class="registerhead"><div><h2>@T("Intelligent alerts")</h2><p class="muted">@T("Live rule-based review of current demo records.")</p></div><button class="secondary" @onclick='()=>Navigate("Notifications")'>@T("Open alert center")</button></div><FleetAlertList Russian="@(language=="ru")" Alerts="@(currentAlerts.Take(3).ToArray())" Open="Navigate"/></section>
         <section class="panel dashboard-preferences" aria-labelledby="dashboard-preferences-title">
             <div class="dashboard-preference-heading"><div><h2 id="dashboard-preferences-title">@T("Dashboard layout")</h2><p class="muted">@T("Choose a workspace view. Core metrics and alerts stay visible.")</p></div>
@@ -528,6 +528,7 @@
         }catch(JSException){storageMessage="Unable to save locally; changes are session-only.";}
     }
     private void OpenPassport(int id){passportId=id;Navigate("Vehicle Passport");}
+    private void OpenTripStatus(string status){if(!CanLeaveRegister()||!CanDiscardTrip())return;if(status is not ("In transit" or "Scheduled" or "Completed"))return;CancelEdit();tripQuery="";tripStatus=status;ResetTripPage();NavigateCore("Dispatch");}
     private void Navigate(string item){if(section!=item){if(!CanLeaveRegister()||!CanDiscardTrip())return;if(section=="Dispatch")CancelEdit();}NavigateCore(item);}
     private void NavigateCore(string item){if(section!=item){newRecordSection="";writeHistory=true;recent.Remove(item);recent.Insert(0,item);if(recent.Count>5)recent.RemoveAt(5);recentDirty=true;}mobileNav=false;quickActionsExpanded=false;navQuery="";focusContent=true;if(item=="Vehicle Passport"&&!fleet.Vehicles.Any(v=>v.Id==passportId))passportId=fleet.Vehicles.FirstOrDefault()?.Id??0;section=item;feedback="";if(item=="Dispatch"){if(!fleet.Vehicles.Any(v=>v.Id==vehicleId))vehicleId=fleet.Vehicles.FirstOrDefault()?.Id??0;if(!fleet.Drivers.Any(d=>d.Id==driverId))driverId=fleet.Drivers.FirstOrDefault()?.Id??0;}}
     private async Task ToggleSimulation(){playing=!playing;if(!playing)await Persist();}

@@ -1304,6 +1304,17 @@ internal static class DemoLocale
         ["Add at least one vehicle and driver before creating a trip."]="Перед созданием рейса добавьте хотя бы один автомобиль и водителя.",
         ["Unsaved trip changes"]="Есть несохранённые изменения рейса",
         ["Unsaved record changes"]="Есть несохранённые изменения записи",
+        ["Next departure"]="Ближайшее отправление",
+        ["Review next departure"]="Открыть ближайший рейс",
+        ["No upcoming departures"]="Нет предстоящих отправлений",
+        ["The next scheduled trip will appear here."]="Здесь появится следующий запланированный рейс.",
+        ["Schedule a departure"]="Запланировать отправление",
+        ["Show trips"]="Показать рейсы",
+        ["Register presentation"]="Вид реестра",
+        ["Responsive view"]="Авто",
+        ["Table view"]="Таблица",
+        ["Card view"]="Карточки",
+        ["Service mileage remaining"]="Остаток пробега до ТО",
     };
     public static string Text(string value,bool russian)=>russian&&Russian.TryGetValue(value,out var translated)?translated:value;
 }

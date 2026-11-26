@@ -1,0 +1,25 @@
+@using FleetManagement.Web
+@{var upcoming=Fleet.Trips.Where(t=>t.Start>Now).OrderBy(t=>t.Start).ThenBy(t=>t.Id).FirstOrDefault();}
+<div class="departure-focus" aria-labelledby="departure-focus-title">
+    <div class="departure-focus-top"><span id="departure-focus-title" class="departure-eyebrow"><span class="departure-orbit" aria-hidden="true"></span>@T("Next departure")</span>@if(upcoming is not null){<span class="departure-id">#@upcoming.Id</span>}</div>
+    @if(upcoming is not null){
+        <div class="departure-clock"><strong data-testid="departure-time">@upcoming.Start.ToString("HH:mm")</strong><span>@upcoming.Start.ToString("dd.MM.yyyy")</span></div>
+        <div class="departure-path">
+            <div class="departure-node"><i aria-hidden="true"></i><div><small>@T("Origin")</small><strong>@upcoming.Origin</strong></div></div>
+            <div class="departure-node"><i aria-hidden="true"></i><div><small>@T("Destination")</small><strong>@upcoming.Destination</strong></div></div>
+        </div>
+        <div class="departure-meta"><span><WorkspaceIcon Name="Vehicles"/> @(Fleet.Vehicles.FirstOrDefault(v=>v.Id==upcoming.VehicleId)?.Plate??"—")</span><span>@upcoming.Distance km</span></div>
+        <button class="secondary departure-action" @onclick="()=>Edit.InvokeAsync(upcoming)">@T("Review next departure") <span aria-hidden="true">↗</span></button>
+    }else{
+        <div class="departure-empty"><WorkspaceIcon Name="Calendar"/><strong>@T("No upcoming departures")</strong><p>@T("The next scheduled trip will appear here.")</p></div>
+        <button class="secondary departure-action" @onclick="()=>Create.InvokeAsync()">@T("Schedule a departure") <span aria-hidden="true">↗</span></button>
+    }
+</div>
+@code{
+    [Parameter] public bool Russian{get;set;}
+    [Parameter,EditorRequired] public FleetData Fleet{get;set;}=default!;
+    [Parameter] public DateTime Now{get;set;}
+    [Parameter] public EventCallback<Trip> Edit{get;set;}
+    [Parameter] public EventCallback Create{get;set;}
+    private string T(string value)=>DemoLocale.Text(value,Russian);
+}

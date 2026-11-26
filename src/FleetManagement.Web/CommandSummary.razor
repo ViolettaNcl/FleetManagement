@@ -13,7 +13,7 @@
             <div class="workload-donut" style="@DonutStyle(statusCounts)" role="img" aria-label="@WorkloadLabel(statusCounts)"><div><strong>@Fleet.Trips.Count</strong><small>@T("Total trips")</small></div></div>
             <div class="workload-legend">
                 @foreach(var status in new[]{"In transit","Scheduled","Completed"}){
-                    <div class="workload-row"><span class="@("chart-dot "+Tone(status))"></span><span>@T(status)</span><strong>@statusCounts.GetValueOrDefault(status)</strong><small>@Percent(statusCounts.GetValueOrDefault(status),Fleet.Trips.Count)</small></div>
+                    <button class="secondary workload-row workload-filter" aria-label="@($"{T("Show trips")}: {T(status)}")" @onclick="()=>FilterTrips.InvokeAsync(status)"><span class="@("chart-dot "+Tone(status))" aria-hidden="true"></span><span>@T(status)</span><strong>@statusCounts.GetValueOrDefault(status)</strong><small>@Percent(statusCounts.GetValueOrDefault(status),Fleet.Trips.Count)</small></button>
                 }
             </div>
         </div>
@@ -41,6 +41,7 @@
     [Parameter] public DateTime Now{get;set;}
     [Parameter] public IReadOnlyList<VehicleReservation> Reservations{get;set;}=[];
     [Parameter] public EventCallback<string> Open{get;set;}
+    [Parameter] public EventCallback<string> FilterTrips{get;set;}
     private static string Tone(string status)=>status switch{"In transit"=>"violet","Scheduled"=>"cyan","Completed" or "Healthy"=>"green","Soon"=>"amber",_=>"red"};
     private static double Share(int count,int total)=>total==0?0:100.0*count/total;
     private static string F(double n)=>n.ToString("F3",CultureInfo.InvariantCulture);

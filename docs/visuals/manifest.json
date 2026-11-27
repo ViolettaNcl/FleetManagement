@@ -2,12 +2,12 @@
   "revision": "f2cea2bfe5334fed0e056feb142e56db8fc470c0",
   "files": {
     "README.md": {
-      "bytes": 999,
-      "sha256": "2e7ce1d3c177c23817f7594be64f95ef27a49747dbcd6442d2a9b9211be4c9f5"
+      "bytes": 1294,
+      "sha256": "f057e8d3aeb32411596debac3bf89dee1e20969cb5bbc9a98e307b22de3c214a"
     },
     "README.ru.md": {
-      "bytes": 1152,
-      "sha256": "627c6d1989f7583db0b094b679f0d614fcf426c4babe5780834540998e733f60"
+      "bytes": 1582,
+      "sha256": "61b117f17005ee3d5784dcb848191e95b319d7cc1abfa29887b50f0d40e236ae"
     },
     "analytics/confusion-fastforest.png": {
       "bytes": 48182,
@@ -94,12 +94,12 @@
       "sha256": "724042ea524669988b355a791b06567147ca88333f93787f126dd4c8373f0ff8"
     },
     "analytics.md": {
-      "bytes": 2426,
-      "sha256": "c55ee17df37a469d6c42a202cf58c61c93c4d6b593d17cd9106adbae0a39b961"
+      "bytes": 2805,
+      "sha256": "3d1e46d5426c2719705c0d98ad00d5e922427b594406dc5a989780dd27d0bb85"
     },
     "analytics.ru.md": {
-      "bytes": 2740,
-      "sha256": "aebe33e22166202a47dfbf3e29c62e1d25caf7eed25875aef365949d8a1a8a84"
+      "bytes": 3570,
+      "sha256": "4833dac947075db9d22f4fb5da9a91ce840a423ff7888d1534c7c50e06390314"
     },
     "diagrams/architecture.dot": {
       "bytes": 1122,
@@ -186,20 +186,20 @@
       "sha256": "94f4cf47bf4ac887b10f3212c1112332d44ce39d080c8f898f265a15906b62d6"
     },
     "diagrams.md": {
-      "bytes": 1687,
-      "sha256": "bbf480a39dfb204216b1eb63035b25850b76866db795494d11bbad930a2e6b45"
+      "bytes": 2357,
+      "sha256": "44cee8ecc07a32df2feb5d31dd9ae9f446be1975e72462a2c1db9d9484fce6fa"
     },
     "diagrams.ru.md": {
-      "bytes": 1946,
-      "sha256": "fa39a35a5f600c7350bb144979f4897d67e14e104fcdc6d498f476a9aa6dd2c4"
+      "bytes": 3377,
+      "sha256": "db042d7de94ed1fb82b46ea1089469417d94799aacb3b493ebb3c0ce25b1f843"
     },
     "gallery.md": {
-      "bytes": 4265,
-      "sha256": "e8692cdf7bb7602671e89c5776299a13b667be2e225c36be17cbdd89a9757c4f"
+      "bytes": 6199,
+      "sha256": "746ed7ef0553a74af956431e76cefe6cd919fbb5418451cd57d46bbcaff3db34"
     },
     "gallery.ru.md": {
-      "bytes": 5512,
-      "sha256": "5498e285adec719e7eb8e1ae2daaa1bcaa8fb44b1bd397026e5d7208f0b2c8ff"
+      "bytes": 8127,
+      "sha256": "7835ed6b9f260ed487ac442fa3179f2b7b8da32eaf1573d183e873e24c2b7cbd"
     },
     "media/application-tour.gif": {
       "bytes": 659919,

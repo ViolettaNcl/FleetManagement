@@ -1,8 +1,8 @@
 <div align="center">
-<img src="docs/assets/brand/fleet-readme-banner.webp" alt="FleetManagement Enterprise concept illustration" width="100%">
+<img src="docs/assets/brand/fleet-readme-banner.webp" alt="FleetManagement Enterprise concept illustration">
 <h1>FleetManagement</h1>
 <p><strong>Fleet operations · Optimization · Applied machine learning</strong></p>
-<p>C# / .NET 10 · Blazor WebAssembly · ASP.NET Core · EF Core · ML.NET</p>
+<p><code>C# / .NET 10</code> · <code>Blazor WASM</code> · <code>ASP.NET Core</code> · <code>EF Core</code> · <code>ML.NET</code></p>
 <p><a href="README.ru.md">Русский</a> · <a href="https://violettancl.github.io/FleetManagement/app/">Live application</a> · <a href="docs/engineering/README.md">Engineering handbook</a></p>
 <p><sub>Concept artwork; not real telemetry or measured performance.</sub></p>
   <p>
@@ -15,7 +15,24 @@
   </p>
 </div>
 
-[English](README.md) · [Русский](README.ru.md) · [Engineering handbook](docs/engineering/README.md) · [Changelog](CHANGELOG.md)
+**English** · [Русский](README.ru.md)
+
+[Live application](https://violettancl.github.io/FleetManagement/app/) · [Engineering handbook](docs/engineering/README.md) · [Gallery](docs/visuals/gallery.md) · [Changelog](CHANGELOG.md)
+
+CI badges track the development branch. The verified public revision is identified separately below.
+
+**On this page**
+
+- [Release and verification](#release-and-verification)
+- [Application in action](#application-in-action)
+- [Scope](#scope)
+- [Architecture](#architecture)
+- [Engineering depth](#engineering-depth)
+- [Guided walkthrough](#guided-walkthrough)
+- [Quick start](#quick-start)
+- [Repository map](#repository-map)
+- [Technical documentation](#technical-documentation)
+- [Boundaries and maintenance](#boundaries-and-maintenance)
 
 ## Release and verification
 
@@ -36,9 +53,18 @@
 [![Diagrams](https://img.shields.io/badge/Diagrams-7-0284c7?style=flat-square)](docs/visuals/diagrams.md)
 [![ML charts](https://img.shields.io/badge/ML_charts-10-0f766e?style=flat-square)](docs/visuals/analytics.md)
 
-[![Overview](docs/visuals/screenshots/dashboard-dark-viewport.webp)](docs/visuals/screenshots/dashboard-dark.png)
+[![Overview — dark theme](docs/visuals/screenshots/dashboard-dark-viewport.webp)](docs/visuals/screenshots/dashboard-dark.png)
 
-[![Vehicle register](docs/visuals/screenshots/vehicles-cards-viewport.webp)](docs/visuals/screenshots/vehicles-cards.png)
+*Figure 1. Overview workspace, actual CI capture.*
+
+<details>
+<summary>Vehicle register — expand the second screenshot</summary>
+
+[![Vehicle cards](docs/visuals/screenshots/vehicles-cards-viewport.webp)](docs/visuals/screenshots/vehicles-cards.png)
+
+*Figure 2. Vehicle cards with model-specific artwork.*
+
+</details>
 
 Actual CI captures; click for full original. Synthetic data.
 
@@ -69,7 +95,7 @@ FleetManagement evolved from a Windows WPF application into a modular .NET engin
 ## Architecture
 
 ~~~mermaid
-flowchart LR
+flowchart TB
   P[Public site] --> W[Blazor WASM demo]
   W --> C[Shared C# Core]
   W --> L[(Browser storage)]
@@ -133,17 +159,15 @@ Open http://127.0.0.1:5095/console. The launcher prompts for a secure initial ad
 
 ## Technical documentation
 
-| Guide | English | Русский |
-| --- | --- | --- |
-| Engineering index | [Open](docs/engineering/README.md) | [Открыть](docs/engineering/README.ru.md) |
-| Architecture and data integrity | [Open](docs/engineering/architecture.md) | [Открыть](docs/engineering/architecture.ru.md) |
-| Domain specification | [Open](docs/engineering/domain.md) | [Открыть](docs/engineering/domain.ru.md) |
-| Algorithms and mathematical contracts | [Open](docs/engineering/algorithms.md) | [Открыть](docs/engineering/algorithms.ru.md) |
-| API contract | [Open](docs/engineering/api.md) | [Открыть](docs/engineering/api.ru.md) |
-| ML and evaluation | [Open](docs/engineering/intelligence.md) | [Открыть](docs/engineering/intelligence.ru.md) |
-| Frontend and design | [Open](docs/engineering/frontend.md) | [Открыть](docs/engineering/frontend.ru.md) |
-| Local operations and release | [Open](docs/engineering/operations.md) | [Открыть](docs/engineering/operations.ru.md) |
-| Quality and security | [Open](docs/engineering/quality.md) | [Открыть](docs/engineering/quality.ru.md) |
+- **Engineering index** — [Open](docs/engineering/README.md) · [Открыть](docs/engineering/README.ru.md)
+- **Architecture and data integrity** — [Open](docs/engineering/architecture.md) · [Открыть](docs/engineering/architecture.ru.md)
+- **Domain specification** — [Open](docs/engineering/domain.md) · [Открыть](docs/engineering/domain.ru.md)
+- **Algorithms and mathematical contracts** — [Open](docs/engineering/algorithms.md) · [Открыть](docs/engineering/algorithms.ru.md)
+- **API contract** — [Open](docs/engineering/api.md) · [Открыть](docs/engineering/api.ru.md)
+- **ML and evaluation** — [Open](docs/engineering/intelligence.md) · [Открыть](docs/engineering/intelligence.ru.md)
+- **Frontend and design** — [Open](docs/engineering/frontend.md) · [Открыть](docs/engineering/frontend.ru.md)
+- **Local operations and release** — [Open](docs/engineering/operations.md) · [Открыть](docs/engineering/operations.ru.md)
+- **Quality and security** — [Open](docs/engineering/quality.md) · [Открыть](docs/engineering/quality.ru.md)
 
 ## Boundaries and maintenance
 

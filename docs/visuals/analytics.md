@@ -1,17 +1,31 @@
 # Analytics and ML evidence
 
-[Русский](README.ru.md) · [Engineering handbook](../engineering/README.md) · [Project README](../../README.md)
+**English** · [Русский](analytics.ru.md)
+
+[Project README](../../README.md) · [Visual index](README.md) · [Gallery](gallery.md) · [Diagrams](diagrams.md) · [ML](analytics.md) · [Engineering handbook](../engineering/README.md)
 
 Synthetic seed-42 experiment: 720 held-out maintenance observations, 400 ETA journeys. No real-world effectiveness claim.
 
 ## Maintenance
 
-| Model | F1 ↑ | Recall ↑ | Brier ↓ | TP | FP | FN | TN |
-| --- | ---: | ---: | ---: | ---: | ---: | ---: | ---: |
-| baseline | 0.000 | 0.000 | 0.193 | 0 | 0 | 186 | 534 |
-| logistic | 0.669 | 0.629 | 0.119 | 117 | 47 | 69 | 487 |
-| fastTree | 0.609 | 0.565 | 0.128 | 105 | 54 | 81 | 480 |
-| fastForest | 0.649 | 0.591 | 0.118 | 110 | 43 | 76 | 491 |
+| Model | F1 ↑ | Recall ↑ | Brier ↓ |
+| --- | ---: | ---: | ---: |
+| baseline | 0.000 | 0.000 | 0.193 |
+| logistic | 0.669 | 0.629 | 0.119 |
+| fastTree | 0.609 | 0.565 | 0.128 |
+| fastForest | 0.649 | 0.591 | 0.118 |
+
+<details>
+<summary>Classification counts — exact values</summary>
+
+| Model | TP | FP | FN | TN |
+| --- | ---: | ---: | ---: | ---: |
+| baseline | 0 | 0 | 186 | 534 |
+| logistic | 117 | 47 | 69 | 487 |
+| fastTree | 105 | 54 | 81 | 480 |
+| fastForest | 110 | 43 | 76 | 491 |
+
+</details>
 
 Logistic has the highest F1 and recall at threshold 0.5; FastForest the lowest Brier. No automatic winner selection.
 
@@ -86,3 +100,7 @@ Linear regression outperforms FastTree on MAE/RMSE in this synthetic run; real-r
 [PNG](analytics/eta-permutation.png)
 
 Permutation importance: range of three shuffles, not confidence intervals or causal attribution. ROC/PR/calibration omitted because individual predictions are unavailable. [Manifest](analytics/source-manifest.json).
+
+---
+
+[Project README](../../README.md) · [Visual index](README.md) · [Русский](analytics.ru.md)

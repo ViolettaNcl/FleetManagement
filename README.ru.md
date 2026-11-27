@@ -1,8 +1,8 @@
 <div align="center">
-<img src="docs/assets/brand/fleet-readme-banner.webp" alt="Концептуальная иллюстрация FleetManagement Enterprise" width="100%">
+<img src="docs/assets/brand/fleet-readme-banner.webp" alt="Концептуальная иллюстрация FleetManagement Enterprise">
 <h1>FleetManagement</h1>
 <p><strong>Управление автопарком · Оптимизация · Прикладное машинное обучение</strong></p>
-<p>C# / .NET 10 · Blazor WebAssembly · ASP.NET Core · EF Core · ML.NET</p>
+<p><code>C# / .NET 10</code> · <code>Blazor WASM</code> · <code>ASP.NET Core</code> · <code>EF Core</code> · <code>ML.NET</code></p>
 <p><a href="README.md">English</a> · <a href="https://violettancl.github.io/FleetManagement/app/">Онлайн-приложение</a> · <a href="docs/engineering/README.ru.md">Техническое руководство</a></p>
 <p><sub>Концептуальная иллюстрация; показатели не являются реальной телеметрией или измеренной производительностью.</sub></p>
   <p>
@@ -15,7 +15,24 @@
   </p>
 </div>
 
-[English](README.md) · [Русский](README.ru.md) · [Техническое руководство](docs/engineering/README.ru.md) · [История изменений](CHANGELOG.md)
+**Русский** · [English](README.md)
+
+[Онлайн-приложение](https://violettancl.github.io/FleetManagement/app/) · [Техническое руководство](docs/engineering/README.ru.md) · [Галерея](docs/visuals/gallery.ru.md) · [История изменений](CHANGELOG.md)
+
+Статусы CI относятся к ветке разработки. Подтверждённая публичная версия указана отдельно ниже.
+
+**На этой странице**
+
+- [Релиз и подтверждение качества](#релиз-и-подтверждение-качества)
+- [Визуальный обзор приложения](#визуальный-обзор-приложения)
+- [Возможности](#возможности)
+- [Архитектура](#архитектура)
+- [Инженерная реализация](#инженерная-реализация)
+- [Демонстрация рабочих сценариев](#демонстрация-рабочих-сценариев)
+- [Быстрый запуск](#быстрый-запуск)
+- [Структура репозитория](#структура-репозитория)
+- [Техническая документация](#техническая-документация)
+- [Ограничения и сопровождение](#ограничения-и-сопровождение)
 
 ## Релиз и подтверждение качества
 
@@ -36,9 +53,18 @@
 [![Diagrams](https://img.shields.io/badge/Diagrams-7-0284c7?style=flat-square)](docs/visuals/diagrams.ru.md)
 [![ML charts](https://img.shields.io/badge/ML_charts-10-0f766e?style=flat-square)](docs/visuals/analytics.ru.md)
 
-[![Overview](docs/visuals/screenshots/dashboard-dark-viewport.webp)](docs/visuals/screenshots/dashboard-dark.png)
+[![Главная панель — тёмная тема](docs/visuals/screenshots/dashboard-dark-viewport.webp)](docs/visuals/screenshots/dashboard-dark.png)
 
-[![Vehicle register](docs/visuals/screenshots/vehicles-cards-viewport.webp)](docs/visuals/screenshots/vehicles-cards.png)
+*Рис. 1. Рабочее пространство Overview, реальный кадр из CI.*
+
+<details>
+<summary>Реестр транспорта — открыть второй скриншот</summary>
+
+[![Карточки автомобилей](docs/visuals/screenshots/vehicles-cards-viewport.webp)](docs/visuals/screenshots/vehicles-cards.png)
+
+*Рис. 2. Карточки транспорта с изображениями моделей.*
+
+</details>
 
 Реальные кадры CI; нажмите для просмотра оригинала. Синтетические данные.
 
@@ -69,7 +95,7 @@ FleetManagement вырос из настольного WPF-приложения 
 ## Архитектура
 
 ~~~mermaid
-flowchart LR
+flowchart TB
   P[Публичный сайт] --> W[Blazor WASM]
   W --> C[Общее ядро C#]
   W --> L[(Хранилище браузера)]
@@ -133,17 +159,15 @@ pwsh -File tools/start-connected.ps1
 
 ## Техническая документация
 
-| Руководство | Русский | English |
-| --- | --- | --- |
-| Инженерный индекс | [Открыть](docs/engineering/README.ru.md) | [Open](docs/engineering/README.md) |
-| Архитектура и целостность данных | [Открыть](docs/engineering/architecture.ru.md) | [Open](docs/engineering/architecture.md) |
-| Доменная спецификация | [Открыть](docs/engineering/domain.ru.md) | [Open](docs/engineering/domain.md) |
-| Алгоритмы и математические контракты | [Открыть](docs/engineering/algorithms.ru.md) | [Open](docs/engineering/algorithms.md) |
-| Контракт API | [Открыть](docs/engineering/api.ru.md) | [Open](docs/engineering/api.md) |
-| ML и оценка моделей | [Открыть](docs/engineering/intelligence.ru.md) | [Open](docs/engineering/intelligence.md) |
-| Frontend и дизайн | [Открыть](docs/engineering/frontend.ru.md) | [Open](docs/engineering/frontend.md) |
-| Эксплуатация и релиз | [Открыть](docs/engineering/operations.ru.md) | [Open](docs/engineering/operations.md) |
-| Качество и безопасность | [Открыть](docs/engineering/quality.ru.md) | [Open](docs/engineering/quality.md) |
+- **Инженерный индекс** — [Открыть](docs/engineering/README.ru.md) · [Open](docs/engineering/README.md)
+- **Архитектура и целостность данных** — [Открыть](docs/engineering/architecture.ru.md) · [Open](docs/engineering/architecture.md)
+- **Доменная спецификация** — [Открыть](docs/engineering/domain.ru.md) · [Open](docs/engineering/domain.md)
+- **Алгоритмы и математические контракты** — [Открыть](docs/engineering/algorithms.ru.md) · [Open](docs/engineering/algorithms.md)
+- **Контракт API** — [Открыть](docs/engineering/api.ru.md) · [Open](docs/engineering/api.md)
+- **ML и оценка моделей** — [Открыть](docs/engineering/intelligence.ru.md) · [Open](docs/engineering/intelligence.md)
+- **Frontend и дизайн** — [Открыть](docs/engineering/frontend.ru.md) · [Open](docs/engineering/frontend.md)
+- **Эксплуатация и релиз** — [Открыть](docs/engineering/operations.ru.md) · [Open](docs/engineering/operations.md)
+- **Качество и безопасность** — [Открыть](docs/engineering/quality.ru.md) · [Open](docs/engineering/quality.md)
 
 ## Ограничения и сопровождение
 

@@ -1,8 +1,20 @@
 # Engineering diagrams
 
-[Русский](README.ru.md) · [Engineering handbook](../engineering/README.md) · [Project README](../../README.md)
+**English** · [Русский](diagrams.ru.md)
+
+[Project README](../../README.md) · [Visual index](README.md) · [Gallery](gallery.md) · [Diagrams](diagrams.md) · [ML](analytics.md) · [Engineering handbook](../engineering/README.md)
 
 Editable Graphviz DOT sources.
+
+**On this page**
+
+- [System boundaries](#system-boundaries)
+- [Logical persistence relationships](#logical-persistence-relationships)
+- [Confirmed fleet write](#confirmed-fleet-write)
+- [Local ML experiment lifecycle](#local-ml-experiment-lifecycle)
+- [GitHub Pages release evidence](#github-pages-release-evidence)
+- [Euclidean closed-tour optimization](#euclidean-closed-tour-optimization)
+- [PWA revision activation](#pwa-revision-activation)
 
 ## System boundaries
 
@@ -59,3 +71,7 @@ Integrity-verified worker activation.
 ![PWA revision activation](diagrams/pwa-update.svg)
 
 [PNG](diagrams/pwa-update.png) · [DOT](diagrams/pwa-update.dot)
+
+---
+
+[Project README](../../README.md) · [Visual index](README.md) · [Русский](diagrams.ru.md)

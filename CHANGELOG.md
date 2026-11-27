@@ -1,5 +1,10 @@
 # Changelog
 
+## Documentation refinement — V6.3 Enterprise
+
+- Restore the previously approved README banner in both languages and restore branch-specific CI badges.
+- Add source-grounded bilingual domain specification, temporal invariants, transaction sequence, mathematical algorithm reference and analytical complexity. Retain the existing engineering handbook and runtime assets.
+
 ## Documentation update — V6.3 Enterprise
 
 - Replace English and Russian README entry points with a consistent release status, architecture map and startup instructions.

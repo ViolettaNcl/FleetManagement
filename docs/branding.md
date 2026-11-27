@@ -29,3 +29,7 @@ The banner is conceptual artwork, **not an application screenshot**. Any depicte
 | `fleet-logo-dark.webp` | 1000 × 1000 | 55294 | `806ea5f910ab82581725ed000be282921eddf0c762a7048a9ae684ed8cdc46fd` |
 
 The generated brand artwork does not change application capabilities, release status or the scope of synthetic data.
+
+## Documentation banner preservation
+
+Both root READMEs intentionally use the previously approved `docs/assets/brand/fleet-readme-banner.webp` (Git blob `3460b43b4394505b9a3b306a31ebafc3e49daa74`). The separate V6.3 runtime artwork in `src/FleetManagement.Web/wwwroot/assets/brand/` remains unchanged. Do not substitute or regenerate the documentation banner without owner approval.

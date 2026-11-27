@@ -1,10 +1,18 @@
 <div align="center">
-<img src="src/FleetManagement.Web/wwwroot/assets/brand/fleet-readme-banner.webp" alt="Концептуальная иллюстрация FleetManagement Enterprise" width="100%">
+<img src="docs/assets/brand/fleet-readme-banner.webp" alt="Концептуальная иллюстрация FleetManagement Enterprise" width="100%">
 <h1>FleetManagement</h1>
 <p><strong>Управление автопарком · Оптимизация · Прикладное машинное обучение</strong></p>
 <p>C# / .NET 10 · Blazor WebAssembly · ASP.NET Core · EF Core · ML.NET</p>
 <p><a href="README.md">English</a> · <a href="https://violettancl.github.io/FleetManagement/app/">Онлайн-приложение</a> · <a href="docs/engineering/README.ru.md">Техническое руководство</a></p>
 <p><sub>Концептуальная иллюстрация; показатели не являются реальной телеметрией или измеренной производительностью.</sub></p>
+  <p>
+    <a href="https://github.com/ViolettaNcl/FleetManagement/actions/workflows/demo-ci.yml"><img alt="Browser CI (development branch)" src="https://github.com/ViolettaNcl/FleetManagement/actions/workflows/demo-ci.yml/badge.svg?branch=feature%2Fapproved-fleet-assets"></a>
+    <a href="https://github.com/ViolettaNcl/FleetManagement/actions/workflows/api-ci.yml"><img alt="API CI (development branch)" src="https://github.com/ViolettaNcl/FleetManagement/actions/workflows/api-ci.yml/badge.svg?branch=feature%2Fapproved-fleet-assets"></a>
+    <a href="https://github.com/ViolettaNcl/FleetManagement/actions/workflows/codeql.yml"><img alt="CodeQL (development branch)" src="https://github.com/ViolettaNcl/FleetManagement/actions/workflows/codeql.yml/badge.svg?branch=feature%2Fapproved-fleet-assets"></a>
+    <img alt=".NET 10" src="https://img.shields.io/badge/.NET-10-512BD4?style=flat-square">
+    <img alt="Blazor WASM" src="https://img.shields.io/badge/Blazor-WebAssembly-7C3AED?style=flat-square">
+    <img alt="ML.NET" src="https://img.shields.io/badge/ML.NET-5.0-0E7490?style=flat-square">
+  </p>
 </div>
 
 [English](README.md) · [Русский](README.ru.md) · [Техническое руководство](docs/engineering/README.ru.md) · [История изменений](CHANGELOG.md)
@@ -51,6 +59,23 @@ flowchart LR
 
 Два рабочих пространства не синхронизируют данные. Pages размещает только статические файлы; API, база и секреты не публикуются. ML.NET Trainer — отдельная CLI-утилита, не сервис инференса.
 
+## Инженерная реализация
+
+| Инженерная задача | Реализованный подход |
+| --- | --- |
+| Двойное назначение | Полуоткрытые интервалы, серверная перепроверка и блокировка записи провайдера |
+| Потеря HTTP-ответа | Устойчивые UUID-квитанции по субъекту; повтор исходного успешного ответа |
+| Целостность расписания | Общие правила C#, внешние ключи, явное подтверждение и опциональное покрытие сменами |
+| Поиск маршрута | Nearest neighbor, ограниченный 2-opt, deterministic multi-start, точный Held–Karp для малых задач |
+| Оценка моделей | Разделение по группам или времени, preprocessing только на train, сравнение с baseline |
+| Целостность релиза | CI точного SHA/ветки, SARIF CodeQL, проверка опубликованной ревизии и хешей |
+
+[Доменная спецификация](docs/engineering/domain.ru.md) · [Справочник алгоритмов](docs/engineering/algorithms.ru.md) · [Инженерное руководство](docs/engineering/README.ru.md)
+
+## Демонстрация рабочих сценариев
+
+Откройте [проверенное приложение](https://violettancl.github.io/FleetManagement/app/) и переключитесь на «Все инструменты» для расширенных модулей. Начните с обзора, откройте транспорт и карточки моделей, запланируйте рейс, сравните стратегии оптимизации, запустите ML-эксперимент и экспортируйте отчёт. [Browser CI](https://github.com/ViolettaNcl/FleetManagement/actions/workflows/demo-ci.yml) предоставляет реальные записи экрана и скриншоты в артефактах, а не сгенерированные скриншоты продукта. Прежний баннер README — концептуальная иллюстрация.
+
 ## Быстрый запуск
 
 Требования: Git, .NET 10 SDK; PowerShell 7 для запуска подключённой консоли. Node.js и Python нужны для соответствующих инженерных проверок, но не для обычной работы публичного демо.
@@ -88,6 +113,8 @@ pwsh -File tools/start-connected.ps1
 | --- | --- | --- |
 | Инженерный индекс | [Открыть](docs/engineering/README.ru.md) | [Open](docs/engineering/README.md) |
 | Архитектура и целостность данных | [Открыть](docs/engineering/architecture.ru.md) | [Open](docs/engineering/architecture.md) |
+| Доменная спецификация | [Открыть](docs/engineering/domain.ru.md) | [Open](docs/engineering/domain.md) |
+| Алгоритмы и математические контракты | [Открыть](docs/engineering/algorithms.ru.md) | [Open](docs/engineering/algorithms.md) |
 | Контракт API | [Открыть](docs/engineering/api.ru.md) | [Open](docs/engineering/api.md) |
 | ML и оценка моделей | [Открыть](docs/engineering/intelligence.ru.md) | [Open](docs/engineering/intelligence.md) |
 | Frontend и дизайн | [Открыть](docs/engineering/frontend.ru.md) | [Open](docs/engineering/frontend.md) |

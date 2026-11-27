@@ -76,3 +76,5 @@ Direct SQL, older APIs and other non-cooperating writers bypass this protocol. D
 The legacy WPF solution is not the modern API, and it does not use this Core. Production adoption needs migration history, operational monitoring, recovery drills, proper secrets, HTTPS, real-data validation and security review.
 
 **Source:** [Core](../../src/FleetManagement.Core), [API](../../src/FleetManagement.Api), [FleetStore](../../src/FleetManagement.Api/FleetStore.cs), [EF mapping](../../src/FleetManagement.Api/FleetDbContext.cs), [concurrency](../database-concurrency.md), [receipts](../batch-receipts.md), [historical ADRs](../architecture.md).
+
+Detailed fields, boundary cases and write sequence: [domain specification](domain.md).

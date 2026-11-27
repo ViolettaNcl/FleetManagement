@@ -9,6 +9,8 @@
 | Guide | Intended reader | Question answered |
 | --- | --- | --- |
 | [Architecture](architecture.md) | Developers, reviewers | Where is logic owned, and what are the data invariants? |
+| [Domain specification](domain.md) | Domain/backend engineers | Which fields, invariants, boundary cases and transitions are enforced? |
+| [Algorithms](algorithms.md) | Optimization/ML engineers | What are the mathematical contracts, complexity and limitations? |
 | [API contract](api.md) | API consumers, backend engineers | Which endpoints, permissions and retry contracts exist? |
 | [Intelligence](intelligence.md) | ML engineers | What is trained, how is it evaluated, what cannot be inferred? |
 | [Frontend](frontend.md) | Frontend engineers | How do UI, assets, accessibility and offline behavior fit together? |

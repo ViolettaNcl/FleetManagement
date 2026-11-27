@@ -57,3 +57,5 @@ ML.NET и FastTree закреплены на 5.0.0. CLI создаёт уник�
 [Модель ТО](../maintenance-model-card.md) · [Карточки прогнозов](../prediction-model-cards.md) · [Реестр](../model-registry.md) · [Дрейф](../model-drift.md) · [Качество данных](../data-quality.md) · [Экономика и прогнозирование](../economics-and-forecasting.md) · [Digital Twin](../digital-twin.md) · [Multi-dispatch](../multi-dispatch.md).
 
 **Исходники:** [Алгоритмы Core](../../src/FleetManagement.Core), [ModelTrainer](../../tools/FleetManagement.ModelTrainer), [ML-тесты](../../tests/ml), [ML CI](../../.github/workflows/ml-ci.yml).
+
+Формулы и аналитическая сложность: [справочник алгоритмов](algorithms.ru.md).

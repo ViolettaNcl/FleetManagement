@@ -76,3 +76,5 @@ erDiagram
 Старое решение WPF не является современным API и не использует это ядро. Для промышленного внедрения нужны история миграций, мониторинг, проверяемое восстановление, управление секретами, HTTPS, валидация реальных данных и аудит безопасности.
 
 **Исходники:** [Core](../../src/FleetManagement.Core), [API](../../src/FleetManagement.Api), [FleetStore](../../src/FleetManagement.Api/FleetStore.cs), [EF mapping](../../src/FleetManagement.Api/FleetDbContext.cs), [конкурентность](../database-concurrency.md), [квитанции](../batch-receipts.md), [история ADR](../architecture.md).
+
+Подробные поля, границы и последовательность записи: [доменная спецификация](domain.ru.md).

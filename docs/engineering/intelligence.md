@@ -57,3 +57,5 @@ The optional local Ollama CLI is a separate opt-in integration: [local AI guide]
 [Maintenance card](../maintenance-model-card.md) · [Prediction cards](../prediction-model-cards.md) · [Registry](../model-registry.md) · [Drift](../model-drift.md) · [Data quality](../data-quality.md) · [Economics/forecasting](../economics-and-forecasting.md) · [Digital twin](../digital-twin.md) · [Multi-dispatch](../multi-dispatch.md).
 
 **Source:** [Core algorithms](../../src/FleetManagement.Core), [ModelTrainer](../../tools/FleetManagement.ModelTrainer), [ML tests](../../tests/ml), [ML CI](../../.github/workflows/ml-ci.yml).
+
+Formulas and analytical complexity: [algorithm reference](algorithms.md).

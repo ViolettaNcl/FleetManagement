@@ -1,10 +1,18 @@
 <div align="center">
-<img src="src/FleetManagement.Web/wwwroot/assets/brand/fleet-readme-banner.webp" alt="FleetManagement Enterprise concept illustration" width="100%">
+<img src="docs/assets/brand/fleet-readme-banner.webp" alt="FleetManagement Enterprise concept illustration" width="100%">
 <h1>FleetManagement</h1>
 <p><strong>Fleet operations · Optimization · Applied machine learning</strong></p>
 <p>C# / .NET 10 · Blazor WebAssembly · ASP.NET Core · EF Core · ML.NET</p>
 <p><a href="README.ru.md">Русский</a> · <a href="https://violettancl.github.io/FleetManagement/app/">Live application</a> · <a href="docs/engineering/README.md">Engineering handbook</a></p>
 <p><sub>Concept artwork; not real telemetry or measured performance.</sub></p>
+  <p>
+    <a href="https://github.com/ViolettaNcl/FleetManagement/actions/workflows/demo-ci.yml"><img alt="Browser CI (development branch)" src="https://github.com/ViolettaNcl/FleetManagement/actions/workflows/demo-ci.yml/badge.svg?branch=feature%2Fapproved-fleet-assets"></a>
+    <a href="https://github.com/ViolettaNcl/FleetManagement/actions/workflows/api-ci.yml"><img alt="API CI (development branch)" src="https://github.com/ViolettaNcl/FleetManagement/actions/workflows/api-ci.yml/badge.svg?branch=feature%2Fapproved-fleet-assets"></a>
+    <a href="https://github.com/ViolettaNcl/FleetManagement/actions/workflows/codeql.yml"><img alt="CodeQL (development branch)" src="https://github.com/ViolettaNcl/FleetManagement/actions/workflows/codeql.yml/badge.svg?branch=feature%2Fapproved-fleet-assets"></a>
+    <img alt=".NET 10" src="https://img.shields.io/badge/.NET-10-512BD4?style=flat-square">
+    <img alt="Blazor WASM" src="https://img.shields.io/badge/Blazor-WebAssembly-7C3AED?style=flat-square">
+    <img alt="ML.NET" src="https://img.shields.io/badge/ML.NET-5.0-0E7490?style=flat-square">
+  </p>
 </div>
 
 [English](README.md) · [Русский](README.ru.md) · [Engineering handbook](docs/engineering/README.md) · [Changelog](CHANGELOG.md)
@@ -51,6 +59,23 @@ flowchart LR
 
 The two workspaces do not synchronize their data. Pages serves static assets only; it never exposes the API, database or credentials. ML.NET training is a separate CLI, not a model-serving endpoint.
 
+## Engineering depth
+
+| Engineering problem | Implemented approach |
+| --- | --- |
+| Double-booking | Half-open interval conflicts, server-side revalidation and provider-level write lock |
+| Lost HTTP response | Durable actor-scoped UUID receipts; replay original successful response |
+| Scheduling integrity | Shared C# rules, foreign keys, explicit confirmation and optional shift coverage |
+| Route search | Nearest neighbor, bounded 2-opt, deterministic multi-start and exact Held–Karp for small tours |
+| Model evaluation | Group-disjoint or chronological holdouts, train-only preprocessing, baseline comparisons |
+| Release integrity | Exact SHA/branch CI, CodeQL SARIF evidence, deployed revision and artwork hash verification |
+
+[Domain specification](docs/engineering/domain.md) · [Algorithm reference](docs/engineering/algorithms.md) · [Engineering handbook](docs/engineering/README.md)
+
+## Guided walkthrough
+
+Open [the verified application](https://violettancl.github.io/FleetManagement/app/) and switch to All tools to explore advanced modules. Start with Overview, then inspect Vehicles and their model-specific cards; plan a trip, compare Optimization strategies, run Intelligence experiments and export a report. The [browser CI](https://github.com/ViolettaNcl/FleetManagement/actions/workflows/demo-ci.yml) provides actual screen recordings and screenshots as artifacts rather than fabricated product screenshots. The old documentation banner is concept art, not a screenshot.
+
 ## Quick start
 
 Requirements: .NET 10 SDK and Git; PowerShell 7 for the connected launcher. Node.js and Python are needed for relevant engineering checks, not for normal public demo use.
@@ -88,6 +113,8 @@ Open http://127.0.0.1:5095/console. The launcher prompts for a secure initial ad
 | --- | --- | --- |
 | Engineering index | [Open](docs/engineering/README.md) | [Открыть](docs/engineering/README.ru.md) |
 | Architecture and data integrity | [Open](docs/engineering/architecture.md) | [Открыть](docs/engineering/architecture.ru.md) |
+| Domain specification | [Open](docs/engineering/domain.md) | [Открыть](docs/engineering/domain.ru.md) |
+| Algorithms and mathematical contracts | [Open](docs/engineering/algorithms.md) | [Открыть](docs/engineering/algorithms.ru.md) |
 | API contract | [Open](docs/engineering/api.md) | [Открыть](docs/engineering/api.ru.md) |
 | ML and evaluation | [Open](docs/engineering/intelligence.md) | [Открыть](docs/engineering/intelligence.ru.md) |
 | Frontend and design | [Open](docs/engineering/frontend.md) | [Открыть](docs/engineering/frontend.ru.md) |

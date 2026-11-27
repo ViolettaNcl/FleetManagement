@@ -1,0 +1,76 @@
+name: Import verified documentation visuals
+on:
+  push:
+    branches: [feature/approved-fleet-assets]
+    paths:
+      - tools/build_documentation_visuals.py
+      - .github/workflows/documentation-visuals.yml
+permissions:
+  contents: read
+  actions: read
+concurrency:
+  group: verified-doc-visuals-${{ github.ref }}
+  cancel-in-progress: false
+jobs:
+  publish-docs:
+    if: github.ref == 'refs/heads/feature/approved-fleet-assets'
+    runs-on: ubuntu-latest
+    timeout-minutes: 12
+    permissions:
+      contents: write
+      actions: read
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.sha }}
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Install documentation rendering tools
+        run: |
+          python -m pip install Pillow==11.3.0 matplotlib==3.10.3 numpy==2.2.6
+          sudo apt-get update -qq
+          sudo apt-get install -y --no-install-recommends graphviz ffmpeg
+      - name: Fetch pinned browser evidence
+        uses: actions/download-artifact@v4
+        with:
+          name: fleetmanagement-browser-screenshots
+          run-id: 46058985349
+          github-token: ${{ github.token }}
+          path: ${{ runner.temp }}/visual-screens
+      - name: Fetch pinned ML evidence
+        uses: actions/download-artifact@v4
+        with:
+          name: fleetmanagement-ml-registry
+          run-id: 46058985367
+          github-token: ${{ github.token }}
+          path: ${{ runner.temp }}/visual-ml
+      - name: Fetch actual recorded application tour
+        uses: actions/download-artifact@v4
+        with:
+          name: fleetmanagement-portfolio-tour
+          run-id: 46058985349
+          github-token: ${{ github.token }}
+          path: ${{ runner.temp }}/visual-tour
+      - name: Build and verify visual documentation
+        run: |
+          python -m py_compile tools/build_documentation_visuals.py
+          python tools/build_documentation_visuals.py --screenshots "$RUNNER_TEMP/visual-screens" --ml "$RUNNER_TEMP/visual-ml" --tour "$RUNNER_TEMP/visual-tour"
+      - name: Archive generated documentation
+        uses: actions/upload-artifact@v4
+        with:
+          name: fleetmanagement-verified-documentation-visuals
+          path: docs/visuals/
+          if-no-files-found: error
+      - name: Commit only documentation, no runtime changes
+        run: |
+          set -euo pipefail
+          test "$GITHUB_REF" = refs/heads/feature/approved-fleet-assets
+          test "$(git ls-remote origin "$GITHUB_REF" | cut -f1)" = "$GITHUB_SHA"
+          git add README.md README.ru.md CHANGELOG.md docs/engineering docs/visuals
+          if git diff --cached --quiet; then exit 0; fi
+          git diff --cached --name-only | python -c 'import sys; p=sys.stdin.read().splitlines(); assert all(x in ("README.md","README.ru.md","CHANGELOG.md") or x.startswith(("docs/engineering/","docs/visuals/")) for x in p)'
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git commit -m "docs: integrate verified V6.3 screenshot gallery, diagrams, ML evidence and recorded tour"
+          git push origin HEAD:refs/heads/feature/approved-fleet-assets

@@ -1,0 +1,40 @@
+name: Documentation quality
+on:
+  push:
+    branches: [feature/approved-fleet-assets]
+    paths:
+      - '**.md'
+      - 'docs/visuals/**'
+      - 'docs/assets/brand/**'
+      - 'tools/check_documentation*'
+      - '.github/workflows/docs-quality.yml'
+permissions:
+  contents: read
+jobs:
+  documentation:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Validate links, structure and evidence hashes
+        run: python tools/check_documentation.py
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Install isolated documentation preview tools
+        run: |
+          mkdir -p "$RUNNER_TEMP/docs-preview"
+          npm install --prefix "$RUNNER_TEMP/docs-preview" --no-audit --no-fund --save-exact markdown-it@14.1.0 github-markdown-css@5.8.1 playwright@1.56.1
+          cp tools/check_documentation_layout.mjs "$RUNNER_TEMP/docs-preview/"
+          "$RUNNER_TEMP/docs-preview/node_modules/.bin/playwright" install --with-deps chromium
+      - name: Verify responsive reference GFM layout
+        run: node "$RUNNER_TEMP/docs-preview/check_documentation_layout.mjs" "$GITHUB_WORKSPACE" "$RUNNER_TEMP/docs-layout"
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: documentation-reference-layout
+          path: ${{ runner.temp }}/docs-layout/
+          if-no-files-found: ignore

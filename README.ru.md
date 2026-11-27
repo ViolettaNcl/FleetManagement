@@ -19,6 +19,8 @@
 
 [Онлайн-приложение](https://violettancl.github.io/FleetManagement/app/) · [Техническое руководство](docs/engineering/README.ru.md) · [Галерея](docs/visuals/gallery.ru.md) · [История изменений](CHANGELOG.md)
 
+[![Проверка документации](https://github.com/ViolettaNcl/FleetManagement/actions/workflows/docs-quality.yml/badge.svg?branch=feature%2Fapproved-fleet-assets)](https://github.com/ViolettaNcl/FleetManagement/actions/workflows/docs-quality.yml)
+
 Статусы CI относятся к ветке разработки. Подтверждённая публичная версия указана отдельно ниже.
 
 **На этой странице**

@@ -19,6 +19,8 @@
 
 [Live application](https://violettancl.github.io/FleetManagement/app/) · [Engineering handbook](docs/engineering/README.md) · [Gallery](docs/visuals/gallery.md) · [Changelog](CHANGELOG.md)
 
+[![Documentation quality](https://github.com/ViolettaNcl/FleetManagement/actions/workflows/docs-quality.yml/badge.svg?branch=feature%2Fapproved-fleet-assets)](https://github.com/ViolettaNcl/FleetManagement/actions/workflows/docs-quality.yml)
+
 CI badges track the development branch. The verified public revision is identified separately below.
 
 **On this page**

@@ -1,6 +1,7 @@
 import {chromium} from 'playwright';
 import assert from 'node:assert/strict';
-import {mkdir} from 'node:fs/promises';
+import {mkdir,readFile} from 'node:fs/promises';
+import {createHash} from 'node:crypto';
 import {createRequire} from 'node:module';
 const require=createRequire(import.meta.url),axePath=require.resolve('axe-core/axe.min.js');
 const browser=await chromium.launch();
@@ -81,7 +82,15 @@ try{
  await nav.getByRole('button',{name:"Помощь и настройки",exact:true}).click();
  const brand=page.locator('.workspace-brand-about img');
  await brand.scrollIntoViewIfNeeded();
- await page.waitForFunction(()=>{const img=document.querySelector('.workspace-brand-about img');return img?.complete&&img.naturalWidth===1000&&img.naturalHeight===1000;});
+ // The approved V6.3 settings artwork replaces the legacy 1000px logo.
+  // Verify the exact manifest-backed source, decoded dimensions and served bytes.
+  const artwork=JSON.parse(await readFile(new URL('../../docs/fleet-approved-assets.json',import.meta.url),'utf8'))['fleet-logo-3d'];
+  assert.equal(await brand.getAttribute('src'),artwork.path);
+  const dimensions=await brand.evaluate(async img=>{await img.decode();return [img.naturalWidth,img.naturalHeight];});
+  assert.deepEqual(dimensions,artwork.dimensions,'Settings logo dimensions');
+  const response=await page.request.get(new URL(artwork.path,page.url()).href);
+  assert.ok(response.ok(),'Settings logo HTTP response');
+  assert.equal(createHash('sha256').update(await response.body()).digest('hex'),artwork.sha256,'Settings logo integrity');
  assert.ok(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth),'Brand settings mobile overflow');
  assert.deepEqual(errors,[]);
  console.log('PASS: guided essentials, every-tool search, saved mode, task shortcuts, discard guard, mobile and Russian UX');

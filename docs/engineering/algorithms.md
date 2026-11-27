@@ -65,3 +65,9 @@ High ≥ 0.25, Watch ≥ 0.10, Low otherwise. Identical windows give zero. Dupli
 | Benchmarks | record exact seed, dataset size, hardware/runtime and repeated measurements; do not claim speedup from complexity alone |
 
 See [RouteOptimizer.cs](../../src/FleetManagement.Core/RouteOptimizer.cs), [DemandForecast.cs](../../src/FleetManagement.Core/DemandForecast.cs), [ModelDrift.cs](../../src/FleetManagement.Core/ModelDrift.cs), [RankingEvaluation.cs](../../src/FleetManagement.Core/RankingEvaluation.cs), [ML guide](intelligence.md).
+
+## Visual evidence
+
+![route-algorithms](../visuals/diagrams/route-algorithms.svg)
+
+[All diagrams](../visuals/diagrams.md) · [Gallery](../visuals/gallery.md)

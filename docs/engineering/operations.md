@@ -101,3 +101,9 @@ Verified reference: [`f2cea2b`](https://github.com/ViolettaNcl/FleetManagement/c
 Portable Windows artifact is self-contained, unsigned and synthetic-only. The connected API is not included in the static package. Rollback means redeploying a previously reviewed static revision through an authorized release procedure; do not reset Git history or downgrade a populated database blindly. Record old/new SHA, incident, verification and explicit approval.
 
 **Sources:** [deployment](../deployment.md), [Pages workflow](../../.github/workflows/pages.yml), [release gate](../../tools/release_gate.py), [SARIF checker](../../tools/check_codeql_sarif.py), [launcher](../../tools/start-connected.ps1).
+
+## Visual evidence
+
+![release-pipeline](../visuals/diagrams/release-pipeline.svg)
+
+[All diagrams](../visuals/diagrams.md) · [Gallery](../visuals/gallery.md)

@@ -83,3 +83,9 @@ Batch preview does not authorize or reserve resources. Confirmed apply revalidat
 FleetChanged signals a committed mutation with a UTC timestamp, not a data stream. Re-fetch records with authorization. Realtime is best effort, and revision polling is the connected console fallback. Existing sessions and in-flight requests may outlive revocation until expiry/completion. Health does not prove database readiness; use /ready too. No public backend deployment or production SLA is claimed.
 
 **Source:** [Program](../../src/FleetManagement.Api/Program.cs), [fleet endpoints](../../src/FleetManagement.Api/FleetEndpoints.cs), [operations](../../src/FleetManagement.Api/OperationsEndpoints.cs), [identity](../../src/FleetManagement.Api/IdentityEndpoints.cs), [finance](../../src/FleetManagement.Api/FinancialEndpoints.cs), [overview](../../src/FleetManagement.Api/OverviewEndpoints.cs), [detailed receipts](../batch-receipts.md), [backend guide](../backend.md).
+
+## Visual evidence
+
+![write-transaction](../visuals/diagrams/write-transaction.svg)
+
+[All diagrams](../visuals/diagrams.md) · [Gallery](../visuals/gallery.md)

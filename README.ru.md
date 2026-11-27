@@ -29,6 +29,30 @@
 | [Ветка разработки](https://github.com/ViolettaNcl/FleetManagement/tree/feature/approved-fleet-assets) | Исходный код кандидата; CI относится к конкретному коммиту |
 | [Browser CI](https://github.com/ViolettaNcl/FleetManagement/actions/workflows/demo-ci.yml) | Скриншоты, запись реального интерфейса и сборки |
 
+## Визуальный обзор приложения
+
+[![Verified release](https://img.shields.io/badge/Verified_release-f2cea2b-16803c?style=flat-square)](https://github.com/ViolettaNcl/FleetManagement/actions/runs/46058985410)
+[![Screenshots](https://img.shields.io/badge/Screenshots-23-6d28d9?style=flat-square)](docs/visuals/gallery.ru.md)
+[![Diagrams](https://img.shields.io/badge/Diagrams-7-0284c7?style=flat-square)](docs/visuals/diagrams.ru.md)
+[![ML charts](https://img.shields.io/badge/ML_charts-10-0f766e?style=flat-square)](docs/visuals/analytics.ru.md)
+
+[![Overview](docs/visuals/screenshots/dashboard-dark-viewport.webp)](docs/visuals/screenshots/dashboard-dark.png)
+
+[![Vehicle register](docs/visuals/screenshots/vehicles-cards-viewport.webp)](docs/visuals/screenshots/vehicles-cards.png)
+
+Реальные кадры CI; нажмите для просмотра оригинала. Синтетические данные.
+
+<details>
+<summary>Анимированный фрагмент реальной записи</summary>
+
+![Actual recorded application excerpt](docs/visuals/media/application-tour.gif)
+
+[Полная видеозапись](docs/visuals/media/application-tour.mp4)
+
+</details>
+
+**[Полная визуальная документация](docs/visuals/README.ru.md)** · [Галерея](docs/visuals/gallery.ru.md) · [Диаграммы](docs/visuals/diagrams.ru.md) · [Результаты ML](docs/visuals/analytics.ru.md)
+
 ## Возможности
 
 FleetManagement вырос из настольного WPF-приложения в модульный инженерный портфолио-проект на .NET. Это не готовая промышленная SaaS-платформа и не система диагностики техники.

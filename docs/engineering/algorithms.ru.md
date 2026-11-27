@@ -65,3 +65,9 @@ High ≥ 0,25, Watch ≥ 0,10, иначе Low. Одинаковые окна д�
 | Benchmark | записывать seed, размер, hardware/runtime и повторные измерения; не заявлять ускорение из сложности |
 
 См. [RouteOptimizer.cs](../../src/FleetManagement.Core/RouteOptimizer.cs), [DemandForecast.cs](../../src/FleetManagement.Core/DemandForecast.cs), [ModelDrift.cs](../../src/FleetManagement.Core/ModelDrift.cs), [RankingEvaluation.cs](../../src/FleetManagement.Core/RankingEvaluation.cs), [ML-руководство](intelligence.ru.md).
+
+## Визуальные материалы
+
+![route-algorithms](../visuals/diagrams/route-algorithms.svg)
+
+[Все диаграммы](../visuals/diagrams.ru.md) · [Галерея](../visuals/gallery.ru.md)

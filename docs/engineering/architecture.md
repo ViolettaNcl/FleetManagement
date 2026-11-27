@@ -78,3 +78,9 @@ The legacy WPF solution is not the modern API, and it does not use this Core. Pr
 **Source:** [Core](../../src/FleetManagement.Core), [API](../../src/FleetManagement.Api), [FleetStore](../../src/FleetManagement.Api/FleetStore.cs), [EF mapping](../../src/FleetManagement.Api/FleetDbContext.cs), [concurrency](../database-concurrency.md), [receipts](../batch-receipts.md), [historical ADRs](../architecture.md).
 
 Detailed fields, boundary cases and write sequence: [domain specification](domain.md).
+
+## Visual evidence
+
+![architecture](../visuals/diagrams/architecture.svg)
+
+[All diagrams](../visuals/diagrams.md) · [Gallery](../visuals/gallery.md)

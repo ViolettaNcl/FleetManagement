@@ -1,5 +1,10 @@
 # Changelog
 
+## Visual documentation — V6.3 Enterprise
+
+- Add 23 original CI screenshots and individual viewport crops, seven editable technical diagrams, ten evidence-based ML charts, and an actual recorded tour with animated excerpt.
+- Link bilingual visual galleries throughout the engineering handbook. Preserve the approved README banner; no runtime changes.
+
 ## Documentation refinement — V6.3 Enterprise
 
 - Restore the previously approved README banner in both languages and restore branch-specific CI badges.

@@ -98,3 +98,9 @@ sequenceDiagram
 | Тот же ключ, другое тело | Конфликт |
 
 См. [Fleet.cs](../../src/FleetManagement.Core/Fleet.cs), [FleetStore](../../src/FleetManagement.Api/FleetStore.cs), [FleetEndpoints](../../src/FleetManagement.Api/FleetEndpoints.cs), [EF mapping](../../src/FleetManagement.Api/FleetDbContext.cs), [квитанции](../batch-receipts.md), [Core checks](../../tests/FleetManagement.Core.Checks/Program.cs).
+
+## Визуальные материалы
+
+![data-model](../visuals/diagrams/data-model.svg)
+
+[Все диаграммы](../visuals/diagrams.ru.md) · [Галерея](../visuals/gallery.ru.md)

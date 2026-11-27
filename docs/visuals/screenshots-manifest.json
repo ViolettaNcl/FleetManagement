@@ -1,0 +1,168 @@
+{
+  "revision": "f2cea2bfe5334fed0e056feb142e56db8fc470c0",
+  "workflow_run": 46058985349,
+  "artifact_id": 15227644469,
+  "screenshots": {
+    "dashboard-dark": {
+      "source": "v63-overview-dark.png",
+      "source_sha256": "0bbb64b1a8fe0163b22a3b62a4cf9ab3d1fc897c2b20d02ef553953709eeab55",
+      "width": 1440,
+      "height": 3784,
+      "viewport_sha256": "3a6a2605af2f7b4f884788fb05a502276854f03c7129f3c20a147d89a59aa81d"
+    },
+    "dashboard-light": {
+      "source": "v63-overview-light.png",
+      "source_sha256": "f7d8bd90967ad7ba2508ecdf7ec874c8bdda4cc2e3c3e5acb6225583e9987e41",
+      "width": 1440,
+      "height": 3784,
+      "viewport_sha256": "6a8487dfee16cc97f8f0c6bd0ab6c54efd76d34ed119831f1c53fa9f8f581318"
+    },
+    "dashboard-ru": {
+      "source": "v63-overview-ru.png",
+      "source_sha256": "30bb9552f248ac5b9864b92eb500da2e009ce1730eceeeed5ab6be3213b9b98c",
+      "width": 320,
+      "height": 7074,
+      "viewport_sha256": "5a02bace7e86f9abb63369bae7cc0832b73516cb83ab84273e5280cbd252eb75"
+    },
+    "vehicles-cards": {
+      "source": "v63-vehicle-cards.png",
+      "source_sha256": "c0c80fff92df84cee65e6e8572714f0bd107dc4184dc637e84578ad7ae062d04",
+      "width": 1440,
+      "height": 1364,
+      "viewport_sha256": "659d6bfe17bc4cd20a996c463c498c5dba3fb977e4d73f10bd42d82b79af8080"
+    },
+    "vehicle-passport": {
+      "source": "vehicle-passport.png",
+      "source_sha256": "35c5557a96e38318bcec6a40e80668287288698eb8ec68ba4405581cd28b2f8e",
+      "width": 1440,
+      "height": 1978,
+      "viewport_sha256": "3cd735916dc4961fc92edd94c8953901e87e4cdccc70f1047b18da55c5ab7266"
+    },
+    "drivers": {
+      "source": "v4-modules/drivers-desktop.png",
+      "source_sha256": "ce3575d42c6fd2289637451075f5e0ec4c3ce5d6e2bb829b9527354949c6ec97",
+      "width": 1440,
+      "height": 900,
+      "viewport_sha256": "7299474b8cb60bd9894ad869101cc98cdaedd53062176e103839eb969fba9d3c"
+    },
+    "calendar": {
+      "source": "calendar.png",
+      "source_sha256": "2bca25af37854373c73e7b15ea11361b54b8eab419b616aab1c93882c700156d",
+      "width": 1440,
+      "height": 1464,
+      "viewport_sha256": "7b50068aff1bce5fb80081a08b322fca2215e7fe21f46527f56128276b882a3a"
+    },
+    "dispatch": {
+      "source": "dispatch.png",
+      "source_sha256": "de7bc6354f0c13ddbb9d12014a17a453c2dd2b1dc0a90d7633170261917716ff",
+      "width": 1440,
+      "height": 1702,
+      "viewport_sha256": "e5ff7eaf9ce49da6d4f305dda3273ce19dc692ecb8b58b676a97b497e0d3c25d"
+    },
+    "batch-dispatch": {
+      "source": "batch-dispatch.png",
+      "source_sha256": "d79cab3d8cb69eb5f829a153883031b903c855f6d280617f46ffa23908a90df6",
+      "width": 1440,
+      "height": 1690,
+      "viewport_sha256": "fabe5290341b1726b72b936f0cdf272eabf2280a8813b9f0c979ba47d5909f3d"
+    },
+    "route-optimization": {
+      "source": "optimization.png",
+      "source_sha256": "6c180ee75edec8a692c0f0248c4ac5176552434e7b04c8281fe0e1179c8c2b31",
+      "width": 1440,
+      "height": 1807,
+      "viewport_sha256": "1af417491657dec526ef08789cb336c17139434106be47f30c0f60d020c20be4"
+    },
+    "digital-twin": {
+      "source": "digital-twin.png",
+      "source_sha256": "7b0f55c43a8034bef05dcb3118c3c0dc51f4971cd4ba09a8ac6cc1336b6308d4",
+      "width": 1440,
+      "height": 3318,
+      "viewport_sha256": "dae41dbe685195e44801b79c7c85cc1c866e210e6c5c0a5b5dd39f3502f60b7b"
+    },
+    "analytics": {
+      "source": "analytics.png",
+      "source_sha256": "7981281062d60dc53faa69cd3911646d3ffcca8d4d9902ac38f1ee89d2f9bd70",
+      "width": 1440,
+      "height": 4362,
+      "viewport_sha256": "658e08c95291f6335d0eeda8a1e2facf9ae24398dfc49a7498c93ecb13fcfdaa"
+    },
+    "cost-intelligence": {
+      "source": "cost-intelligence.png",
+      "source_sha256": "106122d8a08735d725dd9ffed545269ffaabaa1352a86972d6670fc1ff4690e8",
+      "width": 1440,
+      "height": 3316,
+      "viewport_sha256": "5e0151d4560d9037b4344875da0a86cf51ff68f027edf2ee2944b230c724d824"
+    },
+    "machine-learning": {
+      "source": "intelligence.png",
+      "source_sha256": "2a8b0b84099bdbd970801d9ff3c23eaea05639c684d8346b66bee7759ff50add",
+      "width": 1440,
+      "height": 2703,
+      "viewport_sha256": "4c0810edec358d7bfcff000a33d19e193100da019948cb511bb2a4f6f3aad115"
+    },
+    "maintenance-ensemble": {
+      "source": "v5-ensemble.png",
+      "source_sha256": "bf6ee87c8b47534ba8aed0d665731a33ee278d161bbb5c51ceb82445912db275",
+      "width": 1148,
+      "height": 2742,
+      "viewport_sha256": "15726067240960663e851ac36ac6ccb012de93ff37285298cf01a653a1fd6cb0"
+    },
+    "demand-forecast": {
+      "source": "demand-forecast.png",
+      "source_sha256": "04b12aab4ee528495eec4257dc52c6d0602d0485ca2f3080517282033fe56169",
+      "width": 1440,
+      "height": 2426,
+      "viewport_sha256": "4d24d35cd0f02c4957d98ab061394d945df9be117b65d9d6b3970d888cbfb905"
+    },
+    "model-drift": {
+      "source": "model-drift.png",
+      "source_sha256": "e6675280c4b540f49a8e52821ec1c3ea4c081f14a4375840a9ae544ddc9420b0",
+      "width": 1440,
+      "height": 2070,
+      "viewport_sha256": "5b1fb5fc1a6b9d210cf041cbd8423f6fcf5b9a61ce64ce500a84bebd122a116a"
+    },
+    "model-registry": {
+      "source": "model-registry.png",
+      "source_sha256": "148724d6c0067875595b4b4793c6f545094251c332cdea2f9778e493dba9e92f",
+      "width": 1440,
+      "height": 1657,
+      "viewport_sha256": "685150d4bc838b2fc6d62080e1b0be7baf790c0c2cbd60de47e6c9714a9a53bd"
+    },
+    "assistant": {
+      "source": "assistant.png",
+      "source_sha256": "1de3479c3ac1f0351e4ef8b13eaaa907b9af785daece0ecb8eec984e9c7123af",
+      "width": 1440,
+      "height": 1445,
+      "viewport_sha256": "4beb1cae23e0f85e4c93d8e5f34fd8c8e13b7c1776ab750145c4fc984aee7e83"
+    },
+    "maintenance": {
+      "source": "maintenance.png",
+      "source_sha256": "0324de77f2f93a938c929d725ee7636c899c88ad6bc8dc43f67a9a8f2f998a4f",
+      "width": 1440,
+      "height": 2403,
+      "viewport_sha256": "ba6dbd7bf9d4dbcc95d7c9a980ba39282c9194fa6b396866b04c495e5c99cd1f"
+    },
+    "predictions": {
+      "source": "predictions.png",
+      "source_sha256": "9e00b3cb00787d9b78fdb616907a031a5346c2d030810b11722090d90021053c",
+      "width": 1440,
+      "height": 3388,
+      "viewport_sha256": "7adf42c783e3fa6da4cce5de5d8c4ed4f6e4d0265a2e1fbdf9143f22477f4fcb"
+    },
+    "geographic-map": {
+      "source": "geographic-map.png",
+      "source_sha256": "4e06982bb6d47c50a1a3daff783789124c38437cc99724792b180e91638ae5b4",
+      "width": 1440,
+      "height": 1729,
+      "viewport_sha256": "8075f5eef49a4ca4ee06797fded8ead2d32ea07ea5b4952429202a4df57cac94"
+    },
+    "mobile-dashboard": {
+      "source": "v63-overview-mobile.png",
+      "source_sha256": "06ef16bc206a0a9784576e8b6a80d946960a31312b3193b6013bb6855a9027c8",
+      "width": 320,
+      "height": 6687,
+      "viewport_sha256": "aca28a8a94d9aabb7359ef2e5b9a27462b4953581521fb02f9144ccdbeff65b0"
+    }
+  }
+}

@@ -47,3 +47,9 @@ Test 320/390/768/1440px in Enterprise coverage, RU switch, both themes, image de
 The PWA worker is scoped to /app/. It verifies packaged hashes before activation and retains the prior cache on a failed install. Saved demo data lives in localStorage; unsaved form edits can be lost on reload. Close other demo tabs before approving an update, and export a snapshot before troubleshooting. Do not clear browser site data as a first step. The connected console is not covered by the worker.
 
 **Source:** [App](../../src/FleetManagement.Web/App.razor), [AssetRegistry](../../src/FleetManagement.Web/AssetRegistry.cs), [banner component](../../src/FleetManagement.Web/ModuleHeroBanner.razor), [styles](../../src/FleetManagement.Web/wwwroot/css), [console](../../src/FleetManagement.Api/Console), [site](../../site), [PWA](../pwa-v4.md), [Enterprise test](../../tests/browser/v63-enterprise.mjs).
+
+## Visual evidence
+
+![pwa-update](../visuals/diagrams/pwa-update.svg)
+
+[All diagrams](../visuals/diagrams.md) · [Gallery](../visuals/gallery.md)

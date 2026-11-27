@@ -29,6 +29,30 @@
 | [Development branch](https://github.com/ViolettaNcl/FleetManagement/tree/feature/approved-fleet-assets) | Candidate source; CI status is commit-specific |
 | [Browser CI](https://github.com/ViolettaNcl/FleetManagement/actions/workflows/demo-ci.yml) | Screenshots, actual recorded tour and packaged output |
 
+## Application in action
+
+[![Verified release](https://img.shields.io/badge/Verified_release-f2cea2b-16803c?style=flat-square)](https://github.com/ViolettaNcl/FleetManagement/actions/runs/46058985410)
+[![Screenshots](https://img.shields.io/badge/Screenshots-23-6d28d9?style=flat-square)](docs/visuals/gallery.md)
+[![Diagrams](https://img.shields.io/badge/Diagrams-7-0284c7?style=flat-square)](docs/visuals/diagrams.md)
+[![ML charts](https://img.shields.io/badge/ML_charts-10-0f766e?style=flat-square)](docs/visuals/analytics.md)
+
+[![Overview](docs/visuals/screenshots/dashboard-dark-viewport.webp)](docs/visuals/screenshots/dashboard-dark.png)
+
+[![Vehicle register](docs/visuals/screenshots/vehicles-cards-viewport.webp)](docs/visuals/screenshots/vehicles-cards.png)
+
+Actual CI captures; click for full original. Synthetic data.
+
+<details>
+<summary>Animated excerpt of the actual recording</summary>
+
+![Actual recorded application excerpt](docs/visuals/media/application-tour.gif)
+
+[Full recording](docs/visuals/media/application-tour.mp4)
+
+</details>
+
+**[Complete visual evidence](docs/visuals/README.md)** · [Gallery](docs/visuals/gallery.md) · [Diagrams](docs/visuals/diagrams.md) · [ML evidence](docs/visuals/analytics.md)
+
 ## Scope
 
 FleetManagement evolved from a Windows WPF application into a modular .NET engineering portfolio. It is not a production fleet SaaS or a mechanical diagnostic system.

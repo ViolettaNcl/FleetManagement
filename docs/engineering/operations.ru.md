@@ -101,3 +101,9 @@ Gate требует восемь workflow на точных ветке и SHA; �
 Portable Windows — самостоятельный неподписанный артефакт с синтетическими данными. Подключённый API не входит в статический пакет. Rollback означает повторное развёртывание ранее проверенной статической ревизии по согласованной процедуре; не сбрасывать историю Git и не понижать версию заполненной БД вслепую. Зафиксировать старый/новый SHA, инцидент, проверку и согласование.
 
 **Исходники:** [публикация](../deployment.md), [Pages workflow](../../.github/workflows/pages.yml), [release gate](../../tools/release_gate.py), [SARIF checker](../../tools/check_codeql_sarif.py), [лаунчер](../../tools/start-connected.ps1).
+
+## Визуальные материалы
+
+![release-pipeline](../visuals/diagrams/release-pipeline.svg)
+
+[Все диаграммы](../visuals/diagrams.ru.md) · [Галерея](../visuals/gallery.ru.md)

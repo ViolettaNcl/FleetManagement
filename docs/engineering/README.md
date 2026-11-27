@@ -24,3 +24,7 @@ This handbook is the current cross-component entry point. Source code, executabl
 ## Specialist references
 
 [Architecture decisions](../architecture.md) · [Backend operations](../backend-operations.md) · [Data concurrency](../database-concurrency.md) · [Idempotency](../batch-receipts.md) · [Database upgrade](../database-upgrade.md) · [Recovery](../database-recovery.md) · [Model registry](../model-registry.md) · [PWA](../pwa-v4.md) · [Deployment](../deployment.md) · [Security policy](../../SECURITY.md).
+
+## Visual companion
+
+[Complete visual evidence](../visuals/README.md).

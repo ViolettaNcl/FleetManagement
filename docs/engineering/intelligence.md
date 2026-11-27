@@ -59,3 +59,13 @@ The optional local Ollama CLI is a separate opt-in integration: [local AI guide]
 **Source:** [Core algorithms](../../src/FleetManagement.Core), [ModelTrainer](../../tools/FleetManagement.ModelTrainer), [ML tests](../../tests/ml), [ML CI](../../.github/workflows/ml-ci.yml).
 
 Formulas and analytical complexity: [algorithm reference](algorithms.md).
+
+## Visual evidence
+
+![ml-pipeline](../visuals/diagrams/ml-pipeline.svg)
+
+[All diagrams](../visuals/diagrams.md) · [Gallery](../visuals/gallery.md)
+
+![F1 score](../visuals/analytics/maintenance-f1.svg)
+
+[ML evidence](../visuals/analytics.md)

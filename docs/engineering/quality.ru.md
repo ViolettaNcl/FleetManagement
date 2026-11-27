@@ -54,3 +54,9 @@ CI-сканирование и отдельный GitHub results check не од
 | Accessibility/локализация | Ручное ревью ассистивных технологий и носителями языка |
 
 **Ссылки:** [политика безопасности](../../SECURITY.ru.md), [V3 security review](../security-review-v3.md), [производительность](../performance-testing.md), [тесты](../../tests), [workflows](../../.github/workflows), [тесты release security](../../tools/test_release_security.py).
+
+## Визуальные материалы
+
+![release-pipeline](../visuals/diagrams/release-pipeline.svg)
+
+[Все диаграммы](../visuals/diagrams.ru.md) · [Галерея](../visuals/gallery.ru.md)

@@ -1,0 +1,214 @@
+{
+  "schemaVersion": 1,
+  "runId": "20261127T194628449Z-6b2bd5fa7a69447d93827c3aa1c03e04",
+  "createdUtc": "2026-11-27T19:46:28.4491309Z",
+  "seed": 42,
+  "synthetic": true,
+  "mlNetVersion": "5.0.0",
+  "sourceRevision": "f2cea2bfe5334fed0e056feb142e56db8fc470c0",
+  "maintenance": {
+    "trainRows": 2400,
+    "testRows": 720,
+    "trainVehicles": 40,
+    "testVehicles": 12,
+    "threshold": 0.5,
+    "features": [
+      "Temperature",
+      "Vibration",
+      "Battery voltage",
+      "Service interval used",
+      "Engine hours"
+    ],
+    "permutationImportance": {
+      "metric": "Brier",
+      "repeats": 3,
+      "features": [
+        {
+          "feature": "Temperature",
+          "meanLossIncrease": 0.029276925552447496,
+          "minLossIncrease": 0.02587738529489439,
+          "maxLossIncrease": 0.03289670773083053
+        },
+        {
+          "feature": "Vibration",
+          "meanLossIncrease": 0.019734298279228596,
+          "minLossIncrease": 0.017480996232346113,
+          "maxLossIncrease": 0.022729389620000984
+        },
+        {
+          "feature": "Battery voltage",
+          "meanLossIncrease": 0.017776394343877216,
+          "minLossIncrease": 0.014523917324393704,
+          "maxLossIncrease": 0.02074072824460979
+        },
+        {
+          "feature": "Service interval used",
+          "meanLossIncrease": 0.005434266015361529,
+          "minLossIncrease": 0.004016735124602239,
+          "maxLossIncrease": 0.0065133116465656005
+        },
+        {
+          "feature": "Engine hours",
+          "meanLossIncrease": 0.005340274480644613,
+          "minLossIncrease": 0.004088994037778071,
+          "maxLossIncrease": 0.007572467216097084
+        }
+      ]
+    },
+    "trainSha256": "fabac24053deba0f8f10f913aea639b45598cc61f36603c663536e3f3edf841b",
+    "testSha256": "23ef6869ad80f91b5cf8a6925f50a484701866e4e0549bc85463d22ab1c562cb",
+    "baseline": {
+      "TP": 0,
+      "FP": 0,
+      "TN": 534,
+      "FN": 186,
+      "Accuracy": 0.7416666666666667,
+      "Precision": 0,
+      "Recall": 0,
+      "F1": 0,
+      "Brier": 0.19259999999999997
+    },
+    "logistic": {
+      "TP": 117,
+      "FP": 47,
+      "TN": 487,
+      "FN": 69,
+      "Accuracy": 0.8388888888888889,
+      "Precision": 0.7134146341463414,
+      "Recall": 0.6290322580645161,
+      "F1": 0.6685714285714286,
+      "Brier": 0.11931626082787214
+    },
+    "fastTree": {
+      "TP": 105,
+      "FP": 54,
+      "TN": 480,
+      "FN": 81,
+      "Accuracy": 0.8125,
+      "Precision": 0.660377358490566,
+      "Recall": 0.5645161290322581,
+      "F1": 0.6086956521739131,
+      "Brier": 0.127802944219569
+    },
+    "fastForest": {
+      "TP": 110,
+      "FP": 43,
+      "TN": 491,
+      "FN": 76,
+      "Accuracy": 0.8347222222222223,
+      "Precision": 0.7189542483660131,
+      "Recall": 0.5913978494623656,
+      "F1": 0.6489675516224189,
+      "Brier": 0.11842952369387826
+    },
+    "fastForestArtifact": {
+      "file": "maintenance-fastforest.zip",
+      "sha256": "76fe3c979897fbef8d973a7777d60ca929acaf6a20e9ed289c643846529612fe"
+    },
+    "fastForestReloadVerified": true,
+    "fastForestSettings": {
+      "leaves": 16,
+      "trees": 100,
+      "minExamplesPerLeaf": 20,
+      "threads": 1
+    },
+    "fastForestRanking": {
+      "Positives": 186,
+      "Negatives": 534,
+      "RocAuc": 0.86799766421006,
+      "AveragePrecision": 0.7344496504410725
+    },
+    "fastForestCalibration": {
+      "method": "Platt",
+      "rows": 720,
+      "vehicles": 12,
+      "sha256": "3f27368c59b10f02d6c95b45b046ae611ce3b212ba064e5608b9d9cac24bad36"
+    },
+    "settings": {
+      "leaves": 16,
+      "trees": 100,
+      "minExamplesPerLeaf": 20,
+      "learningRate": 0.1,
+      "threads": 1
+    },
+    "artifact": {
+      "file": "maintenance-fasttree.zip",
+      "sha256": "043069c94d28a19a139f6ea3a1ad33ecc85657b965e789a60a6b3f125a3070a7"
+    },
+    "reloadVerified": true
+  },
+  "eta": {
+    "trainRows": 1600,
+    "validationRows": 400,
+    "testRows": 400,
+    "features": [
+      "Free-flow minutes",
+      "Free-flow minutes \u00D7 traffic",
+      "Stops",
+      "Free-flow minutes \u00D7 load"
+    ],
+    "permutationImportance": {
+      "metric": "MAE (minutes)",
+      "repeats": 3,
+      "features": [
+        {
+          "feature": "Free-flow minutes",
+          "meanLossIncrease": 212.29701002579932,
+          "minLossIncrease": 200.90308605083683,
+          "maxLossIncrease": 224.31595163768446
+        },
+        {
+          "feature": "Free-flow minutes \u00D7 traffic",
+          "meanLossIncrease": 82.40984161029353,
+          "minLossIncrease": 82.01977963535217,
+          "maxLossIncrease": 82.918598909181
+        },
+        {
+          "feature": "Stops",
+          "meanLossIncrease": 19.095407357503984,
+          "minLossIncrease": 18.742790986779447,
+          "maxLossIncrease": 19.666913699118098
+        },
+        {
+          "feature": "Free-flow minutes \u00D7 load",
+          "meanLossIncrease": 9.24725254725852,
+          "minLossIncrease": 8.859883089296439,
+          "maxLossIncrease": 9.568466421623526
+        }
+      ]
+    },
+    "trainSha256": "03de6402a91eabc60b014aedfd7a3cf9ac4ad4d73a884c262e271315650b844e",
+    "validationSha256": "23406bf88453c3b2437e904b093e5c80202402fd8ef33aaf7b3496224c94c281",
+    "testSha256": "2ea898acd414f0669d676dd2a01dca70c3b47980a50c29103d6f7fe42cce8217",
+    "baseline": {
+      "Mae": 188.49789969299115,
+      "Rmse": 231.8394520905372,
+      "R2": 0.37329098152867235
+    },
+    "linear": {
+      "Mae": 7.936637352585523,
+      "Rmse": 10.099989372431937,
+      "R2": 0.9988105858675231
+    },
+    "fastTree": {
+      "Mae": 12.749077929582256,
+      "Rmse": 20.362592785299114,
+      "R2": 0.9951654348920842
+    },
+    "linearValidationResidual90": 16.875038069756442,
+    "fastTreeValidationResidual90": 27.09066073537508,
+    "settings": {
+      "leaves": 24,
+      "trees": 150,
+      "minExamplesPerLeaf": 15,
+      "learningRate": 0.1,
+      "threads": 1
+    },
+    "artifact": {
+      "file": "eta-fasttree.zip",
+      "sha256": "aa74026d76c4b5dc49d1535df5c6c5a154b7df6c9325c343e56ca3e690fc0509"
+    },
+    "reloadVerified": true
+  },
+  "limitations": "Synthetic labels only. No real-world accuracy or safety claim. Validation residual percentiles are not guaranteed intervals. Permutation importance is marginal, post-hoc and non-causal; correlated features may yield misleading scores. Models are not automatically promoted or loaded by the browser."
+}

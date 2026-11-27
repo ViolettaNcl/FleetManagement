@@ -47,3 +47,9 @@ Enterprise-тест проверяет 320/390/768/1440 px, переключен
 PWA worker ограничен /app/. Проверяет хеши файлов перед активацией и сохраняет старый кэш при сбое установки. Записи демо находятся в localStorage; несохранённые правки могут потеряться при перезагрузке. Перед согласованным обновлением закройте другие вкладки демо и экспортируйте снимок. Не очищайте данные сайта первым действием при диагностике. Серверная консоль не входит в scope worker.
 
 **Исходники:** [App](../../src/FleetManagement.Web/App.razor), [AssetRegistry](../../src/FleetManagement.Web/AssetRegistry.cs), [баннер](../../src/FleetManagement.Web/ModuleHeroBanner.razor), [стили](../../src/FleetManagement.Web/wwwroot/css), [консоль](../../src/FleetManagement.Api/Console), [сайт](../../site), [PWA](../pwa-v4.md), [Enterprise-тест](../../tests/browser/v63-enterprise.mjs).
+
+## Визуальные материалы
+
+![pwa-update](../visuals/diagrams/pwa-update.svg)
+
+[Все диаграммы](../visuals/diagrams.ru.md) · [Галерея](../visuals/gallery.ru.md)

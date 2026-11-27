@@ -83,3 +83,9 @@ Invoke-RestMethod "$base/api/operations/calendar?from=2026-11-27&days=7" -Header
 FleetChanged сообщает о сохранённом изменении с отметкой UTC, а не передаёт поток данных. Перечитывайте записи с авторизацией. Realtime работает best effort; опрос ревизии — запасной путь консоли. Уже установленные соединения и выполняющиеся запросы могут сохраняться до завершения/истечения. Health не подтверждает готовность БД: проверяйте /ready. Публичный Backend и промышленный SLA не заявляются.
 
 **Исходники:** [Program](../../src/FleetManagement.Api/Program.cs), [fleet endpoints](../../src/FleetManagement.Api/FleetEndpoints.cs), [операции](../../src/FleetManagement.Api/OperationsEndpoints.cs), [Identity](../../src/FleetManagement.Api/IdentityEndpoints.cs), [финансы](../../src/FleetManagement.Api/FinancialEndpoints.cs), [overview](../../src/FleetManagement.Api/OverviewEndpoints.cs), [квитанции](../batch-receipts.md), [Backend](../backend.md).
+
+## Визуальные материалы
+
+![write-transaction](../visuals/diagrams/write-transaction.svg)
+
+[Все диаграммы](../visuals/diagrams.ru.md) · [Галерея](../visuals/gallery.ru.md)

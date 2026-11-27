@@ -54,3 +54,9 @@ A clean C# CodeQL scan does not prove absence of all vulnerabilities. npm, legac
 | Accessibility/localization | Manual assistive-technology and native-language review |
 
 **References:** [security policy](../../SECURITY.md), [V3 security review](../security-review-v3.md), [performance testing](../performance-testing.md), [test tree](../../tests), [workflows](../../.github/workflows), [release security tests](../../tools/test_release_security.py).
+
+## Visual evidence
+
+![release-pipeline](../visuals/diagrams/release-pipeline.svg)
+
+[All diagrams](../visuals/diagrams.md) · [Gallery](../visuals/gallery.md)

@@ -24,3 +24,7 @@
 ## Специализированные документы
 
 [Архитектурные решения](../architecture.md) · [Backend-операции](../backend-operations.md) · [Конкурентность](../database-concurrency.md) · [Идемпотентность](../batch-receipts.md) · [Обновление БД](../database-upgrade.md) · [Восстановление](../database-recovery.md) · [Реестр моделей](../model-registry.md) · [PWA](../pwa-v4.md) · [Публикация](../deployment.md) · [Политика безопасности](../../SECURITY.ru.md).
+
+## Визуальное сопровождение
+
+[Полная визуальная документация](../visuals/README.ru.md).

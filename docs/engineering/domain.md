@@ -98,3 +98,9 @@ Actor/key namespace is shared by supported ordinary and batch writes. Receipt re
 | Same key, changed body | Conflict |
 
 See [Fleet.cs](../../src/FleetManagement.Core/Fleet.cs), [FleetStore](../../src/FleetManagement.Api/FleetStore.cs), [FleetEndpoints](../../src/FleetManagement.Api/FleetEndpoints.cs), [EF mapping](../../src/FleetManagement.Api/FleetDbContext.cs), [receipt details](../batch-receipts.md), [Core checks](../../tests/FleetManagement.Core.Checks/Program.cs).
+
+## Visual evidence
+
+![data-model](../visuals/diagrams/data-model.svg)
+
+[All diagrams](../visuals/diagrams.md) · [Gallery](../visuals/gallery.md)

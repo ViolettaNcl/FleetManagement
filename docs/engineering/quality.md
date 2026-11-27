@@ -1,8 +1,19 @@
 # Quality strategy, security and release evidence
 
-[Engineering index](README.md) · [Русский](quality.ru.md) · [Project README](../../README.md)
+**English** · [Русский](quality.ru.md)
+
+[Project README](../../README.md) · [Handbook index](README.md) · [Visual evidence](../visuals/README.md)
 
 **Baseline:** V6.3 Enterprise; verified public revision [`f2cea2b`](https://github.com/ViolettaNcl/FleetManagement/commit/f2cea2bfe5334fed0e056feb142e56db8fc470c0). The handbook describes the modern edition; version-specific documents elsewhere in docs/ remain historical or specialist references.
+
+**On this page**
+
+- [1. Verification matrix](#1-verification-matrix)
+- [2. Security boundaries](#2-security-boundaries)
+- [3. CodeQL and release gates](#3-codeql-and-release-gates)
+- [4. Review checklist](#4-review-checklist)
+- [5. Remaining technical risks](#5-remaining-technical-risks)
+- [Visual evidence](#visual-evidence)
 
 ## 1. Verification matrix
 
@@ -60,3 +71,7 @@ A clean C# CodeQL scan does not prove absence of all vulnerabilities. npm, legac
 ![release-pipeline](../visuals/diagrams/release-pipeline.svg)
 
 [All diagrams](../visuals/diagrams.md) · [Gallery](../visuals/gallery.md)
+
+---
+
+[Project README](../../README.md) · [Handbook index](README.md) · [Русский](quality.ru.md)

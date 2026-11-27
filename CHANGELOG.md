@@ -1,5 +1,10 @@
 # Changelog
 
+## Documentation presentation and quality
+
+- Consistent bilingual navigation, page contents, individually expandable screenshots, compact metric tables and grouped API references.
+- Preserve the original banner, all visual assets and technical content; add automated documentation contract checks.
+
 ## Visual documentation — V6.3 Enterprise
 
 - Add 23 original CI screenshots and individual viewport crops, seven editable technical diagrams, ten evidence-based ML charts, and an actual recorded tour with animated excerpt.

@@ -1,8 +1,19 @@
 # Local operations, recovery and release runbook
 
-[Engineering index](README.md) · [Русский](operations.ru.md) · [Project README](../../README.md)
+**English** · [Русский](operations.ru.md)
+
+[Project README](../../README.md) · [Handbook index](README.md) · [Visual evidence](../visuals/README.md)
 
 **Baseline:** V6.3 Enterprise; verified public revision [`f2cea2b`](https://github.com/ViolettaNcl/FleetManagement/commit/f2cea2bfe5334fed0e056feb142e56db8fc470c0). The handbook describes the modern edition; version-specific documents elsewhere in docs/ remain historical or specialist references.
+
+**On this page**
+
+- [1. Environment](#1-environment)
+- [2. Verification and backup](#2-verification-and-backup)
+- [3. Release flow (Pages)](#3-release-flow-pages)
+- [4. Incident triage](#4-incident-triage)
+- [5. Recovery and release limits](#5-recovery-and-release-limits)
+- [Visual evidence](#visual-evidence)
 
 ## 1. Environment
 
@@ -68,7 +79,7 @@ Never restore on top of a live DB, delete receipts or apply fresh baseline migra
 ## 3. Release flow (Pages)
 
 ~~~mermaid
-flowchart LR
+flowchart TB
   F[Reviewed feature commit] --> P[Fast-forward preview branch]
   P --> B[Build and package]
   P --> E[Exact-branch CI evidence]
@@ -107,3 +118,7 @@ Portable Windows artifact is self-contained, unsigned and synthetic-only. The co
 ![release-pipeline](../visuals/diagrams/release-pipeline.svg)
 
 [All diagrams](../visuals/diagrams.md) · [Gallery](../visuals/gallery.md)
+
+---
+
+[Project README](../../README.md) · [Handbook index](README.md) · [Русский](operations.ru.md)

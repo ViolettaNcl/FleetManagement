@@ -1,8 +1,19 @@
 # Machine learning, optimization and evaluation
 
-[Engineering index](README.md) · [Русский](intelligence.ru.md) · [Project README](../../README.md)
+**English** · [Русский](intelligence.ru.md)
+
+[Project README](../../README.md) · [Handbook index](README.md) · [Visual evidence](../visuals/README.md)
 
 **Baseline:** V6.3 Enterprise; verified public revision [`f2cea2b`](https://github.com/ViolettaNcl/FleetManagement/commit/f2cea2bfe5334fed0e056feb142e56db8fc470c0). The handbook describes the modern edition; version-specific documents elsewhere in docs/ remain historical or specialist references.
+
+**On this page**
+
+- [1. Separate decision layers](#1-separate-decision-layers)
+- [2. Experimental model contracts](#2-experimental-model-contracts)
+- [3. Reproducible trainer run](#3-reproducible-trainer-run)
+- [4. Evaluation and governance protocol](#4-evaluation-and-governance-protocol)
+- [5. Specialist specifications](#5-specialist-specifications)
+- [Visual evidence](#visual-evidence)
 
 ## 1. Separate decision layers
 
@@ -69,3 +80,7 @@ Formulas and analytical complexity: [algorithm reference](algorithms.md).
 ![F1 score](../visuals/analytics/maintenance-f1.svg)
 
 [ML evidence](../visuals/analytics.md)
+
+---
+
+[Project README](../../README.md) · [Handbook index](README.md) · [Русский](intelligence.ru.md)

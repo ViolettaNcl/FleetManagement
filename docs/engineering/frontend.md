@@ -1,8 +1,19 @@
 # Frontend architecture and design system
 
-[Engineering index](README.md) · [Русский](frontend.ru.md) · [Project README](../../README.md)
+**English** · [Русский](frontend.ru.md)
+
+[Project README](../../README.md) · [Handbook index](README.md) · [Visual evidence](../visuals/README.md)
 
 **Baseline:** V6.3 Enterprise; verified public revision [`f2cea2b`](https://github.com/ViolettaNcl/FleetManagement/commit/f2cea2bfe5334fed0e056feb142e56db8fc470c0). The handbook describes the modern edition; version-specific documents elsewhere in docs/ remain historical or specialist references.
+
+**On this page**
+
+- [1. Three independently styled surfaces](#1-three-independently-styled-surfaces)
+- [2. Workspace and styling](#2-workspace-and-styling)
+- [3. Approved artwork contract](#3-approved-artwork-contract)
+- [4. Responsive and accessible behavior](#4-responsive-and-accessible-behavior)
+- [5. Offline and deployment](#5-offline-and-deployment)
+- [Visual evidence](#visual-evidence)
 
 ## 1. Three independently styled surfaces
 
@@ -53,3 +64,7 @@ The PWA worker is scoped to /app/. It verifies packaged hashes before activation
 ![pwa-update](../visuals/diagrams/pwa-update.svg)
 
 [All diagrams](../visuals/diagrams.md) · [Gallery](../visuals/gallery.md)
+
+---
+
+[Project README](../../README.md) · [Handbook index](README.md) · [Русский](frontend.ru.md)

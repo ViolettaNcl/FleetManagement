@@ -1,8 +1,19 @@
 # Локальная эксплуатация, восстановление и регламент релиза
 
-[Инженерный индекс](README.ru.md) · [English](operations.md) · [README проекта](../../README.ru.md)
+**Русский** · [English](operations.md)
+
+[README проекта](../../README.ru.md) · [Оглавление руководства](README.ru.md) · [Визуальные материалы](../visuals/README.ru.md)
 
 **Базовая версия:** V6.3 Enterprise; подтверждённая публичная ревизия [`f2cea2b`](https://github.com/ViolettaNcl/FleetManagement/commit/f2cea2bfe5334fed0e056feb142e56db8fc470c0). Руководство описывает современную версию; документы предыдущих версий в docs/ сохраняются как исторические и специализированные материалы.
+
+**На этой странице**
+
+- [1. Окружение](#1-окружение)
+- [2. Проверки и резервное копирование](#2-проверки-и-резервное-копирование)
+- [3. Процедура релиза Pages](#3-процедура-релиза-pages)
+- [4. Диагностика инцидентов](#4-диагностика-инцидентов)
+- [5. Восстановление и ограничения релиза](#5-восстановление-и-ограничения-релиза)
+- [Визуальные материалы](#визуальные-материалы)
 
 ## 1. Окружение
 
@@ -68,7 +79,7 @@ python tools/sqlite_recovery.py restore fleet-backups/before-v3 recovered-test.d
 ## 3. Процедура релиза Pages
 
 ~~~mermaid
-flowchart LR
+flowchart TB
   F[Проверенный feature-коммит] --> P[Fast-forward preview]
   P --> B[Сборка и упаковка]
   P --> E[Доказательства CI точной ветки]
@@ -107,3 +118,7 @@ Portable Windows — самостоятельный неподписанный �
 ![release-pipeline](../visuals/diagrams/release-pipeline.svg)
 
 [Все диаграммы](../visuals/diagrams.ru.md) · [Галерея](../visuals/gallery.ru.md)
+
+---
+
+[README проекта](../../README.ru.md) · [Оглавление руководства](README.ru.md) · [English](operations.md)

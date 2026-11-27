@@ -32,21 +32,21 @@ jobs:
           sudo apt-get update -qq
           sudo apt-get install -y --no-install-recommends graphviz ffmpeg
       - name: Fetch pinned browser evidence
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@v8
         with:
           name: fleetmanagement-browser-screenshots
           run-id: 46058985349
           github-token: ${{ github.token }}
           path: ${{ runner.temp }}/visual-screens
       - name: Fetch pinned ML evidence
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@v8
         with:
           name: fleetmanagement-ml-registry
           run-id: 46058985367
           github-token: ${{ github.token }}
           path: ${{ runner.temp }}/visual-ml
       - name: Fetch actual recorded application tour
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@v8
         with:
           name: fleetmanagement-portfolio-tour
           run-id: 46058985349

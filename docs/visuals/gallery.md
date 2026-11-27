@@ -4,7 +4,7 @@
 
 [Project README](../../README.md) · [Visual index](README.md) · [Gallery](gallery.md) · [Diagrams](diagrams.md) · [ML](analytics.md) · [Engineering handbook](../engineering/README.md)
 
-23 individual CI screenshots. Expand a capture, then select it to view the full byte-exact PNG. Synthetic data.
+23 individual CI screenshots. Expand a capture, then select it to view the full byte-exact PNG. Synthetic data. Two lab sections show explicitly labeled design previews first; original captures remain linked.
 
 **On this page**
 
@@ -127,7 +127,11 @@ Original: 1440 × 2403 px · maintenance.png.
 <details>
 <summary>Expand individual capture</summary>
 
-[![Route optimization](screenshots/route-optimization-viewport.webp)](screenshots/route-optimization.png)
+![Route optimization — design preview](../assets/design-previews/optimization-dark-concept.webp)
+
+*Generated dark-theme visualization; not an actual capture or metric evidence.*
+
+[Open original CI screenshot](screenshots/route-optimization.png) · [Original viewport](screenshots/route-optimization-viewport.webp)
 
 Original: 1440 × 1807 px · optimization.png.
 
@@ -184,7 +188,11 @@ Original: 1440 × 3316 px · cost-intelligence.png.
 <details>
 <summary>Expand individual capture</summary>
 
-[![Machine learning lab](screenshots/machine-learning-viewport.webp)](screenshots/machine-learning.png)
+![Machine learning lab — design preview](../assets/design-previews/machine-learning-dark-concept.webp)
+
+*Generated dark-theme visualization; not an actual capture or metric evidence.*
+
+[Open original CI screenshot](screenshots/machine-learning.png) · [Original viewport](screenshots/machine-learning-viewport.webp)
 
 Original: 1440 × 2703 px · intelligence.png.
 

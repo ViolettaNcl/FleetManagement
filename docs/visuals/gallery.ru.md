@@ -4,7 +4,7 @@
 
 [README проекта](../../README.ru.md) · [Визуальный раздел](README.ru.md) · [Галерея](gallery.ru.md) · [Диаграммы](diagrams.ru.md) · [ML](analytics.ru.md) · [Инженерное руководство](../engineering/README.ru.md)
 
-23 отдельных скриншота CI. Раскройте нужный кадр и нажмите на него для просмотра полного оригинального PNG. Синтетические данные.
+23 отдельных скриншота CI. Раскройте нужный кадр и нажмите на него для просмотра полного оригинального PNG. Синтетические данные. Для двух лабораторий сначала показаны отдельно обозначенные дизайн-превью; исходные кадры доступны по ссылкам.
 
 **На этой странице**
 
@@ -127,7 +127,11 @@
 <details>
 <summary>Открыть отдельный кадр</summary>
 
-[![Оптимизация маршрута](screenshots/route-optimization-viewport.webp)](screenshots/route-optimization.png)
+![Оптимизация маршрутов — дизайн-превью](../assets/design-previews/optimization-dark-concept.webp)
+
+*Сгенерированная визуализация тёмной темы; не реальный снимок и не доказательство метрик.*
+
+[Открыть исходный скриншот CI](screenshots/route-optimization.png) · [Оригинальный viewport](screenshots/route-optimization-viewport.webp)
 
 Оригинал: 1440 × 1807 px · optimization.png.
 
@@ -184,7 +188,11 @@
 <details>
 <summary>Открыть отдельный кадр</summary>
 
-[![Лаборатория ML](screenshots/machine-learning-viewport.webp)](screenshots/machine-learning.png)
+![Лаборатория ML — дизайн-превью](../assets/design-previews/machine-learning-dark-concept.webp)
+
+*Сгенерированная визуализация тёмной темы; не реальный снимок и не доказательство метрик.*
+
+[Открыть исходный скриншот CI](screenshots/machine-learning.png) · [Оригинальный viewport](screenshots/machine-learning-viewport.webp)
 
 Оригинал: 1440 × 2703 px · intelligence.png.
 

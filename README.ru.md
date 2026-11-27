@@ -79,6 +79,19 @@
 
 </details>
 
+<details>
+<summary>Optimization Lab и Machine Learning Lab — тёмная тема (дизайн-превью)</summary>
+
+Два улучшенных дизайн-превью тёмной темы, созданные на основе интерфейса. Это визуальные концепции, не браузерные скриншоты и не новые результаты измерений.
+
+![Оптимизация маршрутов — дизайн-превью](docs/assets/design-previews/optimization-dark-concept.webp)
+
+![Машинное обучение — дизайн-превью](docs/assets/design-previews/machine-learning-dark-concept.webp)
+
+[Оригинальные кадры CI](docs/visuals/gallery.ru.md)
+
+</details>
+
 **[Полная визуальная документация](docs/visuals/README.ru.md)** · [Галерея](docs/visuals/gallery.ru.md) · [Диаграммы](docs/visuals/diagrams.ru.md) · [Результаты ML](docs/visuals/analytics.ru.md)
 
 ## Возможности

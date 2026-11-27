@@ -79,6 +79,19 @@ Actual CI captures; click for full original. Synthetic data.
 
 </details>
 
+<details>
+<summary>Optimization Lab and Machine Learning Lab — dark design previews</summary>
+
+Two refined dark-theme design previews based on the interface. These are generated visual concepts, not browser screenshots or new measured results.
+
+![Route optimization — design preview](docs/assets/design-previews/optimization-dark-concept.webp)
+
+![Machine learning — design preview](docs/assets/design-previews/machine-learning-dark-concept.webp)
+
+[Original CI captures](docs/visuals/gallery.md)
+
+</details>
+
 **[Complete visual evidence](docs/visuals/README.md)** · [Gallery](docs/visuals/gallery.md) · [Diagrams](docs/visuals/diagrams.md) · [ML evidence](docs/visuals/analytics.md)
 
 ## Scope

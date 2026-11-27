@@ -1,7 +1,7 @@
 name: Documentation quality
 on:
   push:
-    branches: [feature/approved-fleet-assets]
+    branches: [master, feature/approved-fleet-assets]
     paths:
       - '**.md'
       - 'docs/visuals/**'

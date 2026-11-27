@@ -6,9 +6,9 @@
 <p><a href="README.md">English</a> · <a href="https://violettancl.github.io/FleetManagement/app/">Онлайн-приложение</a> · <a href="docs/engineering/README.ru.md">Техническое руководство</a></p>
 <p><sub>Концептуальная иллюстрация; показатели не являются реальной телеметрией или измеренной производительностью.</sub></p>
   <p>
-    <a href="https://github.com/ViolettaNcl/FleetManagement/actions/workflows/demo-ci.yml"><img alt="Browser CI (development branch)" src="https://github.com/ViolettaNcl/FleetManagement/actions/workflows/demo-ci.yml/badge.svg?branch=feature%2Fapproved-fleet-assets"></a>
-    <a href="https://github.com/ViolettaNcl/FleetManagement/actions/workflows/api-ci.yml"><img alt="API CI (development branch)" src="https://github.com/ViolettaNcl/FleetManagement/actions/workflows/api-ci.yml/badge.svg?branch=feature%2Fapproved-fleet-assets"></a>
-    <a href="https://github.com/ViolettaNcl/FleetManagement/actions/workflows/codeql.yml"><img alt="CodeQL (development branch)" src="https://github.com/ViolettaNcl/FleetManagement/actions/workflows/codeql.yml/badge.svg?branch=feature%2Fapproved-fleet-assets"></a>
+    <a href="https://github.com/ViolettaNcl/FleetManagement/actions/workflows/demo-ci.yml"><img alt="Browser CI (master)" src="https://github.com/ViolettaNcl/FleetManagement/actions/workflows/demo-ci.yml/badge.svg?branch=master"></a>
+    <a href="https://github.com/ViolettaNcl/FleetManagement/actions/workflows/api-ci.yml"><img alt="API CI (master)" src="https://github.com/ViolettaNcl/FleetManagement/actions/workflows/api-ci.yml/badge.svg?branch=master"></a>
+    <a href="https://github.com/ViolettaNcl/FleetManagement/actions/workflows/codeql.yml"><img alt="CodeQL (master)" src="https://github.com/ViolettaNcl/FleetManagement/actions/workflows/codeql.yml/badge.svg?branch=master"></a>
     <img alt=".NET 10" src="https://img.shields.io/badge/.NET-10-512BD4?style=flat-square">
     <img alt="Blazor WASM" src="https://img.shields.io/badge/Blazor-WebAssembly-7C3AED?style=flat-square">
     <img alt="ML.NET" src="https://img.shields.io/badge/ML.NET-5.0-0E7490?style=flat-square">
@@ -19,9 +19,9 @@
 
 [Онлайн-приложение](https://violettancl.github.io/FleetManagement/app/) · [Техническое руководство](docs/engineering/README.ru.md) · [Галерея](docs/visuals/gallery.ru.md) · [История изменений](CHANGELOG.md)
 
-[![Проверка документации](https://github.com/ViolettaNcl/FleetManagement/actions/workflows/docs-quality.yml/badge.svg?branch=feature%2Fapproved-fleet-assets)](https://github.com/ViolettaNcl/FleetManagement/actions/workflows/docs-quality.yml)
+[![Проверка документации](https://github.com/ViolettaNcl/FleetManagement/actions/workflows/docs-quality.yml/badge.svg?branch=master)](https://github.com/ViolettaNcl/FleetManagement/actions/workflows/docs-quality.yml)
 
-Статусы CI относятся к ветке разработки. Подтверждённая публичная версия указана отдельно ниже.
+Статусы CI относятся к основной ветке master. Подтверждённая публичная версия указана отдельно ниже.
 
 **На этой странице**
 
@@ -133,7 +133,7 @@ flowchart TB
 Требования: Git, .NET 10 SDK; PowerShell 7 для запуска подключённой консоли. Node.js и Python нужны для соответствующих инженерных проверок, но не для обычной работы публичного демо.
 
 ~~~powershell
-git clone --branch feature/approved-fleet-assets https://github.com/ViolettaNcl/FleetManagement.git
+git clone https://github.com/ViolettaNcl/FleetManagement.git
 cd FleetManagement
 dotnet run --project src/FleetManagement.Web
 ~~~

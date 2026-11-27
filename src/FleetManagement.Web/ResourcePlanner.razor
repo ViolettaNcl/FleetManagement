@@ -10,7 +10,7 @@
 <section class="panel"><h2>@T("Driver availability timeline")</h2><div class="actions"><button class="secondary" @onclick="()=>day=day.AddDays(-1)">@T("Previous day")</button><label>@T("Resource date")<input type="date" @bind="day"/></label><button class="secondary" @onclick="()=>day=day.AddDays(1)">@T("Next day")</button><button class="secondary" @onclick="()=>day=Now.Date">@T("Today")</button></div>
 <p class="muted">@T("Pale bars: registered shift availability. Purple bars: assigned trips. Cross-midnight intervals are clipped to the selected day.")</p>
 <div class="gantt-scroll" role="region" tabindex="0" aria-label="@T("Driver shift timeline")"><div class="gantt-grid"><div></div><div class="gantt-axis">@foreach(var h in new[]{0,4,8,12,16,20,24}){<span>@($"{h:00}:00")</span>}</div>
-@foreach(var row in ResourcePlanning.Day(Fleet,Shifts,day)){<strong>@row.Name</strong><div class="gantt-track" aria-label="@($"Daily schedule for {row.Name}")">
+@foreach(var row in ResourcePlanning.Day(Fleet,Shifts,day)){<strong>@row.Name</strong><div class="gantt-track" role="group" aria-label="@($"Daily schedule for {row.Name}")">
 @foreach(var shift in row.Shifts){<div class="gantt-away" style="@Span(shift.Start,shift.End)" title="@($"Shift {shift.Start:dd MMM HH:mm} – {shift.End:dd MMM HH:mm}")"></div>}
 @foreach(var trip in row.Trips){<div class="gantt-visit" style="@(Span(trip.Start,trip.End)+";background:"+(ResourcePlanning.Covers(Shifts,trip.DriverId,trip.Start,trip.End)?"#6A5ACD":"#BA55A7"))" title="@($"Trip #{trip.Id}: {trip.Start:dd MMM HH:mm} – {trip.End:dd MMM HH:mm}")"></div>}
 </div>}

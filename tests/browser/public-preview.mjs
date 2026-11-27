@@ -60,9 +60,14 @@ try {
     assert.equal(createHash('sha256').update(await actual.body()).digest('hex'),asset.sha256,'Approved image SHA-256: '+name);
   }
   await page.getByRole('button',{name:'Vehicles',exact:true}).click();
-  const vehicleImage=page.locator('.approved-vehicle-image').first();
-  await vehicleImage.waitFor();
-  assert.ok(await vehicleImage.evaluate(async img=>{await img.decode();return img.naturalWidth>0;}));
+  const register=page.locator('.register-layout');
+  await register.getByRole('button',{name:'Card view',exact:true}).click();
+  const vehicleImage=register.locator('.register-cards .vehicle-record .approved-vehicle-image:visible').first();
+  await vehicleImage.waitFor({state:'visible'});
+  await vehicleImage.scrollIntoViewIfNeeded();
+  assert.ok(await vehicleImage.evaluate(async img=>{await img.decode();return img.naturalWidth>0;}),'Vehicle artwork must decode in the visible card');
+  assert.match(await vehicleImage.getAttribute('src'),/^assets\/vehicles\/vehicle-(mercedes-actros|volvo-fh|man-tgx|ford-transit|default)\.webp$/);
+  await register.getByRole('button',{name:'Responsive view',exact:true}).click();
   await page.getByRole('button',{name:'Optimization',exact:true}).click();
   await page.getByRole('button',{name:'Calculate routes',exact:true}).click();
   await page.getByRole('button',{name:'Multi-start 2-opt',exact:true}).waitFor();

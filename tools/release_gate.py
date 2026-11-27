@@ -9,7 +9,7 @@ import sys
 import urllib.parse
 import urllib.request
 import urllib.error
-from release_security import evaluate_analyses
+from release_security import evaluate_analyses, evaluate_validation_job
 
 required=("demo-ci.yml","api-ci.yml","connected-ci.yml","ml-ci.yml","codeql.yml","dependency-review.yml","windows-launcher.yml","windows-demo.yml")
 repo=os.environ["GITHUB_REPOSITORY"]
@@ -37,7 +37,7 @@ for workflow in required:
         # A newer queued/running run is not accepted until it completes.
         if matches:
             run=max(matches,key=lambda r:r["id"])
-            entry.update(runId=run["id"],url=run["html_url"],status=run["status"],conclusion=run["conclusion"],startedAt=run.get("run_started_at"),headBranch=run.get("head_branch"))
+            entry.update(runId=run["id"],url=run["html_url"],status=run["status"],conclusion=run["conclusion"],startedAt=run.get("run_started_at"),headBranch=run.get("head_branch"),runAttempt=run.get("run_attempt"))
             entry["passed"]=run["status"]=="completed" and run["conclusion"]=="success"
         else:
             entry.update(passed=False,reason="No exact-commit run found")
@@ -64,7 +64,13 @@ try:
             # Never override a failing/pending CodeQL check or an incomplete check listing.
             security["reason"]="No exact-commit CodeQL results check found"
             workflow=next(e for e in checks if e["workflow"]=="codeql.yml")
-            if workflow["passed"] and ref.startswith("refs/heads/") and workflow.get("startedAt"):
+            if workflow["passed"] and ref.startswith("refs/heads/") and type(workflow.get("runAttempt")) is int:
+                jobs=get(f"/actions/runs/{workflow['runId']}/attempts/{workflow['runAttempt']}/jobs",{"per_page":100})
+                if jobs["total_count"]!=len(jobs["jobs"]):
+                    security["reason"]="Incomplete CodeQL job listing"
+                else:
+                    security.update(evaluate_validation_job(jobs["jobs"],sha,workflow["runId"],workflow["runAttempt"]))
+            if not security["passed"] and workflow["passed"] and ref.startswith("refs/heads/") and workflow.get("startedAt"):
                 analyses=[]
                 for page in range(1,11):
                     batch=get("/code-scanning/analyses",{"ref":ref,"tool_name":"CodeQL","per_page":100,"page":page})
@@ -78,7 +84,7 @@ try:
                     security["reason"]="Incomplete CodeQL analysis listing"
 except (urllib.error.URLError,ValueError,KeyError) as exc:
     security["reason"]=type(exc).__name__ + (f" HTTP {exc.code}" if isinstance(exc,urllib.error.HTTPError) else "")
-print("CodeQL results: "+("PASS" if security["passed"] else "NOT READY")+" ("+str(security.get("source",security.get("reason","check-run")))+")")
+print("CodeQL results: "+("PASS" if security["passed"] else "NOT READY")+" ("+str(security.get("reason",security.get("source","check-run")))+")")
 report={"schema":2,"commit":sha,"repository":repo,"automatedChecksPassed":all(e["passed"] for e in checks) and security["passed"],"workflows":checks,"securityCheck":security,"manualReviewStillRequired":["Review advisories (successful scan is not zero findings)","Review video/screenshots","Fresh Windows password prompt","Security and deployment review","Explicit owner approval before merge/publication"]}
 out.write_text(json.dumps(report,indent=2),encoding="utf-8")
 if not report["automatedChecksPassed"]:

@@ -25,3 +25,11 @@ jobs:
           dotnet build src/FleetManagement.Api -c Release --no-incremental
           dotnet build src/FleetManagement.Web -c Release --no-incremental
       - uses: github/codeql-action/analyze@v3
+        with:
+          output: ${{ runner.temp }}/fleet-codeql-results
+          upload: always
+          wait-for-processing: true
+      - name: Validate CodeQL SARIF (zero findings)
+        run: |
+          python3 tools/test_release_security.py
+          python3 tools/check_codeql_sarif.py "$RUNNER_TEMP/fleet-codeql-results/csharp.sarif"

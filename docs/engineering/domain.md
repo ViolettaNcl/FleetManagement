@@ -1,8 +1,19 @@
 # Domain specification and consistency contracts
 
-[Engineering index](README.md) · [Русский](domain.ru.md)
+**English** · [Русский](domain.ru.md)
+
+[Project README](../../README.md) · [Handbook index](README.md) · [Visual evidence](../visuals/README.md)
 
 **Scope:** implementation of FleetManagement.Core and cooperating modern API writers at V6.3. Normative source is executable code; examples are synthetic. This is not a new feature proposal.
+
+**On this page**
+
+- [1. Data dictionary](#1-data-dictionary)
+- [2. Temporal invariants](#2-temporal-invariants)
+- [3. Maintenance decision table](#3-maintenance-decision-table)
+- [4. Transaction and retry sequence](#4-transaction-and-retry-sequence)
+- [5. Acceptance cases](#5-acceptance-cases)
+- [Visual evidence](#visual-evidence)
 
 ## 1. Data dictionary
 
@@ -104,3 +115,7 @@ See [Fleet.cs](../../src/FleetManagement.Core/Fleet.cs), [FleetStore](../../src/
 ![data-model](../visuals/diagrams/data-model.svg)
 
 [All diagrams](../visuals/diagrams.md) · [Gallery](../visuals/gallery.md)
+
+---
+
+[Project README](../../README.md) · [Handbook index](README.md) · [Русский](domain.ru.md)

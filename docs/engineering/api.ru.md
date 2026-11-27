@@ -1,8 +1,19 @@
 # Контракт API и руководство интегратора
 
-[Инженерный индекс](README.ru.md) · [English](api.md) · [README проекта](../../README.ru.md)
+**Русский** · [English](api.md)
+
+[README проекта](../../README.ru.md) · [Оглавление руководства](README.ru.md) · [Визуальные материалы](../visuals/README.ru.md)
 
 **Базовая версия:** V6.3 Enterprise; подтверждённая публичная ревизия [`f2cea2b`](https://github.com/ViolettaNcl/FleetManagement/commit/f2cea2bfe5334fed0e056feb142e56db8fc470c0). Руководство описывает современную версию; документы предыдущих версий в docs/ сохраняются как исторические и специализированные материалы.
+
+**На этой странице**
+
+- [1. Транспорт и авторизация](#1-транспорт-и-авторизация)
+- [2. Список эндпоинтов](#2-список-эндпоинтов)
+- [3. Безопасный пример интеграции](#3-безопасный-пример-интеграции)
+- [4. Контракт записи](#4-контракт-записи)
+- [5. Realtime, readiness и контракты](#5-realtime-readiness-и-контракты)
+- [Визуальные материалы](#визуальные-материалы)
 
 ## 1. Транспорт и авторизация
 
@@ -21,6 +32,8 @@
 
 Сокращённые пути после запятой используют префикс первого пути строки. Обозначения Read/Write/Admin — серверные политики доступа. Требования DTO и подробные статусы определяются реальной схемой OpenAPI и кодом эндпоинтов.
 
+### Готовность, аутентификация и доступ
+
 | Метод | Путь | Политика |
 | --- | --- | --- |
 | GET | /health, /ready | Public |
@@ -28,23 +41,39 @@
 | POST | /api/auth/login | Public, throttled |
 | GET | /api/auth/me | Read |
 | POST | /api/auth/revoke-sessions | Authenticated user |
+
+### Автопарк и обслуживание
+
+| Метод | Путь | Политика |
+| --- | --- | --- |
 | GET | /api/fleet, /api/vehicles, /api/drivers, /api/trips | Read |
 | GET | /api/vehicles/{id}, /api/drivers/{id}, /api/trips/{id} | Read |
 | POST | /api/vehicles, /api/drivers, /api/trips | Write |
 | PUT, DELETE | /api/vehicles/{id}, /api/drivers/{id}, /api/trips/{id} | Write |
 | GET | /api/dispatch/recommend, /api/maintenance | Read |
 | POST | /api/vehicles/{id}/service | Write |
+
+### Операции и пакетные назначения
+
+| Метод | Путь | Политика |
+| --- | --- | --- |
 | GET | /api/operations/policy, /revision, /overview, /calendar, /scheduled-review | Read |
 | GET | /api/operations/maintenance, /shifts, /reservations | Read |
 | POST | /api/operations/maintenance, /shifts, /reservations | Write |
 | DELETE | /api/operations/shifts/{id}, /reservations/{id} | Write |
 | POST | /api/operations/batch/preview, /apply | Write |
+
+### Отчёты, администрирование и realtime
+
+| Метод | Путь | Политика |
+| --- | --- | --- |
 | GET | /api/reports/summary, /excel | Read |
 | POST | /api/reports/finance/summary, /excel | Read |
 | GET | /api/admin/users, /audit, /receipt-capacity | Admin |
 | POST | /api/admin/users, /api/admin/users/{id}/revoke-sessions | Admin |
 | PUT | /api/admin/users/{id}/role | Admin |
 | SignalR | /hubs/fleet | Read |
+
 
 Календарь: from=YYYY-MM-DD, days=1–31. Отчёты рейсов: from/to включительно по датам отправления UTC, максимум 366 дней. Для рекомендаций start/end задаются ISO 8601 со смещением. POST финансовых отчётов читает данные без изменения записей.
 
@@ -89,3 +118,7 @@ FleetChanged сообщает о сохранённом изменении с о
 ![write-transaction](../visuals/diagrams/write-transaction.svg)
 
 [Все диаграммы](../visuals/diagrams.ru.md) · [Галерея](../visuals/gallery.ru.md)
+
+---
+
+[README проекта](../../README.ru.md) · [Оглавление руководства](README.ru.md) · [English](api.md)

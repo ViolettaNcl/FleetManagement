@@ -1,8 +1,19 @@
 # API contract and integration guide
 
-[Engineering index](README.md) · [Русский](api.ru.md) · [Project README](../../README.md)
+**English** · [Русский](api.ru.md)
+
+[Project README](../../README.md) · [Handbook index](README.md) · [Visual evidence](../visuals/README.md)
 
 **Baseline:** V6.3 Enterprise; verified public revision [`f2cea2b`](https://github.com/ViolettaNcl/FleetManagement/commit/f2cea2bfe5334fed0e056feb142e56db8fc470c0). The handbook describes the modern edition; version-specific documents elsewhere in docs/ remain historical or specialist references.
+
+**On this page**
+
+- [1. Transport and authorization](#1-transport-and-authorization)
+- [2. Endpoint inventory](#2-endpoint-inventory)
+- [3. Safe integration example](#3-safe-integration-example)
+- [4. Write contract](#4-write-contract)
+- [5. Realtime, readiness and contracts](#5-realtime-readiness-and-contracts)
+- [Visual evidence](#visual-evidence)
 
 ## 1. Transport and authorization
 
@@ -21,6 +32,8 @@ Account role changes and revocation are restricted by server policy. Admin can m
 
 Abbreviated paths after commas share the prefix of the first path in that row. DTO field requirements and status details are defined by the actual OpenAPI schema and endpoint code.
 
+### Health, identity and access
+
 | Method | Path | Policy |
 | --- | --- | --- |
 | GET | /health, /ready | Public |
@@ -28,23 +41,39 @@ Abbreviated paths after commas share the prefix of the first path in that row. D
 | POST | /api/auth/login | Public, throttled |
 | GET | /api/auth/me | Read |
 | POST | /api/auth/revoke-sessions | Authenticated user |
+
+### Fleet records and maintenance
+
+| Method | Path | Policy |
+| --- | --- | --- |
 | GET | /api/fleet, /api/vehicles, /api/drivers, /api/trips | Read |
 | GET | /api/vehicles/{id}, /api/drivers/{id}, /api/trips/{id} | Read |
 | POST | /api/vehicles, /api/drivers, /api/trips | Write |
 | PUT, DELETE | /api/vehicles/{id}, /api/drivers/{id}, /api/trips/{id} | Write |
 | GET | /api/dispatch/recommend, /api/maintenance | Read |
 | POST | /api/vehicles/{id}/service | Write |
+
+### Operations and batch dispatch
+
+| Method | Path | Policy |
+| --- | --- | --- |
 | GET | /api/operations/policy, /revision, /overview, /calendar, /scheduled-review | Read |
 | GET | /api/operations/maintenance, /shifts, /reservations | Read |
 | POST | /api/operations/maintenance, /shifts, /reservations | Write |
 | DELETE | /api/operations/shifts/{id}, /reservations/{id} | Write |
 | POST | /api/operations/batch/preview, /apply | Write |
+
+### Reports, administration and realtime
+
+| Method | Path | Policy |
+| --- | --- | --- |
 | GET | /api/reports/summary, /excel | Read |
 | POST | /api/reports/finance/summary, /excel | Read |
 | GET | /api/admin/users, /audit, /receipt-capacity | Admin |
 | POST | /api/admin/users, /api/admin/users/{id}/revoke-sessions | Admin |
 | PUT | /api/admin/users/{id}/role | Admin |
 | SignalR | /hubs/fleet | Read |
+
 
 Calendar: from=YYYY-MM-DD, days=1–31. Trip reports: from/to inclusive UTC departure dates, up to 366 days. Recommendation start/end use ISO 8601 offsets. Finance POST reads data and does not mutate records.
 
@@ -89,3 +118,7 @@ FleetChanged signals a committed mutation with a UTC timestamp, not a data strea
 ![write-transaction](../visuals/diagrams/write-transaction.svg)
 
 [All diagrams](../visuals/diagrams.md) · [Gallery](../visuals/gallery.md)
+
+---
+
+[Project README](../../README.md) · [Handbook index](README.md) · [Русский](api.ru.md)

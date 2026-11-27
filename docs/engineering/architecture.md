@@ -1,8 +1,19 @@
 # Architecture, boundaries and data integrity
 
-[Engineering index](README.md) · [Русский](architecture.ru.md) · [Project README](../../README.md)
+**English** · [Русский](architecture.ru.md)
+
+[Project README](../../README.md) · [Handbook index](README.md) · [Visual evidence](../visuals/README.md)
 
 **Baseline:** V6.3 Enterprise; verified public revision [`f2cea2b`](https://github.com/ViolettaNcl/FleetManagement/commit/f2cea2bfe5334fed0e056feb142e56db8fc470c0). The handbook describes the modern edition; version-specific documents elsewhere in docs/ remain historical or specialist references.
+
+**On this page**
+
+- [1. Runtime boundaries](#1-runtime-boundaries)
+- [2. Logical persistence](#2-logical-persistence)
+- [3. Transaction and failure model](#3-transaction-and-failure-model)
+- [4. Invariants and time](#4-invariants-and-time)
+- [5. Decisions and evolution](#5-decisions-and-evolution)
+- [Visual evidence](#visual-evidence)
 
 ## 1. Runtime boundaries
 
@@ -84,3 +95,7 @@ Detailed fields, boundary cases and write sequence: [domain specification](domai
 ![architecture](../visuals/diagrams/architecture.svg)
 
 [All diagrams](../visuals/diagrams.md) · [Gallery](../visuals/gallery.md)
+
+---
+
+[Project README](../../README.md) · [Handbook index](README.md) · [Русский](architecture.ru.md)

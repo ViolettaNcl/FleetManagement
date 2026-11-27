@@ -1,21 +1,28 @@
 # FleetManagement engineering handbook
 
-[Русский](README.ru.md) · [Project README](../../README.md)
+**English** · [Русский](README.ru.md)
+
+[Project README](../../README.md) · [Handbook index](README.md) · [Visual evidence](../visuals/README.md)
 
 **Baseline:** V6.3 Enterprise. Last verified public build: [`f2cea2b`](https://github.com/ViolettaNcl/FleetManagement/commit/f2cea2bfe5334fed0e056feb142e56db8fc470c0), [Pages evidence](https://github.com/ViolettaNcl/FleetManagement/actions/runs/46058985410).
 
+**On this page**
+
+- [Start here](#start-here)
+- [Documentation policy](#documentation-policy)
+- [Specialist references](#specialist-references)
+- [Visual companion](#visual-companion)
+
 ## Start here
 
-| Guide | Intended reader | Question answered |
-| --- | --- | --- |
-| [Architecture](architecture.md) | Developers, reviewers | Where is logic owned, and what are the data invariants? |
-| [Domain specification](domain.md) | Domain/backend engineers | Which fields, invariants, boundary cases and transitions are enforced? |
-| [Algorithms](algorithms.md) | Optimization/ML engineers | What are the mathematical contracts, complexity and limitations? |
-| [API contract](api.md) | API consumers, backend engineers | Which endpoints, permissions and retry contracts exist? |
-| [Intelligence](intelligence.md) | ML engineers | What is trained, how is it evaluated, what cannot be inferred? |
-| [Frontend](frontend.md) | Frontend engineers | How do UI, assets, accessibility and offline behavior fit together? |
-| [Operations](operations.md) | Operators, release engineers | How to run, recover, diagnose and release the system? |
-| [Quality](quality.md) | QA, security reviewers | Which checks establish evidence, and which risks remain? |
+- **[Architecture](architecture.md)** — Where is logic owned, and what are the data invariants? *Audience: Developers, reviewers.*
+- **[Domain specification](domain.md)** — Which fields, invariants, boundary cases and transitions are enforced? *Audience: Domain/backend engineers.*
+- **[Algorithms](algorithms.md)** — What are the mathematical contracts, complexity and limitations? *Audience: Optimization/ML engineers.*
+- **[API contract](api.md)** — Which endpoints, permissions and retry contracts exist? *Audience: API consumers, backend engineers.*
+- **[Intelligence](intelligence.md)** — What is trained, how is it evaluated, what cannot be inferred? *Audience: ML engineers.*
+- **[Frontend](frontend.md)** — How do UI, assets, accessibility and offline behavior fit together? *Audience: Frontend engineers.*
+- **[Operations](operations.md)** — How to run, recover, diagnose and release the system? *Audience: Operators, release engineers.*
+- **[Quality](quality.md)** — Which checks establish evidence, and which risks remain? *Audience: QA, security reviewers.*
 
 ## Documentation policy
 
@@ -28,3 +35,7 @@ This handbook is the current cross-component entry point. Source code, executabl
 ## Visual companion
 
 [Complete visual evidence](../visuals/README.md).
+
+---
+
+[Project README](../../README.md) · [Handbook index](README.md) · [Русский](README.ru.md)

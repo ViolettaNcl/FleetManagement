@@ -1,8 +1,18 @@
 # Algorithm reference: routing, forecasting and drift
 
-[Engineering index](README.md) · [Русский](algorithms.ru.md)
+**English** · [Русский](algorithms.ru.md)
+
+[Project README](../../README.md) · [Handbook index](README.md) · [Visual evidence](../visuals/README.md)
 
 Source-grounded V6.3 mathematical contracts; complexity below is analytical, not a measured benchmark.
+
+**On this page**
+
+- [1. Route optimization](#1-route-optimization)
+- [2. Demand forecast](#2-demand-forecast)
+- [3. Population Stability Index](#3-population-stability-index)
+- [4. Numerical and validation discipline](#4-numerical-and-validation-discipline)
+- [Visual evidence](#visual-evidence)
 
 ## 1. Route optimization
 
@@ -71,3 +81,7 @@ See [RouteOptimizer.cs](../../src/FleetManagement.Core/RouteOptimizer.cs), [Dema
 ![route-algorithms](../visuals/diagrams/route-algorithms.svg)
 
 [All diagrams](../visuals/diagrams.md) · [Gallery](../visuals/gallery.md)
+
+---
+
+[Project README](../../README.md) · [Handbook index](README.md) · [Русский](algorithms.ru.md)

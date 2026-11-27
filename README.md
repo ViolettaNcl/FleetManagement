@@ -1,187 +1,105 @@
 <div align="center">
-  <img src="src/FleetManagement.Web/wwwroot/assets/brand/fleet-readme-banner.webp" alt="FleetManagement Neon Command Center — conceptual 3D fleet illustration" width="100%">
-  <h1>FleetManagement</h1>
-  <p><sub>Concept artwork · illustrative telemetry and metrics, not measured product results.</sub></p>
-  <p><strong>A modern .NET fleet operations platform, evolved from a WPF desktop application.</strong></p>
-  <p>
-    <a href="README.ru.md">Русская версия</a> ·
-    <a href="docs/portfolio-v3.md">Demo guide</a> ·
-    <a href="docs/backend.md">Backend documentation</a> ·
-    <a href="docs/architecture.md">Architecture</a> ·
-    <a href="docs/branding.md">Brand assets</a>
-  </p>
-  <p>
-    <a href="https://github.com/ViolettaNcl/FleetManagement/actions/workflows/demo-ci.yml"><img alt="Browser CI" src="https://github.com/ViolettaNcl/FleetManagement/actions/workflows/demo-ci.yml/badge.svg?branch=feature%2Fv5-intelligence-suite"></a>
-    <a href="https://github.com/ViolettaNcl/FleetManagement/actions/workflows/api-ci.yml"><img alt="Backend CI" src="https://github.com/ViolettaNcl/FleetManagement/actions/workflows/api-ci.yml/badge.svg?branch=feature%2Fv5-intelligence-suite"></a>
-    <img alt=".NET 10" src="https://img.shields.io/badge/.NET-10_LTS-6A5ACD">
-    <img alt="C#" src="https://img.shields.io/badge/C%23-Blazor%20%7C%20ASP.NET_Core-9370DB">
-    <img alt="SQL Server and SQLite" src="https://img.shields.io/badge/EF_Core-SQL_Server_%7C_SQLite-4B0082">
-  </p>
+<img src="src/FleetManagement.Web/wwwroot/assets/brand/fleet-readme-banner.webp" alt="FleetManagement Enterprise concept illustration" width="100%">
+<h1>FleetManagement</h1>
+<p><strong>Fleet operations · Optimization · Applied machine learning</strong></p>
+<p>C# / .NET 10 · Blazor WebAssembly · ASP.NET Core · EF Core · ML.NET</p>
+<p><a href="README.ru.md">Русский</a> · <a href="https://violettancl.github.io/FleetManagement/app/">Live application</a> · <a href="docs/engineering/README.md">Engineering handbook</a></p>
+<p><sub>Concept artwork; not real telemetry or measured performance.</sub></p>
 </div>
 
-## Try the application
+[English](README.md) · [Русский](README.ru.md) · [Engineering handbook](docs/engineering/README.md) · [Changelog](CHANGELOG.md)
 
-The browser edition runs C# in WebAssembly, uses synthetic data, and requires no backend, account, API key, or paid hosting. The GitHub Pages workflow supports the dedicated `preview/fleetops-v3` branch without merging master. [Expected demo URL](https://violettancl.github.io/FleetManagement/) is not certified live until deployment succeeds.
+## Release and verification
 
-- [Latest browser builds, screenshots and actual screen-recorded portfolio tour](https://github.com/ViolettaNcl/FleetManagement/actions/workflows/demo-ci.yml)
-- [How to run the demo and enable GitHub Pages](docs/deployment.md)
-- [Current development pull request — V6.1](https://github.com/ViolettaNcl/FleetManagement/pull/8)
-- [Original V3 development pull request](https://github.com/ViolettaNcl/FleetManagement/pull/2)
+**V6.3 Enterprise — public portfolio preview.** The last independently verified deployment is [`f2cea2b`](https://github.com/ViolettaNcl/FleetManagement/commit/f2cea2bfe5334fed0e056feb142e56db8fc470c0): eight CI workflows and all four Pages jobs completed successfully, including browser verification against the actual public URL on 27 November 2026. Documentation commits do not automatically replace this deployed revision.
 
-### V6.3 Enterprise workspace (development candidate)
-
-All 36 approved illustrations are committed as optimized WebP files; original PNGs are retained in the owner archive. See [asset provenance and render targets](docs/fleet-approved-assets.md).
-
-Route-inspired premium design with a next-departure focus card, interactive trip workload links, responsive table/card registers and calendar event markers. Both themes and Classic remain available. All displayed values come from the local demo records.
-
-### V6.1 — Guided Workspace (development candidate)
-
-New profiles open in Essentials: ten everyday sections, six quick actions and contextual English/Russian guidance. All tools reveals all 26 modules, while global search can find any tool in either mode. Trip planning has three grouped steps, draft safeguards, larger mobile controls and remembered preferences. See [the integrated guide](docs/v6-release-candidate.md#v61-guided-workspace-candidate). The candidate remains separate from the published preview.
-
-### V6.0 RC2 (development candidate)
-
-RC2 adds round-trip fleet snapshot XLSX import/export, optional server-side scheduled reviews, dual-theme automated audit and an unsigned per-user Windows setup pipeline. No public release yet.
-
-[Integrated V6 user guide, architecture, verification and release boundaries](docs/v6-release-candidate.md). Includes premium/classic workspace styles, safe local snapshot restore, K-means, isolation forest, grouped validation, calibrated FastForest, daily briefing, driver activity, report templates, browser PDF printing and review history. This is a draft branch, not a public release.
-
-### V5 Intelligence Suite (development candidate)
-
-See [V5 workflows and limitations](docs/v5-intelligence-suite.md) and [Changelog](CHANGELOG.md). The latest development branch extends the personalized dashboard with a three-model synthetic maintenance ensemble, validation-selected alert thresholds, calibration, per-input sensitivity, ROC-AUC and average precision, experiment XLSX and local demo JSON export, hypothetical cost scenarios, adjacent-period analytics, sorted and paged selectable-column XLSX reports, local review-rule previews and queue snapshots and additional evidence-based assistant intents. The suite uses existing C# and Blazor components without an external AI service, paid runtime dependency or API key. The public preview is a separate release channel: exact-commit checks and explicit publication approval are required before promotion.
-
-### Guided demo
-
-The guided workspace includes English/Russian navigation, task shortcuts and contextual guidance (some detailed modules and exports remain English). It separates operational records, tracking/reporting, simulation/optimization and ML experiments. The overview combines live demo-clock trip counts, service readiness, today's agenda and rule-based alerts.
-
-| Screen | What to try |
+| Entry point | Purpose |
 | --- | --- |
-| Vehicles / Drivers | Add a record, search by registration or name, edit it, and observe duplicate validation. |
-| Vehicle Passport | Open a registered vehicle's trip history, latest service, recorded maintenance work and upcoming assignments. |
-| Resource Planning | Register driver shifts, inspect daily assignments and optionally enforce shift coverage during dispatch. |
-| Calendar | Browse day, week and month, filter vehicles and open scheduled trips. |
-| Dispatch | Suggest an available vehicle and driver; schedule a trip, then try a conflicting assignment. |
-| Tracking | Play the simulated clock and inspect trip progress on the route schematic. |
-| Maintenance | Compare service intervals, record scheduled service, repair or inspection, and review persistent work history. |
-| Optimization | Compare original, nearest-neighbor and 2-opt tours on seeded stops. |
-| Intelligence | Train a local synthetic maintenance classifier and inspect held-out metrics and predictions. |
-| Predictions | Train an ETA regressor, compare errors and scan synthetic telemetry anomalies. |
-| Digital Twin | Initialize a seeded virtual fleet, inject incidents and inspect live synthetic ML scores. |
-| Assistant | Review explainable service and dispatch alerts with an offline fixed-intent expert system. |
-| Multi Dispatch | Compare capacity/time-window heuristics, inspect Gantt timelines and unassigned orders. |
-| What-if | Compare complete seeded Digital Twin scenarios, completion and fuel intensity. |
-| Geo Map | Replay synthetic regional journeys on bundled Natural Earth geometry with geofence history. |
-| Model Registry | Import local experiment manifests, compare reported ML metrics and inspect fingerprints. |
-| Data Quality | Inspect bounded numeric telemetry CSV, row errors, duplicates and label distribution. |
-| Cost Intelligence | Estimate completed-trip costs and occupancy, project a period budget and export a four-sheet financial Excel workbook. |
-| Demand Forecast | Compare seasonal baseline and weekday-trend regression on a chronological synthetic holdout. |
-| Analytics | Filter trips by departure date and download a genuine two-sheet Excel workbook. |
+| [Interactive application](https://violettancl.github.io/FleetManagement/app/) | Standalone, synthetic, account-free demo |
+| [Public website](https://violettancl.github.io/FleetManagement/) / [Russian website](https://violettancl.github.io/FleetManagement/ru/) | Product overview and discovery |
+| [Verified Pages run](https://github.com/ViolettaNcl/FleetManagement/actions/runs/46058985410) | Build, security evidence, deployment and live verification |
+| [Development branch](https://github.com/ViolettaNcl/FleetManagement/tree/feature/approved-fleet-assets) | Candidate source; CI status is commit-specific |
+| [Browser CI](https://github.com/ViolettaNcl/FleetManagement/actions/workflows/demo-ci.yml) | Screenshots, actual recorded tour and packaged output |
 
-Use **Reset demo** to restore the synthetic dataset. Changes stay in your browser.
+## Scope
 
-## Release candidate preview
+FleetManagement evolved from a Windows WPF application into a modular .NET engineering portfolio. It is not a production fleet SaaS or a mechanical diagnostic system.
 
-The Browser demo CI artifact `fleetmanagement-portfolio-tour` records the real synthetic offline application (WebM, optional MP4), including ML and optimization labs. See [portfolio walkthrough](docs/portfolio-v3.md). The connected API is not deployed publicly. Release acceptance requires successful exact-commit checks and manual review; no release tag or Pages deployment is implied.
-
-## Local ML.NET training
-
-Run `dotnet run --project tools/FleetManagement.ModelTrainer -c Release -- model-registry 42` to train FastTree binary and regression models, compare with the existing C# baselines on identical held-out data, and create a local versioned experiment registry. See [ML trainer and model registry](docs/model-registry.md). The browser remains independent of ML.NET native training and does not load these archives automatically.
-
-## Engineering highlights
-
-| Capability | Implementation |
+| Capability | Implemented behavior |
 | --- | --- |
-| Browser UI | Blazor WebAssembly, responsive lavender WPF-inspired tables |
-| Domain | Shared C# records, validation, conflict detection, explainable maintenance rules |
-| Backend | ASP.NET Core minimal REST API, dependency injection, OpenAPI |
-| Data | EF Core with SQLite and SQL Server; unique indexes and restrictive foreign keys |
-| Security | Identity bearer login, Admin / Dispatcher / Viewer policies, rate-limited login and fleet audit |
-| Realtime | Authenticated SignalR change notifications after successful writes |
-| Reporting | Date-filtered analytics and native Open XML workbook generation |
-| QA | Executable C# regression checks, HTTP integration matrix, Playwright browser scenarios |
-| Deployment | GitHub Actions, static Pages workflow, optional local Docker Compose |
+| Operations | Vehicle/driver registers, trip scheduling, dispatch, maintenance journal, shifts, reservations and calendar |
+| Optimization | Route and multi-vehicle scenarios; explicit batch preview and confirmation |
+| Analytics | Period comparison, cost estimates, budget sensitivity, XLSX reports and printable reports |
+| Intelligence | Rule-based advisor, synthetic maintenance/ETA/anomaly models, clustering, demand forecast, drift and local model registry |
+| Workspace | 26 modules, Essentials/All tools, RU/EN, two themes, responsive registers, 36 optimized owner illustrations |
+| Connected mode | Separate local API and authenticated server console, SQLite/SQL Server, audit and committed-change notifications |
 
 ## Architecture
 
-```mermaid
+~~~mermaid
 flowchart LR
-    B["Blazor WebAssembly"] --> C["FleetManagement.Core"]
-    A["ASP.NET Core API"] --> C
-    B --> L["Browser local storage"]
-    A --> E["EF Core"]
-    E --> S["SQLite / SQL Server"]
-    A --> I["Identity / RBAC"]
-    A --> H["SignalR hub"]
-    A --> D["Audit log"]
-```
+  P[Public site] --> W[Blazor WASM demo]
+  W --> C[Shared C# Core]
+  W --> L[(Browser storage)]
+  U[Connected console] --> A[ASP.NET Core API]
+  A --> C
+  A --> D[(SQLite / SQL Server)]
+  A --> H[SignalR]
+  M[Local ML.NET trainer] --> C
+  M --> R[(Local model registry)]
+~~~
 
-The static browser and local API are independent clients of the same C# rules. The original Windows WPF application remains in `FleetManagment/` as a legacy reference. [Design decisions and limitations](docs/architecture.md).
+The two workspaces do not synchronize their data. Pages serves static assets only; it never exposes the API, database or credentials. ML.NET training is a separate CLI, not a model-serving endpoint.
 
-## Run locally
+## Quick start
 
-Requirements: .NET 10 SDK. Docker is optional.
+Requirements: .NET 10 SDK and Git; PowerShell 7 for the connected launcher. Node.js and Python are needed for relevant engineering checks, not for normal public demo use.
 
-```sh
+~~~powershell
+git clone --branch feature/approved-fleet-assets https://github.com/ViolettaNcl/FleetManagement.git
+cd FleetManagement
 dotnet run --project src/FleetManagement.Web
-dotnet run --project tests/FleetManagement.Core.Checks -c Release
-```
+~~~
 
-For the independent API, follow the [secure local configuration guide](docs/backend.md). Do not commit keys or passwords or expose the local API publicly. A Docker Compose example is available for SQL Server.
+Open the loopback address printed by .NET. For connected mode, run from the repository root in PowerShell 7:
 
-## Repository layout
+~~~powershell
+pwsh -File tools/start-connected.ps1
+~~~
 
-```text
-src/
-  FleetManagement.Core/     Shared C# business rules and reports
-  FleetManagement.Web/      Blazor browser edition
-  FleetManagement.Api/      ASP.NET Core, EF Core, Identity, SignalR
-tests/                      Modern regression, browser and HTTP checks
-docs/                       Architecture, demo and deployment guides
-FleetManagment/             Original WPF application and documentation
-FleetManagement.Tests/      Original desktop tests (legacy)
-.github/workflows/          CI and Pages
-```
+Open http://127.0.0.1:5095/console. The launcher prompts for a secure initial admin password for a new SQLite database. Use synthetic data only. See [local setup and recovery](docs/engineering/operations.md).
 
-## Validation and project boundaries
+## Repository map
 
-The CI workflows are the source of truth for the latest test outcomes. Earlier revisions have passed both SQLite and SQL Server HTTP/Identity/audit/restart checks and browser smoke tests. The V2 baseline passed browser, API and CodeQL checks. V3 changes are under development and must pass their own CI before release. CI screenshots and published static builds are available as workflow artifacts.
+| Location | Ownership |
+| --- | --- |
+| src/FleetManagement.Core | Domain records, rules, analytics, ML experiments and exports |
+| src/FleetManagement.Web | Offline Blazor UI and static assets |
+| src/FleetManagement.Api | Local minimal API, EF Core, Identity, embedded console |
+| tools/ | Launcher, model trainer, recovery, packaging and release evidence |
+| tests/ | Core, HTTP, realtime, browser, registry and recovery acceptance |
+| site/ | Bilingual public page definitions and styling |
+| FleetManagment/ | Historical WPF / EF6 / .NET Framework 4.7.2 project |
+| docs/ | Engineering specifications and historical design records |
 
-The browser demo has synthetic data, local simulation rather than real GPS, and deterministic service interval rules plus a separate experimental classifier trained on synthetic telemetry. The local API is a portfolio implementation, not a hardened production service; schema migrations, multi-instance scheduling concurrency, account lifecycle, and durable events remain future work. The legacy WPF app has known security and test limitations.
+## Technical documentation
 
-[Security policy](SECURITY.md) · [Release checklist](docs/deployment.md) · [Change history](CHANGELOG.md)
+| Guide | English | Русский |
+| --- | --- | --- |
+| Engineering index | [Open](docs/engineering/README.md) | [Открыть](docs/engineering/README.ru.md) |
+| Architecture and data integrity | [Open](docs/engineering/architecture.md) | [Открыть](docs/engineering/architecture.ru.md) |
+| API contract | [Open](docs/engineering/api.md) | [Открыть](docs/engineering/api.ru.md) |
+| ML and evaluation | [Open](docs/engineering/intelligence.md) | [Открыть](docs/engineering/intelligence.ru.md) |
+| Frontend and design | [Open](docs/engineering/frontend.md) | [Открыть](docs/engineering/frontend.ru.md) |
+| Local operations and release | [Open](docs/engineering/operations.md) | [Открыть](docs/engineering/operations.ru.md) |
+| Quality and security | [Open](docs/engineering/quality.md) | [Открыть](docs/engineering/quality.ru.md) |
 
-## Original project documentation
+## Boundaries and maintenance
 
-The original Russian requirements, UML diagrams, SQL scripts and user/developer guides are preserved. See [README.ru.md](README.ru.md) for the complete index.
+- Browser records, labels, telemetry and ML experiments are synthetic; use no real personal or commercial data.
+- The connected API is local-development software, not a hardened public service.
+- Models are experimental and never authorize mechanical safety, automated assignments or real-world predictions.
+- Security findings should be reported privately: [Security policy](SECURITY.md).
+- Historical project documentation is retained under [FleetManagment/Документы](FleetManagment/Документы); earlier README details remain in Git history.
 
-### Integrated batch dispatch
-
-Create trip requests in Batch Dispatch, compare two assignment heuristics, review the proposed subset, then explicitly apply. Assigned trips enter the shared register/calendar; pending requests stay in the session. See [batch dispatch](docs/batch-dispatch.md).
-
-### Local connected workspace (V3)
-
-With the local API running, open http://127.0.0.1:5095/console and sign in using your existing Identity account. Use server-backed dashboard, calendar, trip/batch dispatch, financial Excel, register editing, maintenance and resource forms; administrators can list/create staff accounts. The connected shell supports EN/RU; some server messages and exports remain English. Offline GitHub Pages demo remains independent. See [backend operations](docs/backend-operations.md), [database recovery](docs/database-recovery.md) and [database concurrency](docs/database-concurrency.md).
-
-### Performance checks
-
-The backend provider matrix includes a bounded read-only concurrency smoke and aggregate timing artifacts. See [performance testing](docs/performance-testing.md). Measurements are for the small disposable test dataset, not production fleet capacity.
-
-For a guided walkthrough, see [V3 portfolio guide](docs/portfolio-v3.md). On Windows with PowerShell 7 and .NET 10 SDK, `pwsh -File tools/start-connected.ps1` prepares a private local SQLite database and starts the connected workspace. No public deployment or secret is required for this local demo.
-
-### Model monitoring and candidate review
-
-The offline Model Drift lab compares synthetic feature distributions using PSI, then supports a validation-ranked retraining candidate review with independent final evaluation. See [model drift](docs/model-drift.md). The experiments do not imply real-world model performance or automated deployment.
-
-For release review, the manual [Release evidence gate](https://github.com/ViolettaNcl/FleetManagement/actions/workflows/release-gate.yml) checks exact-commit CI and the separate GitHub Advanced Security CodeQL results check and produces JSON without tagging, merging or deployment. See [deployment checklist](docs/deployment.md) and [logical ER diagram](docs/architecture.md#logical-persistence-model-v3).
-
-V3 release hardening: localized offline analytics/finance workbooks and assistant alerts, read-only receipt capacity monitoring (Admin), provider catalog parity preflight and technical video validation. API defaults remain English. Review the exact-commit evidence; remaining dynamic laboratory text and existing database history adoption are not certified.
-
-### Standalone Pages and Windows preview
-The dedicated `preview/fleetops-v3` branch builds a synthetic static site, checks the exact-commit release evidence and deploys only if its Pages environment permits the branch. Expected URL: https://violettancl.github.io/FleetManagement/ (verify deployment before sharing). No Vercel, backend or paid AI service is required. The [Windows portable demo workflow](https://github.com/ViolettaNcl/FleetManagement/actions/workflows/windows-demo.yml) builds an unsigned self-contained x64 executable archive; extract the whole archive and run FleetManagement.Demo.exe. See [deployment guide](docs/deployment.md). Route optimization adds multi-start 2-opt and exact small-tour Held–Karp; the ML.NET trainer now emits held-out permutation importance, not causal claims.
-
-Optional local generative AI companion: [Ollama guide](docs/local-ai.md). No API key, no cloud or database access; separate from the public browser. The Data Quality module also supports isolated CSV model training with vehicle-disjoint holdout (no promotion).
-
-**Online demo:** https://violettancl.github.io/FleetManagement/ — no download needed once GitHub Pages is enabled by the repository owner. The deployment workflow checks the exact public revision and actual browser UI after publication. If the address is unavailable, see [activation and verification](docs/deployment.md#enable-the-permanent-public-link).
-
-**Neon Command Center:** redesigned browser shell, dark/light themes, responsive navigation, interactive local WebGL scene and module cards. All ten owner WebP illustrations are committed and used by the application; eight in operational sections and two in the design gallery. No manual archive upload is needed. [Design and asset integration](docs/neon-design.md).
-
-## V4 public website and mobile workspace
-The Pages pipeline packages the public RU/EN static product site at the existing root and the interactive synthetic demo at `/app/`. The public demo supports an installable PWA where the browser permits, with scoped offline caching and explicit update confirmation. See [SEO and verification](docs/seo-v4.md) and [V4 audit](docs/v4-audit.md). Local development and portable Windows packaging retain the root interactive app.
+See [CHANGELOG](CHANGELOG.md) for version history. See [asset provenance](docs/fleet-approved-assets.md) for the approved artwork; original PNG files are maintained separately in the owner archive.

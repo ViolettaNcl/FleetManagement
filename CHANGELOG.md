@@ -1,6 +1,14 @@
 # Changelog
 
-## Unreleased — V6.3 Enterprise workspace
+## Documentation update — V6.3 Enterprise
+
+- Replace English and Russian README entry points with a consistent release status, architecture map and startup instructions.
+- Add paired engineering guides for architecture, API, ML, frontend, operations and quality/security; retain specialist and legacy references.
+- Clarify exact-branch release evidence, CodeQL SARIF validation, live artwork verification and current idempotency/console contracts. Documentation only; no runtime behavior or public deployment changed by this documentation commit.
+
+## V6.3 Enterprise workspace — verified public preview
+
+- Public revision `f2cea2b` passed eight CI workflows and Pages build, evidence, deploy and verify-live on 2026-11-27. [Evidence](https://github.com/ViolettaNcl/FleetManagement/actions/runs/46058985410).
 
 - New reusable module headers, model-specific vehicle detail layout, compact Dashboard artwork, consistent controls, charts and data surfaces. Align separate connected console and the bilingual public website without changing authentication or routing. Add all-module browser regression coverage.
 

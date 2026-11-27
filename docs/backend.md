@@ -1,5 +1,7 @@
 # FleetManagement API — local backend portfolio slice
 
+> Current V6.3 reference: [Engineering handbook](engineering/README.md) · [Русский](engineering/README.ru.md). This specialist document retains historical context; use current code and exact-release evidence for deployment claims.
+
 The .NET 10 minimal API reuses FleetManagement.Core rules. EF Core supports a file-based SQLite database for frictionless development and SQL Server for the optional Docker Compose stack. The browser GitHub Pages demo remains independent, with no embedded secrets or server dependencies.
 
 ## Quick start V3 (PowerShell 7+)
@@ -23,7 +25,7 @@ Set both optional bootstrap values before first database initialization to creat
 $env:Fleet__BootstrapAdminEmail = "admin@example.test"
 $env:Fleet__BootstrapAdminPassword = "replace-with-a-unique-strong-password"
 ```
-Do not reuse the example password. Bootstrap never resets an existing admin. No public registration or client-supplied admin role is allowed. POST /api/auth/login accepts email/password and returns an ASP.NET Core Identity opaque bearer access token valid for 15 minutes. Send Authorization: Bearer <accessToken>. Obtain a new token by logging in again; no refresh endpoint is exposed. Password hashing, lockout and role claims use Identity. Login attempts are rate limited per IP. Admins may create Dispatcher or Viewer accounts through POST /api/admin/users; the local automation key cannot manage accounts or read audit records. Admin and Dispatcher can mutate fleet records; Viewer can only read them. GET /api/admin/users lists bounded account metadata. GET /api/admin/audit returns the latest bounded fleet change events, including actor ID, entity ID, action and timestamp, stored in the same SaveChanges transaction. It excludes credential data and does not yet log account-management events.
+Do not reuse the example password. Bootstrap never resets an existing admin. No public registration or client-supplied admin role is allowed. POST /api/auth/login accepts email/password and returns an ASP.NET Core Identity opaque bearer access token valid for 15 minutes. Send Authorization: Bearer <accessToken>. Obtain a new token by logging in again; no refresh endpoint is exposed. Password hashing, lockout and role claims use Identity. Login attempts are rate limited per IP. Admins may create Dispatcher or Viewer accounts through POST /api/admin/users; the local automation key cannot manage accounts or read audit records. Admin and Dispatcher can mutate fleet records; Viewer can only read them. GET /api/admin/users lists bounded account metadata. GET /api/admin/audit returns the latest bounded fleet change events, including actor ID, entity ID, action and timestamp, stored in the same SaveChanges transaction. It excludes credential data; see the current [API contract](engineering/api.md) for role changes and revocation. Fleet audit is not an immutable account-lifecycle ledger.
 
 V3 adds operation tables. Use an explicit fresh V3 filename/database for new installations; the historical default filename remains unchanged for compatibility. Existing V2 databases require the [explicit additive upgrade](database-upgrade.md) after backup and stopped writers. No automatic migration or deletion. Configure FLEET_ADMIN_EMAIL and FLEET_ADMIN_PASSWORD for optional Compose bootstrap.
 

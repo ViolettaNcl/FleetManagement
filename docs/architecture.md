@@ -1,5 +1,7 @@
 # Architecture and design decisions
 
+> Current V6.3 reference: [Engineering handbook](engineering/README.md) · [Русский](engineering/README.ru.md). This specialist document retains historical context; use current code and exact-release evidence for deployment claims.
+
 ## Context
 
 FleetManagement began as a Windows WPF application on .NET Framework 4.7.2 and EF6. Rather than replacing its source and identity, the modern edition introduces independently runnable .NET 10 browser and API projects. The WPF project is preserved as historical code; it does not yet share the modern core.
@@ -24,7 +26,7 @@ The scheduling and report functions run in both the browser and API. UI feedback
 
 ### ADR-003 — Scheduling and data integrity
 
-An in-process semaphore plus a provider-level transaction lock serializes cooperating V3 fleet mutations across API processes. SQLite reserves its writer; SQL Server uses a transaction-owned application lock. Foreign keys and unique indexes protect references. Direct database writers and earlier versions bypass this protocol; stable non-reused IDs and durable idempotency remain open.
+An in-process semaphore plus a provider-level transaction lock serializes cooperating V3 fleet mutations across API processes. SQLite reserves its writer; SQL Server uses a transaction-owned application lock. Foreign keys and unique indexes protect references. Direct database writers and earlier versions bypass this protocol; audit-based ID high-water marks and durable actor-scoped receipts are implemented for supported fleet writes.
 
 ### ADR-004 — Identity and audit
 
@@ -48,7 +50,7 @@ The operational and financial reports use standard Office Open XML with two and 
 
 ## Remaining technical debt
 
-V2-to-V3 additive schema upgrade and SQLite recovery are implemented; full versioned EF migration history and legacy WPF import remain open. Staff role changes and HTTP session revocation, durable batch receipts and a narrow SignalR Long Polling subscriber are implemented. Full account lifecycle, distributed SignalR, idempotency for other operations, production observability and complete UI parity remain open. Legacy WPF security and legacy tests remain unresolved. See SECURITY.md and the backend guide.
+V2-to-V3 additive schema upgrade and SQLite recovery are implemented; full versioned EF migration history and legacy WPF import remain open. Staff role changes and HTTP session revocation, durable batch receipts and a narrow SignalR Long Polling subscriber are implemented. Full account lifecycle, distributed SignalR, idempotency for Identity operations, production observability and complete UI parity remain open. Legacy WPF security and legacy tests remain unresolved. See SECURITY.md and the backend guide.
 
 ## V3 component boundaries
 

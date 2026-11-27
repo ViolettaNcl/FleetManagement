@@ -1,13 +1,15 @@
 # Security policy
 
-FleetManagement contains two distinct editions:
+[Русский](SECURITY.ru.md) · [Engineering security guide](docs/engineering/quality.md)
 
-- The browser portfolio demo uses only synthetic data and local browser storage. It must not be used for confidential or production records. Its role simulation, if added later, would not constitute security.
-- The independent modern API is a local-development example. It uses ASP.NET Core Identity for password hashing, lockout and short-lived bearer tokens; Admin/Dispatcher/Viewer role policies; a separate automation key; and an administrator-only fleet change audit. Do not expose the API to the public internet without HTTPS, production secrets handling, key persistence, account lifecycle and revocation controls, migrations, backups and deployment-specific hardening.
-- The original WPF/EF6 application is preserved as a legacy artifact and is not suitable for production. Known legacy issues include SHA-256 password hashing, email-based administrator assignment and local database configuration.
+FleetManagement is a portfolio implementation, not a production security certification. The public Blazor WASM demo contains synthetic data, no backend connection and no privileged credentials. Do not enter real personal or commercial data. The separate API is intended for loopback development; production exposure requires a dedicated security and deployment review. The historical WPF/EF6 project has unresolved legacy issues including SHA-256 password hashing and email-based admin assignment.
 
-Never commit API keys, admin passwords, real driver details or database backups. Report suspected vulnerabilities privately using the repository's GitHub Security advisory reporting if enabled, or contact the repository owner privately. Do not include actual secrets in a public issue.
+## Reporting
 
-The modern V3 API serializes participating fleet writers through provider transactions and database locks; direct SQL, legacy APIs and other writers bypass this protocol. The connected same-origin workspace uses memory-only short-lived tokens; signing out clears the browser but does not revoke a copied token. Account listing/creation is admin-only, while existing roles cannot be modified via the workspace. The fleet audit is not a tamper-proof compliance log. Request body limits (256 KiB), login throttling, CSP, no-store and safe text rendering reduce exposure, but the service remains a local-development example. See [V3 security review](docs/security-review-v3.md).
+Report suspected vulnerabilities privately through GitHub Security advisories if enabled or contact the owner privately. Include affected revision, reproduction using synthetic data, expected versus actual behavior, and impact. Never post credentials, tokens, private data, exploit traces containing secrets or database backups in public issues. No response-time SLA is claimed.
 
-Explicit revocation invalidates subsequent bearer HTTP requests by security-stamp validation. Admin staff role changes are restricted to Viewer/Dispatcher and revoke previous tickets. Established SignalR connections are not immediately terminated. Browser signout alone still only clears local state.
+## Modern runtime controls
+
+ASP.NET Core Identity hashing, role policies, short-lived bearer credentials, separate automation identity, login throttling, explicit staff/session revocation, provider transaction locking, idempotent fleet receipts, bounded bodies and audit reduce risk. Console tokens are memory-only; sign-out is not server-side revocation. Explicit security-stamp revocation blocks subsequent HTTP requests; existing hub connections and in-flight requests can continue. Audit is not tamper-proof compliance evidence. No cross-origin connection from the public demo.
+
+CI checks CodeQL analysis and release evidence for the exact revision. A clean scan does not certify every dependency or deployment. Review advisories, legacy code, runtime images and external exposure separately. See [quality/security](docs/engineering/quality.md), [API contract](docs/engineering/api.md) and [V3 security review](docs/security-review-v3.md).

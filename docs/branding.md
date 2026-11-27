@@ -1,5 +1,7 @@
 # FleetManagement — Neon Violet identity
 
+> Current V6.3 reference: [Engineering handbook](engineering/README.md) · [Русский](engineering/README.ru.md). This specialist document retains historical context; use current code and exact-release evidence for deployment claims.
+
 Three generated visual compositions requested for FleetManagement V6.1. Optimized WebP versions are stored directly in Git; original PNG files remain in the supplied brand asset archive. The existing compact SVG app icon and PWA icons remain unchanged for readability at small sizes.
 
 <p align="center"><img src="assets/brand/fleet-readme-banner.webp" alt="Conceptual cinematic 3D fleet banner" width="100%"></p>

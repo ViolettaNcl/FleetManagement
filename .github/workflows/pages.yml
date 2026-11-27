@@ -61,10 +61,13 @@ jobs:
       contents: read
       actions: read
       checks: read
+      security-events: read
     steps:
       - uses: actions/checkout@v4
         with:
           persist-credentials: false
+      - name: Test release evidence policy
+        run: python3 tools/test_release_security.py
       - name: Wait for exact-commit CI evidence (bounded)
         env:
           GH_TOKEN: ${{ github.token }}

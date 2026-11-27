@@ -1,6 +1,7 @@
 import { chromium } from 'playwright';
 import assert from 'node:assert/strict';
 import { createHash } from 'node:crypto';
+import { readFile } from 'node:fs/promises';
 
 const url=process.env.FLEET_PREVIEW_URL;
 const revision=process.env.GITHUB_SHA;
@@ -49,6 +50,19 @@ try {
       assert.ok(await page.evaluate(async name=>{const image=new Image();image.src='assets/neon/'+name;await image.decode();return image.naturalWidth>0;},asset.name));
     }
   }
+  // Validate the newly approved artwork in the *packaged* and deployed app,
+  // not just the legacy ten-image neon manifest.
+  const approved=JSON.parse(await readFile(new URL('../../docs/fleet-approved-assets.json',import.meta.url),'utf8'));
+  assert.equal(Object.keys(approved).length,36);
+  for(const [name,asset] of Object.entries(approved)){
+    const actual=await context.request.get(appUrl+asset.path+'?rev='+revision);
+    assert.ok(actual.ok(),'Approved image HTTP: '+name);
+    assert.equal(createHash('sha256').update(await actual.body()).digest('hex'),asset.sha256,'Approved image SHA-256: '+name);
+  }
+  await page.getByRole('button',{name:'Vehicles',exact:true}).click();
+  const vehicleImage=page.locator('.approved-vehicle-image').first();
+  await vehicleImage.waitFor();
+  assert.ok(await vehicleImage.evaluate(async img=>{await img.decode();return img.naturalWidth>0;}));
   await page.getByRole('button',{name:'Optimization',exact:true}).click();
   await page.getByRole('button',{name:'Calculate routes',exact:true}).click();
   await page.getByRole('button',{name:'Multi-start 2-opt',exact:true}).waitFor();

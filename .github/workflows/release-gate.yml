@@ -5,11 +5,14 @@ permissions:
   contents: read
   actions: read
   checks: read
+  security-events: read
 jobs:
   evidence:
     runs-on: ubuntu-24.04
     steps:
       - uses: actions/checkout@v4
+      - name: Test release evidence policy
+        run: python3 tools/test_release_security.py
       - name: Check exact-commit workflows
         env:
           GH_TOKEN: ${{ github.token }}

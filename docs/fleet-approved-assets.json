@@ -1,0 +1,650 @@
+{
+  "fleet-logo-master": {
+    "path": "assets/brand/fleet-logo-master.webp",
+    "source_sha256": "c6c5acc16e72d256e0bc18b1f7a57b5c448d07a2a6b1cb6fbaf7bcaf59e07b8f",
+    "sha256": "b3b8a440b9a6d51054e502fb780a20b640c5cfe3345f9fff08e5c103c94e1267",
+    "source_bytes": 532341,
+    "bytes": 24982,
+    "source_dimensions": [
+      1254,
+      1254
+    ],
+    "dimensions": [
+      512,
+      512
+    ],
+    "alpha": true,
+    "source_archive_path": "docs/assets/fleet-approved-originals/brand/fleet-logo-master.png",
+    "source_archived_not_committed": true
+  },
+  "fleet-logo-3d": {
+    "path": "assets/brand/fleet-logo-3d.webp",
+    "source_sha256": "ed8045d8309053245dd4b0dcc293dc80955b28bd5251c1f53001612b5eeb31db",
+    "sha256": "1566c7ff65883611fc6f1fc7210f52a0cea26ca599fb628e81cab0efb49bcd5e",
+    "source_bytes": 1707458,
+    "bytes": 78316,
+    "source_dimensions": [
+      1254,
+      1254
+    ],
+    "dimensions": [
+      1200,
+      1200
+    ],
+    "alpha": false,
+    "source_archive_path": "docs/assets/fleet-approved-originals/brand/fleet-logo-3d.png",
+    "source_archived_not_committed": true
+  },
+  "fleet-readme-banner": {
+    "path": "assets/brand/fleet-readme-banner.webp",
+    "source_sha256": "49ef739e7f39fb7b75afd7fee0ef29a74ed4411474986ddaeb86c95fbed6bb9e",
+    "sha256": "d11f019f25f9e24ee33553d9ffc731c63674969a06eac85239aa771e7bb5eeb8",
+    "source_bytes": 2056221,
+    "bytes": 92292,
+    "source_dimensions": [
+      2172,
+      724
+    ],
+    "dimensions": [
+      1600,
+      533
+    ],
+    "alpha": false,
+    "source_archive_path": "docs/assets/fleet-approved-originals/brand/fleet-readme-banner.png",
+    "source_archived_not_committed": true
+  },
+  "social-preview": {
+    "path": "assets/brand/social-preview.webp",
+    "source_sha256": "76370170791d7fab191bb8def7a33a18dec11ed6cc78ae81104eb736ffa06e9d",
+    "sha256": "3d14f7ed408b189fd56fa625e6e55d4b9a334f11e3423bae877abc096e9e5b0d",
+    "source_bytes": 2085834,
+    "bytes": 145222,
+    "source_dimensions": [
+      1672,
+      941
+    ],
+    "dimensions": [
+      1600,
+      900
+    ],
+    "alpha": false,
+    "source_archive_path": "docs/assets/fleet-approved-originals/brand/social-preview.png",
+    "source_archived_not_committed": true
+  },
+  "hero": {
+    "path": "assets/heroes/hero.webp",
+    "source_sha256": "b6a1c3aaf943bc7e47c9e19c4c176458fc5b07fb527cc1230444a6587bebbd8a",
+    "sha256": "61893061bb7f05421bf50c2cdbfc289564b668c9df69218b62b121c69dfe87e2",
+    "source_bytes": 2139649,
+    "bytes": 156240,
+    "source_dimensions": [
+      1672,
+      941
+    ],
+    "dimensions": [
+      1600,
+      900
+    ],
+    "alpha": false,
+    "source_archive_path": "docs/assets/fleet-approved-originals/heroes/hero.png",
+    "source_archived_not_committed": true
+  },
+  "command-center": {
+    "path": "assets/heroes/command-center.webp",
+    "source_sha256": "063c96f91e48202d0a97a2e8c36dec7fb60d2c002ecca8f39e3681903f2becbb",
+    "sha256": "fd9a4925930ae7ddf49ed1eb7ce5c42e285dba3741fdf9c8ccf9ec5d6d86989a",
+    "source_bytes": 2191927,
+    "bytes": 199240,
+    "source_dimensions": [
+      1672,
+      941
+    ],
+    "dimensions": [
+      1600,
+      900
+    ],
+    "alpha": false,
+    "source_archive_path": "docs/assets/fleet-approved-originals/heroes/command-center.png",
+    "source_archived_not_committed": true
+  },
+  "abstract": {
+    "path": "assets/heroes/abstract.webp",
+    "source_sha256": "a249be5becf27547670f12f8556de5479eea42ca015d5bcb77eb25c3385f1d39",
+    "sha256": "9ac07124146917b2cf1484c69840504d798213eb185e7c19d93b3ddcad016a87",
+    "source_bytes": 1476533,
+    "bytes": 25084,
+    "source_dimensions": [
+      1672,
+      941
+    ],
+    "dimensions": [
+      1600,
+      900
+    ],
+    "alpha": false,
+    "source_archive_path": "docs/assets/fleet-approved-originals/heroes/abstract.png",
+    "source_archived_not_committed": true
+  },
+  "vehicle-management": {
+    "path": "assets/operations/vehicle-management.webp",
+    "source_sha256": "4439079e3ddf26e7c4f3b0e87478c921312b8893a664a5810fbc9f8a3895fe7e",
+    "sha256": "213dcbab022599062a5cba89637135ebe780910727ac8c2301d1ff46331c42bf",
+    "source_bytes": 2195731,
+    "bytes": 133134,
+    "source_dimensions": [
+      1672,
+      941
+    ],
+    "dimensions": [
+      1600,
+      900
+    ],
+    "alpha": false,
+    "source_archive_path": "docs/assets/fleet-approved-originals/operations/vehicle-management.png",
+    "source_archived_not_committed": true
+  },
+  "drivers": {
+    "path": "assets/operations/drivers.webp",
+    "source_sha256": "a693b7f252bb3a145c635e1c78c73b20008ad1ca118024efe6ba5734009d136a",
+    "sha256": "ed6e939e2463b7440ebb44111628fc120d8b2b2b1c3f0666c0f165c08f2842d1",
+    "source_bytes": 2117191,
+    "bytes": 136118,
+    "source_dimensions": [
+      1672,
+      941
+    ],
+    "dimensions": [
+      1600,
+      900
+    ],
+    "alpha": false,
+    "source_archive_path": "docs/assets/fleet-approved-originals/operations/drivers.png",
+    "source_archived_not_committed": true
+  },
+  "dispatch": {
+    "path": "assets/operations/dispatch.webp",
+    "source_sha256": "34bb6d8556a7ea57a3b51352f468af6a823333495d7f06b730a78a4e4e5a9d93",
+    "sha256": "4163ed7f91529ff0bcfdb11330d1f8b7394fb7b38f3e28db5ad6c8165b3ffc34",
+    "source_bytes": 2052179,
+    "bytes": 146766,
+    "source_dimensions": [
+      1672,
+      941
+    ],
+    "dimensions": [
+      1600,
+      900
+    ],
+    "alpha": false,
+    "source_archive_path": "docs/assets/fleet-approved-originals/operations/dispatch.png",
+    "source_archived_not_committed": true
+  },
+  "calendar": {
+    "path": "assets/operations/calendar.webp",
+    "source_sha256": "15d4e77a3cacc086ad918c80fe474821d5828725d65d3665406af031f459191e",
+    "sha256": "988ea3e4302d9b04ca269f4d3cd34f66e9cc76f017e9e7ac5d4b623ee89f980e",
+    "source_bytes": 1721155,
+    "bytes": 69480,
+    "source_dimensions": [
+      1672,
+      941
+    ],
+    "dimensions": [
+      1600,
+      900
+    ],
+    "alpha": false,
+    "source_archive_path": "docs/assets/fleet-approved-originals/operations/calendar.png",
+    "source_archived_not_committed": true
+  },
+  "tracking": {
+    "path": "assets/operations/tracking.webp",
+    "source_sha256": "84f1ff2f75b0c9eb954b63be8a06d2afce314cf340cbe2929d65e538cbf0af5b",
+    "sha256": "603c4c3d0d412783dd9f3684ddc331fec721ecc11e566cc9417ee0be775f99fb",
+    "source_bytes": 2381485,
+    "bytes": 137774,
+    "source_dimensions": [
+      1672,
+      941
+    ],
+    "dimensions": [
+      1600,
+      900
+    ],
+    "alpha": false,
+    "source_archive_path": "docs/assets/fleet-approved-originals/operations/tracking.png",
+    "source_archived_not_committed": true
+  },
+  "twin": {
+    "path": "assets/operations/twin.webp",
+    "source_sha256": "dbde1720c72c9b6d4c4a7b6a9af4e89024234df858b8666e3d8a66fb8a45d15f",
+    "sha256": "bfcf3fc8f2b442776d23da83c2fd58acabbfbf4080230630591c270084b6a433",
+    "source_bytes": 2183372,
+    "bytes": 138568,
+    "source_dimensions": [
+      1672,
+      941
+    ],
+    "dimensions": [
+      1600,
+      900
+    ],
+    "alpha": false,
+    "source_archive_path": "docs/assets/fleet-approved-originals/operations/twin.png",
+    "source_archived_not_committed": true
+  },
+  "maintenance": {
+    "path": "assets/operations/maintenance.webp",
+    "source_sha256": "edb45753e6777aceede542b8d507604de574a9bf68962ce9264d9513b2a6b868",
+    "sha256": "7ad319154b4d7aeb0e92eff628777364caf6dcb492735da7a7d9dd6d33a424c9",
+    "source_bytes": 2356056,
+    "bytes": 136026,
+    "source_dimensions": [
+      1672,
+      941
+    ],
+    "dimensions": [
+      1600,
+      900
+    ],
+    "alpha": false,
+    "source_archive_path": "docs/assets/fleet-approved-originals/operations/maintenance.png",
+    "source_archived_not_committed": true
+  },
+  "routes": {
+    "path": "assets/operations/routes.webp",
+    "source_sha256": "92c6b037703e25d06b8299213813476aebec22c65286868f391c9cd0b1100916",
+    "sha256": "628eb57c63b9a7d56ee6600a7b586b5c51f677f65427e7dbb5db80796426decb",
+    "source_bytes": 2623925,
+    "bytes": 144666,
+    "source_dimensions": [
+      1672,
+      941
+    ],
+    "dimensions": [
+      1600,
+      900
+    ],
+    "alpha": false,
+    "source_archive_path": "docs/assets/fleet-approved-originals/operations/routes.png",
+    "source_archived_not_committed": true
+  },
+  "resource-planning": {
+    "path": "assets/operations/resource-planning.webp",
+    "source_sha256": "fab678010b4eebdd1b7e960661d340f8d36b42c6412479fde07f9c49c86ddef0",
+    "sha256": "67ae6449ac3aea08f9526ffda0a55d1c28ef0e2aaf3fceb8a3ef415df8e9757e",
+    "source_bytes": 2408558,
+    "bytes": 134890,
+    "source_dimensions": [
+      1672,
+      941
+    ],
+    "dimensions": [
+      1600,
+      900
+    ],
+    "alpha": false,
+    "source_archive_path": "docs/assets/fleet-approved-originals/operations/resource-planning.png",
+    "source_archived_not_committed": true
+  },
+  "vehicle-passport": {
+    "path": "assets/operations/vehicle-passport.webp",
+    "source_sha256": "12cf40e5e676c2ce4f41e57ae38fc3b6287f07dabc9a3a6186764cda344be81a",
+    "sha256": "273a62d6f03042e87b03c6f50b5c06d4cac58947c8f23f74d62a1b101802f832",
+    "source_bytes": 2353338,
+    "bytes": 139762,
+    "source_dimensions": [
+      1672,
+      941
+    ],
+    "dimensions": [
+      1600,
+      900
+    ],
+    "alpha": false,
+    "source_archive_path": "docs/assets/fleet-approved-originals/operations/vehicle-passport.png",
+    "source_archived_not_committed": true
+  },
+  "notifications": {
+    "path": "assets/operations/notifications.webp",
+    "source_sha256": "2d18668d452651ba5d5dfb06a1b73a5bb706e8b4d566b2061dabdd573ce9b8f4",
+    "sha256": "7e3be96c31a1a3293466aa67891ce1906db75b3f995300e5588eeb2a8e683a4e",
+    "source_bytes": 1890471,
+    "bytes": 110806,
+    "source_dimensions": [
+      1672,
+      941
+    ],
+    "dimensions": [
+      1600,
+      900
+    ],
+    "alpha": false,
+    "source_archive_path": "docs/assets/fleet-approved-originals/operations/notifications.png",
+    "source_archived_not_committed": true
+  },
+  "assistant": {
+    "path": "assets/intelligence/assistant.webp",
+    "source_sha256": "3ca5c16bd156b747b7dce62fea07aa4b1356100b7e4eb61f2a1b4d8df574d46d",
+    "sha256": "c4f1ab4e1a8c0f9f195c36960b8b1379500de721e4dc12fd5aa8721febb78587",
+    "source_bytes": 1846937,
+    "bytes": 113010,
+    "source_dimensions": [
+      1254,
+      1254
+    ],
+    "dimensions": [
+      1200,
+      1200
+    ],
+    "alpha": false,
+    "source_archive_path": "docs/assets/fleet-approved-originals/intelligence/assistant.png",
+    "source_archived_not_committed": true
+  },
+  "machine-learning": {
+    "path": "assets/intelligence/machine-learning.webp",
+    "source_sha256": "96bab9b76532d2649d3dda6540142369b45680ac619da3b887aa5b80e773855f",
+    "sha256": "d092fede261ae814d45f31dac027ea486f213e8ad1e6157f3c0f22180aaa2c8b",
+    "source_bytes": 2000287,
+    "bytes": 139802,
+    "source_dimensions": [
+      1672,
+      941
+    ],
+    "dimensions": [
+      1600,
+      900
+    ],
+    "alpha": false,
+    "source_archive_path": "docs/assets/fleet-approved-originals/intelligence/machine-learning.png",
+    "source_archived_not_committed": true
+  },
+  "predictions": {
+    "path": "assets/intelligence/predictions.webp",
+    "source_sha256": "242482e4ac998df3a3c3ffd727f0190a1c95109ba221b641104e23c08fa5e76e",
+    "sha256": "1dfa9f299bcf0e06dc67747bbb35d9b1845bff9a9bc98c2010d024978f2f52a1",
+    "source_bytes": 2027812,
+    "bytes": 139424,
+    "source_dimensions": [
+      1672,
+      941
+    ],
+    "dimensions": [
+      1600,
+      900
+    ],
+    "alpha": false,
+    "source_archive_path": "docs/assets/fleet-approved-originals/intelligence/predictions.png",
+    "source_archived_not_committed": true
+  },
+  "demand-forecast": {
+    "path": "assets/intelligence/demand-forecast.webp",
+    "source_sha256": "4424ef2fda6134d17570827eb35b5d35b88ba137833216c58c38b1f6adac5039",
+    "sha256": "29b9f8e9d3efcdde304401441fe77c9fe25139e6e88d83551d2bb38099836c8c",
+    "source_bytes": 2372557,
+    "bytes": 148190,
+    "source_dimensions": [
+      1672,
+      941
+    ],
+    "dimensions": [
+      1600,
+      900
+    ],
+    "alpha": false,
+    "source_archive_path": "docs/assets/fleet-approved-originals/intelligence/demand-forecast.png",
+    "source_archived_not_committed": true
+  },
+  "model-drift": {
+    "path": "assets/intelligence/model-drift.webp",
+    "source_sha256": "dadc986b83104cd07d74295cc86994f1d0bbc99b1419facadb96928e9572ffd5",
+    "sha256": "707215ed6760180de33565924948d888fb286c4ae8bb04f00f7951ab3cb2976c",
+    "source_bytes": 1684959,
+    "bytes": 66732,
+    "source_dimensions": [
+      1672,
+      941
+    ],
+    "dimensions": [
+      1600,
+      900
+    ],
+    "alpha": false,
+    "source_archive_path": "docs/assets/fleet-approved-originals/intelligence/model-drift.png",
+    "source_archived_not_committed": true
+  },
+  "model-registry": {
+    "path": "assets/intelligence/model-registry.webp",
+    "source_sha256": "1a4ea8742bff2843124edbba788c4e7aff3c077b1b2bad45655171db854f86fb",
+    "sha256": "2e368886e2f1fd6581d727e40a95e432495277c4f268d002e58a457e45c00774",
+    "source_bytes": 2054497,
+    "bytes": 144196,
+    "source_dimensions": [
+      1672,
+      941
+    ],
+    "dimensions": [
+      1600,
+      900
+    ],
+    "alpha": false,
+    "source_archive_path": "docs/assets/fleet-approved-originals/intelligence/model-registry.png",
+    "source_archived_not_committed": true
+  },
+  "analytics": {
+    "path": "assets/analytics/analytics.webp",
+    "source_sha256": "dba29841e43db7efba2e5c88f72e8bca11cf6acc9f91302a555d11872c423c06",
+    "sha256": "7dcf307949182255bbbdb5473b67bba1c7cc82bf0c2bf8dbfff88f0e70cff1b3",
+    "source_bytes": 1810429,
+    "bytes": 125394,
+    "source_dimensions": [
+      1672,
+      941
+    ],
+    "dimensions": [
+      1600,
+      900
+    ],
+    "alpha": false,
+    "source_archive_path": "docs/assets/fleet-approved-originals/analytics/analytics.png",
+    "source_archived_not_committed": true
+  },
+  "cost-intelligence": {
+    "path": "assets/analytics/cost-intelligence.webp",
+    "source_sha256": "0c5ea89aac6b67bb03495da50137d303d74bc4711f01a779f739b224f6b7346e",
+    "sha256": "c497022863eb3e87bcbabd5c212dfa0a81a632219ea092908e9cde004e2896ea",
+    "source_bytes": 2052166,
+    "bytes": 149168,
+    "source_dimensions": [
+      1672,
+      941
+    ],
+    "dimensions": [
+      1600,
+      900
+    ],
+    "alpha": false,
+    "source_archive_path": "docs/assets/fleet-approved-originals/analytics/cost-intelligence.png",
+    "source_archived_not_committed": true
+  },
+  "reports": {
+    "path": "assets/analytics/reports.webp",
+    "source_sha256": "54186b9654b8b13e42d5f21965ab0d06cd1a6d341c8fa0f8a1ffbc50003f6346",
+    "sha256": "1caf1735708ecce8dffeab1e636fa2538701ca379028384cd0c57bb7d024f9f8",
+    "source_bytes": 2054993,
+    "bytes": 141498,
+    "source_dimensions": [
+      1672,
+      941
+    ],
+    "dimensions": [
+      1600,
+      900
+    ],
+    "alpha": false,
+    "source_archive_path": "docs/assets/fleet-approved-originals/analytics/reports.png",
+    "source_archived_not_committed": true
+  },
+  "vehicle-mercedes-actros": {
+    "path": "assets/vehicles/vehicle-mercedes-actros.webp",
+    "source_sha256": "d05dc4218d4a4b127e9214af85457628ebacb12015513bbf4f97b0175331e4c2",
+    "sha256": "b5cfa01c7124f9fddd20e992915190178198d289d16507a48f2d774ea13416aa",
+    "source_bytes": 1515132,
+    "bytes": 87972,
+    "source_dimensions": [
+      1448,
+      1086
+    ],
+    "dimensions": [
+      900,
+      675
+    ],
+    "alpha": true,
+    "source_archive_path": "docs/assets/fleet-approved-originals/vehicles/vehicle-mercedes-actros.png",
+    "source_archived_not_committed": true
+  },
+  "vehicle-volvo-fh": {
+    "path": "assets/vehicles/vehicle-volvo-fh.webp",
+    "source_sha256": "1cac2ae34505568d44879bea53effcab88226424a3dbe2ffcede4dfc67e161ce",
+    "sha256": "87f143ac4f5c2a22dffa010c0536cd93c63a43ca5069cdf10d3328af4492be62",
+    "source_bytes": 1854077,
+    "bytes": 106402,
+    "source_dimensions": [
+      1448,
+      1086
+    ],
+    "dimensions": [
+      900,
+      675
+    ],
+    "alpha": true,
+    "source_archive_path": "docs/assets/fleet-approved-originals/vehicles/vehicle-volvo-fh.png",
+    "source_archived_not_committed": true
+  },
+  "vehicle-man-tgx": {
+    "path": "assets/vehicles/vehicle-man-tgx.webp",
+    "source_sha256": "9f37511b8c70c380ae31b97f1e19e7915868f09828e27c13b776d92f185c5511",
+    "sha256": "497099af5d86fd3abb8374f2df6918091c261621452a31383bd4aade5219dc75",
+    "source_bytes": 1760139,
+    "bytes": 102652,
+    "source_dimensions": [
+      1448,
+      1086
+    ],
+    "dimensions": [
+      900,
+      675
+    ],
+    "alpha": true,
+    "source_archive_path": "docs/assets/fleet-approved-originals/vehicles/vehicle-man-tgx.png",
+    "source_archived_not_committed": true
+  },
+  "vehicle-ford-transit": {
+    "path": "assets/vehicles/vehicle-ford-transit.webp",
+    "source_sha256": "422cd7940ee26f76fcab7149637a983b4146ecdd06d50be3a06f90a409eae88a",
+    "sha256": "28b49505c601db639bb4af5a0c1e15474d5f71c8015124b9d909832998a25b62",
+    "source_bytes": 1589111,
+    "bytes": 87770,
+    "source_dimensions": [
+      1448,
+      1086
+    ],
+    "dimensions": [
+      900,
+      675
+    ],
+    "alpha": true,
+    "source_archive_path": "docs/assets/fleet-approved-originals/vehicles/vehicle-ford-transit.png",
+    "source_archived_not_committed": true
+  },
+  "vehicle-default": {
+    "path": "assets/vehicles/vehicle-default.webp",
+    "source_sha256": "612560aafe95bc967ce34220a8072d1b2cb9002bed323a104363520236d69515",
+    "sha256": "03a5968b2b6b123d4f091867aff47766698683bf56c1c8957bbf9c15693ed178",
+    "source_bytes": 1566533,
+    "bytes": 85532,
+    "source_dimensions": [
+      1448,
+      1086
+    ],
+    "dimensions": [
+      900,
+      675
+    ],
+    "alpha": true,
+    "source_archive_path": "docs/assets/fleet-approved-originals/vehicles/vehicle-default.png",
+    "source_archived_not_committed": true
+  },
+  "driver-default": {
+    "path": "assets/vehicles/driver-default.webp",
+    "source_sha256": "6ff68a406d0dd53a43852955542276547d0243a18fbd2b5f5a5c9c1374ad435c",
+    "sha256": "451746c89a47196bbb0b90029780853ea8a4542d7de7111a0a9d5040c7951dd0",
+    "source_bytes": 1238880,
+    "bytes": 54234,
+    "source_dimensions": [
+      1254,
+      1254
+    ],
+    "dimensions": [
+      700,
+      700
+    ],
+    "alpha": true,
+    "source_archive_path": "docs/assets/fleet-approved-originals/vehicles/driver-default.png",
+    "source_archived_not_committed": true
+  },
+  "empty-state": {
+    "path": "assets/system/empty-state.webp",
+    "source_sha256": "85ff2e4e2e8cfdf7acd2d5923ddda6a1f25ec2a80d853e5ddef1889b65ca4c14",
+    "sha256": "6a5253373099b32af65db65f9d8420ea9fa48a894d5e71f94bc5ee722942faf9",
+    "source_bytes": 1642137,
+    "bytes": 57598,
+    "source_dimensions": [
+      1672,
+      941
+    ],
+    "dimensions": [
+      1600,
+      900
+    ],
+    "alpha": false,
+    "source_archive_path": "docs/assets/fleet-approved-originals/system/empty-state.png",
+    "source_archived_not_committed": true
+  },
+  "offline": {
+    "path": "assets/system/offline.webp",
+    "source_sha256": "b9c823afae4be659cbfa0b14fa1244464e4ba5d3cf05c9a85c42728acc0e81d0",
+    "sha256": "d96d942d6a6669f8f01786c46150d3c29cf2aaa6b63c3b7a2ac275f452ade03c",
+    "source_bytes": 1795825,
+    "bytes": 78264,
+    "source_dimensions": [
+      1672,
+      941
+    ],
+    "dimensions": [
+      1600,
+      900
+    ],
+    "alpha": false,
+    "source_archive_path": "docs/assets/fleet-approved-originals/system/offline.png",
+    "source_archived_not_committed": true
+  },
+  "loading-symbol": {
+    "path": "assets/system/loading-symbol.webp",
+    "source_sha256": "d586f9ed4c0e49d7f3035bdeaa5fc71ca9bff5ebc740137cb48ee0204ceb3b39",
+    "sha256": "94095ba64a78479f9d79df05cb317b1c979eaf9a616b864ff5d81ae8edaa8c0a",
+    "source_bytes": 1833422,
+    "bytes": 85410,
+    "source_dimensions": [
+      1672,
+      941
+    ],
+    "dimensions": [
+      1600,
+      900
+    ],
+    "alpha": false,
+    "source_archive_path": "docs/assets/fleet-approved-originals/system/loading-symbol.png",
+    "source_archived_not_committed": true
+  }
+}

@@ -12,6 +12,8 @@ from pathlib import Path
 BASE = "https://violettancl.github.io/FleetManagement/"
 ROOT = Path(__file__).resolve().parents[1]
 PAGES = json.loads((ROOT / "site/pages.json").read_text(encoding="utf-8"))
+PUBLIC_ART = {'': 'app/assets/heroes/hero.webp', 'features/': 'app/assets/heroes/command-center.webp', 'features/fleet-management/': 'app/assets/operations/vehicle-management.webp', 'features/route-optimization/': 'app/assets/operations/routes.webp', 'features/predictive-maintenance/': 'app/assets/operations/maintenance.webp', 'features/fleet-tracking/': 'app/assets/operations/tracking.webp', 'features/ai-analytics/': 'app/assets/intelligence/assistant.webp', 'features/digital-twin/': 'app/assets/operations/twin.webp', 'docs/': 'app/assets/heroes/abstract.webp', 'about/': 'app/assets/brand/social-preview.webp'}
+
 def esc(value):
     return html.escape(str(value), quote=True)
 def route(path, lang):
@@ -45,8 +47,8 @@ def generate(root):
             canonical=BASE+current
             enurl=BASE+route(path,"en"); ruurl=BASE+route(path,"ru")
             app=href("app/")+"?lang="+lang
-            image=href("app/assets/neon/"+art+".webp")
-            social=BASE+"app/assets/neon/"+art+".webp"
+            image=href(PUBLIC_ART[path])
+            social=BASE+PUBLIC_ART[path]
             home="Главная" if ru else "Home"
             features="Возможности" if ru else "Features"
             docs="Руководство" if ru else "Guide"
@@ -62,7 +64,7 @@ def generate(root):
                 d,a,*rest=item
                 if d==path or not d.startswith("features/") or d=="features/":continue
                 data=item[7] if ru else item[6]
-                cards.append(f'<a class="feature" href="{href(route(d,lang))}"><img src="{href("app/assets/neon/"+a+".webp")}" width="960" height="540" loading="lazy" decoding="async" alt=""><strong>{esc(data[1])}</strong><p>{esc(data[2])}</p><span>{"Подробнее" if ru else "Explore feature"} →</span></a>')
+                cards.append(f'<a class="feature" href="{href(route(d,lang))}"><img src="{href(PUBLIC_ART[d])}" width="960" height="540" loading="lazy" decoding="async" alt=""><strong>{esc(data[1])}</strong><p>{esc(data[2])}</p><span>{"Подробнее" if ru else "Explore feature"} →</span></a>')
             graph=[{"@type":"WebSite" if not path else "WebPage","name":h1,"url":canonical,"description":desc,"inLanguage":lang}]
             trail=[(home,route("",lang))]
             if path.startswith("features/") and path!="features/":
@@ -76,12 +78,12 @@ def generate(root):
             structured=json.dumps({"@context":"https://schema.org","@graph":graph},ensure_ascii=False).replace("<","\\u003c")
             content=f"""<!doctype html>
 <html lang="{lang}"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>{esc(title)}</title>
-<meta name="description" content="{esc(desc)}"><meta name="robots" content="index,follow"><meta name="theme-color" content="#090b12">
+<meta name="description" content="{esc(desc)}"><meta name="robots" content="index,follow"><meta name="theme-color" content="#0b0b16">
 <link rel="canonical" href="{canonical}"><link rel="alternate" hreflang="en" href="{enurl}"><link rel="alternate" hreflang="ru" href="{ruurl}"><link rel="alternate" hreflang="x-default" href="{enurl}">
 <meta property="og:type" content="website"><meta property="og:title" content="{esc(title)}"><meta property="og:description" content="{esc(desc)}"><meta property="og:url" content="{canonical}"><meta property="og:image" content="{social}"><meta property="og:locale" content="{'ru_RU' if ru else 'en_US'}">
 <meta name="twitter:card" content="summary_large_image"><meta name="twitter:title" content="{esc(title)}"><meta name="twitter:description" content="{esc(desc)}"><meta name="twitter:image" content="{social}">{verification()}
-<link rel="icon" href="{href('app/favicon.svg')}" type="image/svg+xml"><link rel="stylesheet" href="{href('site.css')}"><script type="application/ld+json">{structured}</script></head>
-<body><a class="skip" href="#content">{skip}</a><header><div class="wrap top"><a class="brand" href="{href(route('',lang))}">Fleet<span>Management</span></a><nav aria-label="{esc('Навигация' if ru else 'Main navigation')}">{nav}<a href="{other}" hreflang="{'en' if ru else 'ru'}">{'EN' if ru else 'RU'}</a><a class="cta" href="{app}">{open_demo}</a></nav></div></header>
+<link rel="icon" href="{href('app/assets/brand/fleet-favicon.png')}" type="image/png"><link rel="stylesheet" href="{href('site.css')}"><script type="application/ld+json">{structured}</script></head>
+<body><a class="skip" href="#content">{skip}</a><header><div class="wrap top"><a class="brand" href="{href(route('',lang))}"><img src="{href('app/assets/brand/fleet-logo-master.webp')}" alt="" width="36" height="36"><span class="brand-name">FleetManagement</span></a><nav aria-label="{esc('Навигация' if ru else 'Main navigation')}">{nav}<a href="{other}" hreflang="{'en' if ru else 'ru'}">{'EN' if ru else 'RU'}</a><a class="cta" href="{app}">{open_demo}</a></nav></div></header>
 <main class="wrap" id="content"><p class="crumb">{breadcrumb}</p><section class="hero"><div><span class="eyebrow">FLEET INTELLIGENCE · .NET</span><h1>{esc(h1)}</h1><p>{esc(desc)}</p><div class="actions"><a class="cta" href="{app}">{open_demo}</a><a class="cta secondary" href="{href(route('docs/',lang))}">{docs}</a></div></div><img src="{image}" alt="" width="960" height="600" fetchpriority="high" decoding="async"></section><div class="notice">{notice}</div>
 <div class="content"><article><h2>{esc(h2a)}</h2><p>{esc(p1)}</p></article><article><h2>{esc(h2b)}</h2><p>{esc(p2)}</p></article></div>
 <section><h2>{more}</h2><div class="features">{''.join(cards)}</div></section></main>

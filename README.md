@@ -1,5 +1,5 @@
 <div align="center">
-  <img src="docs/assets/brand/fleet-readme-banner.webp" alt="FleetManagement Neon Command Center — conceptual 3D fleet illustration" width="100%">
+  <img src="src/FleetManagement.Web/wwwroot/assets/brand/fleet-readme-banner.webp" alt="FleetManagement Neon Command Center — conceptual 3D fleet illustration" width="100%">
   <h1>FleetManagement</h1>
   <p><sub>Concept artwork · illustrative telemetry and metrics, not measured product results.</sub></p>
   <p><strong>A modern .NET fleet operations platform, evolved from a WPF desktop application.</strong></p>
@@ -28,7 +28,9 @@ The browser edition runs C# in WebAssembly, uses synthetic data, and requires no
 - [Current development pull request — V6.1](https://github.com/ViolettaNcl/FleetManagement/pull/8)
 - [Original V3 development pull request](https://github.com/ViolettaNcl/FleetManagement/pull/2)
 
-### V6.2 Atlas visual workspace (development candidate)
+### V6.3 Enterprise workspace (development candidate)
+
+All 36 approved illustrations are committed as optimized WebP files; original PNGs are retained in the owner archive. See [asset provenance and render targets](docs/fleet-approved-assets.md).
 
 Route-inspired premium design with a next-departure focus card, interactive trip workload links, responsive table/card registers and calendar event markers. Both themes and Classic remain available. All displayed values come from the local demo records.
 

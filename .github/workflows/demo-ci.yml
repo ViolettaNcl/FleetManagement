@@ -21,6 +21,7 @@ jobs:
       - name: Test and import verified owner artwork
         run: |
           python3 tests/browser/test_asset_import.py
+          python3 tests/browser/test_enterprise_contract.py
           python3 tests/browser/test_public_site.py
           python3 tools/import_neon_assets.py publish/wwwroot
       - name: Upload static preview
@@ -49,7 +50,7 @@ jobs:
           trap 'kill "$server" || true' EXIT
           # Run independent scenarios even after a failure, preserving the failing job status.
           browser_failed=0
-          for suite in pwa-update v6-ux v6-atlas v4 v5-suite v6-rc neon smoke cross-browser portfolio-tour; do
+          for suite in pwa-update v6-ux v6-atlas v63-enterprise v4 v5-suite v6-rc neon smoke cross-browser portfolio-tour; do
             echo "::group::Browser suite: $suite"
             if node "tests/browser/$suite.mjs"; then
               echo "PASS: suite $suite"

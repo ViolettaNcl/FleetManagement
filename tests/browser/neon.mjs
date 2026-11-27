@@ -1,6 +1,6 @@
 import { chromium } from 'playwright';
 import assert from 'node:assert/strict';
-import { mkdir } from 'node:fs/promises';
+import { mkdir, readFile } from 'node:fs/promises';
 import { createHash } from 'node:crypto';
 const url='http://127.0.0.1:8080/FleetManagement/';
 async function assertFits(page,label){
@@ -65,6 +65,14 @@ try{
   await page.getByRole('button',{name:'Overview',exact:true}).click();
   await page.locator('.simulation-showcase').scrollIntoViewIfNeeded();
   await page.locator('.scene-stage[data-renderer="webgl"]').waitFor({timeout:20000});
+  const approved=JSON.parse(await readFile(new URL('../../docs/fleet-approved-assets.json',import.meta.url),'utf8'));
+  assert.equal(Object.keys(approved).length,36);
+  for(const [name,asset] of Object.entries(approved)){
+    const response=await page.request.get(url+asset.path);
+    assert.ok(response.ok(),name+' HTTP request failed');
+    assert.equal(createHash('sha256').update(await response.body()).digest('hex'),asset.sha256,name);
+    assert.ok(await page.evaluate(async path=>{const img=new Image();img.src=path;await img.decode();return img.naturalWidth>0;},asset.path),name);
+  }
   const artwork=await (await page.request.get(url+'assets/neon/manifest.json')).json();
   assert.equal(artwork.mode,'committed');
   assert.equal(artwork.files.length,10);
@@ -75,7 +83,7 @@ try{
     assert.equal(createHash('sha256').update(await response.body()).digest('hex'),asset.sha256);
     assert.ok(await page.evaluate(async name=>{const img=new Image();img.src='assets/neon/'+name;await img.decode();return img.naturalWidth>0;},asset.name));
   }
-  for(const slot of ['routes','twin','maintenance','assistant','analytics','command-center']){
+  for(const slot of ['routes','twin','machine-learning','assistant','analytics','tracking']){
     assert.match(await page.locator('.art-'+slot).evaluate(el=>getComputedStyle(el).backgroundImage),new RegExp(slot+'\\.webp'));
   }
   assert.match(await page.locator('.neon-hero').evaluate(el=>getComputedStyle(el).backgroundImage),/hero\.webp/);

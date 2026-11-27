@@ -1,6 +1,13 @@
 # Changelog
 
-## Unreleased — V6.2 Atlas visual workspace
+## Unreleased — V6.3 Enterprise workspace
+
+- New reusable module headers, model-specific vehicle detail layout, compact Dashboard artwork, consistent controls, charts and data surfaces. Align separate connected console and the bilingual public website without changing authentication or routing. Add all-module browser regression coverage.
+
+- Integrate 36 approved owner assets, SHA-256 provenance, per-module artwork and model-specific vehicle images. Refresh premium dark/light workspace palette, navigation, KPI surfaces, module banners, register cards and reduced-motion behavior; verify published WebP hashes in browser CI.
+- Preserve existing operational components, localization and offline demo behavior.
+
+## V6.2 Atlas visual workspace
 
 - Use native content-derived accessible names for workload filters and a separate localized action description. Preserve visible status, count and percentage, keyboard activation, strict axe audit and filter regression. Independent browser suites now all run before the job returns failure, exposing subsequent regressions rather than stopping at the first one.
 

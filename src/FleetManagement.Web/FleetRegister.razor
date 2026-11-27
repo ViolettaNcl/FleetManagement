@@ -50,9 +50,9 @@
         <tbody>
         @foreach(var v in PageVehicles)
         {
-            <tr @key="v.Id"><td class="record-id">@v.Id</td><td><strong class="record-primary">@v.Plate</strong></td><td>@v.Model</td><td>@v.Mileage.ToString("N0") km</td><td>@v.LastService.ToString("dd MMM yyyy")</td><td><span class="pill @FleetRules.Assess(v,Today).Status.ToLowerInvariant()">@T(FleetRules.Assess(v,Today).Status)</span></td><td><div class="actions"><button class="secondary" @onclick="()=>OpenPassport.InvokeAsync(v.Id)">@T("Passport")</button><button class="secondary" @onclick="()=>EditVehicle(v)">@T("Edit")</button><button class="delete" @onclick="()=>Remove(v.Id)">@T("Delete")</button></div></td></tr>
+            <tr @key="v.Id"><td class="record-id">@v.Id</td><td><strong class="record-primary">@v.Plate</strong></td><td><span class="approved-record-cell"><VehicleImage Model="@v.Model" Compact="true"/>@v.Model</span></td><td>@v.Mileage.ToString("N0") km</td><td>@v.LastService.ToString("dd MMM yyyy")</td><td><span class="pill @FleetRules.Assess(v,Today).Status.ToLowerInvariant()">@T(FleetRules.Assess(v,Today).Status)</span></td><td><div class="actions"><button class="secondary" @onclick="()=>OpenPassport.InvokeAsync(v.Id)">@T("Passport")</button><button class="secondary" @onclick="()=>EditVehicle(v)">@T("Edit")</button><button class="delete" @onclick="()=>Remove(v.Id)">@T("Delete")</button></div></td></tr>
         }
-        @if(!Vehicles.Any()){<tr><td colspan="7">@T("No matching vehicles.")</td></tr>}
+        @if(!Vehicles.Any()){<tr><td colspan="7"><div class="approved-empty"><img class="" src="assets/system/empty-state.webp" alt="" loading="lazy" decoding="async" />@T("No matching vehicles.")</div></td></tr>}
         </tbody>
     }
     else
@@ -61,9 +61,9 @@
         <tbody>
         @foreach(var d in PageDrivers)
         {
-            <tr @key="d.Id"><td class="record-id">@d.Id</td><td><strong class="record-primary">@d.Name</strong></td><td>@d.License</td><td>@d.Experience years</td><td>@Fleet.Trips.Count(t=>t.DriverId==d.Id)</td><td>@Fleet.Trips.Count(t=>t.DriverId==d.Id && FleetRules.TripStatus(t,Today)=="In transit")</td><td><div class="actions"><button class="secondary" @onclick="()=>EditDriver(d)">@T("Edit")</button><button class="delete" @onclick="()=>Remove(d.Id)">@T("Delete")</button></div></td></tr>
+            <tr @key="d.Id"><td class="record-id">@d.Id</td><td><span class="approved-record-cell"><DriverAvatar Compact="true"/><strong class="record-primary">@d.Name</strong></span></td><td>@d.License</td><td>@d.Experience years</td><td>@Fleet.Trips.Count(t=>t.DriverId==d.Id)</td><td>@Fleet.Trips.Count(t=>t.DriverId==d.Id && FleetRules.TripStatus(t,Today)=="In transit")</td><td><div class="actions"><button class="secondary" @onclick="()=>EditDriver(d)">@T("Edit")</button><button class="delete" @onclick="()=>Remove(d.Id)">@T("Delete")</button></div></td></tr>
         }
-        @if(!Drivers.Any()){<tr><td colspan="7">@T("No matching drivers.")</td></tr>}
+        @if(!Drivers.Any()){<tr><td colspan="7"><div class="approved-empty"><img class="" src="assets/system/empty-state.webp" alt="" loading="lazy" decoding="async" />@T("No matching drivers.")</div></td></tr>}
         </tbody>
     }
     </table></div>
@@ -72,16 +72,16 @@
       @foreach(var v in PageVehicles){
         var assessment=FleetRules.Assess(v,Today);
         <article class="@("register-record vehicle-record vehicle-"+assessment.Status.ToLowerInvariant())" @key="v.Id"><div class="record-heading"><span class="record-avatar" aria-hidden="true"><WorkspaceIcon Name="Vehicles"/></span><div><strong>@v.Plate</strong><small>@v.Model</small></div><span class="pill @assessment.Status.ToLowerInvariant()">@T(assessment.Status)</span></div>
-        <dl><div><dt>ID</dt><dd>@v.Id</dd></div><div><dt>@T("Mileage")</dt><dd>@v.Mileage.ToString("N0") km</dd></div><div><dt>@T("Last service")</dt><dd>@v.LastService.ToString("dd MMM yyyy")</dd></div></dl>
+        <VehicleImage Model="@v.Model"/><dl><div><dt>ID</dt><dd>@v.Id</dd></div><div><dt>@T("Mileage")</dt><dd>@v.Mileage.ToString("N0") km</dd></div><div><dt>@T("Last service")</dt><dd>@v.LastService.ToString("dd MMM yyyy")</dd></div></dl>
         <div class="record-service"><div><span>@T("Service mileage remaining")</span><strong>@assessment.RemainingKm.ToString("N0") km</strong></div><div class="progress" aria-hidden="true"><i style="@ServiceWidth(v,assessment)"></i></div></div>
         <div class="record-actions"><button class="secondary" @onclick="()=>OpenPassport.InvokeAsync(v.Id)">@T("Passport")</button><button class="secondary" @onclick="()=>EditVehicle(v)">@T("Edit")</button><button class="delete" @onclick="()=>Remove(v.Id)">@T("Delete")</button></div></article>
       }
-      @if(!Vehicles.Any()){<p class="empty-state">@T("No matching vehicles.")</p>}
+      @if(!Vehicles.Any()){<div class="approved-empty"><img class="" src="assets/system/empty-state.webp" alt="" loading="lazy" decoding="async" /><p class="empty-state">@T("No matching vehicles.")</p></div>}
     }else{
       @foreach(var d in PageDrivers){
-        <article class="register-record driver-record" @key="d.Id"><div class="record-heading"><span class="record-avatar" aria-hidden="true"><WorkspaceIcon Name="Drivers"/></span><div><strong>@d.Name</strong><small>#@d.Id</small></div></div><dl><div><dt>@T("License")</dt><dd>@d.License</dd></div><div><dt>@T("Experience")</dt><dd>@d.Experience @T("years")</dd></div><div><dt>@T("Assigned trips")</dt><dd>@Fleet.Trips.Count(t=>t.DriverId==d.Id)</dd></div><div><dt>@T("Active trips")</dt><dd>@Fleet.Trips.Count(t=>t.DriverId==d.Id&&FleetRules.TripStatus(t,Today)=="In transit")</dd></div></dl><div class="record-actions"><button class="secondary" @onclick="()=>EditDriver(d)">@T("Edit")</button><button class="delete" @onclick="()=>Remove(d.Id)">@T("Delete")</button></div></article>
+        <article class="register-record driver-record" @key="d.Id"><div class="record-heading"><DriverAvatar/><div><strong>@d.Name</strong><small>#@d.Id</small></div></div><dl><div><dt>@T("License")</dt><dd>@d.License</dd></div><div><dt>@T("Experience")</dt><dd>@d.Experience @T("years")</dd></div><div><dt>@T("Assigned trips")</dt><dd>@Fleet.Trips.Count(t=>t.DriverId==d.Id)</dd></div><div><dt>@T("Active trips")</dt><dd>@Fleet.Trips.Count(t=>t.DriverId==d.Id&&FleetRules.TripStatus(t,Today)=="In transit")</dd></div></dl><div class="record-actions"><button class="secondary" @onclick="()=>EditDriver(d)">@T("Edit")</button><button class="delete" @onclick="()=>Remove(d.Id)">@T("Delete")</button></div></article>
       }
-      @if(!Drivers.Any()){<p class="empty-state">@T("No matching drivers.")</p>}
+      @if(!Drivers.Any()){<div class="approved-empty"><img class="" src="assets/system/empty-state.webp" alt="" loading="lazy" decoding="async" /><p class="empty-state">@T("No matching drivers.")</p></div>}
     }
     </div>
     <WorkspacePager Russian="Russian" Page="CurrentPage" PageCount="PageCount" PageSize="pageSize" PageChanged="@(p=>pageIndex=p)" SizeChanged="@(n=>{pageSize=n;ResetPage();})" />

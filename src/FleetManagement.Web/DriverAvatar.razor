@@ -1,0 +1,3 @@
+@using FleetManagement.Web
+<img class="@(Compact ? "approved-driver-thumb" : "approved-driver-avatar")" src="assets/vehicles/driver-default.webp" alt="" loading="lazy" decoding="async" />
+@code { [Parameter] public bool Compact { get; set; } }

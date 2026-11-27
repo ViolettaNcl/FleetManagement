@@ -6,7 +6,7 @@
 <div class="demo-shell v4-shell @(darkTheme?"dark-theme":"") @(collapsed?"sidebar-collapsed":"") @(compactDashboard&&section=="Overview"?"dashboard-compact":"") @(visualMode=="premium"?"premium-workspace":"") @(workspaceDensity=="compact"?"workspace-dense":"") @(navigationMode=="essentials"?"guided-workspace":"")">
 <a class="skip-workspace" href="#fleet-content">@T("Skip to content")</a>
 <header class="workspace-header" lang="@language">
-    <div class="brand"><img class="brandicon" src="favicon.svg" alt="" /><div><h1>FleetManagement</h1><small>@T("Fleet operations workspace")</small></div></div>
+    <div class="brand"><img class="brandicon" src="assets/brand/fleet-logo-master.webp" alt="" width="48" height="48" fetchpriority="high" decoding="async" /><div><h1>FleetManagement</h1><small>@T("Fleet operations workspace")</small></div></div>
     <div class="actions"><button class="secondary command-search toolbar-icon-button" data-command-search="true" @onclick="OpenSearch" aria-keyshortcuts="Control+k Meta+k" title="@T("Quick search")"><WorkspaceIcon Name="Search" /><span class="toolbar-label toolbar-accessible-label">@T("Quick search")</span><kbd aria-hidden="true">Ctrl K</kbd></button><button class="secondary theme-action toolbar-icon-button" aria-pressed="@(darkTheme?"true":"false")" @onclick="ToggleTheme" aria-label="@T(darkTheme?"Light theme":"Dark theme")" title="@T(darkTheme?"Light theme":"Dark theme")"><WorkspaceIcon Name="@(darkTheme?"Sun":"Moon")"/><span class="toolbar-label">@T(darkTheme?"Light theme":"Dark theme")</span></button><label class="demo-language"><span class="toolbar-language-label">@T("Language")</span><select @bind="language" @bind:after="PersistPreferences" aria-label="@T("Language")"><option value="en">English</option><option value="ru">Русский</option></select></label><span class="pill demo-status"><span class="signal-dot" aria-hidden="true"></span>@T("Demo mode · local data")</span><button class="secondary header-alerts" @onclick='()=>Navigate("Notifications")' ><WorkspaceIcon Name="Assistant"/><span class="toolbar-accessible-label">@T("Alerts")</span> <strong class="alert-counter">@currentAlerts.Count</strong></button><button class="secondary reset-action toolbar-icon-button" @onclick="Reset" hidden="@(navigationMode=="essentials")" aria-label="@T("Reset demo")" title="@T("Reset demo")"><WorkspaceIcon Name="Reset"/><span class="toolbar-label">@T("Reset demo")</span></button></div>
 </header>
 <main lang="@language" class="workspace-layout">
@@ -30,7 +30,7 @@
         }
         @if(navigationMode=="essentials"&&string.IsNullOrWhiteSpace(navQuery)){<p class="guided-nav-note">@T("Search finds every tool, even in Essentials.")</p>}
     </nav>
-    <div class="fleet-content" id="fleet-content" tabindex="-1" @ref="contentRoot">
+    <div class="fleet-content" data-module="@section" id="fleet-content" tabindex="-1" @ref="contentRoot">
     <div class="workspace-breadcrumb"><span>@T("Fleet workspace")</span><span aria-hidden="true">/</span><strong>@T(section)</strong><button class="secondary favorite-action" aria-label="@T(favorites.Contains(section)?"Remove favorite":"Add favorite")" aria-pressed="@(favorites.Contains(section)?"true":"false")" @onclick="ToggleFavorite">@(favorites.Contains(section)?"★":"☆")</button><span class="workspace-clock">@T("Simulation time") · @Now.ToString("HH:mm")</span>@if(buildRevision.Length==7){<span class="build-revision" title="Published source revision" data-testid="build-revision">@buildRevision</span>}</div>
     <div class="v4-context-actions contextual-toolbar @(quickActionsExpanded?"actions-expanded":"")">
         @if(ContextAction is var primary&&primary.Key.Length>0){<button class="quick-primary" @onclick="()=>RunQuickAction(primary.Key)"><WorkspaceIcon Name="@primary.Icon"/> @T(primary.Label)</button>}
@@ -44,8 +44,8 @@
     @if(language=="ru"){<p class="localization-note">@T("Some technical labels and generated records remain in English.")</p>}
     @if (!string.IsNullOrEmpty(storageMessage)) { <p class="notice">@T(storageMessage)</p> }
     @if(recoveryRaw is not null){<p class="error" role="status">@T(RecoveryWarning)</p>}
-    @if(navigationMode=="all"&&ModuleBanner(section) is var banner && banner.Art.Length>0){
-        <div class="@("module-intro module-art-"+banner.Art)"><div><span class="module-kicker">@T("Workspace")</span><strong>@T(banner.Title)</strong><p>@T(banner.Description)</p></div><span class="module-watermark" aria-hidden="true"><WorkspaceIcon Name="@section"/></span></div>
+    @if(ModuleBanner(section) is var banner && banner.Art.Length>0){
+        <ModuleHeroBanner Section="@section" Art="@banner.Art" Kicker="@T("Workspace")" Title="@T(banner.Title)" Description="@T(banner.Description)"/>
     }
     @if (section == "Overview")
     {
@@ -111,10 +111,10 @@
         <NotificationCenter Russian="@(language=="ru")" Alerts="currentAlerts" Open="Navigate" Now="Now" />
     }
     else if(section=="Help & settings"){
-        <section class="panel v4-help"><div class="workspace-brand-about"><img src="assets/brand/fleet-logo-dark.webp" alt="" width="96" height="96" loading="lazy" decoding="async" /><div><h2>@T("Help & settings")</h2><p class="muted">@T("Fleet operations workspace")</p></div></div><p class="muted">@T("Choose a workflow. Demo records stay in this browser; no live GPS or private server data is connected.")</p>
+        <section class="panel v4-help"><div class="workspace-brand-about"><img src="assets/brand/fleet-logo-3d.webp" alt="" width="96" height="96" loading="lazy" decoding="async" /><div><h2>@T("Help & settings")</h2><span class="enterprise-version">V6.3</span><p class="muted">@T("Fleet operations workspace")</p></div></div><p class="muted">@T("Choose a workflow. Demo records stay in this browser; no live GPS or private server data is connected.")</p>
         <div class="formgrid"><label>@T("Appearance")<select aria-label="@T("Appearance")" @bind="themeMode" @bind:after="ApplyTheme"><option value="dark">@T("Dark")</option><option value="light">@T("Light")</option><option value="system">@T("System")</option></select></label><label>@T("Workspace visual style")<select aria-label="@T("Workspace visual style")" @bind="visualMode" @bind:after="PersistPreferences"><option value="premium">@T("Premium Violet")</option><option value="classic">@T("Classic workspace")</option></select></label><label>@T("Workspace density")<select aria-label="@T("Workspace density")" @bind="workspaceDensity" @bind:after="PersistPreferences"><option value="comfortable">@T("Comfortable")</option><option value="compact">@T("Compact")</option></select></label></div>
         <div class="formgrid"><label>@T("Navigation level")<select aria-label="@T("Navigation level")" value="@navigationMode" @onchange="e=>SetNavigationMode(e.Value?.ToString())"><option value="essentials">@T("Essentials")</option><option value="all">@T("All tools")</option></select></label></div>
-        <div class="help-grid">@foreach(var h in HelpItems){<button class="secondary" @onclick="()=>Navigate(h.Section)"><strong>@T(h.Section)</strong><small>@T(h.Description)</small></button>}</div>
+        <div class="approved-brand-presentation"><img class="" src="assets/brand/fleet-readme-banner.webp" alt="" loading="lazy" decoding="async" /><img class="" src="assets/brand/social-preview.webp" alt="" loading="lazy" decoding="async" /></div><div class="help-grid">@foreach(var h in HelpItems){<button class="secondary" @onclick="()=>Navigate(h.Section)"><strong>@T(h.Section)</strong><small>@T(h.Description)</small></button>}</div>
         <p class="muted">@T("Use Ctrl+K to search modules. On mobile, use the bottom navigation or More.")</p>
         </section>
         <section class="panel suite-panel" aria-labelledby="snapshot-export-title"><div class="suite-heading"><div><span class="suite-kicker">@T("Local data portability")</span><h2 id="snapshot-export-title">@T("Export demo snapshot")</h2><p class="muted">@T("Download the current demo records and clock as JSON. This file may contain names, notes and registrations. No server upload, preferences or automatic restore.")</p></div><div class="actions"><button @onclick="ExportSnapshot">@T("Download demo JSON")</button><button class="secondary" @onclick="ExportSnapshotWorkbook">@T("Download snapshot Excel")</button></div></div><div class="metrics suite-metrics"><div class="metric">@T("Vehicles")<strong>@fleet.Vehicles.Count</strong></div><div class="metric">@T("Drivers")<strong>@fleet.Drivers.Count</strong></div><div class="metric">@T("Trips")<strong>@fleet.Trips.Count</strong></div></div>@if(snapshotFeedback.Length>0){<p role="status">@T(snapshotFeedback)</p>}</section>
@@ -336,18 +336,26 @@
         "Optimization"=>("routes","Route intelligence","Compare routing algorithms using an identical synthetic scenario."),
         "Digital Twin"=>("twin","Simulation workspace","Explore movement and telemetry in a controlled simulation."),
         "Maintenance"=>("maintenance","Vehicle health workspace","Review service intervals and recorded maintenance."),
-        "Intelligence"=>("maintenance","Machine learning workspace","Train and evaluate a classifier on isolated telemetry."),
+        "Intelligence"=>("machine-learning","Machine learning workspace","Train and evaluate a classifier on isolated telemetry."),
         "Assistant"=>("assistant","Decision support workspace","Review rule-based evidence before making operational decisions."),
-        "Analytics" or "Cost Intelligence"=>("analytics","Operational insights","Review calculated performance and financial estimates."),
-        "Tracking" or "Geo Map"=>("command-center","Movement workspace","Follow simulated trips and advance the scenario clock."),
-        "Multi Dispatch" or "Batch Dispatch" or "Dispatch"=>("routes","Dispatch workspace","Plan assignments and compare route alternatives."),
+        "Analytics"=>("analytics","Operational insights","Review calculated performance and financial estimates."),
+        "Cost Intelligence"=>("cost-intelligence","Operational insights","Review calculated performance and financial estimates."),
+        "Tracking" or "Geo Map"=>("tracking","Movement workspace","Follow simulated trips and advance the scenario clock."),
+        "Multi Dispatch" or "Batch Dispatch" or "Dispatch"=>("dispatch","Dispatch workspace","Plan assignments and compare route alternatives."),
         "What-if"=>("twin","Scenario workspace","Explore operational scenarios without changing real records."),
-        "Predictions" or "Demand Forecast" or "Model Drift" or "Model Registry" or "Data Quality"=>("analytics","Model evaluation workspace","Inspect model evidence, predictions and data quality."),
-        "Vehicle Passport" or "Vehicles"=>("maintenance","Vehicle register workspace","Review the registered fleet and service history."),
-        "Drivers" or "Resource Planning" or "Calendar"=>("abstract","Planning workspace","Review schedules, people and resource availability."),
+                "Predictions"=>("predictions","Model evaluation workspace","Inspect model evidence, predictions and data quality."),
+        "Demand Forecast"=>("demand-forecast","Model evaluation workspace","Inspect model evidence, predictions and data quality."),
+        "Model Drift"=>("model-drift","Model evaluation workspace","Inspect model evidence, predictions and data quality."),
+        "Model Registry" or "Data Quality"=>("model-registry","Model evaluation workspace","Inspect model evidence, predictions and data quality."),
+        "Vehicle Passport"=>("vehicle-passport","Vehicle register workspace","Review the registered fleet and service history."),
+        "Vehicles"=>("vehicle-management","Vehicle register workspace","Review the registered fleet and service history."),
+                "Drivers"=>("drivers","Planning workspace","Review schedules, people and resource availability."),
+        "Resource Planning"=>("resource-planning","Planning workspace","Review schedules, people and resource availability."),
+        "Calendar"=>("calendar","Planning workspace","Review schedules, people and resource availability."),
+        "Notifications"=>("notifications","Alerts","Review rule-based evidence before making operational decisions."),
         _=>("","","")
     };
-    private static readonly (string Section,string Art,string Title,string Description)[] Capabilities=[("Optimization","routes","Route optimization","Compare exact and heuristic routes."),("Digital Twin","twin","Digital Twin simulation","Explore simulated vehicle movement."),("Intelligence","maintenance","Maintenance ML","Train a model on synthetic telemetry."),("Assistant","assistant","Fleet intelligence","Review actionable rule-based alerts."),("Analytics","analytics","Performance analytics","Explore calculated operational metrics."),("Tracking","command-center","Fleet tracking","Follow the simulated fleet.")];
+    private static readonly (string Section,string Art,string Title,string Description)[] Capabilities=[("Optimization","routes","Route optimization","Compare exact and heuristic routes."),("Digital Twin","twin","Digital Twin simulation","Explore simulated vehicle movement."),("Intelligence","machine-learning","Maintenance ML","Train a model on synthetic telemetry."),("Assistant","assistant","Fleet intelligence","Review actionable rule-based alerts."),("Analytics","analytics","Performance analytics","Explore calculated operational metrics."),("Tracking","tracking","Fleet tracking","Follow the simulated fleet.")];
     private static string ModuleIcon(string section)=>section switch{"Overview"=>"◈","Vehicles"=>"▣","Drivers"=>"◎","Vehicle Passport"=>"▤","Dispatch"=>"↗","Batch Dispatch"=>"⇄","Calendar"=>"▦","Resource Planning"=>"▧","Maintenance"=>"◇","Tracking"=>"⌖","Geo Map"=>"◉","Analytics"=>"▥","Cost Intelligence"=>"≋","Assistant"=>"✦","Optimization"=>"⤳","Multi Dispatch"=>"⇶","Digital Twin"=>"⬡","What-if"=>"◫","Intelligence"=>"⌁","Predictions"=>"∿","Demand Forecast"=>"↗","Model Registry"=>"▤","Data Quality"=>"✓","Model Drift"=>"≈",_=>"•"};
     private (string Label,int Value,string Detail,string Section,string Tone)[] OverviewMetrics()=>[
         ("Vehicles",fleet.Vehicles.Count,"Registered fleet","Vehicles","violet"),
@@ -565,7 +573,7 @@
 
     private IEnumerable<Trip> FilteredTrips(){var rows=fleet.Trips.OrderByDescending(t=>t.Start).AsEnumerable();if(section!="Dispatch")return rows.Take(8);var q=tripQuery.Trim();return rows.Where(t=>(tripStatus.Length==0||FleetRules.TripStatus(t,Now)==tripStatus)&&(q.Length==0||new[]{t.Id.ToString(CultureInfo.InvariantCulture),t.Origin,t.Destination,VehicleName(t.VehicleId),DriverName(t.DriverId)}.Any(x=>x.Contains(q,StringComparison.OrdinalIgnoreCase))));}
     private RenderFragment TripTable()=> @<div class="trip-results"><div class="tablewrap trip-table" tabindex="0" role="region" aria-label="@T("Trip schedule")"><table><thead><tr><th>@T("Trip")</th><th>@T("Route")</th><th>@T("Vehicle")</th><th>@T("Driver")</th><th>@T("Start")</th><th>@T("End")</th><th>@T("Distance")</th><th>@T("Status")</th>@if(section=="Dispatch"){<th>@T("Actions")</th>}</tr></thead><tbody>
-    @if(!FilteredTrips().Any()){<tr><td colspan="@(section=="Dispatch"?9:8)" class="empty-state">@T("No matching trips.")</td></tr>}
+    @if(!FilteredTrips().Any()){<tr><td colspan="@(section=="Dispatch"?9:8)" class="empty-state"><div class="approved-empty"><img class="" src="assets/system/empty-state.webp" alt="" loading="lazy" decoding="async" />@T("No matching trips.")</div></td></tr>}
     @foreach(var t in VisibleTrips()){var status=FleetRules.TripStatus(t,Now);<tr><td>#@t.Id</td><td>@t.Origin → @t.Destination</td><td>@VehicleName(t.VehicleId)</td><td>@DriverName(t.DriverId)</td><td>@t.Start.ToString("dd MMM HH:mm")</td><td>@t.End.ToString("dd MMM HH:mm")</td><td>@t.Distance km</td><td><span class="pill @status.Replace(" ","").ToLowerInvariant()">@T(status)</span></td>@if(section=="Dispatch"){<td>@if(status=="Scheduled"){<div class="actions"><button class="secondary" @onclick="()=>EditTrip(t)">@T("Edit")</button><button class="delete" @onclick="()=>DeleteTrip(t)">@T("Delete")</button></div>}else{<small>@T("History")</small>}</td>}</tr>}
     </tbody></table></div>
     <div class="register-cards trip-cards">
@@ -575,7 +583,7 @@
       <dl><div><dt>@T("Vehicle")</dt><dd>@VehicleName(t.VehicleId)</dd></div><div><dt>@T("Driver")</dt><dd>@DriverName(t.DriverId)</dd></div><div><dt>@T("Start")</dt><dd>@t.Start.ToString("dd MMM HH:mm")</dd></div><div><dt>@T("End")</dt><dd>@t.End.ToString("dd MMM HH:mm")</dd></div><div><dt>@T("Distance")</dt><dd>@t.Distance km</dd></div></dl>
       @if(section=="Dispatch"&&status=="Scheduled"){<div class="record-actions"><button class="secondary" @onclick="()=>EditTrip(t)">@T("Edit")</button><button class="delete" @onclick="()=>DeleteTrip(t)">@T("Delete")</button></div>}</article>
     }
-    @if(!FilteredTrips().Any()){<p class="empty-state">@T("No matching trips.")</p>}
+    @if(!FilteredTrips().Any()){<div class="approved-empty"><img class="" src="assets/system/empty-state.webp" alt="" loading="lazy" decoding="async" /><p class="empty-state">@T("No matching trips.")</p></div>}
     </div>
     @if(section=="Dispatch"){<WorkspacePager Russian="@(language=="ru")" Page="CurrentTripPage" PageCount="TripPageCount" PageSize="tripPageSize" PageChanged="@(p=>tripPage=p)" SizeChanged="@(n=>{tripPageSize=n;ResetTripPage();})" />}
     </div>;

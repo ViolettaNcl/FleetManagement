@@ -1,0 +1,19 @@
+@using FleetManagement.Web
+<div class="@($"module-intro module-art-{Art} enterprise-module")" data-art="@Art">
+    <div class="enterprise-module-copy">
+        <span class="module-kicker"><WorkspaceIcon Name="@Section"/> @Kicker</span>
+        <strong>@Title</strong>
+        <p>@Description</p>
+    </div>
+    @if (AssetRegistry.Module(Art) is string path)
+    {
+        <div class="enterprise-module-visual" aria-hidden="true"><img src="@path" alt="" loading="lazy" decoding="async"/></div>
+    }
+</div>
+@code {
+    [Parameter, EditorRequired] public string Section { get; set; } = "";
+    [Parameter, EditorRequired] public string Art { get; set; } = "";
+    [Parameter, EditorRequired] public string Kicker { get; set; } = "";
+    [Parameter, EditorRequired] public string Title { get; set; } = "";
+    [Parameter, EditorRequired] public string Description { get; set; } = "";
+}

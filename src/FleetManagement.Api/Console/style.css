@@ -34,3 +34,28 @@ table{font-size:13px;line-height:1.45}th,body.dark-theme th{background:var(--sur
 @media(max-width:900px){.connected-workspace-body{grid-template-columns:1fr;gap:12px}.connected-nav{position:static;padding:11px}.connected-nav nav{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:5px}.connected-nav .search-label{max-width:none}.connected-nav nav button,body.dark-theme .connected-nav nav button{background:var(--surface-2);min-height:40px}.connected-content .panel{padding:16px}}
 @media(max-width:480px){header,body.dark-theme header{display:grid;gap:10px;padding:12px;grid-template-columns:minmax(0,1fr)}.header-actions{max-width:none;width:100%;justify-content:flex-start;gap:6px}.header-actions button{font-size:11px;padding:7px 10px}.language-label{width:auto}.header-actions select{max-width:100px}.subtitle{font-size:11px}main{margin:14px auto;padding:0 10px}.login{margin:22px auto;padding:20px}.login h1{font-size:21px}.connected-nav nav{grid-template-columns:repeat(2,minmax(0,1fr))}.connected-nav nav button,body.dark-theme .connected-nav nav button{font-size:12px;min-height:42px}.connected-content .panel{padding:13px}.formgrid{grid-template-columns:minmax(0,1fr)}.metrics{gap:8px}.metrics article{padding:12px}.metrics strong{font-size:25px}.toolbar h1{font-size:24px}.report-actions button,.toolbar button{max-width:100%;white-space:normal}.tablewrap button{min-height:36px}.dashboard-grid{grid-template-columns:minmax(0,1fr)}}
 @media(prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important;scroll-behavior:auto!important}}
+
+/* V6.3 Enterprise connected console — independent of public demo, no CSP changes. */
+:root{--surface:#fff;--surface-2:#f5f2fb;--bg:#f4f2fa;--ink:#221c35;--muted:#5e5672;--line:#ddd5ec;--accent:#6231c1;--focus:#6d28d9;--shadow:0 10px 24px #34234e0b;color-scheme:light;}
+body.dark-theme{--surface:#151225;--surface-2:#1d1732;--bg:#0b0b16;--ink:#f1f5f9;--muted:#b9b1d1;--line:#403352;--accent:#c4b5fd;--focus:#c4b5fd;--shadow:0 12px 30px #05040e44;color-scheme:dark;}
+body{background:radial-gradient(ellipse at 90% 0%,#7c3aed12,transparent 45%),var(--bg);color:var(--ink);}
+body header,body.dark-theme header{background:var(--surface);color:var(--ink);border-bottom:1px solid var(--line);box-shadow:var(--shadow);}
+header strong{letter-spacing:-.04em;font-size:22px;}
+header .subtitle{color:var(--muted);opacity:1;}
+body .panel,body .metrics article,body.dark-theme .panel,body.dark-theme .metrics article{border-radius:16px;box-shadow:var(--shadow);}
+body .login,body.dark-theme .login{padding:clamp(22px,4vw,36px);border-top:3px solid var(--accent);max-width:490px;}
+body .metrics article{position:relative;overflow:hidden;min-width:0;}
+body .metrics article::before{content:"";position:absolute;inset:0 auto 0 0;width:3px;background:var(--accent);opacity:.7;}
+body .metrics article:nth-child(2)::before{background:#0891b2;}body .metrics article:nth-child(3)::before{background:#16a34a;}body .metrics article:nth-child(4)::before{background:#d97706;}
+body .metrics strong{font-variant-numeric:tabular-nums;letter-spacing:-.04em;}
+body .connected-nav{border-radius:14px;box-shadow:var(--shadow);}
+body .connected-nav nav button,body.dark-theme .connected-nav nav button{border-radius:9px;min-height:38px;}
+body .connected-content .panel{border-radius:16px;}
+body .connected-content .panel>h2:first-child{padding-bottom:12px;border-bottom:1px solid var(--line);}
+body .connected-content .dashboard-grid article,body.dark-theme .connected-content .dashboard-grid article{border-radius:12px;}
+body .editor,body.dark-theme .editor{border:1px solid var(--line);background:var(--surface-2);padding:clamp(12px,2vw,20px);border-radius:12px;}
+body .tablewrap{border-radius:10px;}
+body .tablewrap td{vertical-align:middle;}
+body :is(button,input,select):focus-visible{outline:2px solid var(--focus);outline-offset:3px;}
+@media(max-width:480px){body .metrics article{padding:12px;}body .connected-content .panel{padding:13px;}body .login{margin:18px auto;}body .connected-nav nav button{min-height:44px;}}
+@media(prefers-reduced-motion:no-preference){body :is(button,input,select){transition:border-color .15s,background .15s;}}

@@ -3,6 +3,7 @@ from pathlib import Path
 import shutil
 import tempfile
 import unittest
+from test_approved_assets import ApprovedArtwork
 spec = importlib.util.spec_from_file_location("asset_import", Path(__file__).resolve().parents[2]/"tools/import_neon_assets.py")
 module = importlib.util.module_from_spec(spec)
 spec.loader.exec_module(module)

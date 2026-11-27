@@ -1,0 +1,6 @@
+@using FleetManagement.Web
+<img class="@(Compact ? "approved-vehicle-thumb" : "approved-vehicle-image")" src="@AssetRegistry.Vehicle(Model)" alt="" loading="lazy" decoding="async" />
+@code {
+    [Parameter] public string? Model { get; set; }
+    [Parameter] public bool Compact { get; set; }
+}

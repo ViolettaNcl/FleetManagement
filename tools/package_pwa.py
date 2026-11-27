@@ -30,7 +30,8 @@ def package(app):
     app=Path(app)
     rev=json.loads((app/"preview-build.json").read_text())["revision"]
     if not re.fullmatch(r"[a-f0-9]{40}",rev):raise ValueError("Invalid revision")
-    for size in (192,512):icon(app/f"icon-{size}.png",size)
+    for size in (192,512):
+        if not (app/f"icon-{size}.png").is_file(): icon(app/f"icon-{size}.png",size)
     manifest={"name":"FleetManagement — interactive demo","short_name":"FleetManagement","id":"./","start_url":"./","scope":"./","display":"standalone","background_color":"#090b12","theme_color":"#131722","description":"Synthetic fleet operations demo; no live GPS or connected API.","icons":[{"src":f"icon-{n}.png","sizes":f"{n}x{n}","type":"image/png","purpose":"any maskable"} for n in (192,512)]}
     (app/"manifest.webmanifest").write_text(json.dumps(manifest),encoding="utf-8")
     (app/"pwa.js").write_text("""if('serviceWorker' in navigator&&window.isSecureContext){
